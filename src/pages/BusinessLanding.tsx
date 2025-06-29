@@ -11,10 +11,15 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const BusinessLanding: React.FC = () => {
   const { t } = useTranslation();
-  const { data: packages, isLoading } = useServicePackages();
+  const { data: packages, isLoading, error } = useServicePackages();
   const { signInWithGoogle } = useAuth();
 
+  console.log('BusinessLanding: Packages data:', packages);
+  console.log('BusinessLanding: Loading state:', isLoading);
+  console.log('BusinessLanding: Error:', error);
+
   const handlePackageSelect = (pkg: any) => {
+    console.log('BusinessLanding: Package selected:', pkg.name);
     // Redirect to Google Login first
     signInWithGoogle();
   };
@@ -30,15 +35,15 @@ const BusinessLanding: React.FC = () => {
             matbakh
           </h1>
           <p className="text-xl text-gray-600 mb-8">
-            {t('landing.tagline')}
+            {t('landing.tagline', 'Sichtbarkeit für die Gastronomie')}
           </p>
           
           <div className="max-w-3xl mx-auto mb-12">
             <p className="text-lg text-gray-700 mb-4">
-              {t('landing.hero.title')}
+              {t('landing.hero.title', 'Verbessern Sie Ihre Online-Präsenz mit Google Business Profile')}
             </p>
             <p className="text-lg text-gray-600">
-              {t('landing.hero.subtitle')}
+              {t('landing.hero.subtitle', 'Automatisierte Lösungen für Restaurants')}
             </p>
           </div>
 
@@ -48,7 +53,7 @@ const BusinessLanding: React.FC = () => {
               className="bg-black hover:bg-gray-800 text-white px-8 py-3"
               onClick={signInWithGoogle}
             >
-              {t('landing.cta.primary')}
+              {t('landing.cta.primary', 'Jetzt starten')}
             </Button>
             <Button 
               size="lg" 
@@ -56,7 +61,7 @@ const BusinessLanding: React.FC = () => {
               className="px-8 py-3"
               onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}
             >
-              {t('landing.cta.secondary')}
+              {t('landing.cta.secondary', 'Mehr erfahren')}
             </Button>
           </div>
         </div>
@@ -69,12 +74,12 @@ const BusinessLanding: React.FC = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">
-                  {t('info.target_group.title')}
+                  {t('info.target_group.title', 'Für Gastronomen')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">
-                  {t('info.target_group.content')}
+                  {t('info.target_group.content', 'Speziell entwickelt für Restaurants, Cafés und Imbisse')}
                 </p>
               </CardContent>
             </Card>
@@ -82,12 +87,12 @@ const BusinessLanding: React.FC = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">
-                  {t('info.usp.title')}
+                  {t('info.usp.title', 'Automatisierte Lösungen')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">
-                  {t('info.usp.content')}
+                  {t('info.usp.content', 'KI-gestützte Optimierung Ihres Google Business Profils')}
                 </p>
               </CardContent>
             </Card>
@@ -105,12 +110,12 @@ const BusinessLanding: React.FC = () => {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <span className="text-2xl mr-2">🛠</span>
-                  {t('services.profile.title')}
+                  {t('services.profile.title', 'Profil Setup')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">
-                  {t('services.profile.description')}
+                  {t('services.profile.description', 'Komplette Einrichtung Ihres Google Business Profils')}
                 </p>
               </CardContent>
             </Card>
@@ -119,12 +124,12 @@ const BusinessLanding: React.FC = () => {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <span className="text-2xl mr-2">📊</span>
-                  {t('services.analysis.title')}
+                  {t('services.analysis.title', 'Analyse & Optimierung')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">
-                  {t('services.analysis.description')}
+                  {t('services.analysis.description', 'Kontinuierliche Überwachung und Verbesserung')}
                 </p>
               </CardContent>
             </Card>
@@ -133,12 +138,12 @@ const BusinessLanding: React.FC = () => {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <span className="text-2xl mr-2">🧠</span>
-                  {t('services.analytics.title')}
+                  {t('services.analytics.title', 'KI-Analytics')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">
-                  {t('services.analytics.description')}
+                  {t('services.analytics.description', 'Intelligente Auswertungen und Empfehlungen')}
                 </p>
               </CardContent>
             </Card>
@@ -152,10 +157,20 @@ const BusinessLanding: React.FC = () => {
           <h2 className="text-3xl font-bold text-center mb-12">Unsere Angebote</h2>
           
           {isLoading ? (
-            <div className="text-center">{t('common.loading')}</div>
+            <div className="text-center">
+              <div className="animate-pulse">Lade Angebote...</div>
+            </div>
+          ) : error ? (
+            <div className="text-center text-red-600">
+              Fehler beim Laden der Angebote. Bitte versuchen Sie es später erneut.
+            </div>
+          ) : !packages || packages.length === 0 ? (
+            <div className="text-center text-gray-600">
+              Momentan sind keine Angebote verfügbar. Bitte kontaktieren Sie uns direkt.
+            </div>
           ) : (
             <div className="grid md:grid-cols-3 gap-8">
-              {packages?.map((pkg) => (
+              {packages.map((pkg) => (
                 <PricingCard
                   key={pkg.id}
                   package={pkg}

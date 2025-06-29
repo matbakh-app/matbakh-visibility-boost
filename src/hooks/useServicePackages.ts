@@ -20,15 +20,24 @@ export const useServicePackages = () => {
   return useQuery({
     queryKey: ['service-packages'],
     queryFn: async () => {
+      console.log('useServicePackages: Fetching service packages...');
+      
       const { data, error } = await supabase
         .from('service_packages')
         .select('*')
         .eq('is_active', true)
         .order('sort_order');
 
-      if (error) throw error;
+      if (error) {
+        console.error('useServicePackages: Error fetching packages:', error);
+        throw error;
+      }
+      
+      console.log('useServicePackages: Fetched packages:', data);
       return data as ServicePackage[];
     },
+    retry: 3,
+    retryDelay: 1000,
   });
 };
 
@@ -36,14 +45,23 @@ export const useAddonServices = () => {
   return useQuery({
     queryKey: ['addon-services'],
     queryFn: async () => {
+      console.log('useAddonServices: Fetching addon services...');
+      
       const { data, error } = await supabase
         .from('addon_services')
         .select('*')
         .eq('is_active', true)
         .order('sort_order');
 
-      if (error) throw error;
+      if (error) {
+        console.error('useAddonServices: Error fetching addons:', error);
+        throw error;
+      }
+      
+      console.log('useAddonServices: Fetched addons:', data);
       return data;
     },
+    retry: 3,
+    retryDelay: 1000,
   });
 };
