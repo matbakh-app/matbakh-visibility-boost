@@ -23,6 +23,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Loading state component
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto mb-4"></div>
+          <p className="text-gray-600">⏳ Lade Benutzerinformationen…</p>
+        </div>
+      </div>
+    );
+  }
+
   useEffect(() => {
     console.log('AuthProvider: Initializing auth state');
     
@@ -60,7 +72,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
           
           // Only redirect if not on landing page or login page
-          const isOnLandingPage = location.pathname === '/' || location.pathname.startsWith('/business/partner');
+          const isOnLandingPage = location.pathname === '/' || 
+                                 location.pathname.startsWith('/business/partner');
           if (!isOnLandingPage) {
             // Check if onboarding is completed
             try {
