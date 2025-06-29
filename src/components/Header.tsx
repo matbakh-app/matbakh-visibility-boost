@@ -78,7 +78,7 @@ const Header: React.FC = () => {
               {t('nav.home')}
             </button>
             <button
-              onClick={() => navigate('/#services')}
+              onClick={() => navigate('/services')}
               className="text-gray-700 hover:text-black px-3 py-2 text-sm font-medium"
             >
               {t('nav.services')}
