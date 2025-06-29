@@ -41,6 +41,22 @@ const resources = {
           description: 'Detaillierte Analysen und Berichte über Ihre Online-Performance und Kundeninteraktionen.'
         }
       },
+      features: {
+        title: 'Geplante Features',
+        subtitle: 'Diese Funktionen werden in Kürze für Restaurantgäste verfügbar sein',
+        search: {
+          title: 'Personalisierte Suche',
+          description: 'Finden Sie Restaurants basierend auf Ihren Vorlieben, Allergien und gewünschtem Ambiente.'
+        },
+        voting: {
+          title: 'Gruppenabstimmung',
+          description: 'Laden Sie Freunde ein und stimmen Sie gemeinsam über Ihr nächstes Restaurant ab.'
+        },
+        booking: {
+          title: 'Direktbuchung',
+          description: 'Reservieren Sie Ihren Tisch direkt über Google-Integration.'
+        }
+      },
       pricing: {
         title: 'Unsere Angebote',
         subtitle: 'Transparent und fair - wählen Sie das passende Paket für Ihr Restaurant',
@@ -98,6 +114,22 @@ const resources = {
         analytics: {
           title: 'Analytics & Insights',
           description: 'Detailed analytics and reports about your online performance and customer interactions.'
+        }
+      },
+      features: {
+        title: 'Planned Features',
+        subtitle: 'These features will be available soon for restaurant guests',
+        search: {
+          title: 'Personalized Search',
+          description: 'Find restaurants based on your preferences, allergies and desired ambiance.'
+        },
+        voting: {
+          title: 'Group Voting',
+          description: 'Invite friends and vote together on your next restaurant.'
+        },
+        booking: {
+          title: 'Direct Booking',
+          description: 'Reserve your table directly through Google integration.'
         }
       },
       pricing: {

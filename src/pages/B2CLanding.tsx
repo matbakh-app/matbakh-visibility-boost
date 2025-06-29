@@ -16,18 +16,18 @@ const B2CLanding: React.FC = () => {
   const b2cServices = [
     {
       icon: Search,
-      title: 'Personalisierte Suche',
-      description: 'Finden Sie Restaurants basierend auf Ihren Vorlieben, Allergien und gewünschtem Ambiente.'
+      title: t('features.search.title'),
+      description: t('features.search.description')
     },
     {
       icon: Users,
-      title: 'Gruppenabstimmung',
-      description: 'Laden Sie Freunde ein und stimmen Sie gemeinsam über Ihr nächstes Restaurant ab.'
+      title: t('features.voting.title'),
+      description: t('features.voting.description')
     },
     {
       icon: MapPin,
-      title: 'Direktbuchung',
-      description: 'Reservieren Sie Ihren Tisch direkt über Google-Integration.'
+      title: t('features.booking.title'),
+      description: t('features.booking.description')
     }
   ];
 
@@ -64,10 +64,10 @@ const B2CLanding: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-black mb-4">
-              Geplante Features
+              {t('features.title')}
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Diese Funktionen werden in Kürze für Restaurantgäste verfügbar sein
+              {t('features.subtitle')}
             </p>
           </div>
           
@@ -104,7 +104,7 @@ const B2CLanding: React.FC = () => {
               {t('pricing.title')} - {t('pricing.viewOnly')}
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Übersicht unserer Restaurant-Services (nicht buchbar auf dieser Seite)
+              {t('pricing.subtitle')}
             </p>
           </div>
 
