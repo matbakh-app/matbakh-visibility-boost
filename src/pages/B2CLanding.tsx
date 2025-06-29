@@ -3,7 +3,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin, Users, Star, Search } from 'lucide-react';
+import { MapPin, Users, Search } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import PricingCard from '@/components/PricingCard';
@@ -17,17 +17,23 @@ const B2CLanding: React.FC = () => {
     {
       icon: Search,
       title: t('features.search.title'),
-      description: t('features.search.description')
+      description: t('features.search.description'),
+      color: 'bg-blue-50 border-blue-200',
+      iconColor: 'bg-blue-500'
     },
     {
       icon: Users,
       title: t('features.voting.title'),
-      description: t('features.voting.description')
+      description: t('features.voting.description'),
+      color: 'bg-green-50 border-green-200',
+      iconColor: 'bg-green-500'
     },
     {
       icon: MapPin,
       title: t('features.booking.title'),
-      description: t('features.booking.description')
+      description: t('features.booking.description'),
+      color: 'bg-purple-50 border-purple-200',
+      iconColor: 'bg-purple-500'
     }
   ];
 
@@ -59,49 +65,12 @@ const B2CLanding: React.FC = () => {
         </div>
       </section>
 
-      {/* B2C Services Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-black mb-4">
-              {t('features.title')}
-            </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              {t('features.subtitle')}
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            {b2cServices.map((service, index) => {
-              const IconComponent = service.icon;
-              return (
-                <Card key={index} className="bg-white border-0 shadow-sm opacity-75">
-                  <CardHeader className="text-center pb-4">
-                    <div className="w-12 h-12 bg-gray-400 rounded-lg flex items-center justify-center mx-auto mb-4">
-                      <IconComponent className="h-6 w-6 text-white" />
-                    </div>
-                    <CardTitle className="text-xl font-semibold text-black">
-                      {service.title}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-center">
-                    <p className="text-gray-600 leading-relaxed">
-                      {service.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
       {/* Pricing Section - View Only */}
-      <section className="py-20 px-4">
+      <section className="py-20 px-4 bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-black mb-4">
-              {t('pricing.title')} - {t('pricing.viewOnly')}
+              {t('pricing.title')}
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               {t('pricing.subtitle')}
@@ -128,6 +97,43 @@ const B2CLanding: React.FC = () => {
               <p>Keine Pakete verfügbar</p>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* B2C Services Section */}
+      <section className="py-20 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-black mb-4">
+              {t('features.title')}
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              {t('features.subtitle')}
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            {b2cServices.map((service, index) => {
+              const IconComponent = service.icon;
+              return (
+                <Card key={index} className={`${service.color} border-2 hover:shadow-lg transition-all duration-300 opacity-90`}>
+                  <CardHeader className="text-center pb-4">
+                    <div className={`w-16 h-16 ${service.iconColor} rounded-xl flex items-center justify-center mx-auto mb-4`}>
+                      <IconComponent className="h-8 w-8 text-white" />
+                    </div>
+                    <CardTitle className="text-xl font-bold text-black">
+                      {service.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-center">
+                    <p className="text-gray-700 leading-relaxed">
+                      {service.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </div>
       </section>
 
