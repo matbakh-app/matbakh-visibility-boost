@@ -9,13 +9,14 @@ import { ServicePackage } from '@/hooks/useServicePackages';
 
 interface PricingCardProps {
   package: ServicePackage;
+  viewOnly?: boolean;
 }
 
-const PricingCard: React.FC<PricingCardProps> = ({ package: pkg }) => {
+const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = false }) => {
   const { t } = useTranslation();
 
   return (
-    <Card className={`relative bg-white ${pkg.is_recommended ? 'border-black border-2' : 'border-gray-200'}`}>
+    <Card className={`relative bg-white ${pkg.is_recommended ? 'border-black border-2' : 'border-gray-200'} ${viewOnly ? 'opacity-90' : ''}`}>
       {pkg.is_recommended && (
         <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
           <Badge className="bg-black text-white px-4 py-1">
@@ -68,15 +69,16 @@ const PricingCard: React.FC<PricingCardProps> = ({ package: pkg }) => {
         </div>
         
         <Button 
-          className="w-full bg-black hover:bg-gray-800 text-white"
+          className={`w-full ${viewOnly ? 'bg-gray-400 hover:bg-gray-400 cursor-not-allowed' : 'bg-black hover:bg-gray-800'} text-white`}
           size="lg"
+          disabled={viewOnly}
         >
-          {t('pricing.selectPackage')}
+          {viewOnly ? t('pricing.viewOnly') : t('pricing.selectPackage')}
         </Button>
         
         {pkg.min_duration_months > 0 && (
           <p className="text-xs text-gray-500 text-center mt-2">
-            Mindestlaufzeit: {pkg.min_duration_months} Monate
+            {t('pricing.minDuration')}: {pkg.min_duration_months} Monate
           </p>
         )}
       </CardContent>

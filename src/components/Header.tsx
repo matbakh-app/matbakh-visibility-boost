@@ -24,13 +24,15 @@ const Header: React.FC = () => {
         .replace('/kontakt', '/contact')
         .replace('/impressum', '/imprint')
         .replace('/datenschutz', '/privacy')
-        .replace('/agb', '/terms');
+        .replace('/agb', '/terms')
+        .replace('/b2c', '/b2c-en');
     } else {
       newPath = currentPath
         .replace('/contact', '/kontakt')
         .replace('/imprint', '/impressum')
         .replace('/privacy', '/datenschutz')
-        .replace('/terms', '/agb');
+        .replace('/terms', '/agb')
+        .replace('/b2c-en', '/b2c');
     }
     
     if (newPath !== currentPath) {
@@ -47,7 +49,8 @@ const Header: React.FC = () => {
         .replace('/kontakt', '/contact')
         .replace('/impressum', '/imprint')
         .replace('/datenschutz', '/privacy')
-        .replace('/agb', '/terms');
+        .replace('/agb', '/terms')
+        .replace('/b2c', '/b2c-en');
     }
     
     navigate(translatedPath);
@@ -68,6 +71,30 @@ const Header: React.FC = () => {
           </div>
           
           <nav className="hidden md:flex space-x-8">
+            <button
+              onClick={() => navigate('/')}
+              className="text-gray-700 hover:text-black px-3 py-2 text-sm font-medium"
+            >
+              {t('nav.home')}
+            </button>
+            <button
+              onClick={() => navigate('/#services')}
+              className="text-gray-700 hover:text-black px-3 py-2 text-sm font-medium"
+            >
+              {t('nav.services')}
+            </button>
+            <button
+              onClick={() => navigate('/#packages')}
+              className="text-gray-700 hover:text-black px-3 py-2 text-sm font-medium"
+            >
+              {t('nav.packages')}
+            </button>
+            <button
+              onClick={() => handleNavigation('/b2c')}
+              className="text-gray-700 hover:text-black px-3 py-2 text-sm font-medium"
+            >
+              {t('nav.b2c')}
+            </button>
             <button
               onClick={() => handleNavigation('/kontakt')}
               className="text-gray-700 hover:text-black px-3 py-2 text-sm font-medium"

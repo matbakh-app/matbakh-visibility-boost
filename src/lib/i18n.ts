@@ -6,6 +6,10 @@ const resources = {
   de: {
     translation: {
       nav: {
+        home: 'Startseite',
+        services: 'Services',
+        packages: 'Angebote',
+        b2c: 'Für Gäste',
         contact: 'Kontakt',
         imprint: 'Impressum',
         privacy: 'Datenschutz',
@@ -15,7 +19,11 @@ const resources = {
         title: 'Ihre Google-Sichtbarkeit. Unser Erfolg.',
         subtitle: 'Wir machen Ihr Restaurant online sichtbar und helfen Ihnen dabei, mehr Gäste zu gewinnen. Einfach, effektiv, erfolgreich.',
         cta: 'Mehr Infos',
-        consultation: 'Kostenlose Beratung'
+        consultation: 'Kostenlose Beratung',
+        b2cTitle: 'Finden Sie Ihr perfektes Restaurant',
+        b2cSubtitle: 'Personalisierte Restaurantsuche basierend auf Ihren Vorlieben und Bedürfnissen.',
+        b2cCta: 'Restaurant finden',
+        b2cNote: 'Demnächst verfügbar'
       },
       services: {
         title: 'Unsere Services',
@@ -40,7 +48,9 @@ const resources = {
         month: 'Monat',
         oneTime: 'Einmalig',
         selectPackage: 'Paket wählen',
-        limitedTime: 'Nur für kurze Zeit'
+        limitedTime: 'Nur für kurze Zeit',
+        viewOnly: 'Nur zur Ansicht',
+        minDuration: 'Mindestlaufzeit'
       },
       footer: {
         company: 'Unternehmen',
@@ -55,6 +65,10 @@ const resources = {
   en: {
     translation: {
       nav: {
+        home: 'Home',
+        services: 'Services',
+        packages: 'Packages',
+        b2c: 'For Guests',
         contact: 'Contact',
         imprint: 'Imprint',
         privacy: 'Privacy',
@@ -64,7 +78,11 @@ const resources = {
         title: 'Your Google Visibility. Our Success.',
         subtitle: 'We make your restaurant visible online and help you attract more guests. Simple, effective, successful.',
         cta: 'Learn More',
-        consultation: 'Free Consultation'
+        consultation: 'Free Consultation',
+        b2cTitle: 'Find Your Perfect Restaurant',
+        b2cSubtitle: 'Personalized restaurant search based on your preferences and needs.',
+        b2cCta: 'Find Restaurant',
+        b2cNote: 'Coming Soon'
       },
       services: {
         title: 'Our Services',
@@ -89,7 +107,9 @@ const resources = {
         month: 'Month',
         oneTime: 'One-time',
         selectPackage: 'Select Package',
-        limitedTime: 'Limited Time Only'
+        limitedTime: 'Limited Time Only',
+        viewOnly: 'View Only',
+        minDuration: 'Minimum duration'
       },
       footer: {
         company: 'Company',

@@ -8,6 +8,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import BusinessLogin from "./pages/BusinessLogin";
 import BusinessLanding from "./pages/BusinessLanding";
+import B2CLanding from "./pages/B2CLanding";
 import PartnerOnboarding from "./pages/PartnerOnboarding";
 import PartnerDashboard from "./pages/PartnerDashboard";
 import PartnerProfile from "./pages/PartnerProfile";
@@ -41,6 +42,8 @@ function App() {
               <Route path="/" element={<Index />} />
               <Route path="/business/login" element={<BusinessLogin />} />
               <Route path="/business/partner" element={<BusinessLanding />} />
+              <Route path="/b2c" element={<B2CLanding />} />
+              <Route path="/b2c-en" element={<B2CLanding />} />
               <Route path="/partner/onboarding" element={<PartnerOnboarding />} />
               <Route path="/partner/dashboard" element={<PartnerDashboard />} />
               <Route path="/partner/profile" element={<PartnerProfile />} />

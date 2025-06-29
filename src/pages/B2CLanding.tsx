@@ -3,35 +3,31 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Wrench, BarChart3, Brain } from 'lucide-react';
+import { MapPin, Users, Star, Search } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import PricingCard from '@/components/PricingCard';
 import { useServicePackages } from '@/hooks/useServicePackages';
 
-const BusinessLanding: React.FC = () => {
+const B2CLanding: React.FC = () => {
   const { t } = useTranslation();
   const { data: packages, isLoading, error } = useServicePackages();
 
-  console.log('BusinessLanding: Packages data:', packages);
-  console.log('BusinessLanding: Loading state:', isLoading);
-  console.log('BusinessLanding: Error state:', error);
-
-  const services = [
+  const b2cServices = [
     {
-      icon: Wrench,
-      title: t('services.setup.title'),
-      description: t('services.setup.description')
+      icon: Search,
+      title: 'Personalisierte Suche',
+      description: 'Finden Sie Restaurants basierend auf Ihren Vorlieben, Allergien und gewünschtem Ambiente.'
     },
     {
-      icon: BarChart3,
-      title: t('services.management.title'),
-      description: t('services.management.description')
+      icon: Users,
+      title: 'Gruppenabstimmung',
+      description: 'Laden Sie Freunde ein und stimmen Sie gemeinsam über Ihr nächstes Restaurant ab.'
     },
     {
-      icon: Brain,
-      title: t('services.analytics.title'),
-      description: t('services.analytics.description')
+      icon: MapPin,
+      title: 'Direktbuchung',
+      description: 'Reservieren Sie Ihren Tisch direkt über Google-Integration.'
     }
   ];
 
@@ -43,41 +39,45 @@ const BusinessLanding: React.FC = () => {
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-5xl font-bold text-black mb-6">
-            {t('hero.title')}
+            {t('hero.b2cTitle')}
           </h1>
           <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
-            {t('hero.subtitle')}
+            {t('hero.b2cSubtitle')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-black hover:bg-gray-800 text-white px-8 py-3">
-              {t('hero.cta')}
+            <Button 
+              size="lg" 
+              className="bg-gray-400 hover:bg-gray-400 text-white px-8 py-3 cursor-not-allowed" 
+              disabled
+            >
+              {t('hero.b2cCta')}
             </Button>
-            <Button variant="outline" size="lg" className="border-black text-black hover:bg-gray-50 px-8 py-3">
-              {t('hero.consultation')}
-            </Button>
+            <div className="text-sm text-gray-500 mt-2">
+              {t('hero.b2cNote')}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Services Section */}
-      <section id="services" className="py-20 bg-gray-50">
+      {/* B2C Services Section */}
+      <section className="py-20 bg-gray-50">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-black mb-4">
-              {t('services.title')}
+              Geplante Features
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              {t('services.subtitle')}
+              Diese Funktionen werden in Kürze für Restaurantgäste verfügbar sein
             </p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
-            {services.map((service, index) => {
+            {b2cServices.map((service, index) => {
               const IconComponent = service.icon;
               return (
-                <Card key={index} className="bg-white border-0 shadow-sm hover:shadow-md transition-shadow">
+                <Card key={index} className="bg-white border-0 shadow-sm opacity-75">
                   <CardHeader className="text-center pb-4">
-                    <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <div className="w-12 h-12 bg-gray-400 rounded-lg flex items-center justify-center mx-auto mb-4">
                       <IconComponent className="h-6 w-6 text-white" />
                     </div>
                     <CardTitle className="text-xl font-semibold text-black">
@@ -96,15 +96,15 @@ const BusinessLanding: React.FC = () => {
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section id="packages" className="py-20 px-4">
+      {/* Pricing Section - View Only */}
+      <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-black mb-4">
-              {t('pricing.title')}
+              {t('pricing.title')} - {t('pricing.viewOnly')}
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              {t('pricing.subtitle')}
+              Übersicht unserer Restaurant-Services (nicht buchbar auf dieser Seite)
             </p>
           </div>
 
@@ -120,7 +120,7 @@ const BusinessLanding: React.FC = () => {
           ) : packages && packages.length > 0 ? (
             <div className="grid md:grid-cols-3 gap-8">
               {packages.map((pkg) => (
-                <PricingCard key={pkg.id} package={pkg} />
+                <PricingCard key={pkg.id} package={pkg} viewOnly={true} />
               ))}
             </div>
           ) : (
@@ -136,4 +136,4 @@ const BusinessLanding: React.FC = () => {
   );
 };
 
-export default BusinessLanding;
+export default B2CLanding;
