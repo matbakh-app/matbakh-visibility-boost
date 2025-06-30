@@ -1,173 +1,113 @@
 
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { Search, Users, Calendar, ChefHat, ShoppingCart, Utensils, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin, Users, Search, Calendar, ShoppingCart, Settings, Edit } from 'lucide-react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import LogoSection from '@/components/LogoSection';
-import PricingCard from '@/components/PricingCard';
-import { useServicePackages } from '@/hooks/useServicePackages';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import BackHomeButtons from '@/components/navigation/BackHomeButtons';
 
 const B2CLanding: React.FC = () => {
   const { t } = useTranslation();
-  const { data: packages, isLoading, error } = useServicePackages();
 
-  const b2cServices = [
+  const features = [
     {
-      icon: Search,
-      title: t('features.search.title'),
-      description: t('features.search.description'),
-      color: 'bg-blue-50 border-blue-200',
-      iconColor: 'bg-blue-500'
+      icon: <Search className="h-8 w-8 text-blue-600" />,
+      titleKey: 'features.search.title',
+      descriptionKey: 'features.search.description'
     },
     {
-      icon: Users,
-      title: t('features.voting.title'),
-      description: t('features.voting.description'),
-      color: 'bg-green-50 border-green-200',
-      iconColor: 'bg-green-500'
+      icon: <Users className="h-8 w-8 text-green-600" />,
+      titleKey: 'features.voting.title',
+      descriptionKey: 'features.voting.description'
     },
     {
-      icon: MapPin,
-      title: t('features.booking.title'),
-      description: t('features.booking.description'),
-      color: 'bg-purple-50 border-purple-200',
-      iconColor: 'bg-purple-500'
+      icon: <Calendar className="h-8 w-8 text-purple-600" />,
+      titleKey: 'features.booking.title',
+      descriptionKey: 'features.booking.description'
     },
     {
-      icon: Calendar,
-      title: t('features.weeklyMenu.title'),
-      description: t('features.weeklyMenu.description'),
-      color: 'bg-orange-50 border-orange-200',
-      iconColor: 'bg-orange-500'
+      icon: <ChefHat className="h-8 w-8 text-orange-600" />,
+      titleKey: 'features.weeklyMenu.title',
+      descriptionKey: 'features.weeklyMenu.description'
     },
     {
-      icon: ShoppingCart,
-      title: t('features.shoppingList.title'),
-      description: t('features.shoppingList.description'),
-      color: 'bg-red-50 border-red-200',
-      iconColor: 'bg-red-500'
+      icon: <ShoppingCart className="h-8 w-8 text-red-600" />,
+      titleKey: 'features.shoppingList.title',
+      descriptionKey: 'features.shoppingList.description'
     },
     {
-      icon: Settings,
-      title: t('features.calendarManagement.title'),
-      description: t('features.calendarManagement.description'),
-      color: 'bg-teal-50 border-teal-200',
-      iconColor: 'bg-teal-500'
+      icon: <Target className="h-8 w-8 text-indigo-600" />,
+      titleKey: 'features.calendarManagement.title',
+      descriptionKey: 'features.calendarManagement.description'
     },
     {
-      icon: Edit,
-      title: t('features.mealAdjustment.title'),
-      description: t('features.mealAdjustment.description'),
-      color: 'bg-indigo-50 border-indigo-200',
-      iconColor: 'bg-indigo-500'
+      icon: <Utensils className="h-8 w-8 text-pink-600" />,
+      titleKey: 'features.mealAdjustment.title',
+      descriptionKey: 'features.mealAdjustment.description'
     }
   ];
 
   return (
     <div className="min-h-screen bg-white">
-      <Header />
-      <LogoSection />
-      
-      {/* Hero Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-5xl font-bold text-black mb-6">
+      <div className="max-w-4xl mx-auto px-4 py-16">
+        <BackHomeButtons />
+        
+        {/* Hero Section */}
+        <div className="text-center mb-16">
+          <h1 className="text-4xl font-bold text-black mb-4">
             {t('hero.b2cTitle')}
           </h1>
-          <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
             {t('hero.b2cSubtitle')}
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              className="bg-gray-400 hover:bg-gray-400 text-white px-8 py-3 cursor-not-allowed" 
-              disabled
-            >
-              {t('hero.b2cCta')}
-            </Button>
-            <div className="text-sm text-gray-500 mt-2">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 inline-block">
+            <p className="text-yellow-800 font-medium text-lg">
               {t('hero.b2cNote')}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* B2C Services Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-black mb-4">
-              {t('features.title')}
-            </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              {t('features.subtitle')}
             </p>
           </div>
+        </div>
+
+        {/* Features Grid */}
+        <div className="mb-16">
+          <h2 className="text-3xl font-bold text-black text-center mb-4">
+            {t('features.title')}
+          </h2>
+          <p className="text-lg text-gray-600 text-center mb-12">
+            {t('features.subtitle')}
+          </p>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {b2cServices.map((service, index) => {
-              const IconComponent = service.icon;
-              return (
-                <Card key={index} className={`${service.color} border-2 hover:shadow-lg transition-all duration-300 opacity-90`}>
-                  <CardHeader className="text-center pb-4">
-                    <div className={`w-14 h-14 ${service.iconColor} rounded-xl flex items-center justify-center mx-auto mb-4`}>
-                      <IconComponent className="h-7 w-7 text-white" />
-                    </div>
-                    <CardTitle className="text-lg font-bold text-black">
-                      {service.title}
+          <div className="grid md:grid-cols-2 gap-8">
+            {features.map((feature, index) => (
+              <Card key={index} className="border-2 hover:border-gray-300 transition-colors">
+                <CardHeader>
+                  <div className="flex items-center gap-4">
+                    {feature.icon}
+                    <CardTitle className="text-xl font-bold text-black">
+                      {t(feature.titleKey)}
                     </CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-center">
-                    <p className="text-gray-700 leading-relaxed text-sm">
-                      {service.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                  </div>
+                  <CardDescription className="text-gray-600 text-base">
+                    {t(feature.descriptionKey)}
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            ))}
           </div>
         </div>
-      </section>
 
-      {/* Pricing Section - View Only */}
-      <section className="py-20 px-4 bg-gray-50">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-black mb-4">
-              {t('pricing.title')}
-            </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              {t('pricing.subtitle')}
-            </p>
-          </div>
-
-          {isLoading ? (
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto mb-4"></div>
-              <p className="text-gray-600">Lade Pakete...</p>
-            </div>
-          ) : error ? (
-            <div className="text-center text-red-600">
-              <p>Fehler beim Laden der Pakete: {error.message}</p>
-            </div>
-          ) : packages && packages.length > 0 ? (
-            <div className="grid md:grid-cols-3 gap-8">
-              {packages.map((pkg) => (
-                <PricingCard key={pkg.id} package={pkg} viewOnly={true} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center text-gray-600">
-              <p>Keine Pakete verfügbar</p>
-            </div>
-          )}
+        {/* CTA Section */}
+        <div className="bg-gray-50 rounded-lg p-8 text-center">
+          <h2 className="text-2xl font-bold text-black mb-4">
+            Interessiert?
+          </h2>
+          <p className="text-lg text-gray-600 mb-8">
+            Bleiben Sie auf dem Laufenden und erfahren Sie als Erste, wenn diese Features verfügbar sind.
+          </p>
+          <Button size="lg" disabled className="opacity-50">
+            {t('hero.b2cNote')}
+          </Button>
         </div>
-      </section>
-
-      <Footer />
+      </div>
     </div>
   );
 };

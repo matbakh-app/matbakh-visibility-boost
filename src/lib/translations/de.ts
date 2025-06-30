@@ -1,4 +1,8 @@
 export const deTranslations = {
+  navigation: {
+    back: 'Zurück',
+    home: 'Zur Startseite'
+  },
   nav: {
     home: 'Startseite',
     services: 'Services',

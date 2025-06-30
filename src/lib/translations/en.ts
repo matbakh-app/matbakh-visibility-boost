@@ -1,4 +1,8 @@
 export const enTranslations = {
+  navigation: {
+    back: 'Back',
+    home: 'Back to Home'
+  },
   nav: {
     home: 'Home',
     services: 'Services',
