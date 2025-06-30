@@ -21,7 +21,9 @@ export const enTranslations = {
     b2cTitle: 'Find Your Perfect Restaurant',
     b2cSubtitle: 'Personalized restaurant search based on your preferences and needs.',
     b2cCta: 'Find Restaurant',
-    b2cNote: 'Coming Soon'
+    b2cNote: 'Coming Soon',
+    b2cInterested: 'Interested?',
+    b2cInterestedDescription: 'Stay up to date and be the first to know when these features become available.'
   },
   landing: {
     heroTitle: 'It\'s good that you already communicate with your guests online',

@@ -21,7 +21,9 @@ export const deTranslations = {
     b2cTitle: 'Finden Sie Ihr perfektes Restaurant',
     b2cSubtitle: 'Personalisierte Restaurantsuche basierend auf Ihren Vorlieben und Bedürfnissen.',
     b2cCta: 'Restaurant finden',
-    b2cNote: 'Demnächst verfügbar'
+    b2cNote: 'Demnächst verfügbar',
+    b2cInterested: 'Interessiert?',
+    b2cInterestedDescription: 'Bleiben Sie auf dem Laufenden und erfahren Sie als Erste, wenn diese Features verfügbar sind.'
   },
   landing: {
     heroTitle: 'Es ist gut, dass Sie mit Ihren Gästen bereits online kommunizieren',

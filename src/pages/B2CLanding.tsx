@@ -95,10 +95,10 @@ const B2CLanding: React.FC = () => {
         {/* CTA Section */}
         <div className="bg-gray-50 rounded-lg p-8 text-center">
           <h2 className="text-2xl font-bold text-black mb-4">
-            Interessiert?
+            {t('hero.b2cInterested')}
           </h2>
           <p className="text-lg text-gray-600 mb-8">
-            Bleiben Sie auf dem Laufenden und erfahren Sie als Erste, wenn diese Features verfügbar sind.
+            {t('hero.b2cInterestedDescription')}
           </p>
           <Button size="lg" disabled className="opacity-50">
             {t('hero.b2cNote')}
