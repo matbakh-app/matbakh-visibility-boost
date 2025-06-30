@@ -1,3 +1,4 @@
+
 export const deTranslations = {
   nav: {
     home: 'Startseite',
@@ -160,15 +161,36 @@ export const deTranslations = {
     }
   },
   pricing: {
-    title: 'Unsere Angebote',
-    subtitle: 'Transparent und fair - wählen Sie das passende Paket für Ihr Restaurant',
+    title: 'Unsere Service-Pakete',
+    subtitle: 'Wählen Sie das passende Paket für Ihr Restaurant und starten Sie durch mit maximaler Online-Sichtbarkeit. Alle Preise verstehen sich ohne versteckte Kosten.',
     recommended: 'Empfohlen',
     month: 'Monat',
     oneTime: 'Einmalig',
     selectPackage: 'Paket wählen',
     limitedTime: 'Nur für kurze Zeit',
     viewOnly: 'Nur zur Ansicht',
-    minDuration: 'Mindestlaufzeit'
+    minDuration: 'Mindestlaufzeit',
+    loading: 'Lade Angebote...',
+    errorTitle: 'Fehler beim Laden der Angebote',
+    errorUnknown: 'Unbekannter Fehler',
+    errorHint: 'Bitte versuchen Sie es später erneut oder kontaktieren Sie unseren Support.',
+    reloadPage: 'Seite neu laden',
+    noPackagesTitle: 'Keine Angebote verfügbar',
+    noPackagesText: 'Unsere Service-Pakete werden gerade aktualisiert. Bitte schauen Sie später wieder vorbei.',
+    banner: {
+      text: 'Nur für kurze Zeit',
+      discount: 'Bis zu 47% sparen auf alle Pakete',
+      description: 'Profitieren Sie von unseren Einführungspreisen und sichern Sie sich professionelle Online-Betreuung zu unschlagbaren Konditionen.'
+    },
+    addonsTitle: 'Zusätzlich buchbare Services',
+    cta: {
+      headline: 'Bereit für mehr Online-Erfolg?',
+      description: 'Lassen Sie uns gemeinsam Ihre Online-Präsenz auf das nächste Level bringen. Kostenlose Beratung, faire Preise, messbare Ergebnisse.',
+      consultation: 'Kostenloses Beratungsgespräch',
+      whatsapp: 'WhatsApp: +49 89 123 456 789',
+      phone: '📞 Telefonberatung: Mo-Fr 9:00-18:00 Uhr',
+      email: '✉️ E-Mail: mail(at)matbakh(dot)app'
+    }
   },
   contact: {
     form: {
@@ -230,6 +252,66 @@ export const deTranslations = {
       scopeText: 'Diese Allgemeinen Geschäftsbedingungen gelten für alle Verträge zwischen BaSSco (Bavarian Software Solution) und unseren Kunden.',
       services: '§ 2 Leistungen',
       servicesText: 'Wir bieten Services zur Verbesserung der digitalen Sichtbarkeit von Gastronomiebetrieben an.'
+    },
+    contact: {
+      title: 'Kontakt',
+      subtitle: 'Kontaktieren Sie uns',
+      company: 'BaSSco (Bavarian Software Solution)',
+      location: 'München, Deutschland',
+      email: 'E-Mail',
+      responseTime: 'Wir antworten in der Regel innerhalb von 24 Stunden.',
+      form: {
+        title: 'Kontaktformular',
+        name: 'Name',
+        email: 'E-Mail',
+        subject: 'Betreff',
+        message: 'Nachricht',
+        send: 'Nachricht senden',
+        success: 'Ihre Nachricht wurde erfolgreich gesendet!',
+        error: 'Fehler beim Senden der Nachricht.',
+        validation: {
+          nameRequired: 'Name ist erforderlich',
+          emailRequired: 'E-Mail ist erforderlich',
+          emailInvalid: 'Bitte geben Sie eine gültige E-Mail-Adresse ein',
+          subjectRequired: 'Betreff ist erforderlich',
+          messageRequired: 'Nachricht ist erforderlich'
+        }
+      }
+    },
+    privacy: {
+      title: 'Datenschutzerklärung',
+      intro: 'Der Schutz Ihrer persönlichen Daten ist uns wichtig. Diese Datenschutzerklärung informiert Sie über die Verarbeitung Ihrer Daten bei der Nutzung unserer Website.',
+      controller: 'Verantwortlicher',
+      controllerInfo: 'BaSSco (Bavarian Software Solution), München, Deutschland',
+      collection: 'Datenerfassung',
+      collectionText: 'Wir erfassen und verarbeiten personenbezogene Daten in Übereinstimmung mit den geltenden Datenschutzgesetzen, insbesondere der DSGVO.',
+      purpose: 'Zweck der Verarbeitung',
+      purposeText: 'Ihre Daten werden für die Erbringung unserer Services und die Kommunikation mit Ihnen verarbeitet.',
+      rights: 'Ihre Rechte',
+      rightsText: 'Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch bezüglich Ihrer personenbezogenen Daten.'
+    },
+    terms: {
+      title: 'Allgemeine Geschäftsbedingungen',
+      scope: '§ 1 Geltungsbereich',
+      scopeText: 'Diese Allgemeinen Geschäftsbedingungen gelten für alle von BaSSco (Bavarian Software Solution) erbrachten Services.',
+      services: '§ 2 Leistungen',
+      servicesText: 'Wir bieten digitale Marketing-Services für Restaurants an, einschließlich Google Business Profile Management und Social Media Services.',
+      payment: '§ 3 Zahlungsbedingungen',
+      paymentText: 'Zahlungsbedingungen werden in individuellen Service-Vereinbarungen spezifiziert.',
+      liability: '§ 4 Haftung',
+      liabilityText: 'Die Haftung ist auf das gesetzlich zulässige Maß beschränkt.',
+      law: '§ 5 Anwendbares Recht',
+      lawText: 'Für diese Geschäftsbedingungen gilt deutsches Recht.'
+    },
+    imprint: {
+      title: 'Impressum',
+      companyInfo: 'Angaben gemäß § 5 TMG',
+      company: 'BaSSco (Bavarian Software Solution)',
+      location: 'München, Deutschland',
+      contactTitle: 'Kontakt',
+      email: 'E-Mail: mail(at)matbakh(dot)app',
+      responsibleTitle: 'Verantwortlich für den Inhalt',
+      responsible: 'BaSSco (Bavarian Software Solution)'
     }
   }
 };

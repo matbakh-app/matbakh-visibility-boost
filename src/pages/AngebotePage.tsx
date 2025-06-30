@@ -35,7 +35,7 @@ const AngebotePage: React.FC = () => {
         <div className="text-center py-12">
           <div className="flex items-center justify-center space-x-2">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
-            <p className="text-gray-600">Lade Angebote...</p>
+            <p className="text-gray-600">{t('pricing.loading')}</p>
           </div>
         </div>
       );
@@ -48,16 +48,16 @@ const AngebotePage: React.FC = () => {
           <Alert className="max-w-2xl mx-auto">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              <strong>Fehler beim Laden der Angebote:</strong> {error?.message || 'Unbekannter Fehler'}
+              <strong>{t('pricing.errorTitle')}:</strong> {error?.message || t('pricing.errorUnknown')}
               <br />
               <span className="text-sm text-gray-600 mt-2 block">
-                Bitte versuchen Sie es später erneut oder kontaktieren Sie unseren Support.
+                {t('pricing.errorHint')}
               </span>
             </AlertDescription>
           </Alert>
           <div className="text-center mt-4">
             <Button variant="outline" onClick={() => window.location.reload()}>
-              Seite neu laden
+              {t('pricing.reloadPage')}
             </Button>
           </div>
         </div>
@@ -71,13 +71,13 @@ const AngebotePage: React.FC = () => {
         <div className="text-center py-12">
           <div className="max-w-md mx-auto">
             <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Keine Angebote verfügbar</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('pricing.noPackagesTitle')}</h3>
             <p className="text-gray-600 mb-4">
-              Unsere Service-Pakete werden gerade aktualisiert. Bitte schauen Sie später wieder vorbei.
+              {t('pricing.noPackagesText')}
             </p>
             <div className="space-y-2">
               <Button variant="outline" onClick={() => window.location.reload()}>
-                Seite neu laden
+                {t('pricing.reloadPage')}
               </Button>
               <div className="text-xs text-gray-500 mt-2">
                 Debug: packages = {JSON.stringify(packages)}
@@ -101,13 +101,12 @@ const AngebotePage: React.FC = () => {
 
         {/* Limited Time Offer Banner */}
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-8 text-center">
-          <div className="text-red-600 font-semibold mb-2">⏰ Nur für kurze Zeit</div>
+          <div className="text-red-600 font-semibold mb-2">⏰ {t('pricing.banner.text')}</div>
           <h3 className="text-xl font-bold text-black mb-2">
-            Bis zu 47% sparen auf alle Pakete
+            {t('pricing.banner.discount')}
           </h3>
           <p className="text-gray-700">
-            Profitieren Sie von unseren Einführungspreisen und sichern Sie sich 
-            professionelle Online-Betreuung zu unschlagbaren Konditionen.
+            {t('pricing.banner.description')}
           </p>
         </div>
 
@@ -115,7 +114,7 @@ const AngebotePage: React.FC = () => {
         {addons && addons.length > 0 && (
           <div className="mt-12">
             <h3 className="text-2xl font-bold text-black mb-6 text-center">
-              Zusätzlich buchbare Services
+              {t('pricing.addonsTitle')}
             </h3>
             <div className="grid md:grid-cols-2 gap-6">
               {addons.map((addon) => (
@@ -131,7 +130,7 @@ const AngebotePage: React.FC = () => {
                       )}
                       <div className="text-xl font-bold text-black">€{addon.price}</div>
                       <div className="text-sm text-gray-600">
-                        {addon.period === 'one-time' ? 'einmalig' : `/${addon.period}`}
+                        {addon.period === 'one-time' ? t('pricing.oneTime') : `/${addon.period}`}
                       </div>
                     </div>
                   </div>
@@ -162,11 +161,10 @@ const AngebotePage: React.FC = () => {
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-5xl font-bold text-black mb-6">
-            Unsere Service-Pakete
+            {t('pricing.title')}
           </h1>
           <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
-            Wählen Sie das passende Paket für Ihr Restaurant und starten Sie durch mit maximaler Online-Sichtbarkeit. 
-            Alle Preise verstehen sich ohne versteckte Kosten.
+            {t('pricing.subtitle')}
           </p>
         </div>
       </section>
@@ -196,24 +194,23 @@ const AngebotePage: React.FC = () => {
       <section className="py-20 px-4 bg-black">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold text-white mb-6">
-            Bereit für mehr Online-Erfolg?
+            {t('pricing.cta.headline')}
           </h2>
           <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
-            Lassen Sie uns gemeinsam Ihre Online-Präsenz auf das nächste Level bringen. 
-            Kostenlose Beratung, faire Preise, messbare Ergebnisse.
+            {t('pricing.cta.description')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="bg-white hover:bg-gray-100 text-black px-8 py-3">
-              Kostenloses Beratungsgespräch
+              {t('pricing.cta.consultation')}
             </Button>
             <Button variant="outline" size="lg" className="border-white hover:bg-white px-8 py-3 text-white hover:text-black">
-              WhatsApp: +49 89 123 456 789
+              {t('pricing.cta.whatsapp')}
             </Button>
           </div>
           
           <div className="mt-8 text-sm text-gray-400">
-            <p>📞 Telefonberatung: Mo-Fr 9:00-18:00 Uhr</p>
-            <p>✉️ E-Mail: mail(at)matbakh(dot)app</p>
+            <p>{t('pricing.cta.phone')}</p>
+            <p>{t('pricing.cta.email')}</p>
           </div>
         </div>
       </section>

@@ -1,3 +1,4 @@
+
 export const enTranslations = {
   nav: {
     home: 'Home',
@@ -160,15 +161,36 @@ export const enTranslations = {
     }
   },
   pricing: {
-    title: 'Our Packages',
-    subtitle: 'Transparent and fair - choose the right package for your restaurant',
+    title: 'Our Service Packages',
+    subtitle: 'Choose the right package for your restaurant and get started with maximum online visibility. All prices are transparent without hidden costs.',
     recommended: 'Recommended',
     month: 'Month',
     oneTime: 'One-time',
     selectPackage: 'Select Package',
     limitedTime: 'Limited Time Only',
     viewOnly: 'View Only',
-    minDuration: 'Minimum duration'
+    minDuration: 'Minimum duration',
+    loading: 'Loading packages...',
+    errorTitle: 'Error loading packages',
+    errorUnknown: 'Unknown error',
+    errorHint: 'Please try again later or contact our support.',
+    reloadPage: 'Reload page',
+    noPackagesTitle: 'No packages available',
+    noPackagesText: 'Our service packages are currently being updated. Please check back later.',
+    banner: {
+      text: 'Limited Time Only',
+      discount: 'Save up to 47% on all packages',
+      description: 'Take advantage of our introductory prices and secure professional online management at unbeatable rates.'
+    },
+    addonsTitle: 'Additional Bookable Services',
+    cta: {
+      headline: 'Ready for more online success?',
+      description: 'Let us take your online presence to the next level together. Free consultation, fair prices, measurable results.',
+      consultation: 'Free Consultation Call',
+      whatsapp: 'WhatsApp: +49 89 123 456 789',
+      phone: '📞 Phone consultation: Mon-Fri 9:00-18:00',
+      email: '✉️ Email: mail(at)matbakh(dot)app'
+    }
   },
   contact: {
     form: {
@@ -230,6 +252,66 @@ export const enTranslations = {
       scopeText: 'These terms and conditions apply to all services provided by BaSSco (Bavarian Software Solution).',
       services: '2. Services',
       servicesText: 'We provide digital marketing services for restaurants, including Google Business Profile management and social media services.'
+    },
+    contact: {
+      title: 'Contact',
+      subtitle: 'Contact Us',
+      company: 'BaSSco (Bavarian Software Solution)',
+      location: 'Munich, Germany',
+      email: 'Email',
+      responseTime: 'We typically respond within 24 hours.',
+      form: {
+        title: 'Contact Form',
+        name: 'Name',
+        email: 'Email',
+        subject: 'Subject',
+        message: 'Message',
+        send: 'Send Message',
+        success: 'Your message has been sent successfully!',
+        error: 'Error sending message.',
+        validation: {
+          nameRequired: 'Name is required',
+          emailRequired: 'Email is required',
+          emailInvalid: 'Please enter a valid email address',
+          subjectRequired: 'Subject is required',
+          messageRequired: 'Message is required'
+        }
+      }
+    },
+    privacy: {
+      title: 'Privacy Policy',
+      intro: 'We take the protection of your personal data seriously. This privacy policy informs you about the processing of your data when using our website.',
+      controller: 'Data Controller',
+      controllerInfo: 'BaSSco (Bavarian Software Solution), Munich, Germany',
+      collection: 'Data Collection',
+      collectionText: 'We collect and process personal data in accordance with applicable data protection laws, particularly the GDPR.',
+      purpose: 'Purpose of Processing',
+      purposeText: 'Your data is processed for the provision of our services and communication with you.',
+      rights: 'Your Rights',
+      rightsText: 'You have the right to access, rectify, delete, restrict processing, data portability, and objection regarding your personal data.'
+    },
+    terms: {
+      title: 'Terms and Conditions',
+      scope: '1. Scope',
+      scopeText: 'These terms and conditions apply to all services provided by BaSSco (Bavarian Software Solution).',
+      services: '2. Services',
+      servicesText: 'We provide digital marketing services for restaurants, including Google Business Profile management and social media services.',
+      payment: '3. Payment Terms',
+      paymentText: 'Payment terms and conditions will be specified in individual service agreements.',
+      liability: '4. Liability',
+      liabilityText: 'Liability is limited to the extent permitted by law.',
+      law: '5. Applicable Law',
+      lawText: 'German law applies to these terms and conditions.'
+    },
+    imprint: {
+      title: 'Imprint',
+      companyInfo: 'Legal Information',
+      company: 'BaSSco (Bavarian Software Solution)',
+      location: 'Munich, Germany',
+      contactTitle: 'Contact',
+      email: 'Email: mail(at)matbakh(dot)app',
+      responsibleTitle: 'Responsible for Content',
+      responsible: 'BaSSco (Bavarian Software Solution)'
     }
   }
 };

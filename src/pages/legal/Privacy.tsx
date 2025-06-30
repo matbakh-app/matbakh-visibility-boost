@@ -1,41 +1,44 @@
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const Privacy: React.FC = () => {
+  const { t } = useTranslation();
+
   return (
     <div className="min-h-screen bg-white">
       <Header />
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">Privacy Policy</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('legal.privacy.title')}</h1>
         
         <Card>
           <CardHeader>
-            <CardTitle>Data Protection</CardTitle>
+            <CardTitle>{t('legal.privacy.title')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-semibold mb-2">1. Data Controller</h3>
-                <p>BaSSco (Bavarian Software Solution), Munich, Germany</p>
+                <h3 className="text-lg font-semibold mb-2">{t('legal.privacy.controller')}</h3>
+                <p>{t('legal.privacy.controllerInfo')}</p>
                 <p>Contact: mail(at)matbakh(dot)app</p>
               </div>
               
               <div>
-                <h3 className="text-lg font-semibold mb-2">2. Data Collection</h3>
-                <p>We collect and process personal data in accordance with applicable data protection laws, particularly the GDPR.</p>
+                <h3 className="text-lg font-semibold mb-2">{t('legal.privacy.collection')}</h3>
+                <p>{t('legal.privacy.collectionText')}</p>
               </div>
               
               <div>
-                <h3 className="text-lg font-semibold mb-2">3. Purpose of Processing</h3>
-                <p>Your data is processed for the provision of our services and communication with you.</p>
+                <h3 className="text-lg font-semibold mb-2">{t('legal.privacy.purpose')}</h3>
+                <p>{t('legal.privacy.purposeText')}</p>
               </div>
               
               <div>
-                <h3 className="text-lg font-semibold mb-2">4. Your Rights</h3>
-                <p>You have the right to access, rectify, delete, restrict processing, data portability, and objection regarding your personal data.</p>
+                <h3 className="text-lg font-semibold mb-2">{t('legal.privacy.rights')}</h3>
+                <p>{t('legal.privacy.rightsText')}</p>
               </div>
             </div>
           </CardContent>

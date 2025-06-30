@@ -46,6 +46,7 @@ function App() {
               <Route path="/business/partner" element={<BusinessLanding />} />
               <Route path="/services" element={<ServicesPage />} />
               <Route path="/angebote" element={<AngebotePage />} />
+              <Route path="/packages" element={<AngebotePage />} />
               <Route path="/b2c" element={<B2CLanding />} />
               <Route path="/b2c-en" element={<B2CLanding />} />
               <Route path="/partner/onboarding" element={<PartnerOnboarding />} />

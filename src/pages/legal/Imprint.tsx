@@ -1,36 +1,39 @@
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const Imprint: React.FC = () => {
+  const { t } = useTranslation();
+
   return (
     <div className="min-h-screen bg-white">
       <Header />
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">Imprint</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('legal.imprint.title')}</h1>
         
         <Card>
           <CardHeader>
-            <CardTitle>Legal Information</CardTitle>
+            <CardTitle>{t('legal.imprint.companyInfo')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div>
-                <h3 className="font-semibold">Company</h3>
-                <p>BaSSco (Bavarian Software Solution)</p>
-                <p>Munich, Germany</p>
+                <h3 className="font-semibold">{t('nav.contact')}</h3>
+                <p>{t('legal.imprint.company')}</p>
+                <p>{t('legal.imprint.location')}</p>
               </div>
               
               <div>
-                <h3 className="font-semibold">Contact</h3>
-                <p>Email: mail(at)matbakh(dot)app</p>
+                <h3 className="font-semibold">{t('legal.imprint.contactTitle')}</h3>
+                <p>{t('legal.imprint.email')}</p>
               </div>
               
               <div>
-                <h3 className="font-semibold">Responsible for Content</h3>
-                <p>BaSSco (Bavarian Software Solution)</p>
+                <h3 className="font-semibold">{t('legal.imprint.responsibleTitle')}</h3>
+                <p>{t('legal.imprint.responsible')}</p>
               </div>
             </div>
           </CardContent>
