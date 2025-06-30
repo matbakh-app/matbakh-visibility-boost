@@ -12,8 +12,16 @@ import ProblemSection from '@/components/ProblemSection';
 import SolutionSection from '@/components/SolutionSection';
 
 const BusinessLanding: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+
+  const getPackagesRoute = () => {
+    return i18n.language === 'en' ? '/packages' : '/angebote';
+  };
+
+  const getContactRoute = () => {
+    return i18n.language === 'en' ? '/contact' : '/kontakt';
+  };
 
   const services = [
     {
@@ -47,7 +55,7 @@ const BusinessLanding: React.FC = () => {
             <Button 
               size="lg" 
               className="bg-black hover:bg-gray-800 text-white px-8 py-3" 
-              onClick={() => navigate('/angebote')}
+              onClick={() => navigate(getPackagesRoute())}
             >
               {t('landing.cta1')}
             </Button>
@@ -55,7 +63,7 @@ const BusinessLanding: React.FC = () => {
               variant="outline" 
               size="lg" 
               className="border-black text-black hover:bg-gray-50 px-8 py-3" 
-              onClick={() => navigate('/kontakt')}
+              onClick={() => navigate(getContactRoute())}
             >
               {t('landing.cta2')}
             </Button>
@@ -116,14 +124,14 @@ const BusinessLanding: React.FC = () => {
             <Button 
               size="lg" 
               className="bg-white hover:bg-gray-100 text-black px-8 py-3" 
-              onClick={() => navigate('/angebote')}
+              onClick={() => navigate(getPackagesRoute())}
             >
               {t('landing.ctaFinalButton1')}
             </Button>
             <Button 
               variant="outline" 
               size="lg" 
-              onClick={() => navigate('/kontakt')} 
+              onClick={() => navigate(getContactRoute())} 
               className="border-white hover:bg-white px-8 py-3 text-neutral-950"
             >
               {t('landing.ctaFinalButton2')}
