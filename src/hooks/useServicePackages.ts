@@ -26,6 +26,7 @@ export const useServicePackages = () => {
         .from('service_packages')
         .select('*')
         .eq('is_active', true)
+        .in('slug', ['google-business-setup', 'profilpflege-basis', 'social-media-management', 'premium-business-paket'])
         .order('sort_order', { ascending: true });
 
       if (error) {
@@ -38,15 +39,35 @@ export const useServicePackages = () => {
         return [];
       }
       
-      console.log('useServicePackages: Successfully fetched packages:', data.length);
-      console.log('useServicePackages: Package data:', data);
+      // Defensive validation of package data
+      const validatedPackages = data.filter(pkg => {
+        const isValid = pkg.name && 
+                       pkg.slug && 
+                       typeof pkg.base_price === 'number' && 
+                       pkg.base_price > 0 &&
+                       Array.isArray(pkg.features);
+        
+        if (!isValid) {
+          console.warn('useServicePackages: Invalid package data:', pkg);
+        }
+        
+        return isValid;
+      }).map(pkg => ({
+        ...pkg,
+        features: pkg.features || [],
+        original_price: pkg.original_price || null,
+        min_duration_months: pkg.min_duration_months || 0
+      }));
       
-      return data as ServicePackage[];
+      console.log('useServicePackages: Successfully fetched packages:', validatedPackages.length);
+      console.log('useServicePackages: Package data:', validatedPackages);
+      
+      return validatedPackages as ServicePackage[];
     },
     retry: 2,
     retryDelay: 1000,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes (renamed from cacheTime)
+    gcTime: 10 * 60 * 1000, // 10 minutes
   });
 };
 
@@ -67,12 +88,36 @@ export const useAddonServices = () => {
         throw new Error(`Fehler beim Laden der Add-ons: ${error.message}`);
       }
       
-      console.log('useAddonServices: Successfully fetched addons:', data?.length || 0);
-      return data || [];
+      if (!data) {
+        console.log('useAddonServices: No addon data returned');
+        return [];
+      }
+      
+      // Defensive validation of addon data
+      const validatedAddons = data.filter(addon => {
+        const isValid = addon.name && 
+                       addon.slug && 
+                       typeof addon.price === 'number' && 
+                       addon.price > 0;
+        
+        if (!isValid) {
+          console.warn('useAddonServices: Invalid addon data:', addon);
+        }
+        
+        return isValid;
+      }).map(addon => ({
+        ...addon,
+        features: addon.features || [],
+        original_price: addon.original_price || null,
+        compatible_packages: addon.compatible_packages || []
+      }));
+      
+      console.log('useAddonServices: Successfully fetched addons:', validatedAddons.length);
+      return validatedAddons;
     },
     retry: 2,
     retryDelay: 1000,
     staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000, // 10 minutes (renamed from cacheTime)
+    gcTime: 10 * 60 * 1000,
   });
 };
