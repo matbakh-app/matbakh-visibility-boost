@@ -12,7 +12,7 @@ const Logo: React.FC<LogoProps> = ({ className = '', size = 'md' }) => {
     md: 'h-12 w-auto',
     lg: 'h-16 w-auto',
     xl: 'h-20 w-auto',
-    hero: 'h-96 w-auto md:h-120 lg:h-144'
+    hero: 'h-48 w-auto md:h-60 lg:h-72'
   };
 
   return (
