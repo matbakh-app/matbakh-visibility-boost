@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import BusinessLogin from "./pages/BusinessLogin";
 import BusinessLanding from "./pages/BusinessLanding";
 import ServicesPage from "./pages/ServicesPage";
+import AngebotePage from "./pages/AngebotePage";
 import B2CLanding from "./pages/B2CLanding";
 import PartnerOnboarding from "./pages/PartnerOnboarding";
 import PartnerDashboard from "./pages/PartnerDashboard";
@@ -44,6 +45,7 @@ function App() {
               <Route path="/business/login" element={<BusinessLogin />} />
               <Route path="/business/partner" element={<BusinessLanding />} />
               <Route path="/services" element={<ServicesPage />} />
+              <Route path="/angebote" element={<AngebotePage />} />
               <Route path="/b2c" element={<B2CLanding />} />
               <Route path="/b2c-en" element={<B2CLanding />} />
               <Route path="/partner/onboarding" element={<PartnerOnboarding />} />

@@ -84,10 +84,10 @@ const Header: React.FC = () => {
               {t('nav.services')}
             </button>
             <button
-              onClick={() => navigate('/#packages')}
+              onClick={() => navigate('/angebote')}
               className="text-gray-700 hover:text-black px-3 py-2 text-sm font-medium"
             >
-              {t('nav.packages')}
+              Angebote
             </button>
             <button
               onClick={() => handleNavigation('/b2c')}
