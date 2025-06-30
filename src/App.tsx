@@ -5,6 +5,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route } from "react-router-dom";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import AppLayout from "@/components/layout/AppLayout";
+
+// Pages
 import Index from "./pages/Index";
 import BusinessLogin from "./pages/BusinessLogin";
 import BusinessLanding from "./pages/BusinessLanding";
@@ -42,34 +45,37 @@ function App() {
         <ErrorBoundary>
           <Suspense fallback={<div>Loading...</div>}>
             <Routes>
+              {/* Landing page ohne Layout */}
               <Route path="/" element={<Index />} />
-              <Route path="/business/login" element={<BusinessLogin />} />
-              <Route path="/business/partner" element={<BusinessLanding />} />
-              <Route path="/services" element={<ServicesPage />} />
-              <Route path="/angebote" element={<AngeboteDE />} />
-              <Route path="/packages" element={<PackagesEN />} />
-              <Route path="/b2c" element={<B2CLanding />} />
-              <Route path="/b2c-en" element={<B2CLanding />} />
-              <Route path="/partner/onboarding" element={<PartnerOnboarding />} />
-              <Route path="/partner/dashboard" element={<PartnerDashboard />} />
-              <Route path="/partner/profile" element={<PartnerProfile />} />
-              <Route path="/partner/calendar" element={<PartnerCalendar />} />
-              <Route path="/admin" element={<AdminPanel />} />
-              <Route path="/notes" element={<NotesPage />} />
+              
+              {/* Alle anderen Seiten mit Layout */}
+              <Route path="/business/login" element={<AppLayout><BusinessLogin /></AppLayout>} />
+              <Route path="/business/partner" element={<AppLayout><BusinessLanding /></AppLayout>} />
+              <Route path="/services" element={<AppLayout><ServicesPage /></AppLayout>} />
+              <Route path="/angebote" element={<AppLayout><AngeboteDE /></AppLayout>} />
+              <Route path="/packages" element={<AppLayout><PackagesEN /></AppLayout>} />
+              <Route path="/b2c" element={<AppLayout><B2CLanding /></AppLayout>} />
+              <Route path="/b2c-en" element={<AppLayout><B2CLanding /></AppLayout>} />
+              <Route path="/partner/onboarding" element={<AppLayout><PartnerOnboarding /></AppLayout>} />
+              <Route path="/partner/dashboard" element={<AppLayout><PartnerDashboard /></AppLayout>} />
+              <Route path="/partner/profile" element={<AppLayout><PartnerProfile /></AppLayout>} />
+              <Route path="/partner/calendar" element={<AppLayout><PartnerCalendar /></AppLayout>} />
+              <Route path="/admin" element={<AppLayout><AdminPanel /></AppLayout>} />
+              <Route path="/notes" element={<AppLayout><NotesPage /></AppLayout>} />
               
               {/* German legal pages */}
-              <Route path="/impressum" element={<Impressum />} />
-              <Route path="/datenschutz" element={<Datenschutz />} />
-              <Route path="/agb" element={<AGB />} />
-              <Route path="/kontakt" element={<Kontakt />} />
+              <Route path="/impressum" element={<AppLayout><Impressum /></AppLayout>} />
+              <Route path="/datenschutz" element={<AppLayout><Datenschutz /></AppLayout>} />
+              <Route path="/agb" element={<AppLayout><AGB /></AppLayout>} />
+              <Route path="/kontakt" element={<AppLayout><Kontakt /></AppLayout>} />
               
               {/* English legal pages */}
-              <Route path="/imprint" element={<Imprint />} />
-              <Route path="/privacy" element={<Privacy />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/contact" element={<Contact />} />
+              <Route path="/imprint" element={<AppLayout><Imprint /></AppLayout>} />
+              <Route path="/privacy" element={<AppLayout><Privacy /></AppLayout>} />
+              <Route path="/terms" element={<AppLayout><Terms /></AppLayout>} />
+              <Route path="/contact" element={<AppLayout><Contact /></AppLayout>} />
               
-              <Route path="*" element={<NotFound />} />
+              <Route path="*" element={<AppLayout><NotFound /></AppLayout>} />
             </Routes>
           </Suspense>
         </ErrorBoundary>

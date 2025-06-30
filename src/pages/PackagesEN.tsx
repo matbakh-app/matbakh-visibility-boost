@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import TrustElements from '@/components/TrustElements';
@@ -6,7 +7,6 @@ import PackageComparison from '@/components/PackageComparison';
 import PackageFAQ from '@/components/PackageFAQ';
 import PricingCard from '@/components/PricingCard';
 import { useServicePackages } from '@/hooks/useServicePackages';
-import BackHomeButtons from '@/components/navigation/BackHomeButtons';
 
 const PackagesEN: React.FC = () => {
   const { t } = useTranslation();
@@ -52,40 +52,36 @@ const PackagesEN: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto px-4 py-16">
-        <BackHomeButtons />
-        
-        {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl font-bold text-black mb-4">
-            {t('pricing.title')}
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            {t('pricing.subtitle')}
-          </p>
-        </div>
-
-        {/* Limited Time Banner */}
-        <div className="bg-black text-white rounded-lg p-6 text-center mb-12">
-          <h2 className="text-xl font-bold mb-2">{t('pricing.banner.text')}</h2>
-          <p className="text-lg mb-2">{t('pricing.banner.discount')}</p>
-          <p className="text-sm opacity-90">{t('pricing.banner.description')}</p>
-        </div>
-
-        {/* Packages Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          {packages.map((pkg) => (
-            <PricingCard key={pkg.id} package={pkg} language="en" />
-          ))}
-        </div>
-
-        {/* Components */}
-        <TrustElements language="en" />
-        <ProcessOverview language="en" />
-        <PackageComparison packages={packages} language="en" />
-        <PackageFAQ language="en" />
+    <div className="py-16">
+      {/* Header */}
+      <div className="text-center mb-16">
+        <h1 className="text-4xl font-bold text-black mb-4">
+          {t('pricing.title')}
+        </h1>
+        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          {t('pricing.subtitle')}
+        </p>
       </div>
+
+      {/* Limited Time Banner */}
+      <div className="bg-black text-white rounded-lg p-6 text-center mb-12">
+        <h2 className="text-xl font-bold mb-2">{t('pricing.banner.text')}</h2>
+        <p className="text-lg mb-2">{t('pricing.banner.discount')}</p>
+        <p className="text-sm opacity-90">{t('pricing.banner.description')}</p>
+      </div>
+
+      {/* Packages Grid */}
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+        {packages.map((pkg) => (
+          <PricingCard key={pkg.id} package={pkg} language="en" />
+        ))}
+      </div>
+
+      {/* Components */}
+      <TrustElements language="en" />
+      <ProcessOverview language="en" />
+      <PackageComparison packages={packages} language="en" />
+      <PackageFAQ language="en" />
     </div>
   );
 };
