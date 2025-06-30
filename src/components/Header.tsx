@@ -55,6 +55,8 @@ const Header: React.FC = () => {
     navigate(translatedPath);
   };
 
+  const isActive = (path: string) => location.pathname === path;
+
   return (
     <header className="bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -71,31 +73,51 @@ const Header: React.FC = () => {
           <nav className="hidden md:flex space-x-8">
             <button
               onClick={() => navigate('/')}
-              className="text-gray-700 hover:text-black px-3 py-2 text-sm font-medium"
+              className={`px-3 py-2 text-sm font-medium ${
+                isActive('/') 
+                  ? 'text-black border-b-2 border-black' 
+                  : 'text-gray-700 hover:text-black'
+              }`}
             >
               {t('nav.home')}
             </button>
             <button
               onClick={() => navigate('/services')}
-              className="text-gray-700 hover:text-black px-3 py-2 text-sm font-medium"
+              className={`px-3 py-2 text-sm font-medium ${
+                isActive('/services') 
+                  ? 'text-black border-b-2 border-black' 
+                  : 'text-gray-700 hover:text-black'
+              }`}
             >
               {t('nav.services')}
             </button>
             <button
               onClick={() => navigate('/angebote')}
-              className="text-gray-700 hover:text-black px-3 py-2 text-sm font-medium"
+              className={`px-3 py-2 text-sm font-medium ${
+                isActive('/angebote') 
+                  ? 'text-black border-b-2 border-black' 
+                  : 'text-gray-700 hover:text-black'
+              }`}
             >
-              Angebote
+              Pakete & Preise
             </button>
             <button
               onClick={() => handleNavigation('/b2c')}
-              className="text-gray-700 hover:text-black px-3 py-2 text-sm font-medium"
+              className={`px-3 py-2 text-sm font-medium ${
+                isActive('/b2c') || isActive('/b2c-en')
+                  ? 'text-black border-b-2 border-black' 
+                  : 'text-gray-700 hover:text-black'
+              }`}
             >
               {t('nav.b2c')}
             </button>
             <button
               onClick={() => handleNavigation('/kontakt')}
-              className="text-gray-700 hover:text-black px-3 py-2 text-sm font-medium"
+              className={`px-3 py-2 text-sm font-medium ${
+                isActive('/kontakt') || isActive('/contact')
+                  ? 'text-black border-b-2 border-black' 
+                  : 'text-gray-700 hover:text-black'
+              }`}
             >
               {t('nav.contact')}
             </button>
