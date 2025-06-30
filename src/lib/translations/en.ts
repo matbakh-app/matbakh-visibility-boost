@@ -1,4 +1,3 @@
-
 export const enTranslations = {
   nav: {
     home: 'Home',
@@ -190,6 +189,174 @@ export const enTranslations = {
       whatsapp: 'WhatsApp: +49 89 123 456 789',
       phone: '📞 Phone consultation: Mon-Fri 9:00-18:00',
       email: '✉️ Email: mail(at)matbakh(dot)app'
+    }
+  },
+  trust: {
+    title: 'Trusted by Results',
+    subtitle: 'Over 150 restaurant owners already trust our expertise',
+    stats: {
+      clients: {
+        number: '150+',
+        label: 'Satisfied Restaurant Partners',
+        description: 'Restaurant owners trust our expertise'
+      },
+      visibility: {
+        number: '300%',
+        label: 'Average Visibility Boost',
+        description: 'More online inquiries in the first 3 months'
+      },
+      rating: {
+        number: '4.9/5',
+        label: 'Customer Rating',
+        description: 'Based on over 80 reviews'
+      },
+      guarantee: {
+        number: '100%',
+        label: 'Transparency Guarantee',
+        description: 'No hidden costs or surprises'
+      }
+    },
+    testimonials: {
+      title: 'What our partners say',
+      items: {
+        0: {
+          text: 'Since working with Matbakh, our online reservations have tripled. The team takes care of everything - we can focus on cooking.',
+          author: 'Maria Rossi',
+          restaurant: 'Osteria Bella Vista, Munich'
+        },
+        1: {
+          text: 'Finally someone understands how busy we are as restaurateurs. The automation of our Google profiles was exactly what we needed.',
+          author: 'Thomas Weber',
+          restaurant: 'Weber\'s Braustüberl, Augsburg'
+        },
+        2: {
+          text: 'The monthly reports show us in black and white how our visibility improves. This motivates the whole team.',
+          author: 'Sarah Kim',
+          restaurant: 'Seoul Kitchen, Berlin'
+        }
+      }
+    },
+    certifications: {
+      text: 'Certified by',
+      google: 'Google Partner Program',
+      facebook: 'Facebook Business Partner',
+      since: 'since 2020'
+    }
+  },
+  process: {
+    title: 'How It Works',
+    subtitle: 'From initial consultation to ongoing support - we take care of everything so you can focus on what matters most',
+    included: 'Included',
+    steps: {
+      0: {
+        title: 'Consultation Call',
+        description: 'Free 15-minute call to analyze your current online presence',
+        duration: '15 Min.',
+        details: {
+          0: 'Current analysis of your Google Business presence',
+          1: 'Identification of improvement opportunities',
+          2: 'Recommendation of suitable package',
+          3: 'Clarification of all open questions'
+        }
+      },
+      1: {
+        title: 'Setup & Configuration',
+        description: 'We handle the complete technical setup for you',
+        duration: '2-3 Days',
+        details: {
+          0: 'Google Business Profile optimization',
+          1: 'Set up social media channels (if booked)',
+          2: 'Implement analytics and tracking',
+          3: 'Create employee access'
+        }
+      },
+      2: {
+        title: 'Ongoing Support',
+        description: 'Continuous maintenance and optimization of your online presence',
+        duration: 'Ongoing',
+        details: {
+          0: 'Regular content updates',
+          1: 'Review management',
+          2: 'Performance monitoring',
+          3: 'Monthly success reports'
+        }
+      },
+      3: {
+        title: 'Support & Consulting',
+        description: 'Personal contact person for all questions and adjustments',
+        duration: 'Always',
+        details: {
+          0: 'Direct line to your account manager',
+          1: 'Fast response times',
+          2: 'Strategic advice for changes',
+          3: 'Help with new Google features'
+        }
+      }
+    },
+    cta: {
+      title: 'Don\'t waste time?',
+      description: 'Book your free consultation call directly and learn how you can significantly increase your online visibility in just a few weeks.',
+      button1: 'Get free consultation now',
+      button2: 'Book appointment online'
+    }
+  },
+  comparison: {
+    title: 'Package Comparison',
+    subtitle: 'Find the perfect package for your needs',
+    screenReaderTitle: 'Service Comparison',
+    featuresHeader: 'Features',
+    monthLabel: 'Month',
+    features: {
+      google_setup: 'Google Business Setup',
+      profile_maintenance: 'Profile Management',
+      social_media: 'Social Media Management',
+      monthly_reports: 'Monthly Reports',
+      priority_support: 'Priority Support',
+      strategy_calls: 'Strategy Calls',
+      analytics: 'Advanced Analytics'
+    }
+  },
+  faq: {
+    title: 'Frequently Asked Questions',
+    subtitle: 'Clarity for better decisions - no hidden surprises',
+    items: {
+      0: {
+        question: 'How often are my data really updated?',
+        answer: 'With Profile Management Basic, we systematically check your data monthly: opening hours, contact details and seasonal adjustments each 1x per month. Menu updates occur weekly (4x monthly). You receive a detailed monthly report on all changes made.'
+      },
+      1: {
+        question: 'What does "minimum term 6 months" mean?',
+        answer: 'The minimum term ensures we can build sustainable success for your business. Google and social media algorithms need time to build trust in your profile. After 6 months, you can cancel monthly.'
+      },
+      2: {
+        question: 'Do I need a Google Business Account for social media management?',
+        answer: 'Yes, an active Google Business Account is required for our social media management. Only this way can we establish the SEO connection and ensure that your social media posts also improve your local visibility on Google.'
+      },
+      3: {
+        question: 'How does the employee approval system work?',
+        answer: 'Your employees get controlled access through which they can upload photos and texts. All posts are submitted to you for approval - they are only published after your approval. You maintain full control over your brand representation.'
+      },
+      4: {
+        question: 'What is included in the social media channel setup?',
+        answer: 'The setup includes professional configuration of your Instagram or Facebook channel: profile optimization, CI-compliant design, initial content strategy, connection to your Google Business Profile and analytics setup for success measurement.'
+      },
+      5: {
+        question: 'Can I upgrade or downgrade packages later?',
+        answer: 'Yes, you can upgrade at any time. A downgrade is possible at the end of the minimum term. With the Premium Package you already get all services for 6 months - a later upgrade to individual services is then no longer necessary.'
+      },
+      6: {
+        question: 'How quickly will I see first results?',
+        answer: 'First improvements in online visibility are usually seen within 2-4 weeks. Significant increases in inquiries and reservations typically show after 6-8 weeks of continuous optimization.'
+      },
+      7: {
+        question: 'What happens if I cancel?',
+        answer: 'Your Google Business Profiles and social media channels naturally remain your property. You receive all access data and handover documentation. Only the ongoing support and optimization by us ends.'
+      }
+    },
+    cta: {
+      description: 'Have more questions? We\'re happy to advise you personally.',
+      phone: 'Call now',
+      email: 'Send email'
     }
   },
   contact: {

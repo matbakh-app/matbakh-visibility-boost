@@ -1,4 +1,3 @@
-
 export const deTranslations = {
   nav: {
     home: 'Startseite',
@@ -190,6 +189,174 @@ export const deTranslations = {
       whatsapp: 'WhatsApp: +49 89 123 456 789',
       phone: '📞 Telefonberatung: Mo-Fr 9:00-18:00 Uhr',
       email: '✉️ E-Mail: mail(at)matbakh(dot)app'
+    }
+  },
+  trust: {
+    title: 'Vertrauen durch Ergebnisse',
+    subtitle: 'Über 150 Gastronomen vertrauen bereits auf unsere Expertise',
+    stats: {
+      clients: {
+        number: '150+',
+        label: 'Zufriedene Restaurant-Partner',
+        description: 'Gastronomen vertrauen unserer Expertise'
+      },
+      visibility: {
+        number: '300%',
+        label: 'Durchschnittliche Sichtbarkeit-Steigerung',
+        description: 'Mehr Online-Anfragen in den ersten 3 Monaten'
+      },
+      rating: {
+        number: '4.9/5',
+        label: 'Kundenbewertung',
+        description: 'Basierend auf über 80 Bewertungen'
+      },
+      guarantee: {
+        number: '100%',
+        label: 'Transparenz-Garantie',
+        description: 'Keine versteckten Kosten oder Überraschungen'
+      }
+    },
+    testimonials: {
+      title: 'Was unsere Partner sagen',
+      items: {
+        0: {
+          text: 'Seit wir mit Matbakh arbeiten, haben sich unsere Online-Reservierungen verdreifacht. Das Team kümmert sich um alles - wir können uns aufs Kochen konzentrieren.',
+          author: 'Maria Rossi',
+          restaurant: 'Osteria Bella Vista, München'
+        },
+        1: {
+          text: 'Endlich versteht jemand, wie beschäftigt wir als Gastronomen sind. Die Automatisierung unserer Google-Profile war genau das, was wir brauchten.',
+          author: 'Thomas Weber',
+          restaurant: 'Weber\'s Braustüberl, Augsburg'
+        },
+        2: {
+          text: 'Die monatlichen Berichte zeigen uns schwarz auf weiß, wie sich unsere Sichtbarkeit verbessert. Das motiviert das ganze Team.',
+          author: 'Sarah Kim',
+          restaurant: 'Seoul Kitchen, Berlin'
+        }
+      }
+    },
+    certifications: {
+      text: 'Zertifiziert durch',
+      google: 'Google Partner Program',
+      facebook: 'Facebook Business Partner',
+      since: 'seit 2020'
+    }
+  },
+  process: {
+    title: 'So einfach funktioniert\'s',
+    subtitle: 'Von der ersten Beratung bis zur laufenden Betreuung - wir kümmern uns um alles, damit Sie sich aufs Wesentliche konzentrieren können',
+    included: 'Enthalten',
+    steps: {
+      0: {
+        title: 'Beratungsgespräch',
+        description: 'Kostenloses 15-minütiges Gespräch zur Analyse Ihrer aktuellen Online-Präsenz',
+        duration: '15 Min.',
+        details: {
+          0: 'Ist-Analyse Ihrer Google Business Präsenz',
+          1: 'Identifikation von Verbesserungspotenzialen',
+          2: 'Empfehlung des passenden Pakets',
+          3: 'Klärung aller offenen Fragen'
+        }
+      },
+      1: {
+        title: 'Setup & Einrichtung',
+        description: 'Wir übernehmen die komplette technische Einrichtung für Sie',
+        duration: '2-3 Tage',
+        details: {
+          0: 'Google Business Profil-Optimierung',
+          1: 'Social Media Kanäle einrichten (falls gebucht)',
+          2: 'Analytics und Tracking implementieren',
+          3: 'Mitarbeiter-Zugänge erstellen'
+        }
+      },
+      2: {
+        title: 'Laufende Betreuung',
+        description: 'Kontinuierliche Pflege und Optimierung Ihrer Online-Präsenz',
+        duration: 'Laufend',
+        details: {
+          0: 'Regelmäßige Content-Updates',
+          1: 'Bewertungsmanagement',
+          2: 'Performance-Monitoring',
+          3: 'Monatliche Erfolgsberichte'
+        }
+      },
+      3: {
+        title: 'Support & Beratung',
+        description: 'Persönlicher Ansprechpartner für alle Fragen und Anpassungen',
+        duration: 'Immer',
+        details: {
+          0: 'Direkter Draht zu Ihrem Account Manager',
+          1: 'Schnelle Reaktionszeiten',
+          2: 'Strategische Beratung bei Änderungen',
+          3: 'Hilfe bei neuen Google Features'
+        }
+      }
+    },
+    cta: {
+      title: 'Keine Zeit verlieren?',
+      description: 'Buchen Sie direkt Ihr kostenloses Beratungsgespräch und erfahren Sie, wie Sie Ihre Online-Sichtbarkeit in nur wenigen Wochen deutlich steigern können.',
+      button1: 'Jetzt kostenlos beraten lassen',
+      button2: 'Termin online buchen'
+    }
+  },
+  comparison: {
+    title: 'Paket-Vergleich',
+    subtitle: 'Finden Sie das perfekte Paket für Ihre Bedürfnisse',
+    screenReaderTitle: 'Leistungsvergleich',
+    featuresHeader: 'Leistungen',
+    monthLabel: 'Monat',
+    features: {
+      google_setup: 'Google Business Setup',
+      profile_maintenance: 'Profil-Pflege',
+      social_media: 'Social Media Management',
+      monthly_reports: 'Monatliche Berichte',
+      priority_support: 'Priority Support',
+      strategy_calls: 'Strategie-Calls',
+      analytics: 'Erweiterte Analytics'
+    }
+  },
+  faq: {
+    title: 'Häufige Fragen',
+    subtitle: 'Klarheit für bessere Entscheidungen - keine versteckten Überraschungen',
+    items: {
+      0: {
+        question: 'Wie oft werden meine Daten wirklich aktualisiert?',
+        answer: 'Bei der Profilpflege Basis kontrollieren wir Ihre Daten monatlich systematisch: Öffnungszeiten, Kontaktdaten und saisonale Anpassungen jeweils 1x pro Monat. Menü-Updates erfolgen wöchentlich (4x monatlich). Sie erhalten einen detaillierten monatlichen Bericht über alle durchgeführten Änderungen.'
+      },
+      1: {
+        question: 'Was bedeutet "Mindestlaufzeit 6 Monate"?',
+        answer: 'Die Mindestlaufzeit stellt sicher, dass wir nachhaltigen Erfolg für Ihr Business aufbauen können. Google und Social Media Algorithmen benötigen Zeit, um Vertrauen zu Ihrem Profil aufzubauen. Nach 6 Monaten können Sie monatlich kündigen.'
+      },
+      2: {
+        question: 'Brauche ich einen Google Business Account für Social Media Management?',
+        answer: 'Ja, ein aktiver Google Business Account ist Voraussetzung für unser Social Media Management. Nur so können wir die SEO-Verknüpfung herstellen und sicherstellen, dass Ihre Social Media Posts auch Ihre lokale Sichtbarkeit bei Google verbessern.'
+      },
+      3: {
+        question: 'Wie funktioniert das Mitarbeiter-Freigabe-System?',
+        answer: 'Ihre Mitarbeiter erhalten einen kontrollierten Zugang, über den sie Fotos und Texte hochladen können. Alle Posts werden Ihnen zur Freigabe vorgelegt - erst nach Ihrer Genehmigung werden sie veröffentlicht. Sie behalten die volle Kontrolle über Ihre Markendarstellung.'
+      },
+      4: {
+        question: 'Was ist im Social Media Kanal Setup enthalten?',
+        answer: 'Das Setup umfasst die professionelle Einrichtung Ihres Instagram oder Facebook Kanals: Profil-Optimierung, CI-konforme Gestaltung, erste Content-Strategie, Verknüpfung mit Ihrem Google Business Profil und Analytics-Setup für die Erfolgsmessung.'
+      },
+      5: {
+        question: 'Kann ich Pakete später upgraden oder downgraden?',
+        answer: 'Ja, Sie können jederzeit upgraden. Ein Downgrade ist zum Ende der Mindestlaufzeit möglich. Beim Premium Paket erhalten Sie bereits alle Leistungen für 6 Monate - ein späteres Upgrade auf einzelne Services ist dann nicht mehr nötig.'
+      },
+      6: {
+        question: 'Wie schnell sehe ich erste Ergebnisse?',
+        answer: 'Erste Verbesserungen in der Online-Sichtbarkeit sehen Sie meist innerhalb von 2-4 Wochen. Signifikante Steigerungen bei Anfragen und Reservierungen zeigen sich typischerweise nach 6-8 Wochen kontinuierlicher Optimierung.'
+      },
+      7: {
+        question: 'Was passiert, wenn ich kündige?',
+        answer: 'Ihre Google Business Profile und Social Media Kanäle bleiben natürlich Ihr Eigentum. Sie erhalten alle Zugangsdaten und eine Übergabe-Dokumentation. Nur die laufende Betreuung und Optimierung durch uns endet.'
+      }
+    },
+    cta: {
+      description: 'Haben Sie weitere Fragen? Wir beraten Sie gerne persönlich.',
+      phone: 'Jetzt anrufen',
+      email: 'E-Mail senden'
     }
   },
   contact: {

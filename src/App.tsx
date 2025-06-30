@@ -9,7 +9,8 @@ import Index from "./pages/Index";
 import BusinessLogin from "./pages/BusinessLogin";
 import BusinessLanding from "./pages/BusinessLanding";
 import ServicesPage from "./pages/ServicesPage";
-import AngebotePage from "./pages/AngebotePage";
+import AngeboteDE from "./pages/AngeboteDE";
+import PackagesEN from "./pages/PackagesEN";
 import B2CLanding from "./pages/B2CLanding";
 import PartnerOnboarding from "./pages/PartnerOnboarding";
 import PartnerDashboard from "./pages/PartnerDashboard";
@@ -45,8 +46,8 @@ function App() {
               <Route path="/business/login" element={<BusinessLogin />} />
               <Route path="/business/partner" element={<BusinessLanding />} />
               <Route path="/services" element={<ServicesPage />} />
-              <Route path="/angebote" element={<AngebotePage />} />
-              <Route path="/packages" element={<AngebotePage />} />
+              <Route path="/angebote" element={<AngeboteDE />} />
+              <Route path="/packages" element={<PackagesEN />} />
               <Route path="/b2c" element={<B2CLanding />} />
               <Route path="/b2c-en" element={<B2CLanding />} />
               <Route path="/partner/onboarding" element={<PartnerOnboarding />} />
