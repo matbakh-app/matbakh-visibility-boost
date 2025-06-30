@@ -1,14 +1,13 @@
-
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Star, Users, TrendingUp, Shield } from 'lucide-react';
 
 interface TrustElementsProps {
-  lang?: 'de' | 'en';
+  language?: string;
 }
 
-const TrustElements: React.FC<TrustElementsProps> = ({ lang = 'de' }) => {
+const TrustElements: React.FC<TrustElementsProps> = ({ language = 'de' }) => {
   const { t } = useTranslation();
 
   return (

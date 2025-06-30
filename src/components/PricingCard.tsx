@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,10 +9,10 @@ import { ServicePackage } from '@/hooks/useServicePackages';
 interface PricingCardProps {
   package: ServicePackage;
   viewOnly?: boolean;
-  lang?: 'de' | 'en';
+  language?: string;
 }
 
-const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = false, lang = 'de' }) => {
+const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = false, language = 'de' }) => {
   const { t } = useTranslation();
 
   // Package name mapping for internationalization
@@ -65,12 +64,12 @@ const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = fals
   };
 
   const getPackageName = (packageSlug: string) => {
-    return packageNameMap[packageSlug]?.[lang] || pkg.name;
+    return packageNameMap[packageSlug]?.[language as 'de' | 'en'] || pkg.name;
   };
 
   const getFeatureText = (featureIndex: number) => {
     const packageSlug = pkg.slug;
-    return featureMap[packageSlug]?.[featureIndex.toString()]?.[lang] || pkg.features[featureIndex];
+    return featureMap[packageSlug]?.[featureIndex.toString()]?.[language as 'de' | 'en'] || pkg.features[featureIndex];
   };
 
   return (
@@ -136,7 +135,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = fals
         
         {pkg.min_duration_months > 0 && (
           <p className="text-xs text-gray-500 text-center mt-2">
-            {t('pricing.minDuration')}: {pkg.min_duration_months} {lang === 'de' ? 'Monate' : 'Months'}
+            {t('pricing.minDuration')}: {pkg.min_duration_months} {language === 'de' ? 'Monate' : 'Months'}
           </p>
         )}
       </CardContent>

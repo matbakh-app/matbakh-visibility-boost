@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import TrustElements from '@/components/TrustElements';
@@ -84,7 +83,7 @@ const PackagesEN: React.FC = () => {
         {/* Components */}
         <TrustElements language="en" />
         <ProcessOverview language="en" />
-        <PackageComparison language="en" />
+        <PackageComparison packages={packages} language="en" />
         <PackageFAQ language="en" />
       </div>
     </div>

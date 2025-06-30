@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -9,10 +8,10 @@ import {
 } from '@/components/ui/accordion';
 
 interface PackageFAQProps {
-  lang?: 'de' | 'en';
+  language?: string;
 }
 
-const PackageFAQ: React.FC<PackageFAQProps> = ({ lang = 'de' }) => {
+const PackageFAQ: React.FC<PackageFAQProps> = ({ language = 'de' }) => {
   const { t } = useTranslation();
 
   return (

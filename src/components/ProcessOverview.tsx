@@ -1,14 +1,13 @@
-
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Calendar, Settings, BarChart3, Headphones } from 'lucide-react';
 
 interface ProcessOverviewProps {
-  lang?: 'de' | 'en';
+  language?: string;
 }
 
-const ProcessOverview: React.FC<ProcessOverviewProps> = ({ lang = 'de' }) => {
+const ProcessOverview: React.FC<ProcessOverviewProps> = ({ language = 'de' }) => {
   const { t } = useTranslation();
 
   return (

@@ -6,11 +6,11 @@ import { Check, X } from 'lucide-react';
 import { ServicePackage } from '@/hooks/useServicePackages';
 
 interface PackageComparisonProps {
-  packages: ServicePackage[];
-  lang?: 'de' | 'en';
+  packages?: ServicePackage[];
+  language?: string;
 }
 
-const PackageComparison: React.FC<PackageComparisonProps> = ({ packages, lang = 'de' }) => {
+const PackageComparison: React.FC<PackageComparisonProps> = ({ packages = [], language = 'de' }) => {
   const { t } = useTranslation();
 
   const hasFeature = (pkg: ServicePackage, featureKey: string): boolean => {
@@ -26,6 +26,11 @@ const PackageComparison: React.FC<PackageComparisonProps> = ({ packages, lang = 
     
     return featureMap[featureKey]?.includes(pkg.slug) || false;
   };
+
+  // If no packages provided, don't render the component
+  if (!packages || packages.length === 0) {
+    return null;
+  }
 
   return (
     <section className="py-16 bg-gray-50">
