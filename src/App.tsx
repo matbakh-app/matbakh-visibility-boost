@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route } from "react-router-dom";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import AppLayout from "@/components/layout/AppLayout";
 
@@ -79,6 +80,7 @@ function App() {
             </Routes>
           </Suspense>
         </ErrorBoundary>
+        <SpeedInsights />
       </TooltipProvider>
     </QueryClientProvider>
   );
