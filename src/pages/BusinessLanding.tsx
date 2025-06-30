@@ -34,8 +34,9 @@ const BusinessLanding: React.FC = () => {
       {/* Hero Section */}
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-5xl font-bold text-black mb-6">Es ist gut, dass Sie mit Ihren Gästen bereits online kommunizieren</h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">Es ist besser, wenn Ihre Gäste zuhören</p>
+          <h1 className="text-5xl font-bold mb-6 text-sky-500">Es ist gut, dass Sie mit Ihren Gästen bereits online kommunizieren</h1>
+          <p className="text-xl mb-8 max-w-3xl mx-auto leading-relaxed text-center text-sky-800">Es ist besser, wenn Ihre Gäste zuhören
+        </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="bg-black hover:bg-gray-800 text-white px-8 py-3" onClick={() => navigate('/angebote')}>
               Jetzt Sichtbarkeit steigern
