@@ -16,11 +16,21 @@ import { Button } from '@/components/ui/button';
 
 const AngebotePage: React.FC = () => {
   const { t } = useTranslation();
-  const { data: packages, isLoading, error } = useServicePackages();
+  const { data: packages, isLoading, error, isError } = useServicePackages();
   const { data: addons } = useAddonServices();
+
+  // Debug logging
+  React.useEffect(() => {
+    console.log('AngebotePage: Component mounted/updated');
+    console.log('AngebotePage: packages:', packages);
+    console.log('AngebotePage: isLoading:', isLoading);
+    console.log('AngebotePage: error:', error);
+    console.log('AngebotePage: isError:', isError);
+  }, [packages, isLoading, error, isError]);
 
   const renderPackagesSection = () => {
     if (isLoading) {
+      console.log('AngebotePage: Rendering loading state');
       return (
         <div className="text-center py-12">
           <div className="flex items-center justify-center space-x-2">
@@ -31,32 +41,21 @@ const AngebotePage: React.FC = () => {
       );
     }
 
-    if (error) {
+    if (isError || error) {
+      console.log('AngebotePage: Rendering error state');
       return (
         <div className="py-8">
           <Alert className="max-w-2xl mx-auto">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              <strong>Fehler beim Laden der Angebote:</strong> {error.message}
+              <strong>Fehler beim Laden der Angebote:</strong> {error?.message || 'Unbekannter Fehler'}
               <br />
               <span className="text-sm text-gray-600 mt-2 block">
                 Bitte versuchen Sie es später erneut oder kontaktieren Sie unseren Support.
               </span>
             </AlertDescription>
           </Alert>
-        </div>
-      );
-    }
-
-    if (!packages || packages.length === 0) {
-      return (
-        <div className="text-center py-12">
-          <div className="max-w-md mx-auto">
-            <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Keine Angebote verfügbar</h3>
-            <p className="text-gray-600 mb-4">
-              Unsere Service-Pakete werden gerade aktualisiert. Bitte schauen Sie später wieder vorbei.
-            </p>
+          <div className="text-center mt-4">
             <Button variant="outline" onClick={() => window.location.reload()}>
               Seite neu laden
             </Button>
@@ -65,6 +64,32 @@ const AngebotePage: React.FC = () => {
       );
     }
 
+    if (!packages || packages.length === 0) {
+      console.log('AngebotePage: Rendering no packages state');
+      console.log('AngebotePage: packages value:', packages);
+      return (
+        <div className="text-center py-12">
+          <div className="max-w-md mx-auto">
+            <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Keine Angebote verfügbar</h3>
+            <p className="text-gray-600 mb-4">
+              Unsere Service-Pakete werden gerade aktualisiert. Bitte schauen Sie später wieder vorbei.
+            </p>
+            <div className="space-y-2">
+              <Button variant="outline" onClick={() => window.location.reload()}>
+                Seite neu laden
+              </Button>
+              <div className="text-xs text-gray-500 mt-2">
+                Debug: packages = {JSON.stringify(packages)}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    console.log('AngebotePage: Rendering packages successfully, count:', packages.length);
+    
     return (
       <>
         {/* Main Packages Grid */}

@@ -22,25 +22,43 @@ export const useServicePackages = () => {
     queryFn: async () => {
       console.log('useServicePackages: Starting fetch...');
       
+      // Simplified query - just get all active service packages first
       const { data, error } = await supabase
         .from('service_packages')
         .select('*')
         .eq('is_active', true)
-        .in('slug', ['google-business-setup', 'profilpflege-basis', 'social-media-management', 'premium-business-paket'])
         .order('sort_order', { ascending: true });
+
+      console.log('useServicePackages: Raw database response:', { data, error });
 
       if (error) {
         console.error('useServicePackages: Database error:', error);
         throw new Error(`Fehler beim Laden der Pakete: ${error.message}`);
       }
       
-      if (!data || data.length === 0) {
-        console.warn('useServicePackages: No packages found in database');
+      if (!data) {
+        console.warn('useServicePackages: No data returned from database');
+        return [];
+      }
+
+      console.log('useServicePackages: Total records from database:', data.length);
+      console.log('useServicePackages: All package slugs:', data.map(pkg => pkg.slug));
+      
+      // Filter for specific packages we want to show on the offers page
+      const targetSlugs = ['google-business-setup', 'profilpflege-basis', 'social-media-management', 'premium-business-paket'];
+      const filteredData = data.filter(pkg => targetSlugs.includes(pkg.slug));
+      
+      console.log('useServicePackages: Filtered packages:', filteredData.length);
+      console.log('useServicePackages: Filtered slugs:', filteredData.map(pkg => pkg.slug));
+      
+      if (filteredData.length === 0) {
+        console.warn('useServicePackages: No matching packages found. Available slugs:', data.map(pkg => pkg.slug));
+        console.warn('useServicePackages: Target slugs:', targetSlugs);
         return [];
       }
       
       // Defensive validation of package data
-      const validatedPackages = data.filter(pkg => {
+      const validatedPackages = filteredData.filter(pkg => {
         const isValid = pkg.name && 
                        pkg.slug && 
                        typeof pkg.base_price === 'number' && 
@@ -59,15 +77,15 @@ export const useServicePackages = () => {
         min_duration_months: pkg.min_duration_months || 0
       }));
       
-      console.log('useServicePackages: Successfully fetched packages:', validatedPackages.length);
-      console.log('useServicePackages: Package data:', validatedPackages);
+      console.log('useServicePackages: Successfully validated packages:', validatedPackages.length);
+      console.log('useServicePackages: Final package data:', validatedPackages);
       
       return validatedPackages as ServicePackage[];
     },
-    retry: 2,
-    retryDelay: 1000,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    staleTime: 0, // Always fetch fresh data to debug
+    gcTime: 0, // Don't cache to avoid cache issues
   });
 };
 
@@ -83,6 +101,8 @@ export const useAddonServices = () => {
         .eq('is_active', true)
         .order('sort_order', { ascending: true });
 
+      console.log('useAddonServices: Raw database response:', { data, error });
+
       if (error) {
         console.error('useAddonServices: Database error:', error);
         throw new Error(`Fehler beim Laden der Add-ons: ${error.message}`);
@@ -92,6 +112,8 @@ export const useAddonServices = () => {
         console.log('useAddonServices: No addon data returned');
         return [];
       }
+      
+      console.log('useAddonServices: Total addon records:', data.length);
       
       // Defensive validation of addon data
       const validatedAddons = data.filter(addon => {
@@ -112,12 +134,12 @@ export const useAddonServices = () => {
         compatible_packages: addon.compatible_packages || []
       }));
       
-      console.log('useAddonServices: Successfully fetched addons:', validatedAddons.length);
+      console.log('useAddonServices: Successfully validated addons:', validatedAddons.length);
       return validatedAddons;
     },
-    retry: 2,
-    retryDelay: 1000,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    staleTime: 0, // Always fetch fresh data to debug
+    gcTime: 0, // Don't cache to avoid cache issues
   });
 };
