@@ -52,19 +52,26 @@ const Header: React.FC = () => {
         .replace('/b2c', '/b2c-en');
     }
     
+    console.log('Navigating to:', translatedPath);
     navigate(translatedPath);
   };
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => {
+    const currentPath = location.pathname;
+    if (path === '/' && currentPath === '/') return true;
+    if (path === '/b2c' && (currentPath === '/b2c' || currentPath === '/b2c-en')) return true;
+    if (path === '/kontakt' && (currentPath === '/kontakt' || currentPath === '/contact')) return true;
+    return currentPath === path;
+  };
 
   return (
-    <header className="bg-white border-b border-gray-200">
+    <header className="bg-white border-b border-gray-200 w-full">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <button 
               onClick={() => navigate('/')}
-              className="text-xl font-bold text-black"
+              className="text-xl font-bold text-black hover:text-gray-700 transition-colors"
             >
               matbakh
             </button>
@@ -73,7 +80,7 @@ const Header: React.FC = () => {
           <nav className="hidden md:flex space-x-8">
             <button
               onClick={() => navigate('/')}
-              className={`px-3 py-2 text-sm font-medium ${
+              className={`px-3 py-2 text-sm font-medium transition-colors ${
                 isActive('/') 
                   ? 'text-black border-b-2 border-black' 
                   : 'text-gray-700 hover:text-black'
@@ -83,7 +90,7 @@ const Header: React.FC = () => {
             </button>
             <button
               onClick={() => navigate('/services')}
-              className={`px-3 py-2 text-sm font-medium ${
+              className={`px-3 py-2 text-sm font-medium transition-colors ${
                 isActive('/services') 
                   ? 'text-black border-b-2 border-black' 
                   : 'text-gray-700 hover:text-black'
@@ -93,7 +100,7 @@ const Header: React.FC = () => {
             </button>
             <button
               onClick={() => navigate('/angebote')}
-              className={`px-3 py-2 text-sm font-medium ${
+              className={`px-3 py-2 text-sm font-medium transition-colors ${
                 isActive('/angebote') 
                   ? 'text-black border-b-2 border-black' 
                   : 'text-gray-700 hover:text-black'
@@ -103,8 +110,8 @@ const Header: React.FC = () => {
             </button>
             <button
               onClick={() => handleNavigation('/b2c')}
-              className={`px-3 py-2 text-sm font-medium ${
-                isActive('/b2c') || isActive('/b2c-en')
+              className={`px-3 py-2 text-sm font-medium transition-colors ${
+                isActive('/b2c')
                   ? 'text-black border-b-2 border-black' 
                   : 'text-gray-700 hover:text-black'
               }`}
@@ -113,8 +120,8 @@ const Header: React.FC = () => {
             </button>
             <button
               onClick={() => handleNavigation('/kontakt')}
-              className={`px-3 py-2 text-sm font-medium ${
-                isActive('/kontakt') || isActive('/contact')
+              className={`px-3 py-2 text-sm font-medium transition-colors ${
+                isActive('/kontakt')
                   ? 'text-black border-b-2 border-black' 
                   : 'text-gray-700 hover:text-black'
               }`}
