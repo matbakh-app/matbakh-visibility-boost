@@ -4,34 +4,36 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, CheckCircle, Users, Settings, BarChart3, MessageSquare, Star, Zap } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
 const ServicesPage: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const coreServices = [
     {
       icon: Settings,
-      title: 'Google Business Profil Setup',
-      description: 'Professionelle Einrichtung und Optimierung Ihres Google Business Profils für maximale lokale Sichtbarkeit.',
-      features: ['Vollständige Profilerstellung', 'SEO-Optimierung', 'Kategorie-Setup', 'Öffnungszeiten-Management'],
+      title: t('services.setup.coreTitle'),
+      description: t('services.setup.coreDescription'),
+      features: t('services.setup.features', { returnObjects: true }) as string[],
       color: 'bg-blue-50 border-blue-200',
       iconColor: 'bg-blue-500'
     },
     {
       icon: BarChart3,
-      title: 'Social Media Management',
-      description: 'Kontinuierliche Betreuung Ihrer Social Media Kanäle mit professionellen Inhalten und strategischem Engagement.',
-      features: ['Content-Erstellung', 'Posting-Automatisierung', 'Community Management', 'Performance-Tracking'],
+      title: t('services.management.title'),
+      description: t('services.management.coreDescription'),
+      features: t('services.management.features', { returnObjects: true }) as string[],
       color: 'bg-green-50 border-green-200',
       iconColor: 'bg-green-500'
     },
     {
       icon: MessageSquare,
-      title: 'KI-gestützte Chatbots',
-      description: 'Intelligente Chatbots für automatisierte Kundeninteraktion und 24/7 Verfügbarkeit.',
-      features: ['Automatische Antworten', 'Reservierungsanfragen', 'FAQ-Handling', 'Mehrsprachiger Support'],
+      title: t('services.analytics.coreTitle'),
+      description: t('services.analytics.coreDescription'),
+      features: t('services.analytics.features', { returnObjects: true }) as string[],
       color: 'bg-purple-50 border-purple-200',
       iconColor: 'bg-purple-500'
     }
@@ -40,22 +42,22 @@ const ServicesPage: React.FC = () => {
   const additionalServices = [
     {
       icon: Star,
-      title: 'Bewertungsmanagement',
-      description: 'Proaktive Verwaltung und Optimierung Ihrer Online-Bewertungen.',
+      title: t('services.additional.reviews.title'),
+      description: t('services.additional.reviews.description'),
       color: 'bg-yellow-50 border-yellow-200',
       iconColor: 'bg-yellow-500'
     },
     {
       icon: Users,
-      title: 'Zielgruppenanalyse',
-      description: 'Detaillierte Analyse Ihrer Zielgruppen für bessere Marketingstrategien.',
+      title: t('services.additional.audience.title'),
+      description: t('services.additional.audience.description'),
       color: 'bg-indigo-50 border-indigo-200',
       iconColor: 'bg-indigo-500'
     },
     {
       icon: Zap,
-      title: 'Automatisierte Workflows',
-      description: 'Effiziente Automatisierung wiederkehrender Marketing-Aufgaben.',
+      title: t('services.additional.automation.title'),
+      description: t('services.additional.automation.description'),
       color: 'bg-orange-50 border-orange-200',
       iconColor: 'bg-orange-500'
     }
@@ -69,11 +71,10 @@ const ServicesPage: React.FC = () => {
       <section className="py-20 px-4 bg-gradient-to-br from-gray-50 to-white">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-5xl font-bold text-black mb-6">
-            Unsere Services für Ihr Restaurant
+            {t('services.pageTitle')}
           </h1>
           <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
-            Professionelle Digitallösungen, die Ihre Sichtbarkeit steigern und mehr Gäste in Ihr Restaurant bringen. 
-            Wir übernehmen die Technik - Sie konzentrieren sich auf Ihre Gäste.
+            {t('services.pageSubtitle')}
           </p>
         </div>
       </section>
@@ -83,10 +84,10 @@ const ServicesPage: React.FC = () => {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-black mb-4">
-              Unsere Hauptservices
+              {t('services.coreTitle')}
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Drei essenzielle Services, die Ihr Restaurant digital erfolgreich machen
+              {t('services.coreSubtitle')}
             </p>
           </div>
           
@@ -128,10 +129,10 @@ const ServicesPage: React.FC = () => {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-black mb-4">
-              Zusätzliche Services
+              {t('services.additionalTitle')}
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Erweitern Sie Ihre digitale Präsenz mit unseren spezialisierten Zusatzleistungen
+              {t('services.additionalSubtitle')}
             </p>
           </div>
           
@@ -164,18 +165,18 @@ const ServicesPage: React.FC = () => {
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl font-bold text-black mb-6">
-            Bereit für mehr digitale Sichtbarkeit?
+            {t('services.ctaTitle')}
           </h2>
           <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-            Sie müssen sich nicht um komplexe technische Anforderungen kümmern - wir erledigen das für Sie.
+            {t('services.ctaSubtitle')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-black hover:bg-gray-800 text-white px-8 py-3">
-              Kostenlose Beratung
+            <Button size="lg" className="bg-black hover:bg-gray-800 text-white px-8 py-3" onClick={() => navigate('/kontakt')}>
+              {t('services.ctaButton1')}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
-            <Button variant="outline" size="lg" className="border-black text-black hover:bg-gray-50 px-8 py-3">
-              Angebote ansehen
+            <Button variant="outline" size="lg" className="border-black text-black hover:bg-gray-50 px-8 py-3" onClick={() => navigate('/angebote')}>
+              {t('services.ctaButton2')}
             </Button>
           </div>
         </div>

@@ -41,15 +41,15 @@ const BusinessLanding: React.FC = () => {
       {/* Hero Section */}
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-5xl font-bold mb-6 text-sky-500">Es ist gut, dass Sie mit Ihren Gästen bereits online kommunizieren</h1>
-          <p className="text-xl mb-8 max-w-3xl mx-auto leading-relaxed text-center text-sky-800">Es ist besser, wenn Ihre Gäste zuhören</p>
+          <h1 className="text-5xl font-bold mb-6 text-sky-500">{t('landing.heroTitle')}</h1>
+          <p className="text-xl mb-8 max-w-3xl mx-auto leading-relaxed text-center text-sky-800">{t('landing.heroSubtitle')}</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
               size="lg" 
               className="bg-black hover:bg-gray-800 text-white px-8 py-3" 
               onClick={() => navigate('/angebote')}
             >
-              Jetzt Sichtbarkeit steigern
+              {t('landing.cta1')}
             </Button>
             <Button 
               variant="outline" 
@@ -57,7 +57,7 @@ const BusinessLanding: React.FC = () => {
               className="border-black text-black hover:bg-gray-50 px-8 py-3" 
               onClick={() => navigate('/kontakt')}
             >
-              Kostenlose Beratung
+              {t('landing.cta2')}
             </Button>
           </div>
         </div>
@@ -71,10 +71,10 @@ const BusinessLanding: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-black mb-4">
-              Das übernehmen wir für Sie
+              {t('landing.servicesTitle')}
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Konzentrieren Sie sich auf Ihre Gäste - wir kümmern uns um Ihre Online-Sichtbarkeit.
+              {t('landing.servicesSubtitle')}
             </p>
           </div>
           
@@ -107,11 +107,10 @@ const BusinessLanding: React.FC = () => {
       <section className="py-20 px-4 bg-black">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold text-white mb-6">
-            Bereit für mehr Gäste?
+            {t('landing.ctaFinalTitle')}
           </h2>
           <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
-            Starten Sie jetzt und sehen Sie bereits in den ersten Wochen mehr Online-Anfragen 
-            und Reservierungen für Ihr Restaurant.
+            {t('landing.ctaFinalSubtitle')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
@@ -119,7 +118,7 @@ const BusinessLanding: React.FC = () => {
               className="bg-white hover:bg-gray-100 text-black px-8 py-3" 
               onClick={() => navigate('/angebote')}
             >
-              Angebote ansehen
+              {t('landing.ctaFinalButton1')}
             </Button>
             <Button 
               variant="outline" 
@@ -127,7 +126,7 @@ const BusinessLanding: React.FC = () => {
               onClick={() => navigate('/kontakt')} 
               className="border-white hover:bg-white px-8 py-3 text-neutral-950"
             >
-              Beratung anfragen
+              {t('landing.ctaFinalButton2')}
             </Button>
           </div>
         </div>

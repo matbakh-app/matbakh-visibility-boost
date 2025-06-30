@@ -1,9 +1,26 @@
 
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 const Footer: React.FC = () => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
+
+  const handleNavigation = (path: string) => {
+    const currentLang = i18n.language;
+    let translatedPath = path;
+    
+    if (currentLang === 'en') {
+      translatedPath = path
+        .replace('/kontakt', '/contact')
+        .replace('/impressum', '/imprint')
+        .replace('/datenschutz', '/privacy')
+        .replace('/agb', '/terms');
+    }
+    
+    navigate(translatedPath);
+  };
 
   return (
     <footer className="bg-white border-t border-gray-200 mt-16">
@@ -11,29 +28,41 @@ const Footer: React.FC = () => {
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-4 md:mb-0">
             <p className="text-sm text-gray-600">
-              © 2024 BaSSco (Bavarian Software Solution), München
+              {t('footer.copyright')}
             </p>
           </div>
           
           <div className="flex space-x-6">
-            <a href="/impressum" className="text-sm text-gray-600 hover:text-black">
-              Impressum
-            </a>
-            <a href="/datenschutz" className="text-sm text-gray-600 hover:text-black">
-              Datenschutz
-            </a>
-            <a href="/agb" className="text-sm text-gray-600 hover:text-black">
-              AGB
-            </a>
-            <a href="/kontakt" className="text-sm text-gray-600 hover:text-black">
-              Kontakt
-            </a>
+            <button 
+              onClick={() => handleNavigation('/impressum')}
+              className="text-sm text-gray-600 hover:text-black"
+            >
+              {t('footer.imprint')}
+            </button>
+            <button 
+              onClick={() => handleNavigation('/datenschutz')}
+              className="text-sm text-gray-600 hover:text-black"
+            >
+              {t('footer.privacy')}
+            </button>
+            <button 
+              onClick={() => handleNavigation('/agb')}
+              className="text-sm text-gray-600 hover:text-black"
+            >
+              {t('footer.terms')}
+            </button>
+            <button 
+              onClick={() => handleNavigation('/kontakt')}
+              className="text-sm text-gray-600 hover:text-black"
+            >
+              {t('footer.contact')}
+            </button>
           </div>
         </div>
         
         <div className="mt-4 text-center">
           <p className="text-xs text-gray-500">
-            Kontakt: mail(at)matbakh(dot)app
+            {t('footer.email')}
           </p>
         </div>
       </div>

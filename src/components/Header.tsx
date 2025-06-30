@@ -25,14 +25,17 @@ const Header: React.FC = () => {
         .replace('/impressum', '/imprint')
         .replace('/datenschutz', '/privacy')
         .replace('/agb', '/terms')
-        .replace('/b2c', '/b2c-en');
+        .replace('/b2c', '/b2c-en')
+        .replace('/services', '/services')
+        .replace('/angebote', '/packages');
     } else {
       newPath = currentPath
         .replace('/contact', '/kontakt')
         .replace('/imprint', '/impressum')
         .replace('/privacy', '/datenschutz')
         .replace('/terms', '/agb')
-        .replace('/b2c-en', '/b2c');
+        .replace('/b2c-en', '/b2c')
+        .replace('/packages', '/angebote');
     }
     
     if (newPath !== currentPath) {
@@ -50,12 +53,13 @@ const Header: React.FC = () => {
         .replace('/impressum', '/imprint')
         .replace('/datenschutz', '/privacy')
         .replace('/agb', '/terms')
-        .replace('/b2c', '/b2c-en');
+        .replace('/b2c', '/b2c-en')
+        .replace('/angebote', '/packages');
     }
     
     console.log('Navigating to:', translatedPath);
     navigate(translatedPath);
-    setIsMobileMenuOpen(false); // Close mobile menu after navigation
+    setIsMobileMenuOpen(false);
   };
 
   const isActive = (path: string) => {
@@ -63,6 +67,7 @@ const Header: React.FC = () => {
     if (path === '/' && currentPath === '/') return true;
     if (path === '/b2c' && (currentPath === '/b2c' || currentPath === '/b2c-en')) return true;
     if (path === '/kontakt' && (currentPath === '/kontakt' || currentPath === '/contact')) return true;
+    if (path === '/angebote' && (currentPath === '/angebote' || currentPath === '/packages')) return true;
     return currentPath === path;
   };
 
@@ -103,9 +108,9 @@ const Header: React.FC = () => {
                 {t('nav.services')}
               </button>
               <button
-                onClick={() => navigate('/angebote')}
+                onClick={() => handleNavigation('/angebote')}
                 className={`px-3 py-2 text-sm font-medium transition-colors ${
-                  isActive('/angebote') 
+                  isActive('/angebote')
                     ? 'text-black border-b-2 border-black' 
                     : 'text-gray-700 hover:text-black'
                 }`}

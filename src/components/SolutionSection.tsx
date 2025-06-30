@@ -1,33 +1,36 @@
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { CheckCircle, Zap, TrendingUp, Clock } from 'lucide-react';
 
 const SolutionSection: React.FC = () => {
+  const { t } = useTranslation();
+  
   const solutions = [
     {
       icon: Zap,
-      title: "Automatische Google-Optimierung",
-      description: "Wir übernehmen die komplette Einrichtung und Pflege Ihres Google Business Profils.",
-      benefits: "• Professionelle Einrichtung\n• Regelmäßige Updates\n• Optimierte Sichtbarkeit"
+      title: t('solution.optimization.title'),
+      description: t('solution.optimization.description'),
+      benefits: t('solution.optimization.benefits')
     },
     {
       icon: TrendingUp,
-      title: "Mehr Sichtbarkeit = Mehr Gäste",
-      description: "Durch optimierte Online-Präsenz werden Sie von mehr potentiellen Gästen gefunden.",
-      benefits: "• Höheres Google-Ranking\n• Mehr Online-Anfragen\n• Steigende Reservierungen"
+      title: t('solution.visibility.title'),
+      description: t('solution.visibility.description'),
+      benefits: t('solution.visibility.benefits')
     },
     {
       icon: Clock,
-      title: "Zeit sparen, Fokus aufs Wesentliche",
-      description: "Sie kümmern sich um Ihre Gäste, wir um Ihre Online-Sichtbarkeit.",
-      benefits: "• Keine technischen Sorgen\n• Mehr Zeit für Ihr Restaurant\n• Professionelle Betreuung"
+      title: t('solution.timeSaving.title'),
+      description: t('solution.timeSaving.description'),
+      benefits: t('solution.timeSaving.benefits')
     },
     {
       icon: CheckCircle,
-      title: "Messbare Erfolge",
-      description: "Sehen Sie in Echtzeit, wie sich Ihre Online-Sichtbarkeit verbessert.",
-      benefits: "• Detaillierte Analytics\n• Monatliche Reports\n• Transparente Ergebnisse"
+      title: t('solution.results.title'),
+      description: t('solution.results.description'),
+      benefits: t('solution.results.benefits')
     }
   ];
 
@@ -36,10 +39,10 @@ const SolutionSection: React.FC = () => {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-black mb-6">
-            So lösen wir Ihre Probleme
+            {t('solution.title')}
           </h2>
           <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
-            Sie müssen sich nicht um komplexe technische Anforderungen kümmern, wir erledigen das für Sie.
+            {t('solution.subtitle')}
           </p>
         </div>
         
