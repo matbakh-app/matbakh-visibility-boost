@@ -103,7 +103,7 @@ const BusinessLanding: React.FC = () => {
             <Button size="lg" className="bg-white hover:bg-gray-100 text-black px-8 py-3" onClick={() => navigate('/angebote')}>
               Angebote ansehen
             </Button>
-            <Button variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-black px-8 py-3" onClick={() => navigate('/kontakt')}>
+            <Button variant="outline" size="lg" onClick={() => navigate('/kontakt')} className="border-white hover:bg-white px-8 py-3 text-neutral-950">
               Beratung anfragen
             </Button>
           </div>
