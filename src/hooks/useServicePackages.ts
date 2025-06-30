@@ -26,6 +26,7 @@ export const useServicePackages = () => {
         .from('service_packages')
         .select('*')
         .eq('is_active', true)
+        .in('slug', ['google-business-setup', 'profilpflege-basis', 'social-media-management', 'premium-business-paket'])
         .order('sort_order', { ascending: true });
 
       if (error) {

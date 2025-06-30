@@ -1,4 +1,3 @@
-
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
@@ -8,7 +7,7 @@ const resources = {
       nav: {
         home: 'Startseite',
         services: 'Services',
-        packages: 'Angebote',
+        packages: 'Pakete & Preise',
         b2c: 'Für Gäste',
         contact: 'Kontakt',
         imprint: 'Impressum',
@@ -118,7 +117,7 @@ const resources = {
       nav: {
         home: 'Home',
         services: 'Services',
-        packages: 'Packages',
+        packages: 'Packages & Pricing',
         b2c: 'For Guests',
         contact: 'Contact',
         imprint: 'Imprint',

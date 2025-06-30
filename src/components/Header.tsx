@@ -99,7 +99,7 @@ const Header: React.FC = () => {
                   : 'text-gray-700 hover:text-black'
               }`}
             >
-              Pakete & Preise
+              {t('nav.packages')}
             </button>
             <button
               onClick={() => handleNavigation('/b2c')}
