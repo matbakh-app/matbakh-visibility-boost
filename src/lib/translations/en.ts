@@ -202,19 +202,19 @@ export const enTranslations = {
     subtitle: 'Over 150 restaurant owners already trust our expertise',
     stats: {
       clients: {
-        number: '150+',
-        label: 'Satisfied Restaurant Partners',
-        description: 'Restaurant owners trust our expertise'
+        number: '20+',
+        label: 'Years in the Restaurant Business',
+        description: 'From little Bistro up to Octoberfest'
       },
       visibility: {
-        number: '300%',
+        number: '30%',
         label: 'Average Visibility Boost',
         description: 'More online inquiries in the first 3 months'
       },
       rating: {
         number: '4.9/5',
         label: 'Customer Rating',
-        description: 'Based on over 80 reviews'
+        description: 'Your Team can manage this. We support it'
       },
       guarantee: {
         number: '100%',
@@ -243,10 +243,10 @@ export const enTranslations = {
       }
     },
     certifications: {
-      text: 'Certified by',
+      text: 'Certified by (comming soon)',
       google: 'Google Partner Program',
       facebook: 'Facebook Business Partner',
-      since: 'since 2020'
+      since: 'since 2025'
     }
   },
   process: {
