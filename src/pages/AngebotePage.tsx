@@ -3,6 +3,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import LogoSection from '@/components/LogoSection';
 import PricingCard from '@/components/PricingCard';
 import { useServicePackages } from '@/hooks/useServicePackages';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -71,6 +72,7 @@ const AngebotePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       <Header />
+      <LogoSection />
       
       {/* Hero Section */}
       <section className="py-20 px-4">

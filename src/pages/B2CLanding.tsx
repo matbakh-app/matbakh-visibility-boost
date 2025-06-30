@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin, Users, Search, Calendar, ShoppingCart, Settings, Edit } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import LogoSection from '@/components/LogoSection';
 import PricingCard from '@/components/PricingCard';
 import { useServicePackages } from '@/hooks/useServicePackages';
 
@@ -68,6 +69,7 @@ const B2CLanding: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       <Header />
+      <LogoSection />
       
       {/* Hero Section */}
       <section className="py-20 px-4">

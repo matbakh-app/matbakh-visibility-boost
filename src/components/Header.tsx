@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate, useLocation } from 'react-router-dom';
-import Logo from './Logo';
 
 const Header: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -63,10 +62,9 @@ const Header: React.FC = () => {
           <div className="flex items-center">
             <button 
               onClick={() => navigate('/')}
-              className="flex items-center"
+              className="text-xl font-bold text-black"
             >
-              <Logo size="md" className="mr-3" />
-              <span className="text-xl font-bold text-black">matbakh</span>
+              matbakh
             </button>
           </div>
           

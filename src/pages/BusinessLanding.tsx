@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -6,28 +7,36 @@ import { Wrench, BarChart3, Brain } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import LogoSection from '@/components/LogoSection';
 import ProblemSection from '@/components/ProblemSection';
 import SolutionSection from '@/components/SolutionSection';
+
 const BusinessLanding: React.FC = () => {
-  const {
-    t
-  } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  const services = [{
-    icon: Wrench,
-    title: t('services.setup.title'),
-    description: t('services.setup.description')
-  }, {
-    icon: BarChart3,
-    title: t('services.management.title'),
-    description: t('services.management.description')
-  }, {
-    icon: Brain,
-    title: t('services.analytics.title'),
-    description: t('services.analytics.description')
-  }];
-  return <div className="min-h-screen bg-white">
+
+  const services = [
+    {
+      icon: Wrench,
+      title: t('services.setup.title'),
+      description: t('services.setup.description')
+    },
+    {
+      icon: BarChart3,
+      title: t('services.management.title'),
+      description: t('services.management.description')
+    },
+    {
+      icon: Brain,
+      title: t('services.analytics.title'),
+      description: t('services.analytics.description')
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-white">
       <Header />
+      <LogoSection />
       
       {/* Hero Section */}
       <section className="py-20 px-4">
@@ -68,8 +77,9 @@ const BusinessLanding: React.FC = () => {
           
           <div className="grid md:grid-cols-3 gap-8">
             {services.map((service, index) => {
-            const IconComponent = service.icon;
-            return <Card key={index} className="bg-white border-0 shadow-sm hover:shadow-md transition-shadow">
+              const IconComponent = service.icon;
+              return (
+                <Card key={index} className="bg-white border-0 shadow-sm hover:shadow-md transition-shadow">
                   <CardHeader className="text-center pb-4">
                     <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center mx-auto mb-4">
                       <IconComponent className="h-6 w-6 text-white" />
@@ -83,8 +93,9 @@ const BusinessLanding: React.FC = () => {
                       {service.description}
                     </p>
                   </CardContent>
-                </Card>;
-          })}
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -111,6 +122,8 @@ const BusinessLanding: React.FC = () => {
       </section>
 
       <Footer />
-    </div>;
+    </div>
+  );
 };
+
 export default BusinessLanding;
