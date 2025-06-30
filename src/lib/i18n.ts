@@ -55,6 +55,22 @@ const resources = {
         booking: {
           title: 'Direktbuchung',
           description: 'Reservieren Sie Ihren Tisch direkt über Google-Integration.'
+        },
+        weeklyMenu: {
+          title: 'Wochenspeiseplan',
+          description: 'Erstellen Sie personalisierte Wochenspeisepläne basierend auf Ihren Ernährungszielen und Vorlieben.'
+        },
+        shoppingList: {
+          title: 'Einkaufsliste',
+          description: 'Automatisch generierte Einkaufslisten basierend auf Ihrem Wochenspeiseplan und Restaurantbesuchen.'
+        },
+        calendarManagement: {
+          title: 'Kalender-Integration',
+          description: 'Verwalten Sie Ihren Speiseplan im Kalender und synchronisieren Sie Restaurantbesuche automatisch.'
+        },
+        mealAdjustment: {
+          title: 'Anpassung bei Restaurantbesuchen',
+          description: 'Ihr Wochenspeiseplan passt sich automatisch an geplante Restaurantbesuche an.'
         }
       },
       pricing: {
@@ -67,6 +83,25 @@ const resources = {
         limitedTime: 'Nur für kurze Zeit',
         viewOnly: 'Nur zur Ansicht',
         minDuration: 'Mindestlaufzeit'
+      },
+      contact: {
+        form: {
+          title: 'Kontaktformular',
+          name: 'Name',
+          email: 'E-Mail',
+          subject: 'Betreff',
+          message: 'Nachricht',
+          send: 'Nachricht senden',
+          success: 'Ihre Nachricht wurde erfolgreich gesendet!',
+          error: 'Fehler beim Senden der Nachricht.',
+          validation: {
+            nameRequired: 'Name ist erforderlich',
+            emailRequired: 'E-Mail ist erforderlich',
+            emailInvalid: 'Bitte geben Sie eine gültige E-Mail-Adresse ein',
+            subjectRequired: 'Betreff ist erforderlich',
+            messageRequired: 'Nachricht ist erforderlich'
+          }
+        }
       },
       footer: {
         company: 'Unternehmen',
@@ -130,6 +165,22 @@ const resources = {
         booking: {
           title: 'Direct Booking',
           description: 'Reserve your table directly through Google integration.'
+        },
+        weeklyMenu: {
+          title: 'Weekly Menu Plan',
+          description: 'Create personalized weekly meal plans based on your nutritional goals and preferences.'
+        },
+        shoppingList: {
+          title: 'Shopping List',
+          description: 'Automatically generated shopping lists based on your weekly meal plan and restaurant visits.'
+        },
+        calendarManagement: {
+          title: 'Calendar Integration',
+          description: 'Manage your meal plan in the calendar and automatically sync restaurant visits.'
+        },
+        mealAdjustment: {
+          title: 'Restaurant Visit Adjustments',
+          description: 'Your weekly meal plan automatically adjusts to planned restaurant visits.'
         }
       },
       pricing: {
@@ -142,6 +193,25 @@ const resources = {
         limitedTime: 'Limited Time Only',
         viewOnly: 'View Only',
         minDuration: 'Minimum duration'
+      },
+      contact: {
+        form: {
+          title: 'Contact Form',
+          name: 'Name',
+          email: 'Email',
+          subject: 'Subject',
+          message: 'Message',
+          send: 'Send Message',
+          success: 'Your message has been sent successfully!',
+          error: 'Error sending message.',
+          validation: {
+            nameRequired: 'Name is required',
+            emailRequired: 'Email is required',
+            emailInvalid: 'Please enter a valid email address',
+            subjectRequired: 'Subject is required',
+            messageRequired: 'Message is required'
+          }
+        }
       },
       footer: {
         company: 'Company',
