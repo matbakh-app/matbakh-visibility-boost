@@ -3,19 +3,21 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Wrench, BarChart3, Brain } from 'lucide-react';
+import { Wrench, BarChart3, Brain, AlertCircle } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import PricingCard from '@/components/PricingCard';
 import { useServicePackages } from '@/hooks/useServicePackages';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const BusinessLanding: React.FC = () => {
   const { t } = useTranslation();
   const { data: packages, isLoading, error } = useServicePackages();
 
-  console.log('BusinessLanding: Packages data:', packages);
-  console.log('BusinessLanding: Loading state:', isLoading);
-  console.log('BusinessLanding: Error state:', error);
+  console.log('BusinessLanding: Current state:');
+  console.log('- Packages:', packages);
+  console.log('- Loading:', isLoading);
+  console.log('- Error:', error);
 
   const services = [
     {
@@ -34,6 +36,61 @@ const BusinessLanding: React.FC = () => {
       description: t('services.analytics.description')
     }
   ];
+
+  const renderPackagesSection = () => {
+    if (isLoading) {
+      return (
+        <div className="text-center py-12">
+          <div className="flex items-center justify-center space-x-2">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+            <p className="text-gray-600">Lade Angebote...</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="py-8">
+          <Alert className="max-w-2xl mx-auto">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Fehler beim Laden der Angebote:</strong> {error.message}
+              <br />
+              <span className="text-sm text-gray-600 mt-2 block">
+                Bitte versuchen Sie es später erneut oder kontaktieren Sie unseren Support.
+              </span>
+            </AlertDescription>
+          </Alert>
+        </div>
+      );
+    }
+
+    if (!packages || packages.length === 0) {
+      return (
+        <div className="text-center py-12">
+          <div className="max-w-md mx-auto">
+            <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Keine Angebote verfügbar</h3>
+            <p className="text-gray-600 mb-4">
+              Unsere Service-Pakete werden gerade aktualisiert. Bitte schauen Sie später wieder vorbei.
+            </p>
+            <Button variant="outline" onClick={() => window.location.reload()}>
+              Seite neu laden
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="grid md:grid-cols-3 gap-8">
+        {packages.map((pkg) => (
+          <PricingCard key={pkg.id} package={pkg} />
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -108,26 +165,7 @@ const BusinessLanding: React.FC = () => {
             </p>
           </div>
 
-          {isLoading ? (
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto mb-4"></div>
-              <p className="text-gray-600">Lade Pakete...</p>
-            </div>
-          ) : error ? (
-            <div className="text-center text-red-600">
-              <p>Fehler beim Laden der Pakete: {error.message}</p>
-            </div>
-          ) : packages && packages.length > 0 ? (
-            <div className="grid md:grid-cols-3 gap-8">
-              {packages.map((pkg) => (
-                <PricingCard key={pkg.id} package={pkg} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center text-gray-600">
-              <p>Keine Pakete verfügbar</p>
-            </div>
-          )}
+          {renderPackagesSection()}
         </div>
       </section>
 

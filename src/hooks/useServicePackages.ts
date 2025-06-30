@@ -20,24 +20,33 @@ export const useServicePackages = () => {
   return useQuery({
     queryKey: ['service-packages'],
     queryFn: async () => {
-      console.log('useServicePackages: Fetching service packages...');
+      console.log('useServicePackages: Starting fetch...');
       
       const { data, error } = await supabase
         .from('service_packages')
         .select('*')
         .eq('is_active', true)
-        .order('sort_order');
+        .order('sort_order', { ascending: true });
 
       if (error) {
-        console.error('useServicePackages: Error fetching packages:', error);
-        throw error;
+        console.error('useServicePackages: Database error:', error);
+        throw new Error(`Fehler beim Laden der Pakete: ${error.message}`);
       }
       
-      console.log('useServicePackages: Fetched packages:', data);
+      if (!data || data.length === 0) {
+        console.warn('useServicePackages: No packages found in database');
+        return [];
+      }
+      
+      console.log('useServicePackages: Successfully fetched packages:', data.length);
+      console.log('useServicePackages: Package data:', data);
+      
       return data as ServicePackage[];
     },
-    retry: 3,
+    retry: 2,
     retryDelay: 1000,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
   });
 };
 
@@ -45,23 +54,25 @@ export const useAddonServices = () => {
   return useQuery({
     queryKey: ['addon-services'],
     queryFn: async () => {
-      console.log('useAddonServices: Fetching addon services...');
+      console.log('useAddonServices: Starting fetch...');
       
       const { data, error } = await supabase
         .from('addon_services')
         .select('*')
         .eq('is_active', true)
-        .order('sort_order');
+        .order('sort_order', { ascending: true });
 
       if (error) {
-        console.error('useAddonServices: Error fetching addons:', error);
-        throw error;
+        console.error('useAddonServices: Database error:', error);
+        throw new Error(`Fehler beim Laden der Add-ons: ${error.message}`);
       }
       
-      console.log('useAddonServices: Fetched addons:', data);
-      return data;
+      console.log('useAddonServices: Successfully fetched addons:', data?.length || 0);
+      return data || [];
     },
-    retry: 3,
+    retry: 2,
     retryDelay: 1000,
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 10 * 60 * 1000,
   });
 };
