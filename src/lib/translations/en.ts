@@ -1,4 +1,3 @@
-
 export const enTranslations = {
   nav: {
     home: 'Home',
@@ -14,7 +13,7 @@ export const enTranslations = {
     title: 'Your Google Visibility. Our Success.',
     subtitle: 'We make your restaurant visible online and help you attract more guests. Simple, effective, successful.',
     cta: 'Learn More',
-    consultation: 'Free Consultation',
+    consultation: 'Schedule Strategy Call',
     b2cTitle: 'Find Your Perfect Restaurant',
     b2cSubtitle: 'Personalized restaurant search based on your preferences and needs.',
     b2cCta: 'Find Restaurant',
@@ -24,13 +23,13 @@ export const enTranslations = {
     heroTitle: 'It\'s good that you already communicate with your guests online',
     heroSubtitle: 'It\'s better when your guests listen',
     cta1: 'Increase Visibility Now',
-    cta2: 'Free Consultation',
+    cta2: 'Schedule Strategy Call',
     servicesTitle: 'We take care of this for you',
     servicesSubtitle: 'Focus on your guests - we handle your online visibility.',
     ctaFinalTitle: 'Ready for more guests?',
     ctaFinalSubtitle: 'Start now and see more online inquiries and reservations for your restaurant within the first weeks.',
     ctaFinalButton1: 'View Packages',
-    ctaFinalButton2: 'Request Consultation'
+    ctaFinalButton2: 'Schedule Strategy Call'
   },
   services: {
     title: 'Our Services',
@@ -43,7 +42,7 @@ export const enTranslations = {
     additionalSubtitle: 'Expand your digital presence with our specialized additional services',
     ctaTitle: 'Ready for more digital visibility?',
     ctaSubtitle: 'You don\'t need to worry about complex technical requirements - we handle that for you.',
-    ctaButton1: 'Free Consultation',
+    ctaButton1: 'Schedule Strategy Call',
     ctaButton2: 'View Packages',
     setup: {
       title: 'Google Business Setup',

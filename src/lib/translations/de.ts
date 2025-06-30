@@ -1,4 +1,3 @@
-
 export const deTranslations = {
   nav: {
     home: 'Startseite',
@@ -14,7 +13,7 @@ export const deTranslations = {
     title: 'Ihre Google-Sichtbarkeit. Unser Erfolg.',
     subtitle: 'Wir machen Ihr Restaurant online sichtbar und helfen Ihnen dabei, mehr Gäste zu gewinnen. Einfach, effektiv, erfolgreich.',
     cta: 'Mehr Infos',
-    consultation: 'Kostenlose Beratung',
+    consultation: 'Strategiegespräch vereinbaren',
     b2cTitle: 'Finden Sie Ihr perfektes Restaurant',
     b2cSubtitle: 'Personalisierte Restaurantsuche basierend auf Ihren Vorlieben und Bedürfnissen.',
     b2cCta: 'Restaurant finden',
@@ -24,13 +23,13 @@ export const deTranslations = {
     heroTitle: 'Es ist gut, dass Sie mit Ihren Gästen bereits online kommunizieren',
     heroSubtitle: 'Es ist besser, wenn Ihre Gäste zuhören',
     cta1: 'Jetzt Sichtbarkeit steigern',
-    cta2: 'Kostenlose Beratung',
+    cta2: 'Strategiegespräch vereinbaren',
     servicesTitle: 'Das übernehmen wir für Sie',
     servicesSubtitle: 'Konzentrieren Sie sich auf Ihre Gäste - wir kümmern uns um Ihre Online-Sichtbarkeit.',
     ctaFinalTitle: 'Bereit für mehr Gäste?',
     ctaFinalSubtitle: 'Starten Sie jetzt und sehen Sie bereits in den ersten Wochen mehr Online-Anfragen und Reservierungen für Ihr Restaurant.',
     ctaFinalButton1: 'Angebote ansehen',
-    ctaFinalButton2: 'Beratung anfragen'
+    ctaFinalButton2: 'Strategiegespräch vereinbaren'
   },
   services: {
     title: 'Unsere Services',
@@ -43,7 +42,7 @@ export const deTranslations = {
     additionalSubtitle: 'Erweitern Sie Ihre digitale Präsenz mit unseren spezialisierten Zusatzleistungen',
     ctaTitle: 'Bereit für mehr digitale Sichtbarkeit?',
     ctaSubtitle: 'Sie müssen sich nicht um komplexe technische Anforderungen kümmern - wir erledigen das für Sie.',
-    ctaButton1: 'Kostenlose Beratung',
+    ctaButton1: 'Strategiegespräch vereinbaren',
     ctaButton2: 'Angebote ansehen',
     setup: {
       title: 'Google Business Setup',
