@@ -199,22 +199,22 @@ export const deTranslations = {
   },
   trust: {
     title: 'Vertrauen durch Ergebnisse',
-    subtitle: 'Über 150 Gastronomen vertrauen bereits auf unsere Expertise',
+    subtitle: 'Von Gastronom für Gastronomen',
     stats: {
       clients: {
-        number: '150+',
-        label: 'Zufriedene Restaurant-Partner',
-        description: 'Gastronomen vertrauen unserer Expertise'
+        number: '20+',
+        label: 'Jahre Erfahrung in der deutschen Gastronomie',
+        description: 'Vom Bistro bis zum Oktoberfest'
       },
       visibility: {
-        number: '300%',
+        number: '30%',
         label: 'Durchschnittliche Sichtbarkeit-Steigerung',
-        description: 'Mehr Online-Anfragen in den ersten 3 Monaten'
+        description: 'Mehr Buchungen und mehr To-Go Verkauf in den ersten 3 Monaten'
       },
       rating: {
         number: '4.9/5',
         label: 'Kundenbewertung',
-        description: 'Basierend auf über 80 Bewertungen'
+        description: 'Ihr Team kann das, wir unterstützen sie'
       },
       guarantee: {
         number: '100%',
@@ -243,10 +243,10 @@ export const deTranslations = {
       }
     },
     certifications: {
-      text: 'Zertifiziert durch',
+      text: 'Zertifiziert durch (demnächst)',
       google: 'Google Partner Program',
       facebook: 'Facebook Business Partner',
-      since: 'seit 2020'
+      since: 'seit 2025'
     }
   },
   process: {
