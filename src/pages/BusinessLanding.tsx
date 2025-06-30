@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -9,57 +8,40 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProblemSection from '@/components/ProblemSection';
 import SolutionSection from '@/components/SolutionSection';
-
 const BusinessLanding: React.FC = () => {
-  const { t } = useTranslation();
+  const {
+    t
+  } = useTranslation();
   const navigate = useNavigate();
-
-  const services = [
-    {
-      icon: Wrench,
-      title: t('services.setup.title'),
-      description: t('services.setup.description')
-    },
-    {
-      icon: BarChart3,
-      title: t('services.management.title'),
-      description: t('services.management.description')
-    },
-    {
-      icon: Brain,
-      title: t('services.analytics.title'),
-      description: t('services.analytics.description')
-    }
-  ];
-
-  return (
-    <div className="min-h-screen bg-white">
+  const services = [{
+    icon: Wrench,
+    title: t('services.setup.title'),
+    description: t('services.setup.description')
+  }, {
+    icon: BarChart3,
+    title: t('services.management.title'),
+    description: t('services.management.description')
+  }, {
+    icon: Brain,
+    title: t('services.analytics.title'),
+    description: t('services.analytics.description')
+  }];
+  return <div className="min-h-screen bg-white">
       <Header />
       
       {/* Hero Section */}
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-5xl font-bold text-black mb-6">
-            Verlieren Sie Gäste an die Konkurrenz?
-          </h1>
+          <h1 className="text-5xl font-bold text-black mb-6">Wie wär's wenn Ihre Zielgruppe Ihr Geschäft besser kennenlernt</h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
             Über 80% der Gäste suchen Restaurants online. Wenn Sie dort nicht sichtbar sind, 
             gehen sie zur Konkurrenz. Wir machen Sie online sichtbar – automatisch und ohne Aufwand für Sie.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              className="bg-black hover:bg-gray-800 text-white px-8 py-3"
-              onClick={() => navigate('/angebote')}
-            >
+            <Button size="lg" className="bg-black hover:bg-gray-800 text-white px-8 py-3" onClick={() => navigate('/angebote')}>
               Jetzt Sichtbarkeit steigern
             </Button>
-            <Button 
-              variant="outline" 
-              size="lg" 
-              className="border-black text-black hover:bg-gray-50 px-8 py-3"
-              onClick={() => navigate('/kontakt')}
-            >
+            <Button variant="outline" size="lg" className="border-black text-black hover:bg-gray-50 px-8 py-3" onClick={() => navigate('/kontakt')}>
               Kostenlose Beratung
             </Button>
           </div>
@@ -86,9 +68,8 @@ const BusinessLanding: React.FC = () => {
           
           <div className="grid md:grid-cols-3 gap-8">
             {services.map((service, index) => {
-              const IconComponent = service.icon;
-              return (
-                <Card key={index} className="bg-white border-0 shadow-sm hover:shadow-md transition-shadow">
+            const IconComponent = service.icon;
+            return <Card key={index} className="bg-white border-0 shadow-sm hover:shadow-md transition-shadow">
                   <CardHeader className="text-center pb-4">
                     <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center mx-auto mb-4">
                       <IconComponent className="h-6 w-6 text-white" />
@@ -102,9 +83,8 @@ const BusinessLanding: React.FC = () => {
                       {service.description}
                     </p>
                   </CardContent>
-                </Card>
-              );
-            })}
+                </Card>;
+          })}
           </div>
         </div>
       </section>
@@ -120,19 +100,10 @@ const BusinessLanding: React.FC = () => {
             und Reservierungen für Ihr Restaurant.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              className="bg-white hover:bg-gray-100 text-black px-8 py-3"
-              onClick={() => navigate('/angebote')}
-            >
+            <Button size="lg" className="bg-white hover:bg-gray-100 text-black px-8 py-3" onClick={() => navigate('/angebote')}>
               Angebote ansehen
             </Button>
-            <Button 
-              variant="outline" 
-              size="lg" 
-              className="border-white text-white hover:bg-white hover:text-black px-8 py-3"
-              onClick={() => navigate('/kontakt')}
-            >
+            <Button variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-black px-8 py-3" onClick={() => navigate('/kontakt')}>
               Beratung anfragen
             </Button>
           </div>
@@ -140,8 +111,6 @@ const BusinessLanding: React.FC = () => {
       </section>
 
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default BusinessLanding;
