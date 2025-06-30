@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { Search, Users, Calendar, ChefHat, ShoppingCart, Utensils, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import BackHomeButtons from '@/components/navigation/BackHomeButtons';
 
 const B2CLanding: React.FC = () => {
   const { t } = useTranslation();
@@ -50,8 +49,6 @@ const B2CLanding: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-4xl mx-auto px-4 py-16">
-        <BackHomeButtons />
-        
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-4xl font-bold text-black mb-4">

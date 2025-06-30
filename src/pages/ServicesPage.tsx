@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import BackHomeButtons from '@/components/navigation/BackHomeButtons';
 
 const ServicesPage: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -54,8 +53,6 @@ const ServicesPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-4xl mx-auto px-4 py-16">
-        <BackHomeButtons />
-        
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-4xl font-bold text-black mb-4">
