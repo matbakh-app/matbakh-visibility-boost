@@ -1,17 +1,16 @@
 
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import LogoSection from '@/components/LogoSection';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const Imprint: React.FC = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
-      <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="py-8">
+      <LogoSection />
+      <div className="max-w-4xl mx-auto px-4">
         <h1 className="text-3xl font-bold mb-8">{t('legal.imprint.title')}</h1>
         
         <Card>
@@ -39,7 +38,6 @@ const Imprint: React.FC = () => {
           </CardContent>
         </Card>
       </div>
-      <Footer />
     </div>
   );
 };
