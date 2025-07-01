@@ -72,6 +72,24 @@ export type Database = {
         }
         Relationships: []
       }
+      billing_events: {
+        Row: {
+          created_at: string | null
+          event: string | null
+          partner_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event?: string | null
+          partner_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event?: string | null
+          partner_id?: string | null
+        }
+        Relationships: []
+      }
       business_partners: {
         Row: {
           address: string | null
@@ -137,6 +155,8 @@ export type Database = {
           address: string
           business_name: string
           created_at: string | null
+          go_live: boolean | null
+          google_connected: boolean | null
           google_place_id: string | null
           id: string
           last_updated: string | null
@@ -153,6 +173,8 @@ export type Database = {
           address: string
           business_name: string
           created_at?: string | null
+          go_live?: boolean | null
+          google_connected?: boolean | null
           google_place_id?: string | null
           id?: string
           last_updated?: string | null
@@ -169,6 +191,8 @@ export type Database = {
           address?: string
           business_name?: string
           created_at?: string | null
+          go_live?: boolean | null
+          google_connected?: boolean | null
           google_place_id?: string | null
           id?: string
           last_updated?: string | null
@@ -407,6 +431,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      google_job_queue: {
+        Row: {
+          created_at: string | null
+          error_message: string | null
+          id: number
+          job_type: string
+          location_id: string | null
+          partner_id: string
+          payload: Json
+          retry_count: number | null
+          run_at: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: number
+          job_type: string
+          location_id?: string | null
+          partner_id: string
+          payload: Json
+          retry_count?: number | null
+          run_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: number
+          job_type?: string
+          location_id?: string | null
+          partner_id?: string
+          payload?: Json
+          retry_count?: number | null
+          run_at?: string | null
+          status?: string | null
+        }
+        Relationships: []
       }
       google_oauth_tokens: {
         Row: {
@@ -760,6 +823,8 @@ export type Database = {
           booking_date: string | null
           created_at: string | null
           expires_at: string | null
+          go_live_at: string | null
+          go_live_required: boolean | null
           id: string
           invoice_url: string | null
           partner_id: string | null
@@ -779,6 +844,8 @@ export type Database = {
           booking_date?: string | null
           created_at?: string | null
           expires_at?: string | null
+          go_live_at?: string | null
+          go_live_required?: boolean | null
           id?: string
           invoice_url?: string | null
           partner_id?: string | null
@@ -798,6 +865,8 @@ export type Database = {
           booking_date?: string | null
           created_at?: string | null
           expires_at?: string | null
+          go_live_at?: string | null
+          go_live_required?: boolean | null
           id?: string
           invoice_url?: string | null
           partner_id?: string | null
@@ -862,6 +931,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      partner_upload_quota: {
+        Row: {
+          month_start: string
+          partner_id: string
+          uploads_used: number | null
+        }
+        Insert: {
+          month_start: string
+          partner_id: string
+          uploads_used?: number | null
+        }
+        Update: {
+          month_start?: string
+          partner_id?: string
+          uploads_used?: number | null
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -1165,6 +1252,33 @@ export type Database = {
       }
       service_packages: {
         Row: {
+          code: string
+          created_at: string | null
+          default_name: string
+          id: string
+          interval_months: number | null
+          is_recurring: boolean | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          default_name: string
+          id?: string
+          interval_months?: number | null
+          is_recurring?: boolean | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          default_name?: string
+          id?: string
+          interval_months?: number | null
+          is_recurring?: boolean | null
+        }
+        Relationships: []
+      }
+      service_packages_legacy: {
+        Row: {
           badge_translations: Json | null
           base_price: number
           created_at: string | null
@@ -1258,6 +1372,47 @@ export type Database = {
           service_type?: string
         }
         Relationships: []
+      }
+      service_prices: {
+        Row: {
+          currency: string | null
+          id: string
+          normal_price_cents: number
+          package_id: string | null
+          promo_active: boolean | null
+          promo_price_cents: number | null
+          valid_from: string | null
+          valid_to: string | null
+        }
+        Insert: {
+          currency?: string | null
+          id?: string
+          normal_price_cents: number
+          package_id?: string | null
+          promo_active?: boolean | null
+          promo_price_cents?: number | null
+          valid_from?: string | null
+          valid_to?: string | null
+        }
+        Update: {
+          currency?: string | null
+          id?: string
+          normal_price_cents?: number
+          package_id?: string | null
+          promo_active?: boolean | null
+          promo_price_cents?: number | null
+          valid_from?: string | null
+          valid_to?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_prices_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "service_packages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       shopping_list_items: {
         Row: {
@@ -1766,6 +1921,8 @@ export type Database = {
           address: string
           business_name: string
           created_at: string | null
+          go_live: boolean | null
+          google_connected: boolean | null
           google_place_id: string | null
           id: string
           last_updated: string | null
