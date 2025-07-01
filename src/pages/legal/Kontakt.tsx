@@ -1,8 +1,6 @@
 
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import LogoSection from '@/components/LogoSection';
 import ContactForm from '@/components/ContactForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,10 +9,9 @@ const Kontakt: React.FC = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
+    <div className="py-8">
       <LogoSection />
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-4">
         <h1 className="text-3xl font-bold mb-8">{t('contact.title')}</h1>
         
         <div className="grid md:grid-cols-2 gap-8">
@@ -46,7 +43,6 @@ const Kontakt: React.FC = () => {
           <ContactForm />
         </div>
       </div>
-      <Footer />
     </div>
   );
 };

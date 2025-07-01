@@ -426,31 +426,6 @@ export const deTranslations = {
       services: '§ 2 Leistungen',
       servicesText: 'Wir bieten Services zur Verbesserung der digitalen Sichtbarkeit von Gastronomiebetrieben an.'
     },
-    contact: {
-      title: 'Kontakt',
-      subtitle: 'Kontaktieren Sie uns',
-      company: 'BaSSco (Bavarian Software Solution)',
-      location: 'München, Deutschland',
-      email: 'E-Mail',
-      responseTime: 'Wir antworten in der Regel innerhalb von 24 Stunden.',
-      form: {
-        title: 'Kontaktformular',
-        name: 'Name',
-        email: 'E-Mail',
-        subject: 'Betreff',
-        message: 'Nachricht',
-        send: 'Nachricht senden',
-        success: 'Ihre Nachricht wurde erfolgreich gesendet!',
-        error: 'Fehler beim Senden der Nachricht.',
-        validation: {
-          nameRequired: 'Name ist erforderlich',
-          emailRequired: 'E-Mail ist erforderlich',
-          emailInvalid: 'Bitte geben Sie eine gültige E-Mail-Adresse ein',
-          subjectRequired: 'Betreff ist erforderlich',
-          messageRequired: 'Nachricht ist erforderlich'
-        }
-      }
-    },
     privacy: {
       title: 'Datenschutzerklärung',
       intro: 'Der Schutz Ihrer persönlichen Daten ist uns wichtig. Diese Datenschutzerklärung informiert Sie über die Verarbeitung Ihrer Daten bei der Nutzung unserer Website.',
