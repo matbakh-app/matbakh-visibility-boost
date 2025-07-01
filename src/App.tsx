@@ -29,12 +29,14 @@ import Impressum from "./pages/legal/Impressum";
 import Datenschutz from "./pages/legal/Datenschutz";
 import AGB from "./pages/legal/AGB";
 import Kontakt from "./pages/legal/Kontakt";
+import Nutzung from "./pages/legal/Nutzung";
 
 // Legal pages - English
 import Imprint from "./pages/legal/Imprint";
 import Privacy from "./pages/legal/Privacy";
 import Terms from "./pages/legal/Terms";
 import Contact from "./pages/legal/Contact";
+import Usage from "./pages/legal/Usage";
 
 const queryClient = new QueryClient();
 
@@ -69,12 +71,14 @@ function App() {
               <Route path="/datenschutz" element={<AppLayout><Datenschutz /></AppLayout>} />
               <Route path="/agb" element={<AppLayout><AGB /></AppLayout>} />
               <Route path="/kontakt" element={<AppLayout><Kontakt /></AppLayout>} />
+              <Route path="/nutzung" element={<AppLayout><Nutzung /></AppLayout>} />
               
               {/* English legal pages */}
               <Route path="/imprint" element={<AppLayout><Imprint /></AppLayout>} />
               <Route path="/privacy" element={<AppLayout><Privacy /></AppLayout>} />
               <Route path="/terms" element={<AppLayout><Terms /></AppLayout>} />
               <Route path="/contact" element={<AppLayout><Contact /></AppLayout>} />
+              <Route path="/usage" element={<AppLayout><Usage /></AppLayout>} />
               
               <Route path="*" element={<AppLayout><NotFound /></AppLayout>} />
             </Routes>

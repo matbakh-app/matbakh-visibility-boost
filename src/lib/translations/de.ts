@@ -397,6 +397,7 @@ export const deTranslations = {
     imprint: 'Impressum',
     privacy: 'Datenschutz',
     terms: 'AGB',
+    usage: 'Nutzungsbedingungen',
     copyright: '© 2024 BaSSco (Bavarian Software Solution), München',
     email: 'Kontakt: mail(at)matbakh(dot)app'
   },
@@ -460,6 +461,23 @@ export const deTranslations = {
       email: 'E-Mail: mail(at)matbakh(dot)app',
       responsibleTitle: 'Verantwortlich für den Inhalt',
       responsible: 'BaSSco (Bavarian Software Solution)'
+    },
+    usage: {
+      title: 'Nutzungsbedingungen',
+      scope: '§ 1 Geltungsbereich',
+      scopeText: 'Diese Nutzungsbedingungen regeln die Nutzung der Plattform matbakh.app und aller damit verbundenen Services von BaSSco (Bavarian Software Solution). Durch die Nutzung unserer Services stimmen Sie diesen Bedingungen zu.',
+      services: '§ 2 Leistungsbeschreibung',
+      servicesText: 'Matbakh.app bietet digitale Marketing-Services für Gastronomiebetriebe, einschließlich Google Business Profile Management, Social Media Services und weitere digitale Sichtbarkeitsoptimierung. Wir helfen Restaurants dabei, ihre Online-Präsenz zu verbessern und mehr Gäste zu erreichen.',
+      userRights: '§ 3 Nutzerrechte',
+      userRightsText: 'Als Nutzer haben Sie das Recht auf Zugang zu den gebuchten Services, regelmäßige Updates und Support gemäß dem gewählten Service-Paket. Sie erhalten transparente Berichte über die erbrachten Leistungen und können jederzeit Einsicht in Ihre Daten verlangen.',
+      userObligations: '§ 4 Nutzerpflichten',
+      userObligationsText: 'Nutzer verpflichten sich, wahrheitsgemäße Angaben zu machen, ihre Zugangsdaten sicher zu verwahren und die Services nicht missbräuchlich zu verwenden. Bei der Bereitstellung von Inhalten müssen Urheberrechte und andere Rechte Dritter beachtet werden.',
+      liability: '§ 5 Haftung',
+      liabilityText: 'Unsere Haftung ist auf Vorsatz und grobe Fahrlässigkeit beschränkt. Für mittelbare Schäden, entgangenen Gewinn oder Folgeschäden übernehmen wir keine Haftung, soweit gesetzlich zulässig. Die Services werden nach bestem Wissen und Gewissen erbracht.',
+      termination: '§ 6 Kündigung',
+      terminationText: 'Service-Verträge können gemäß den jeweiligen Vertragsbedingungen gekündigt werden. Bei Kündigung erhalten Sie alle Zugangsdaten zu Ihren Profilen und eine Übergabedokumentation. Ihre Daten bleiben Ihr Eigentum.',
+      law: '§ 7 Anwendbares Recht',
+      lawText: 'Es gilt deutsches Recht unter Ausschluss des UN-Kaufrechts. Gerichtsstand ist München. Diese Nutzungsbedingungen werden regelmäßig aktualisiert, um rechtlichen Anforderungen und Änderungen unserer Services zu entsprechen.'
     }
   }
 };

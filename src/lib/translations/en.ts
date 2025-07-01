@@ -397,6 +397,7 @@ export const enTranslations = {
     imprint: 'Imprint',
     privacy: 'Privacy',
     terms: 'Terms',
+    usage: 'Terms of Use',
     copyright: '© 2024 BaSSco (Bavarian Software Solution), Munich',
     email: 'Contact: mail(at)matbakh(dot)app'
   },
@@ -485,6 +486,23 @@ export const enTranslations = {
       email: 'Email: mail(at)matbakh(dot)app',
       responsibleTitle: 'Responsible for Content',
       responsible: 'BaSSco (Bavarian Software Solution)'
+    },
+    usage: {
+      title: 'Terms of Use',
+      scope: '1. Scope',
+      scopeText: 'These Terms of Use govern the use of the matbakh.app platform and all related services by BaSSco (Bavarian Software Solution). By using our services, you agree to these terms.',
+      services: '2. Service Description',
+      servicesText: 'Matbakh.app provides digital marketing services for restaurant businesses, including Google Business Profile management, social media services, and other digital visibility optimization. We help restaurants improve their online presence and reach more guests.',
+      userRights: '3. User Rights',
+      userRightsText: 'As a user, you have the right to access booked services, receive regular updates, and support according to your chosen service package. You receive transparent reports on delivered services and can request access to your data at any time.',
+      userObligations: '4. User Obligations',
+      userObligationsText: 'Users commit to providing truthful information, keeping their access credentials secure, and not misusing the services. When providing content, copyright and other third-party rights must be respected.',
+      liability: '5. Liability',
+      liabilityText: 'Our liability is limited to intent and gross negligence. We assume no liability for indirect damages, lost profits, or consequential damages to the extent legally permissible. Services are provided to the best of our knowledge and belief.',
+      termination: '6. Termination',
+      terminationText: 'Service contracts can be terminated according to respective contract terms. Upon termination, you receive all access credentials to your profiles and handover documentation. Your data remains your property.',
+      law: '7. Applicable Law',
+      lawText: 'German law applies excluding the UN Convention on Contracts for the International Sale of Goods. Jurisdiction is Munich. These Terms of Use are regularly updated to comply with legal requirements and changes to our services.'
     }
   }
 };

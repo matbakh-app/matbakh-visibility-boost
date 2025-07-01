@@ -16,7 +16,8 @@ const Footer: React.FC = () => {
         .replace('/kontakt', '/contact')
         .replace('/impressum', '/imprint')
         .replace('/datenschutz', '/privacy')
-        .replace('/agb', '/terms');
+        .replace('/agb', '/terms')
+        .replace('/nutzung', '/usage');
     }
     
     navigate(translatedPath);
@@ -50,6 +51,12 @@ const Footer: React.FC = () => {
               className="text-sm text-gray-600 hover:text-black"
             >
               {t('footer.terms')}
+            </button>
+            <button 
+              onClick={() => handleNavigation('/nutzung')}
+              className="text-sm text-gray-600 hover:text-black"
+            >
+              {t('footer.usage')}
             </button>
             <button 
               onClick={() => handleNavigation('/kontakt')}
