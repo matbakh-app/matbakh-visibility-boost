@@ -1,13 +1,13 @@
 
 // src/hooks/useServicePackages.ts
-// Matbakh 3.0 – refactored for new service_packages / service_prices schema
+// Matbakh 3.0 – updated for new service_packages / service_prices schema
 
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL!,
-  import.meta.env.VITE_SUPABASE_ANON_KEY!
+  "https://uheksobnyedarrpgxhju.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVoZWtzb2JueWVkYXJycGd4aGp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzMDk0NDUsImV4cCI6MjA2NTg4NTQ0NX0.dlbs4P3ZgXByNj7H1_k99YcOok9WmqgLZ1NtjONJYVs"
 );
 
 /**

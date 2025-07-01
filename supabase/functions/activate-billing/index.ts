@@ -1,102 +1,147 @@
 
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import Stripe from "https://esm.sh/stripe@14.21.0";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
+import Stripe from 'https://esm.sh/stripe@14.21.0';
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
     const { partner_id } = await req.json();
-    
+
     if (!partner_id) {
-      return new Response(JSON.stringify({ error: "partner_id is required" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 400,
-      });
+      return new Response(
+        JSON.stringify({ error: 'partner_id is required' }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
-
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { 
-      apiVersion: "2023-10-16" 
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY')!;
+    
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const stripe = new Stripe(stripeSecretKey, {
+      apiVersion: '2023-10-16',
     });
 
-    console.log(`Activating billing for partner ${partner_id}`);
+    console.log(`Activating billing for partner: ${partner_id}`);
 
-    // Get partner info including business profile
-    const { data: partner, error: partnerError } = await supabase
-      .from("business_profiles")
-      .select("google_connected, go_live, partner_id")
-      .eq("partner_id", partner_id)
+    // Get partner's business profile and booking info
+    const { data: businessProfile, error: profileError } = await supabase
+      .from('business_profiles')
+      .select('google_connected, go_live')
+      .eq('partner_id', partner_id)
       .single();
 
-    if (partnerError || !partner) {
-      console.error("Partner not found:", partnerError);
-      return new Response(JSON.stringify({ error: "Partner not found" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 404,
-      });
+    if (profileError || !businessProfile) {
+      console.error('Failed to fetch business profile:', profileError);
+      return new Response(
+        JSON.stringify({ error: 'Business profile not found' }),
+        { 
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
 
-    if (!partner.go_live || !partner.google_connected) {
-      return new Response(JSON.stringify({ error: "Partner not ready for billing activation" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 400,
-      });
+    // Check if partner is ready for billing activation
+    if (!businessProfile.google_connected || !businessProfile.go_live) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Partner not ready for billing activation',
+          google_connected: businessProfile.google_connected,
+          go_live: businessProfile.go_live,
+        }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
 
-    // Get partner booking info
-    const { data: booking, error: bookingError } = await supabase
-      .from("partner_bookings")
-      .select("stripe_subscription_id")
-      .eq("partner_id", partner_id)
-      .single();
+    // Get partner's active bookings
+    const { data: bookings, error: bookingsError } = await supabase
+      .from('partner_bookings')
+      .select('*')
+      .eq('partner_id', partner_id)
+      .eq('status', 'active')
+      .not('stripe_subscription_id', 'is', null);
 
-    if (bookingError || !booking?.stripe_subscription_id) {
-      console.error("No active subscription found:", bookingError);
-      return new Response(JSON.stringify({ error: "No active subscription found" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 400,
-      });
+    if (bookingsError) {
+      console.error('Failed to fetch bookings:', bookingsError);
+      throw bookingsError;
     }
 
-    // End trial and activate billing
-    await stripe.subscriptions.update(booking.stripe_subscription_id, {
-      trial_end: "now",
-      proration_behavior: "none",
+    let activatedCount = 0;
+
+    // Activate billing for each subscription
+    for (const booking of bookings || []) {
+      try {
+        if (booking.stripe_subscription_id) {
+          console.log(`Activating subscription: ${booking.stripe_subscription_id}`);
+          
+          // End trial period and start billing
+          await stripe.subscriptions.update(booking.stripe_subscription_id, {
+            trial_end: 'now',
+            proration_behavior: 'none',
+          });
+
+          // Update booking status
+          await supabase
+            .from('partner_bookings')
+            .update({
+              go_live_required: false,
+              go_live_at: new Date().toISOString(),
+              status: 'active',
+            })
+            .eq('id', booking.id);
+
+          activatedCount++;
+          console.log(`Successfully activated billing for booking ${booking.id}`);
+        }
+      } catch (error) {
+        console.error(`Failed to activate billing for booking ${booking.id}:`, error);
+        // Continue with other bookings even if one fails
+      }
+    }
+
+    // Log the billing activation event
+    await supabase.from('billing_events').insert({
+      partner_id: partner_id,
+      event: 'billing_activated',
     });
 
-    // Update partner booking status
-    await supabase
-      .from("partner_bookings")
-      .update({ 
-        go_live_required: false, 
-        go_live_at: new Date().toISOString() 
-      })
-      .eq("partner_id", partner_id);
+    const result = {
+      success: true,
+      message: `Billing activated for ${activatedCount} subscription(s)`,
+      partner_id,
+      activated_subscriptions: activatedCount,
+    };
 
-    console.log(`Successfully activated billing for partner ${partner_id}`);
+    console.log(`Billing activation complete for partner ${partner_id}: ${activatedCount} subscriptions activated`);
 
-    return new Response(JSON.stringify({ message: "Billing activated successfully" }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
+    return new Response(JSON.stringify(result), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
+
   } catch (error) {
-    console.error("Activate billing error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
-    });
+    console.error('Billing activation error:', error);
+    return new Response(
+      JSON.stringify({ success: false, error: error.message }),
+      { 
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
   }
 });
