@@ -51,7 +51,13 @@ export const useNewServicePackages = () => {
 
       console.log('useNewServicePackages: Total records from database:', data.length);
       
-      return data as NewServicePackage[];
+      // Transform the data to ensure prices is always an array
+      const transformedData = data.map(pkg => ({
+        ...pkg,
+        prices: Array.isArray(pkg.prices) ? pkg.prices : (pkg.prices ? [pkg.prices] : [])
+      }));
+      
+      return transformedData as NewServicePackage[];
     },
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
