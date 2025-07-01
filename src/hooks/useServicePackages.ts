@@ -1,11 +1,38 @@
 
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+// src/hooks/useServicePackages.ts
+// Matbakh 3.0 – refactored for new service_packages / service_prices schema
 
+import { useQuery } from "@tanstack/react-query";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL!,
+  import.meta.env.VITE_SUPABASE_ANON_KEY!
+);
+
+/**
+ * Raw shape returned by Supabase join query
+ */
+interface RawServicePackage {
+  id: string;
+  code: string;
+  default_name: string;
+  is_recurring: boolean;
+  interval_months: number | null;
+  service_prices: {
+    normal_price_cents: number;
+    promo_price_cents: number | null;
+    promo_active: boolean;
+  }[];
+}
+
+/**
+ * Normalised shape used in UI
+ */
 export interface ServicePackage {
   id: string;
+  slug: string; // alias for code – maintained for backwards‑compat
   name: string;
-  slug: string;
   description: string;
   base_price: number;
   original_price: number | null;
@@ -16,18 +43,29 @@ export interface ServicePackage {
   min_duration_months: number;
 }
 
-export const useServicePackages = () => {
-  return useQuery({
-    queryKey: ['service-packages'],
+/**
+ * Fetches service packages with joined pricing and maps to UI‑friendly shape
+ */
+export const useServicePackages = () =>
+  useQuery({
+    queryKey: ["service-packages"],
     queryFn: async () => {
       console.log('useServicePackages: Starting fetch...');
       
-      // Simplified query - just get all active service packages first
       const { data, error } = await supabase
-        .from('service_packages')
-        .select('*')
-        .eq('is_active', true)
-        .order('sort_order', { ascending: true });
+        .from("service_packages")
+        .select(`
+          id, 
+          code, 
+          default_name, 
+          is_recurring, 
+          interval_months, 
+          service_prices(
+            normal_price_cents, 
+            promo_price_cents, 
+            promo_active
+          )
+        `);
 
       console.log('useServicePackages: Raw database response:', { data, error });
 
@@ -42,51 +80,67 @@ export const useServicePackages = () => {
       }
 
       console.log('useServicePackages: Total records from database:', data.length);
-      console.log('useServicePackages: All package slugs:', data.map(pkg => pkg.slug));
       
-      // Filter for specific packages we want to show on the offers page
-      const targetSlugs = ['google-business-setup', 'profilpflege-basis', 'social-media-management', 'premium-business-paket'];
-      const filteredData = data.filter(pkg => targetSlugs.includes(pkg.slug));
-      
-      console.log('useServicePackages: Filtered packages:', filteredData.length);
-      console.log('useServicePackages: Filtered slugs:', filteredData.map(pkg => pkg.slug));
-      
-      if (filteredData.length === 0) {
-        console.warn('useServicePackages: No matching packages found. Available slugs:', data.map(pkg => pkg.slug));
-        console.warn('useServicePackages: Target slugs:', targetSlugs);
-        return [];
-      }
-      
-      // Defensive validation of package data
-      const validatedPackages = filteredData.filter(pkg => {
-        const isValid = pkg.name && 
-                       pkg.slug && 
-                       typeof pkg.base_price === 'number' && 
-                       pkg.base_price > 0 &&
-                       Array.isArray(pkg.features);
+      // Map the new schema to the expected UI format
+      const mappedPackages = data.map((pkg) => {
+        const price = pkg.service_prices?.[0];
+        const basePrice = (price?.normal_price_cents ?? 0) / 100;
+        const promoPrice = price?.promo_price_cents ? price.promo_price_cents / 100 : null;
         
-        if (!isValid) {
-          console.warn('useServicePackages: Invalid package data:', pkg);
-        }
-        
-        return isValid;
-      }).map(pkg => ({
-        ...pkg,
-        features: pkg.features || [],
-        original_price: pkg.original_price || null,
-        min_duration_months: pkg.min_duration_months || 0
-      }));
+        return {
+          id: pkg.id,
+          slug: pkg.code, // keep old property name for existing components
+          name: pkg.default_name,
+          description: `Service package: ${pkg.default_name}`,
+          base_price: promoPrice && price?.promo_active ? promoPrice : basePrice,
+          original_price: promoPrice && price?.promo_active ? basePrice : null,
+          features: getFeaturesByCode(pkg.code),
+          is_active: true,
+          is_recommended: pkg.code === 'premium-business-paket',
+          period: pkg.is_recurring ? 'monthly' : 'one-time',
+          min_duration_months: pkg.interval_months || 0
+        };
+      });
       
-      console.log('useServicePackages: Successfully validated packages:', validatedPackages.length);
-      console.log('useServicePackages: Final package data:', validatedPackages);
+      console.log('useServicePackages: Successfully mapped packages:', mappedPackages.length);
+      console.log('useServicePackages: Final package data:', mappedPackages);
       
-      return validatedPackages as ServicePackage[];
+      return mappedPackages as ServicePackage[];
     },
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-    staleTime: 0, // Always fetch fresh data to debug
-    gcTime: 0, // Don't cache to avoid cache issues
   });
+
+// Helper function to get features by package code
+const getFeaturesByCode = (code: string): string[] => {
+  const featureMap: Record<string, string[]> = {
+    'google-business-setup': [
+      'Vollständige Google Business Profil-Erstellung',
+      'SEO-Optimierung für lokale Suche',
+      'Kategorien und Attribute einrichten',
+      'Öffnungszeiten und Kontaktdaten pflegen'
+    ],
+    'profilpflege-basis': [
+      '4 monatliche Updates Ihrer Daten',
+      'Neue Speisekarten hochladen',
+      'Angebote und Aktionen erstellen',
+      'Monatlicher Erfolgsbericht'
+    ],
+    'social-media-management': [
+      'Einheitliches Design für wiederkehrende Posts',
+      '1 Post pro Tag (30 Posts/Monat)',
+      'Content-Vorabprüfung durch Sie',
+      'Performance-Tracking und Analytics'
+    ],
+    'premium-business-paket': [
+      'Google Business Setup inklusive',
+      '6 Monate Profilpflege inklusive',
+      '1 Social Media Kanal für 6 Monate',
+      'Persönlicher Account Manager'
+    ]
+  };
+  
+  return featureMap[code] || [];
 };
 
 export const useAddonServices = () => {
