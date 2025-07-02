@@ -218,8 +218,8 @@ export const enTranslations = {
       },
       guarantee: {
         number: '100%',
-        label: 'Transparency Guarantee',
-        description: 'No hidden costs or surprises'
+        label: 'Risk-free guarantee',
+        description: 'Pay only after results'
       }
     },
     testimonials: {
