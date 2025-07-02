@@ -218,8 +218,8 @@ export const deTranslations = {
       },
       guarantee: {
         number: '100%',
-        label: 'Transparenz-Garantie',
-        description: 'Keine versteckten Kosten oder Überraschungen'
+        label: 'Garantiert risikofrei',
+        description: 'Wir belasten Ihre Karte erst, wenn Ihr Profil live ist'
       }
     },
     testimonials: {
