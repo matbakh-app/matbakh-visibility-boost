@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
@@ -14,13 +13,14 @@ import { PackageEditModal } from '@/components/admin/PackageEditModal';
 import { AddonServiceEditModal } from '@/components/admin/AddonServiceEditModal';
 import { useToast } from '@/hooks/use-toast';
 import { Edit, Plus, Euro, Calendar } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const AdminPanel: React.FC = () => {
   const { isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  
-  // State
+  const { t } = useTranslation();
+
   const [packages, setPackages] = useState<any[]>([]);
   const [addonServices, setAddonServices] = useState<any[]>([]);
   const [selectedPackage, setSelectedPackage] = useState<any>(null);
@@ -29,27 +29,16 @@ const AdminPanel: React.FC = () => {
   const [addonModalOpen, setAddonModalOpen] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
 
-  // Load data
   const loadData = async () => {
     setLoadingData(true);
     try {
-      // Load packages with prices
       const { data: packagesData, error: packagesError } = await supabase
         .from('service_packages')
-        .select(`
-          *,
-          service_prices (
-            normal_price_cents,
-            promo_price_cents,
-            promo_active,
-            currency
-          )
-        `)
+        .select(`*, service_prices ( normal_price_cents, promo_price_cents, promo_active, currency )`)
         .order('default_name');
 
       if (packagesError) throw packagesError;
 
-      // Load addon services
       const { data: addonsData, error: addonsError } = await supabase
         .from('addon_services')
         .select('*')
@@ -62,9 +51,9 @@ const AdminPanel: React.FC = () => {
     } catch (error) {
       console.error('Error loading data:', error);
       toast({
-        title: "Fehler",
-        description: "Daten konnten nicht geladen werden.",
-        variant: "destructive"
+        title: t('adminPanel.errorTitle'),
+        description: t('adminPanel.errorDescription'),
+        variant: 'destructive'
       });
     } finally {
       setLoadingData(false);
@@ -75,16 +64,14 @@ const AdminPanel: React.FC = () => {
     loadData();
   }, []);
 
-  if (loading) return <div>Lädt...</div>;
-  
+  if (loading) return <div>{t('adminPanel.loading')}</div>;
+
   if (!isAdmin) {
     navigate('/');
     return null;
   }
 
-  const formatPrice = (cents: number) => {
-    return (cents / 100).toFixed(2);
-  };
+  const formatPrice = (cents: number) => (cents / 100).toFixed(2);
 
   const handleEditPackage = (pkg: any) => {
     setSelectedPackage({
@@ -104,17 +91,17 @@ const AdminPanel: React.FC = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold">Admin Panel</h1>
-          <p className="text-muted-foreground">Preise und Services verwalten</p>
+          <h1 className="text-3xl font-bold">{t('adminPanel.title')}</h1>
+          <p className="text-muted-foreground">{t('adminPanel.subtitle')}</p>
         </div>
 
         <Tabs defaultValue="packages" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="packages">Service Packages</TabsTrigger>
-            <TabsTrigger value="addons">Add-on Services</TabsTrigger>
+            <TabsTrigger value="packages">{t('adminPanel.packagesTab')}</TabsTrigger>
+            <TabsTrigger value="addons">{t('adminPanel.addonsTab')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="packages">
@@ -122,47 +109,43 @@ const AdminPanel: React.FC = () => {
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <Calendar className="h-5 w-5" />
-                  Service Packages
+                  {t('adminPanel.packagesTitle')}
                 </CardTitle>
                 <Button size="sm">
                   <Plus className="h-4 w-4 mr-2" />
-                  Neues Paket
+                  {t('adminPanel.newPackage')}
                 </Button>
               </CardHeader>
               <CardContent>
                 {loadingData ? (
-                  <div className="text-center py-8">Lade Pakete...</div>
+                  <div className="text-center py-8">{t('adminPanel.loadingPackages')}</div>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Code</TableHead>
-                        <TableHead>Typ</TableHead>
-                        <TableHead>Preis</TableHead>
-                        <TableHead>Aktion</TableHead>
-                        <TableHead className="text-right">Aktionen</TableHead>
+                        <TableHead>{t('adminPanel.name')}</TableHead>
+                        <TableHead>{t('adminPanel.code')}</TableHead>
+                        <TableHead>{t('adminPanel.type')}</TableHead>
+                        <TableHead>{t('adminPanel.price')}</TableHead>
+                        <TableHead>{t('adminPanel.promo')}</TableHead>
+                        <TableHead className="text-right">{t('adminPanel.actions')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {packages.map((pkg) => (
                         <TableRow key={pkg.id}>
                           <TableCell className="font-medium">{pkg.default_name}</TableCell>
+                          <TableCell><Badge variant="outline">{pkg.code}</Badge></TableCell>
                           <TableCell>
-                            <Badge variant="outline">{pkg.code}</Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={pkg.is_recurring ? "default" : "secondary"}>
-                              {pkg.is_recurring ? `${pkg.interval_months}M` : 'Einmalig'}
+                            <Badge variant={pkg.is_recurring ? 'default' : 'secondary'}>
+                              {pkg.is_recurring ? `${pkg.interval_months}M` : t('adminPanel.oneTime')}
                             </Badge>
                           </TableCell>
                           <TableCell>
                             {pkg.service_prices?.[0] ? (
                               <div className="flex items-center gap-2">
                                 <Euro className="h-4 w-4" />
-                                <span className="font-medium">
-                                  {formatPrice(pkg.service_prices[0].normal_price_cents)}
-                                </span>
+                                <span className="font-medium">{formatPrice(pkg.service_prices[0].normal_price_cents)}</span>
                                 {pkg.service_prices[0].promo_price_cents && (
                                   <span className="text-sm text-muted-foreground line-through">
                                     {formatPrice(pkg.service_prices[0].promo_price_cents)}
@@ -170,24 +153,18 @@ const AdminPanel: React.FC = () => {
                                 )}
                               </div>
                             ) : (
-                              <span className="text-muted-foreground">Kein Preis</span>
+                              <span className="text-muted-foreground">{t('adminPanel.noPrice')}</span>
                             )}
                           </TableCell>
                           <TableCell>
-                            {pkg.service_prices?.[0]?.promo_active ? (
-                              <Badge variant="destructive">Aktiv</Badge>
-                            ) : (
-                              <Badge variant="outline">Inaktiv</Badge>
-                            )}
+                            <Badge variant={pkg.service_prices?.[0]?.promo_active ? 'destructive' : 'outline'}>
+                              {pkg.service_prices?.[0]?.promo_active ? t('adminPanel.active') : t('adminPanel.inactive')}
+                            </Badge>
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEditPackage(pkg)}
-                            >
+                            <Button variant="outline" size="sm" onClick={() => handleEditPackage(pkg)}>
                               <Edit className="h-4 w-4 mr-2" />
-                              Bearbeiten
+                              {t('adminPanel.edit')}
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -204,62 +181,52 @@ const AdminPanel: React.FC = () => {
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <Plus className="h-5 w-5" />
-                  Add-on Services
+                  {t('adminPanel.addonsTitle')}
                 </CardTitle>
                 <Button size="sm">
                   <Plus className="h-4 w-4 mr-2" />
-                  Neuer Add-on
+                  {t('adminPanel.newAddon')}
                 </Button>
               </CardHeader>
               <CardContent>
                 {loadingData ? (
-                  <div className="text-center py-8">Lade Add-ons...</div>
+                  <div className="text-center py-8">{t('adminPanel.loadingAddons')}</div>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Kategorie</TableHead>
-                        <TableHead>Preis</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Zeitraum</TableHead>
-                        <TableHead className="text-right">Aktionen</TableHead>
+                        <TableHead>{t('adminPanel.name')}</TableHead>
+                        <TableHead>{t('adminPanel.category')}</TableHead>
+                        <TableHead>{t('adminPanel.price')}</TableHead>
+                        <TableHead>{t('adminPanel.status')}</TableHead>
+                        <TableHead>{t('adminPanel.period')}</TableHead>
+                        <TableHead className="text-right">{t('adminPanel.actions')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {addonServices.map((addon) => (
                         <TableRow key={addon.id}>
                           <TableCell className="font-medium">{addon.name}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{addon.category}</Badge>
-                          </TableCell>
+                          <TableCell><Badge variant="outline">{addon.category}</Badge></TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
                               <Euro className="h-4 w-4" />
                               <span className="font-medium">€{addon.price}</span>
                               {addon.original_price && (
-                                <span className="text-sm text-muted-foreground line-through">
-                                  €{addon.original_price}
-                                </span>
+                                <span className="text-sm text-muted-foreground line-through">€{addon.original_price}</span>
                               )}
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge variant={addon.is_active ? "default" : "secondary"}>
-                              {addon.is_active ? 'Aktiv' : 'Inaktiv'}
+                            <Badge variant={addon.is_active ? 'default' : 'secondary'}>
+                              {addon.is_active ? t('adminPanel.active') : t('adminPanel.inactive')}
                             </Badge>
                           </TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{addon.period}</Badge>
-                          </TableCell>
+                          <TableCell><Badge variant="outline">{addon.period}</Badge></TableCell>
                           <TableCell className="text-right">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEditAddon(addon)}
-                            >
+                            <Button variant="outline" size="sm" onClick={() => handleEditAddon(addon)}>
                               <Edit className="h-4 w-4 mr-2" />
-                              Bearbeiten
+                              {t('adminPanel.edit')}
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -272,7 +239,6 @@ const AdminPanel: React.FC = () => {
           </TabsContent>
         </Tabs>
 
-        {/* Modals */}
         <PackageEditModal
           package={selectedPackage}
           isOpen={packageModalOpen}
