@@ -38,7 +38,7 @@ const BusinessLogin: React.FC = () => {
         </div>
         
         <Footer />
-        <AuthDebugInfo />
+        {process.env.NODE_ENV === 'development' && <AuthDebugInfo />}
       </div>
     </Suspense>
   );

@@ -10,6 +10,7 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   signInWithGoogle: () => Promise<void>;
+  signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
 
@@ -107,6 +108,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const signIn = async (email: string, password: string) => {
+    console.log('AuthProvider: Starting email sign in');
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+    
+    if (error) {
+      console.error('AuthProvider: Email login error:', error);
+    }
+    
+    return { error };
+  };
+
   const signOut = async () => {
     console.log('AuthProvider: Signing out');
     const { error } = await supabase.auth.signOut();
@@ -121,6 +136,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loading,
     isAdmin,
     signInWithGoogle,
+    signIn,
     signOut
   };
 

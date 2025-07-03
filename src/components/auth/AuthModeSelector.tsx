@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import GoogleLoginButton from './GoogleLoginButton';
 import GoogleRegisterButton from './GoogleRegisterButton';
 import EmailRegisterForm from './EmailRegisterForm';
+import EmailLoginForm from './EmailLoginForm';
 
-type AuthMode = 'login' | 'google-register' | 'email-register';
+type AuthMode = 'login-google' | 'login-email' | 'google-register' | 'email-register';
 
 const AuthModeSelector: React.FC = () => {
   const { t } = useTranslation('auth');
@@ -16,37 +17,46 @@ const AuthModeSelector: React.FC = () => {
     return <EmailRegisterForm onBack={() => setMode(null)} />;
   }
 
+  if (mode === 'login-email') {
+    return <EmailLoginForm onBack={() => setMode(null)} />;
+  }
+
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
         <CardTitle className="text-center text-2xl">
-          {t('businessLogin')}
+          {t('login.title')}
         </CardTitle>
         <p className="text-center text-gray-600">
-          {t('selectAuthMethod')}
+          {t('login.subtitle')}
         </p>
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {mode === 'login' && <GoogleLoginButton />}
+        {mode === 'login-google' && <GoogleLoginButton />}
         {mode === 'google-register' && <GoogleRegisterButton />}
         
         {!mode && (
           <>
-            <Button 
-              onClick={() => setMode('login')}
-              variant="outline"
-              className="w-full"
-            >
-              {t('existingUserLogin')}
-            </Button>
-            
-            <Button 
-              onClick={() => setMode('google-register')}
-              className="w-full"
-            >
-              {t('newUserGoogleRegister')}
-            </Button>
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-gray-700">Anmeldung für bestehende Nutzer:</p>
+              <div className="grid grid-cols-2 gap-2">
+                <Button 
+                  onClick={() => setMode('login-google')}
+                  variant="outline"
+                  className="w-full"
+                >
+                  {t('login.google')}
+                </Button>
+                <Button 
+                  onClick={() => setMode('login-email')}
+                  variant="outline"
+                  className="w-full"
+                >
+                  {t('login.email')}
+                </Button>
+              </div>
+            </div>
             
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
@@ -59,13 +69,22 @@ const AuthModeSelector: React.FC = () => {
               </div>
             </div>
             
-            <Button 
-              onClick={() => setMode('email-register')}
-              variant="outline"
-              className="w-full"
-            >
-              {t('registerWithEmail')}
-            </Button>
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-gray-700">Neuer Nutzer:</p>
+              <Button 
+                onClick={() => setMode('google-register')}
+                className="w-full"
+              >
+                {t('register.google')}
+              </Button>
+              <Button 
+                onClick={() => setMode('email-register')}
+                variant="outline"
+                className="w-full"
+              >
+                {t('register.email')}
+              </Button>
+            </div>
           </>
         )}
         
