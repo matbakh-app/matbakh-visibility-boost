@@ -11,6 +11,97 @@ export const deTranslations = {
       premium_description: 'Google Business Setup inklusive'
     }
   },
+  packages: {
+    google_setup: {
+      features: [
+        'Vollständige Google Business Profil-Erstellung',
+        'SEO-Optimierung für lokale Suche',
+        'Kategorien und Attribute einrichten',
+        'Öffnungszeiten und Kontaktdaten pflegen'
+      ]
+    },
+    profile_basic: {
+      features: [
+        '4 monatliche Updates Ihrer Daten',
+        'Neue Speisekarten hochladen',
+        'Angebote und Aktionen erstellen',
+        'Monatlicher Erfolgsbericht'
+      ]
+    },
+    social_media: {
+      features: [
+        'Einheitliches Design für wiederkehrende Posts',
+        '1 Post pro Tag (30 Posts/Monat)',
+        'Content-Vorabprüfung durch Sie',
+        'Performance-Tracking und Analytics'
+      ]
+    },
+    premium: {
+      features: [
+        'Google Business Setup inklusive',
+        '6 Monate Profilpflege inklusive',
+        '1 Social Media Kanal für 6 Monate',
+        'Persönlicher Account Manager'
+      ]
+    }
+  },
+  addons: {
+    social_setup: {
+      name: 'Social Media Kanal Setup',
+      description: 'Professionelle Einrichtung Ihres Instagram oder Facebook Kanals',
+      features: [
+        'Profil-Optimierung',
+        'CI-konforme Gestaltung',
+        'Erste Content-Strategie',
+        'Google Business Verknüpfung',
+        'Analytics Setup'
+      ]
+    },
+    google_chatbot: {
+      name: 'Google Chatbot Setup',
+      description: 'Automatisierte Antworten für Google Business Profile',
+      features: [
+        'Intelligente Antwortautomatisierung',
+        'Häufige Fragen Setup',
+        'Anpassbare Antwortvorlagen',
+        'Analytics und Reporting',
+        '24/7 automatische Kundenbetreuung'
+      ]
+    },
+    instagram_setup: {
+      name: 'Instagram Account Setup',
+      description: 'Professionelle Einrichtung Ihres Instagram Business Profils',
+      features: [
+        'Business Profil Optimierung',
+        'Story Highlights Setup',
+        'Bio-Link Optimierung',
+        'Hashtag-Strategie',
+        'Content-Planung Templates'
+      ]
+    },
+    facebook_setup: {
+      name: 'Facebook Business Setup',
+      description: 'Vollständige Einrichtung Ihrer Facebook Business Seite',
+      features: [
+        'Business Seite erstellen',
+        'Über uns Optimierung',
+        'Call-to-Action Buttons',
+        'Geschäftszeiten Setup',
+        'Review-Monitoring Setup'
+      ]
+    },
+    social_chatbot: {
+      name: 'Social Media Chatbot',
+      description: 'Automatisierte Antworten für Social Media Kanäle',
+      features: [
+        'Automatische Kommentar-Antworten',
+        'Direktnachrichten-Automation',
+        'FAQ-Integration',
+        'Mehrsprachiger Support',
+        'Performance Analytics'
+      ]
+    }
+  },
   navigation: {
     back: 'Zurück',
     home: 'Zur Startseite'

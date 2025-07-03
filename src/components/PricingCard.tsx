@@ -35,42 +35,23 @@ const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = fals
     }
   };
 
-  // Feature mapping for internationalization
-  const featureMap: Record<string, Record<string, Record<'de' | 'en', string>>> = {
-    'google-business-setup': {
-      '0': { de: 'Vollständige Google Business Profil-Erstellung', en: 'Complete Google Business Profile setup' },
-      '1': { de: 'SEO-Optimierung für lokale Suche', en: 'SEO optimization for local search' },
-      '2': { de: 'Kategorien und Attribute einrichten', en: 'Categories and attributes setup' },
-      '3': { de: 'Öffnungszeiten und Kontaktdaten pflegen', en: 'Opening hours and contact data management' }
-    },
-    'profilpflege-basis': {
-      '0': { de: '4 monatliche Updates Ihrer Daten', en: '4 monthly data updates' },
-      '1': { de: 'Neue Speisekarten hochladen', en: 'New menu uploads' },
-      '2': { de: 'Angebote und Aktionen erstellen', en: 'Create offers and promotions' },
-      '3': { de: 'Monatlicher Erfolgsbericht', en: 'Monthly success report' }
-    },
-    'social-media-management': {
-      '0': { de: 'Einheitliches Design für wiederkehrende Posts', en: 'Consistent design for recurring posts' },
-      '1': { de: '1 Post pro Tag (30 Posts/Monat)', en: '1 post per day (30 posts/month)' },
-      '2': { de: 'Content-Vorabprüfung durch Sie', en: 'Content pre-approval by you' },
-      '3': { de: 'Performance-Tracking und Analytics', en: 'Performance tracking and analytics' }
-    },
-    'premium-business-paket': {
-      '0': { de: 'Google Business Setup inklusive', en: 'Google Business Setup included' },
-      '1': { de: '6 Monate Profilpflege inklusive', en: '6 months profile management included' },
-      '2': { de: '1 Social Media Kanal für 6 Monate', en: '1 social media channel for 6 months' },
-      '3': { de: 'Persönlicher Account Manager', en: 'Personal account manager' }
-    }
+  const getFeaturesBySlug = (packageSlug: string) => {
+    const slugMap: Record<string, string> = {
+      'google-business-setup': 'google_setup',
+      'profilpflege-basis': 'profile_basic',
+      'social-media-management': 'social_media',
+      'premium-business-paket': 'premium'
+    };
+    
+    const mappedSlug = slugMap[packageSlug] || packageSlug;
+    return t(`packages.${mappedSlug}.features`, { returnObjects: true }) as string[] || pkg.features;
   };
 
   const getPackageName = (packageSlug: string) => {
     return packageNameMap[packageSlug]?.[language as 'de' | 'en'] || pkg.name;
   };
 
-  const getFeatureText = (featureIndex: number) => {
-    const packageSlug = pkg.slug;
-    return featureMap[packageSlug]?.[featureIndex.toString()]?.[language as 'de' | 'en'] || pkg.features[featureIndex];
-  };
+  const packageFeatures = getFeaturesBySlug(pkg.slug);
 
   return (
     <Card className={`relative bg-white ${pkg.is_recommended ? 'border-black border-2' : 'border-gray-200'} ${viewOnly ? 'opacity-90' : ''}`}>
@@ -115,11 +96,11 @@ const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = fals
       
       <CardContent className="pt-0">
         <div className="space-y-3 mb-6">
-          {pkg.features.map((feature, index) => (
+          {packageFeatures.map((feature, index) => (
             <div key={index} className="flex items-start gap-3">
               <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
               <span className="text-gray-700 text-sm leading-relaxed">
-                {getFeatureText(index)}
+                {feature}
               </span>
             </div>
           ))}

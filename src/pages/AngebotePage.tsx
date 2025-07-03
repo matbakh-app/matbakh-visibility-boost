@@ -117,34 +117,53 @@ const AngebotePage: React.FC = () => {
               {t('pricing.addonsTitle')}
             </h3>
             <div className="grid md:grid-cols-2 gap-6">
-              {addons.map((addon) => (
-                <div key={addon.id} className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h4 className="font-bold text-lg text-black">{addon.name}</h4>
-                      <p className="text-gray-600 text-sm">{addon.description}</p>
-                    </div>
-                    <div className="text-right">
-                      {addon.original_price && addon.original_price > addon.price && (
-                        <div className="text-sm text-gray-400 line-through">€{addon.original_price}</div>
-                      )}
-                      <div className="text-xl font-bold text-black">€{addon.price}</div>
-                      <div className="text-sm text-gray-600">
-                        {addon.period === 'one-time' ? t('pricing.oneTime') : `/${addon.period}`}
+              {addons.map((addon) => {
+                // Map addon slugs to translation keys
+                const getAddonTranslation = (addonSlug: string) => {
+                  const slugMap: Record<string, string> = {
+                    'social-media-kanal-setup': 'social_setup',
+                    'google-chatbot-setup': 'google_chatbot',
+                    'instagram-account-setup': 'instagram_setup',
+                    'facebook-business-setup': 'facebook_setup',
+                    'social-media-chatbot': 'social_chatbot'
+                  };
+                  return slugMap[addonSlug] || addonSlug;
+                };
+
+                const translationKey = getAddonTranslation(addon.slug);
+                const translatedName = t(`addons.${translationKey}.name`, { defaultValue: addon.name });
+                const translatedDescription = t(`addons.${translationKey}.description`, { defaultValue: addon.description });
+                const translatedFeatures = t(`addons.${translationKey}.features`, { returnObjects: true, defaultValue: addon.features }) as string[];
+
+                return (
+                  <div key={addon.id} className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h4 className="font-bold text-lg text-black">{translatedName}</h4>
+                        <p className="text-gray-600 text-sm">{translatedDescription}</p>
+                      </div>
+                      <div className="text-right">
+                        {addon.original_price && addon.original_price > addon.price && (
+                          <div className="text-sm text-gray-400 line-through">€{addon.original_price}</div>
+                        )}
+                        <div className="text-xl font-bold text-black">€{addon.price}</div>
+                        <div className="text-sm text-gray-600">
+                          {addon.period === 'one-time' ? t('pricing.oneTime') : `/${addon.period}`}
+                        </div>
                       </div>
                     </div>
+                    
+                    <ul className="space-y-2">
+                      {translatedFeatures?.map((feature, index) => (
+                        <li key={index} className="flex items-start text-sm">
+                          <span className="w-1.5 h-1.5 bg-black rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  
-                  <ul className="space-y-2">
-                    {addon.features?.map((feature, index) => (
-                      <li key={index} className="flex items-start text-sm">
-                        <span className="w-1.5 h-1.5 bg-black rounded-full mt-2 mr-2 flex-shrink-0"></span>
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
