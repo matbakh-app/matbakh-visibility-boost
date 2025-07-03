@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import LogoSection from '@/components/LogoSection';
@@ -12,28 +11,28 @@ const Contact: React.FC = () => {
     <div className="py-8">
       <LogoSection />
       <div className="max-w-6xl mx-auto px-4">
-        <h1 className="text-3xl font-bold mb-8">{t('legal.contact.title')}</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('contact.title')}</h1>
         
         <div className="grid md:grid-cols-2 gap-8">
           <Card>
             <CardHeader>
-              <CardTitle>{t('legal.contact.subtitle')}</CardTitle>
+              <CardTitle>{t('contact.subtitle')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <h3 className="font-semibold">{t('legal.contact.company')}</h3>
-                  <p>{t('legal.contact.location')}</p>
+                  <h3 className="font-semibold">{t('contact.company')}</h3>
+                  <p>{t('contact.location')}</p>
                 </div>
                 
                 <div>
-                  <h3 className="font-semibold">{t('legal.contact.email')}</h3>
+                  <h3 className="font-semibold">{t('contact.email')}</h3>
                   <p>mail(at)matbakh(dot)app</p>
                 </div>
                 
                 <div>
                   <p className="text-sm text-gray-600">
-                    {t('legal.contact.responseTime')}
+                    {t('contact.responseTime')}
                   </p>
                 </div>
               </div>

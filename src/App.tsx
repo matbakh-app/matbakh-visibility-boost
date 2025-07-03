@@ -12,6 +12,12 @@ import AGB from './pages/AGB';
 import Dashboard from './pages/Dashboard';
 import Nutzung from './pages/legal/Nutzung';
 import Usage from './pages/legal/Usage';
+import ServicesPage from './pages/ServicesPage';
+import B2CLanding from './pages/B2CLanding';
+import BusinessLanding from './pages/BusinessLanding';
+import Kontakt from './pages/legal/Kontakt';
+import Contact from './pages/legal/Contact';
+import NotFound from './pages/NotFound';
 import { Toaster } from '@/components/ui/sonner';
 import CheckoutSuccess from './pages/CheckoutSuccess';
 import AdminPanel from './pages/AdminPanel';
@@ -37,6 +43,13 @@ function AdminRouteWrapper() {
         <Route path="/" element={<AngebotePage />} />
         <Route path="/de" element={<AngeboteDE />} />
         <Route path="/en" element={<PackagesEN />} />
+        <Route path="/services" element={<ServicesPage />} />
+        <Route path="/b2c" element={<B2CLanding />} />
+        <Route path="/business/partner" element={<BusinessLanding />} />
+        <Route path="/angebote" element={<AngeboteDE />} />
+        <Route path="/packages" element={<PackagesEN />} />
+        <Route path="/kontakt" element={<Kontakt />} />
+        <Route path="/contact" element={<Contact />} />
         <Route path="/impressum" element={<Impressum />} />
         <Route path="/datenschutz" element={<Datenschutz />} />
         <Route path="/agb" element={<AGB />} />
@@ -47,6 +60,7 @@ function AdminRouteWrapper() {
         {isAdmin && (
           <Route path="/admin" element={<AdminPanel />} />
         )}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </>
   );
