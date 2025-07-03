@@ -1,4 +1,3 @@
-
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import HttpBackend from 'i18next-http-backend';
@@ -17,7 +16,7 @@ i18n
     // Use only HttpBackend - no inline resources
     lng: 'de',
     fallbackLng: 'de',
-    ns: ['translation', 'adminPanel', 'auth'],
+    ns: ['translation', 'adminPanel', 'auth', 'nav', 'footer'],
     defaultNS: 'translation',
     backend: {
       loadPath: '/locales/{{lng}}/{{ns}}.json',

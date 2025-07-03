@@ -14,7 +14,8 @@ import {
 const UserMenu: React.FC = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const { t } = useTranslation('auth');
+  const { t: tNav } = useTranslation('nav');
+  const { t: tAuth } = useTranslation('auth');
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
@@ -35,7 +36,7 @@ const UserMenu: React.FC = () => {
         onClick={() => navigate('/business/partner/login')}
         className="hidden md:flex"
       >
-        {t('loginButton')}
+        {tNav('login')}
       </Button>
     );
   }
@@ -44,25 +45,25 @@ const UserMenu: React.FC = () => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className="hidden md:flex">
-          {user.email || t('profile')}
+          {user.email || tAuth('profile')}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuItem onClick={() => navigate('/partner/dashboard')}>
-          {t('dashboard')}
+          {tAuth('dashboard')}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => navigate('/partner/profile')}>
-          {t('profile')}
+          {tAuth('profile')}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => navigate('/partner/calendar')}>
-          {t('calendar')}
+          {tAuth('calendar')}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem 
           onClick={handleLogout}
           disabled={isLoggingOut}
         >
-          {isLoggingOut ? t('redirecting') : t('logout')}
+          {isLoggingOut ? tAuth('redirecting') : tAuth('logout')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 const Footer: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation('footer');
   const navigate = useNavigate();
 
   const handleNavigation = (path: string) => {
@@ -29,47 +29,47 @@ const Footer: React.FC = () => {
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-4 md:mb-0">
             <p className="text-sm text-gray-600">
-              {t('footer.copyright')}
+              {t('copyright')}
             </p>
           </div>
           
-          <div className="flex space-x-6">
+          <div className="flex flex-wrap justify-center gap-4 md:gap-6">
             <button 
               onClick={() => handleNavigation('/impressum')}
-              className="text-sm text-gray-600 hover:text-black"
+              className="text-sm text-gray-600 hover:text-black transition-colors"
             >
-              {t('footer.imprint')}
+              {t('imprint')}
             </button>
             <button 
               onClick={() => handleNavigation('/datenschutz')}
-              className="text-sm text-gray-600 hover:text-black"
+              className="text-sm text-gray-600 hover:text-black transition-colors"
             >
-              {t('footer.privacy')}
+              {t('privacy')}
             </button>
             <button 
               onClick={() => handleNavigation('/agb')}
-              className="text-sm text-gray-600 hover:text-black"
+              className="text-sm text-gray-600 hover:text-black transition-colors"
             >
-              {t('footer.terms')}
+              {t('terms')}
             </button>
             <button 
               onClick={() => handleNavigation('/nutzung')}
-              className="text-sm text-gray-600 hover:text-black"
+              className="text-sm text-gray-600 hover:text-black transition-colors"
             >
-              {t('footer.usage')}
+              {t('usage')}
             </button>
             <button 
               onClick={() => handleNavigation('/kontakt')}
-              className="text-sm text-gray-600 hover:text-black"
+              className="text-sm text-gray-600 hover:text-black transition-colors"
             >
-              {t('footer.contact')}
+              {t('contact')}
             </button>
           </div>
         </div>
         
-        <div className="mt-4 text-center">
+        <div className="mt-6 pt-4 border-t border-gray-100 text-center space-y-2">
           <p className="text-xs text-gray-500">
-            {t('footer.email')}
+            {t('email')}
           </p>
         </div>
       </div>

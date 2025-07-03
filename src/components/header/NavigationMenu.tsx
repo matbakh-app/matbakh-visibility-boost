@@ -6,7 +6,7 @@ import { useNavigationUtils } from './navigationUtils';
 import { useAuth } from '@/contexts/AuthContext';
 
 const NavigationMenu: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('nav');
   const navigate = useNavigate();
   const { handleNavigation, isActive } = useNavigationUtils();
   const { isAdmin } = useAuth();
@@ -21,7 +21,7 @@ const NavigationMenu: React.FC = () => {
             : 'text-gray-700 hover:text-black'
         }`}
       >
-        {t('nav.home')}
+        {t('home')}
       </button>
       <button
         onClick={() => navigate('/services')}
@@ -31,7 +31,7 @@ const NavigationMenu: React.FC = () => {
             : 'text-gray-700 hover:text-black'
         }`}
       >
-        {t('nav.services')}
+        {t('services')}
       </button>
       <button
         onClick={() => handleNavigation('/angebote')}
@@ -41,7 +41,7 @@ const NavigationMenu: React.FC = () => {
             : 'text-gray-700 hover:text-black'
         }`}
       >
-        {t('nav.packages')}
+        {t('packages')}
       </button>
       <button
         onClick={() => handleNavigation('/b2c')}
@@ -51,7 +51,7 @@ const NavigationMenu: React.FC = () => {
             : 'text-gray-700 hover:text-black'
         }`}
       >
-        {t('nav.b2c')}
+        {t('b2c')}
       </button>
       <button
         onClick={() => handleNavigation('/kontakt')}
@@ -61,7 +61,7 @@ const NavigationMenu: React.FC = () => {
             : 'text-gray-700 hover:text-black'
         }`}
       >
-        {t('nav.contact')}
+        {t('contact')}
       </button>
       {isAdmin && (
         <button

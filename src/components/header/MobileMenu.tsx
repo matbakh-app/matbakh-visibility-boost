@@ -10,7 +10,7 @@ interface MobileMenuProps {
 }
 
 const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onToggle }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('nav');
   const { handleNavigation, isActive } = useNavigationUtils();
 
   const handleMenuNavigation = (path: string) => {
@@ -44,7 +44,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onToggle }) => {
                 isActive('/') ? 'text-black bg-gray-50' : 'text-gray-700 hover:text-black hover:bg-gray-50'
               }`}
             >
-              {t('nav.home')}
+              {t('home')}
             </button>
             <button 
               onClick={() => handleMenuNavigation('/services')} 
@@ -52,7 +52,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onToggle }) => {
                 isActive('/services') ? 'text-black bg-gray-50' : 'text-gray-700 hover:text-black hover:bg-gray-50'
               }`}
             >
-              {t('nav.services')}
+              {t('services')}
             </button>
             <button 
               onClick={() => handleMenuNavigation('/angebote')} 
@@ -60,7 +60,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onToggle }) => {
                 isActive('/angebote') ? 'text-black bg-gray-50' : 'text-gray-700 hover:text-black hover:bg-gray-50'
               }`}
             >
-              {t('nav.packages')}
+              {t('packages')}
             </button>
             <button 
               onClick={() => handleMenuNavigation('/b2c')} 
@@ -68,7 +68,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onToggle }) => {
                 isActive('/b2c') ? 'text-black bg-gray-50' : 'text-gray-700 hover:text-black hover:bg-gray-50'
               }`}
             >
-              {t('nav.b2c')}
+              {t('b2c')}
             </button>
             <button 
               onClick={() => handleMenuNavigation('/kontakt')} 
@@ -76,7 +76,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onToggle }) => {
                 isActive('/kontakt') ? 'text-black bg-gray-50' : 'text-gray-700 hover:text-black hover:bg-gray-50'
               }`}
             >
-              {t('nav.contact')}
+              {t('contact')}
             </button>
           </div>
         </div>
