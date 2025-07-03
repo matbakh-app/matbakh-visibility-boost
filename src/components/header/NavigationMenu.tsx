@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useNavigationUtils } from './navigationUtils';
 import { useAuth } from '@/contexts/AuthContext';
+import { getVisibleNavItems, validateNavigation } from '../navigation/NavigationConfig';
 
 const NavigationMenu: React.FC = () => {
   const { t } = useTranslation('nav');
@@ -11,70 +12,36 @@ const NavigationMenu: React.FC = () => {
   const { handleNavigation, isActive } = useNavigationUtils();
   const { isAdmin } = useAuth();
 
+  // Validate navigation configuration in development
+  if (process.env.NODE_ENV === 'development') {
+    validateNavigation();
+  }
+
+  const visibleNavItems = getVisibleNavItems(isAdmin);
+
+  const handleClick = (item: any) => {
+    if (item.key === 'home' || item.key === 'services' || item.key === 'admin') {
+      navigate(item.href);
+    } else {
+      handleNavigation(item.href);
+    }
+  };
+
   return (
     <nav className="hidden md:flex space-x-8">
-      <button
-        onClick={() => navigate('/')}
-        className={`px-3 py-2 text-sm font-medium transition-colors ${
-          isActive('/') 
-            ? 'text-black border-b-2 border-black' 
-            : 'text-gray-700 hover:text-black'
-        }`}
-      >
-        {t('home')}
-      </button>
-      <button
-        onClick={() => navigate('/services')}
-        className={`px-3 py-2 text-sm font-medium transition-colors ${
-          isActive('/services') 
-            ? 'text-black border-b-2 border-black' 
-            : 'text-gray-700 hover:text-black'
-        }`}
-      >
-        {t('services')}
-      </button>
-      <button
-        onClick={() => handleNavigation('/angebote')}
-        className={`px-3 py-2 text-sm font-medium transition-colors ${
-          isActive('/angebote')
-            ? 'text-black border-b-2 border-black' 
-            : 'text-gray-700 hover:text-black'
-        }`}
-      >
-        {t('packages')}
-      </button>
-      <button
-        onClick={() => handleNavigation('/b2c')}
-        className={`px-3 py-2 text-sm font-medium transition-colors ${
-          isActive('/b2c')
-            ? 'text-black border-b-2 border-black' 
-            : 'text-gray-700 hover:text-black'
-        }`}
-      >
-        {t('b2c')}
-      </button>
-      <button
-        onClick={() => handleNavigation('/kontakt')}
-        className={`px-3 py-2 text-sm font-medium transition-colors ${
-          isActive('/kontakt')
-            ? 'text-black border-b-2 border-black' 
-            : 'text-gray-700 hover:text-black'
-        }`}
-      >
-        {t('contact')}
-      </button>
-      {isAdmin && (
+      {visibleNavItems.map((item) => (
         <button
-          onClick={() => navigate('/admin')}
+          key={item.key}
+          onClick={() => handleClick(item)}
           className={`px-3 py-2 text-sm font-medium transition-colors ${
-            isActive('/admin')
+            isActive(item.href)
               ? 'text-black border-b-2 border-black' 
               : 'text-gray-700 hover:text-black'
           }`}
         >
-          {t('adminPanel')}
+          {t(item.translationKey)}
         </button>
-      )}
+      ))}
     </nav>
   );
 };

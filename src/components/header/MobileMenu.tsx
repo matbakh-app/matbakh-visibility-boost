@@ -3,6 +3,8 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Menu, X } from 'lucide-react';
 import { useNavigationUtils } from './navigationUtils';
+import { getVisibleNavItems } from '../navigation/NavigationConfig';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -12,9 +14,17 @@ interface MobileMenuProps {
 const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onToggle }) => {
   const { t } = useTranslation('nav');
   const { handleNavigation, isActive } = useNavigationUtils();
+  const { isAdmin } = useAuth();
 
-  const handleMenuNavigation = (path: string) => {
-    handleNavigation(path);
+  const visibleNavItems = getVisibleNavItems(isAdmin);
+
+  const handleMenuNavigation = (item: any) => {
+    if (item.key === 'home' || item.key === 'services' || item.key === 'admin') {
+      // Direct navigation for these pages
+      window.location.href = item.href;
+    } else {
+      handleNavigation(item.href);
+    }
     onToggle();
   };
 
@@ -38,46 +48,17 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onToggle }) => {
       {isOpen && (
         <div className="md:hidden fixed top-16 left-0 w-full bg-white shadow-lg z-40 border-b border-gray-200">
           <div className="px-4 py-4 space-y-4">
-            <button 
-              onClick={() => handleMenuNavigation('/')} 
-              className={`block w-full text-left px-3 py-2 text-base font-medium transition-colors ${
-                isActive('/') ? 'text-black bg-gray-50' : 'text-gray-700 hover:text-black hover:bg-gray-50'
-              }`}
-            >
-              {t('home')}
-            </button>
-            <button 
-              onClick={() => handleMenuNavigation('/services')} 
-              className={`block w-full text-left px-3 py-2 text-base font-medium transition-colors ${
-                isActive('/services') ? 'text-black bg-gray-50' : 'text-gray-700 hover:text-black hover:bg-gray-50'
-              }`}
-            >
-              {t('services')}
-            </button>
-            <button 
-              onClick={() => handleMenuNavigation('/angebote')} 
-              className={`block w-full text-left px-3 py-2 text-base font-medium transition-colors ${
-                isActive('/angebote') ? 'text-black bg-gray-50' : 'text-gray-700 hover:text-black hover:bg-gray-50'
-              }`}
-            >
-              {t('packages')}
-            </button>
-            <button 
-              onClick={() => handleMenuNavigation('/b2c')} 
-              className={`block w-full text-left px-3 py-2 text-base font-medium transition-colors ${
-                isActive('/b2c') ? 'text-black bg-gray-50' : 'text-gray-700 hover:text-black hover:bg-gray-50'
-              }`}
-            >
-              {t('b2c')}
-            </button>
-            <button 
-              onClick={() => handleMenuNavigation('/kontakt')} 
-              className={`block w-full text-left px-3 py-2 text-base font-medium transition-colors ${
-                isActive('/kontakt') ? 'text-black bg-gray-50' : 'text-gray-700 hover:text-black hover:bg-gray-50'
-              }`}
-            >
-              {t('contact')}
-            </button>
+            {visibleNavItems.map((item) => (
+              <button 
+                key={item.key}
+                onClick={() => handleMenuNavigation(item)} 
+                className={`block w-full text-left px-3 py-2 text-base font-medium transition-colors ${
+                  isActive(item.href) ? 'text-black bg-gray-50' : 'text-gray-700 hover:text-black hover:bg-gray-50'
+                }`}
+              >
+                {t(item.translationKey)}
+              </button>
+            ))}
           </div>
         </div>
       )}
