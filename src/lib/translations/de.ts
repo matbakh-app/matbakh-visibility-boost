@@ -1,4 +1,16 @@
 export const deTranslations = {
+  home: {
+    cards: {
+      gmb_title: 'Google Business Setup',
+      gmb_description: 'Vollständige Google Business Profil-Erstellung',
+      profile_title: 'Profilpflege Basis',
+      profile_description: '4 monatliche Updates Ihrer Daten',
+      social_title: 'Social Media Management',
+      social_description: 'Einheitliches Design für wiederkehrende Posts',
+      premium_title: 'Premium Business Paket',
+      premium_description: 'Google Business Setup inklusive'
+    }
+  },
   navigation: {
     back: 'Zurück',
     home: 'Zur Startseite'

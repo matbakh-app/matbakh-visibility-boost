@@ -1,4 +1,16 @@
 export const enTranslations = {
+  home: {
+    cards: {
+      gmb_title: 'Google Business Setup',
+      gmb_description: 'Complete Google Business Profile creation',
+      profile_title: 'Profile Management Basic',
+      profile_description: '4 monthly updates of your data',
+      social_title: 'Social Media Management',
+      social_description: 'Consistent design for recurring posts',
+      premium_title: 'Premium Business Package',
+      premium_description: 'Google Business Setup included'
+    }
+  },
   navigation: {
     back: 'Back',
     home: 'Back to Home'
