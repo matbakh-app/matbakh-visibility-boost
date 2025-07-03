@@ -52,6 +52,9 @@ const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = fals
   };
 
   const packageFeatures = getFeaturesBySlug(pkg.slug);
+  
+  // Ensure packageFeatures is always an array
+  const safeFeatures = Array.isArray(packageFeatures) ? packageFeatures : (pkg.features || []);
 
   return (
     <Card className={`relative bg-white ${pkg.is_recommended ? 'border-black border-2' : 'border-gray-200'} ${viewOnly ? 'opacity-90' : ''}`}>
@@ -96,7 +99,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = fals
       
       <CardContent className="pt-0">
         <div className="space-y-3 mb-6">
-          {packageFeatures.map((feature, index) => (
+          {safeFeatures.map((feature, index) => (
             <div key={index} className="flex items-start gap-3">
               <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
               <span className="text-gray-700 text-sm leading-relaxed">
