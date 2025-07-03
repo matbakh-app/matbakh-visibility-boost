@@ -65,13 +65,13 @@ const B2CLanding: React.FC = () => {
 
   return (
     <>
-      <SeoHead
-        title="Für Gäste – Matbakh | Smart Restaurant Discovery"
-        description="Entdecke perfekte Restaurants mit Freunden. Smarte Suche, Gruppenabstimmung und Reservierungen - alles in einer App."
-        canonical="https://matbakh.app/b2c"
-        jsonLd={b2cJsonLd}
-      />
       <AppLayout>
+        <SeoHead
+          title="Für Gäste – Matbakh | Smart Restaurant Discovery"
+          description="Entdecke perfekte Restaurants mit Freunden. Smarte Suche, Gruppenabstimmung und Reservierungen - alles in einer App."
+          canonical="https://matbakh.app/b2c"
+          jsonLd={b2cJsonLd}
+        />
         <div className="max-w-4xl mx-auto px-4 py-16">
           {/* Hero Section */}
           <div className="text-center mb-16">
