@@ -654,5 +654,34 @@ export const enTranslations = {
       status: 'No data available',
       comingSoon: 'Coming soon'
     }
+  },
+  adminPanel: {
+    title: 'Admin Panel',
+    subtitle: 'Manage prices and services',
+    loading: 'Loading...',
+    errorTitle: 'Error',
+    errorDescription: 'Could not load data.',
+    packagesTab: 'Service Packages',
+    addonsTab: 'Add-on Services',
+    packagesTitle: 'Service Packages',
+    addonsTitle: 'Add-on Services',
+    newPackage: 'New Package',
+    newAddon: 'New Add-on',
+    loadingPackages: 'Loading packages...',
+    loadingAddons: 'Loading add-ons...',
+    name: 'Name',
+    code: 'Code',
+    type: 'Type',
+    price: 'Price',
+    promo: 'Promo',
+    actions: 'Actions',
+    oneTime: 'One-time',
+    noPrice: 'No price',
+    active: 'Active',
+    inactive: 'Inactive',
+    category: 'Category',
+    status: 'Status',
+    period: 'Period',
+    edit: 'Edit'
   }
 };

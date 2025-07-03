@@ -629,5 +629,34 @@ export const deTranslations = {
       law: '§ 7 Anwendbares Recht',
       lawText: 'Es gilt deutsches Recht unter Ausschluss des UN-Kaufrechts. Gerichtsstand ist München. Diese Nutzungsbedingungen werden regelmäßig aktualisiert, um rechtlichen Anforderungen und Änderungen unserer Services zu entsprechen.'
     }
+  },
+  adminPanel: {
+    title: 'Admin Panel',
+    subtitle: 'Preise und Services verwalten',
+    loading: 'Lädt...',
+    errorTitle: 'Fehler',
+    errorDescription: 'Daten konnten nicht geladen werden.',
+    packagesTab: 'Service Pakete',
+    addonsTab: 'Add-on Services',
+    packagesTitle: 'Service Pakete',
+    addonsTitle: 'Add-on Services',
+    newPackage: 'Neues Paket',
+    newAddon: 'Neuer Add-on',
+    loadingPackages: 'Lade Pakete...',
+    loadingAddons: 'Lade Add-ons...',
+    name: 'Name',
+    code: 'Code',
+    type: 'Typ',
+    price: 'Preis',
+    promo: 'Promo',
+    actions: 'Aktionen',
+    oneTime: 'Einmalig',
+    noPrice: 'Kein Preis',
+    active: 'Aktiv',
+    inactive: 'Inaktiv',
+    category: 'Kategorie',
+    status: 'Status',
+    period: 'Zeitraum',
+    edit: 'Bearbeiten'
   }
 };
