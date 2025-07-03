@@ -12,18 +12,20 @@ interface MobileMenuProps {
 }
 
 const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onToggle }) => {
-  const { t } = useTranslation('nav');
-  const { handleNavigation, isActive } = useNavigationUtils();
+  const { i18n } = useTranslation();
+  const { isActive } = useNavigationUtils();
   const { isAdmin } = useAuth();
 
-  const visibleNavItems = getVisibleNavItems(isAdmin);
+  const language = i18n.language as 'de' | 'en';
+  const visibleNavItems = getVisibleNavItems(isAdmin, language);
 
   const handleMenuNavigation = (item: any) => {
     if (item.key === 'home' || item.key === 'services' || item.key === 'admin') {
       // Direct navigation for these pages
-      window.location.href = item.href;
+      window.location.href = item.currentHref;
     } else {
-      handleNavigation(item.href);
+      // Use language-aware navigation
+      window.location.href = item.currentHref;
     }
     onToggle();
   };
@@ -53,10 +55,10 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onToggle }) => {
                 key={item.key}
                 onClick={() => handleMenuNavigation(item)} 
                 className={`block w-full text-left px-3 py-2 text-base font-medium transition-colors ${
-                  isActive(item.href) ? 'text-black bg-gray-50' : 'text-gray-700 hover:text-black hover:bg-gray-50'
+                  isActive(item.currentHref) ? 'text-black bg-gray-50' : 'text-gray-700 hover:text-black hover:bg-gray-50'
                 }`}
               >
-                {t(item.translationKey)}
+                {item.currentLabel}
               </button>
             ))}
           </div>
