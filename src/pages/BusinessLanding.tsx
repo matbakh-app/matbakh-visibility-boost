@@ -10,6 +10,7 @@ import Footer from '@/components/Footer';
 import LogoSection from '@/components/LogoSection';
 import ProblemSection from '@/components/ProblemSection';
 import SolutionSection from '@/components/SolutionSection';
+import { SeoHead } from '@/components/SeoHead';
 
 const BusinessLanding: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -41,8 +42,40 @@ const BusinessLanding: React.FC = () => {
     }
   ];
 
+  const servicesJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Matbakh",
+    url: "https://matbakh.app",
+    description: "Professional Google Business profile management and social media automation for restaurants",
+    offers: [
+      {
+        "@type": "Service",
+        name: "Google Business Profile Setup",
+        description: "Complete setup and optimization of Google Business profiles for restaurants"
+      },
+      {
+        "@type": "Service", 
+        name: "Profile Management",
+        description: "Ongoing management and updates of Google Business profiles"
+      },
+      {
+        "@type": "Service",
+        name: "Social Media Automation",
+        description: "Automated social media management for restaurants"
+      }
+    ]
+  };
+
   return (
-    <div className="min-h-screen bg-white">
+    <>
+      <SeoHead
+        title="Business Partner – Matbakh | Google Sichtbarkeit für Gastronomie"
+        description="Automatisierte Google Business Profile Verwaltung für Restaurants. Mehr Sichtbarkeit, bessere Bewertungen, höhere Umsätze."
+        canonical="https://matbakh.app/business/partner"
+        jsonLd={servicesJsonLd}
+      />
+      <div className="min-h-screen bg-white">
       <Header />
       <LogoSection />
       
@@ -142,6 +175,7 @@ const BusinessLanding: React.FC = () => {
 
       <Footer />
     </div>
+    </>
   );
 };
 

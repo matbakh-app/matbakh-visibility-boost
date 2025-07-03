@@ -4,12 +4,38 @@ import { useTranslation } from 'react-i18next';
 import LogoSection from '@/components/LogoSection';
 import ContactForm from '@/components/ContactForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { SeoHead } from '@/components/SeoHead';
 
 const Kontakt: React.FC = () => {
   const { t } = useTranslation();
 
+  const organizationJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "BaSSco (Bavarian Software Solution)",
+    url: "https://matbakh.app",
+    contactPoint: {
+      "@type": "ContactPoint",
+      email: "mail@matbakh.app",
+      contactType: "customer support",
+      areaServed: "DE"
+    },
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "München",
+      addressCountry: "DE"
+    }
+  };
+
   return (
-    <div className="py-8">
+    <>
+      <SeoHead
+        title="Kontakt – Matbakh"
+        description="Kontaktieren Sie uns für Beratung, Service oder Partnerschaft bei Matbakh. Professionelle Gastronomie-Lösungen."
+        canonical="https://matbakh.app/kontakt"
+        jsonLd={organizationJsonLd}
+      />
+      <div className="py-8">
       <LogoSection />
       <div className="max-w-6xl mx-auto px-4">
         <h1 className="text-3xl font-bold mb-8">{t('contact.title')}</h1>
@@ -44,6 +70,7 @@ const Kontakt: React.FC = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
