@@ -3,6 +3,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import './App.css';
+import './lib/i18n'; // Initialize i18n with validation
 import AngebotePage from './pages/AngebotePage';
 import AngeboteDE from './pages/AngeboteDE';
 import PackagesEN from './pages/PackagesEN';
@@ -28,6 +29,7 @@ import PartnerProfile from './pages/PartnerProfile';
 import PartnerCalendar from './pages/PartnerCalendar';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
+import { I18nDebugPanel } from '@/hooks/useI18nDebug';
 
 const queryClient = new QueryClient();
 
@@ -45,6 +47,7 @@ function AdminRouteWrapper() {
   return (
     <>
       <Toaster />
+      <I18nDebugPanel />
       <Routes>
         <Route path="/" element={<AngebotePage />} />
         <Route path="/de" element={<AngeboteDE />} />
