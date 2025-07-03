@@ -39,7 +39,7 @@ const AuthModeSelector: React.FC = () => {
         {!mode && (
           <>
             <div className="space-y-2">
-              <p className="text-sm font-medium text-gray-700">Anmeldung für bestehende Nutzer:</p>
+              <p className="text-sm font-medium text-gray-700">{t('existingUserLogin')}</p>
               <div className="grid grid-cols-2 gap-2">
                 <Button 
                   onClick={() => setMode('login-google')}
@@ -70,7 +70,7 @@ const AuthModeSelector: React.FC = () => {
             </div>
             
             <div className="space-y-2">
-              <p className="text-sm font-medium text-gray-700">Neuer Nutzer:</p>
+              <p className="text-sm font-medium text-gray-700">{t('newUser')}</p>
               <Button 
                 onClick={() => setMode('google-register')}
                 className="w-full"

@@ -72,7 +72,7 @@ const NavigationMenu: React.FC = () => {
               : 'text-gray-700 hover:text-black'
           }`}
         >
-          Admin Panel
+          {t('adminPanel')}
         </button>
       )}
     </nav>
