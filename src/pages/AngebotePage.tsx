@@ -121,12 +121,14 @@ const AngebotePage: React.FC = () => {
                 // Map addon slugs to translation keys
                 const getAddonTranslation = (addonSlug: string) => {
                   const slugMap: Record<string, string> = {
-                    'social-media-kanal-setup': 'social_setup',
+                    'social-media-setup': 'social_setup',
                     'google-chatbot-setup': 'google_chatbot',
-                    'instagram-account-setup': 'instagram_setup',
-                    'facebook-business-setup': 'facebook_setup',
+                    'instagram-setup': 'instagram_setup',
+                    'facebook-setup': 'facebook_setup',
                     'social-media-chatbot': 'social_chatbot'
                   };
+                  // Temporäres Debug-Logging
+                  console.log('Addon slug:', addonSlug, 'mapped to:', slugMap[addonSlug] || addonSlug);
                   return slugMap[addonSlug] || addonSlug;
                 };
 
