@@ -1257,6 +1257,7 @@ export type Database = {
           default_name: string
           id: string
           interval_months: number | null
+          is_active: boolean | null
           is_recurring: boolean | null
         }
         Insert: {
@@ -1265,6 +1266,7 @@ export type Database = {
           default_name: string
           id?: string
           interval_months?: number | null
+          is_active?: boolean | null
           is_recurring?: boolean | null
         }
         Update: {
@@ -1273,6 +1275,7 @@ export type Database = {
           default_name?: string
           id?: string
           interval_months?: number | null
+          is_active?: boolean | null
           is_recurring?: boolean | null
         }
         Relationships: []
