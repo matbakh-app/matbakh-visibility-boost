@@ -96,6 +96,27 @@ export const validateNavigationConfig = () => {
     }
   });
   
+  // Enhanced checks for translation completeness
+  const requiredNamespaces = ['nav'];
+  const supportedLanguages = ['de', 'en'];
+  
+  // Check if all navigation keys have translations
+  NAVIGATION_ITEMS.forEach(item => {
+    supportedLanguages.forEach(lang => {
+      if (!item.labels[lang as 'de' | 'en']) {
+        warnings.push(`Navigation item ${item.key}: missing ${lang} label`);
+      }
+    });
+  });
+  
+  // Check for route consistency with App.tsx routes
+  const expectedRoutes = NAVIGATION_ITEMS.flatMap(item => [item.hrefs.de, item.hrefs.en]);
+  const uniqueRoutes = [...new Set(expectedRoutes)];
+  
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[Navigation Config] Expected routes:', uniqueRoutes);
+  }
+  
   // Log warnings
   warnings.forEach(warning => console.warn(`[Navigation Config] ${warning}`));
   

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import './App.css';
 import AngebotePage from './pages/AngebotePage';
@@ -94,6 +94,13 @@ function AdminRouteWrapper() {
         {isAdmin && (
           <Route path="/admin" element={<AdminPanel />} />
         )}
+        
+        {/* Legacy Redirects for stability */}
+        <Route path="/packages" element={<Navigate to="/angebote" replace />} />
+        <Route path="/contact" element={<Navigate to="/kontakt" replace />} />
+        <Route path="/imprint" element={<Navigate to="/impressum" replace />} />
+        <Route path="/privacy" element={<Navigate to="/datenschutz" replace />} />
+        <Route path="/terms" element={<Navigate to="/agb" replace />} />
         
         <Route path="*" element={<NotFound />} />
       </Routes>

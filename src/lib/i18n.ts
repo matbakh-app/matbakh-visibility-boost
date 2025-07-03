@@ -13,11 +13,13 @@ i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    // Use only HttpBackend - no inline resources
+    // Enhanced configuration for stability
     lng: 'de',
     fallbackLng: 'de',
-    ns: ['translation', 'adminPanel', 'auth', 'nav', 'footer', 'hero', 'features'],
+    supportedLngs: ['de', 'en'],
+    ns: ['translation', 'adminPanel', 'auth', 'nav', 'footer', 'hero', 'features', 'common'],
     defaultNS: 'translation',
+    fallbackNS: 'common',
     backend: {
       loadPath: '/locales/{{lng}}/{{ns}}.json',
     },
@@ -25,6 +27,12 @@ i18n
       escapeValue: false
     },
     debug: process.env.NODE_ENV === 'development',
+    saveMissing: process.env.NODE_ENV === 'development',
+    missingKeyHandler: function (lng, ns, key, fallbackValue) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`[i18n] Missing translation: ${key} in namespace ${ns} for language ${lng}`);
+      }
+    }
   });
 
 // Debug current language and loaded namespaces
