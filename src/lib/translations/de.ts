@@ -493,6 +493,53 @@ export const deTranslations = {
     email: 'E-Mail',
     responseTime: 'Wir antworten in der Regel innerhalb von 24 Stunden.'
   },
+  notFound: {
+    title: '404',
+    message: 'Hoppla! Seite nicht gefunden.',
+    cta: 'Zur Startseite'
+  },
+  checkout: {
+    processing: 'Verarbeitung Ihrer Zahlung …',
+    title: 'Willkommen bei Matbakh!',
+    trial: 'Ihre kostenlose Testphase beginnt jetzt',
+    trialDescription: 'Sie haben 14 Tage kostenlosen Zugang zu allen Premium‑Funktionen. Keine Gebühren bis zum Ende Ihrer Testphase.',
+    trialEnds: 'Trial endet am {{date}}',
+    nextSteps: 'Nächste Schritte',
+    steps: [
+      {
+        title: 'Google Business Profil verbinden',
+        desc: 'Verbinden Sie Ihr Restaurant mit Google für maximale Sichtbarkeit'
+      },
+      {
+        title: 'Profil vervollständigen',
+        desc: 'Fügen Sie Fotos, Öffnungszeiten und Speisekarten hinzu'
+      },
+      {
+        title: 'Live schalten',
+        desc: 'Aktivieren Sie Ihr Profil für Kunden'
+      }
+    ],
+    toDashboard: 'Zum Dashboard'
+  },
+  dashboard: {
+    title: 'Partner Dashboard',
+    description: 'Verwalten Sie Ihr Google Business Profil und Social Media Kanäle',
+    googleSection: {
+      title: 'Google Business Profil',
+      status: 'Status: Nicht verbunden',
+      connect: 'Jetzt verbinden'
+    },
+    socialSection: {
+      title: 'Social Media',
+      status: 'Kanäle: Nicht konfiguriert',
+      setup: 'Kanäle einrichten'
+    },
+    analyticsSection: {
+      title: 'Analytics',
+      status: 'Keine Daten verfügbar',
+      comingSoon: 'Bald verfügbar'
+    }
+  },
   footer: {
     company: 'Unternehmen',
     legal: 'Rechtliches',

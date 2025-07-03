@@ -607,5 +607,52 @@ export const enTranslations = {
       law: '7. Applicable Law',
       lawText: 'German law applies excluding the UN Convention on Contracts for the International Sale of Goods. Jurisdiction is Munich. These Terms of Use are regularly updated to comply with legal requirements and changes to our services.'
     }
+  },
+  notFound: {
+    title: '404',
+    message: 'Oops! Page not found.',
+    cta: 'Return to Home'
+  },
+  checkout: {
+    processing: 'Processing your payment…',
+    title: 'Welcome to Matbakh!',
+    trial: 'Your free trial starts now',
+    trialDescription: 'You have 14 days of free access to all premium features. No charges until the end of your trial period.',
+    trialEnds: 'Trial ends on {{date}}',
+    nextSteps: 'Next Steps',
+    steps: [
+      {
+        title: 'Connect Google Business Profile',
+        desc: 'Connect your restaurant with Google for maximum visibility'
+      },
+      {
+        title: 'Complete Profile',
+        desc: 'Add photos, opening hours and menus'
+      },
+      {
+        title: 'Go Live',
+        desc: 'Activate your profile for customers'
+      }
+    ],
+    toDashboard: 'To Dashboard'
+  },
+  dashboard: {
+    title: 'Partner Dashboard',
+    description: 'Manage your Google Business Profile and social media channels',
+    googleSection: {
+      title: 'Google Business Profile',
+      status: 'Status: Not connected',
+      connect: 'Connect now'
+    },
+    socialSection: {
+      title: 'Social Media',
+      status: 'Channels: Not configured',
+      setup: 'Set up channels'
+    },
+    analyticsSection: {
+      title: 'Analytics',
+      status: 'No data available',
+      comingSoon: 'Coming soon'
+    }
   }
 };

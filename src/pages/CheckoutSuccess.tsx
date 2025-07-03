@@ -6,6 +6,7 @@ import { CheckCircle, ArrowRight, Calendar } from "lucide-react"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import TrialBanner from "@/components/TrialBanner"
+import { useTranslation } from "react-i18next"
 
 /**
  * Erfolgs‑Seite nach einem erfolgreichen Stripe‑Checkout.
@@ -16,6 +17,7 @@ const CheckoutSuccess = () => {
   const [searchParams] = useSearchParams()
   const sessionId = searchParams.get("session_id")
   const [isLoading, setIsLoading] = useState(true)
+  const { t } = useTranslation()
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 1_500)
@@ -29,7 +31,7 @@ const CheckoutSuccess = () => {
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4" />
-            <p className="text-gray-600">Verarbeitung Ihrer Zahlung …</p>
+            <p className="text-gray-600">{t('checkout.processing')}</p>
           </div>
         </div>
         <Footer />
@@ -51,39 +53,26 @@ const CheckoutSuccess = () => {
               <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
                 <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
-              <CardTitle className="text-2xl font-bold text-black">Willkommen bei Matbakh!</CardTitle>
+              <CardTitle className="text-2xl font-bold text-black">{t('checkout.title')}</CardTitle>
             </CardHeader>
 
             <CardContent className="space-y-6">
               {/* Trial‑Box */}
               <div className="bg-gray-50 rounded-lg p-6">
-                <h3 className="font-semibold text-lg mb-2">Ihre kostenlose Testphase beginnt jetzt</h3>
+                <h3 className="font-semibold text-lg mb-2">{t('checkout.trial')}</h3>
                 <p className="text-gray-600 mb-4">
-                  Sie haben 14 Tage kostenlosen Zugang zu allen Premium‑Funktionen. Keine Gebühren bis zum Ende Ihrer Testphase.
+                  {t('checkout.trialDescription')}
                 </p>
                 <div className="flex items-center gap-2 text-sm text-gray-500 justify-center">
                   <Calendar className="h-4 w-4" />
-                  <span>Trial endet am {trialEndsAt.toLocaleDateString("de-DE")}</span>
+                  <span>{t('checkout.trialEnds', { date: trialEndsAt.toLocaleDateString("de-DE") })}</span>
                 </div>
               </div>
 
-              {/* To‑Do Liste */}
+              {/* To‑Do Liste */}
               <div className="space-y-4 text-left">
-                <h4 className="font-semibold text-center">Nächste Schritte</h4>
-                {[
-                  {
-                    title: "Google Business Profil verbinden",
-                    desc: "Verbinden Sie Ihr Restaurant mit Google für maximale Sichtbarkeit"
-                  },
-                  {
-                    title: "Profil vervollständigen",
-                    desc: "Fügen Sie Fotos, Öffnungszeiten und Speisekarten hinzu"
-                  },
-                  {
-                    title: "Live schalten",
-                    desc: "Aktivieren Sie Ihr Profil für Kunden"
-                  }
-                ].map((step, i) => (
+                <h4 className="font-semibold text-center">{t('checkout.nextSteps')}</h4>
+                {(t('checkout.steps', { returnObjects: true }) as Array<{title: string, desc: string}>).map((step, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                       <span className="text-blue-600 text-sm font-bold">{i + 1}</span>
@@ -100,7 +89,7 @@ const CheckoutSuccess = () => {
               <div className="pt-6 border-t">
                 <Link to="/dashboard">
                   <Button size="lg" className="bg-black hover:bg-gray-800 text-white">
-                    Zum Dashboard
+                    {t('checkout.toDashboard')}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
@@ -108,7 +97,7 @@ const CheckoutSuccess = () => {
 
               {sessionId && (
                 <div className="text-xs text-gray-400 pt-4 border-t break-all select-all">
-                  Session ID: {sessionId}
+                  Session ID: {sessionId}
                 </div>
               )}
             </CardContent>
