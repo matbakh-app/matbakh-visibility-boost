@@ -7,6 +7,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import GoogleCtaNotice from '@/components/auth/GoogleCtaNotice';
 
 const BusinessLogin: React.FC = () => {
   const { user, loading, signInWithGoogle } = useAuth();
@@ -59,6 +60,8 @@ const BusinessLogin: React.FC = () => {
               </svg>
               {t('loginWithGoogle')}
             </Button>
+            
+            <GoogleCtaNotice />
             
             <p className="text-xs text-gray-500 text-center">
               {t('acceptTerms')} {' '}
