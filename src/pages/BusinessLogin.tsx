@@ -1,4 +1,3 @@
-
 import React, { useEffect, Suspense } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -7,7 +6,6 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AuthModeSelector from '@/components/auth/AuthModeSelector';
 import AuthLoadingState from '@/components/auth/AuthLoadingState';
-import AuthDebugInfo from '@/components/auth/AuthDebugInfo';
 
 const BusinessLogin: React.FC = () => {
   const { user, loading } = useAuth();
@@ -17,13 +15,11 @@ const BusinessLogin: React.FC = () => {
 
   useEffect(() => {
     if (user && !loading) {
-      // Redirect to where they came from or dashboard
       const from = location.state?.from?.pathname || '/partner/dashboard';
       navigate(from, { replace: true });
     }
   }, [user, loading, navigate, location.state]);
 
-  // Show loading state while i18n or auth is loading
   if (loading || !ready) {
     return <AuthLoadingState />;
   }
@@ -32,13 +28,21 @@ const BusinessLogin: React.FC = () => {
     <Suspense fallback={<AuthLoadingState />}>
       <div className="min-h-screen bg-white">
         <Header />
-        
-        <div className="flex items-center justify-center min-h-[80vh]">
-          <AuthModeSelector />
-        </div>
-        
+
+        <main className="flex items-center justify-center min-h-[80vh] px-4">
+          <div className="w-full max-w-md space-y-6 p-6 border rounded-2xl shadow-sm bg-white">
+            <h1 className="text-2xl font-bold text-center">{t('login.title')}</h1>
+            <p className="text-sm text-gray-600 text-center">{t('login.subtitle')}</p>
+
+            <AuthModeSelector />
+
+            <p className="text-xs text-gray-500 mt-4 text-center">
+              {t('googleCtaNotice')}
+            </p>
+          </div>
+        </main>
+
         <Footer />
-        {process.env.NODE_ENV === 'development' && <AuthDebugInfo />}
       </div>
     </Suspense>
   );
