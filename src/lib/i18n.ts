@@ -16,7 +16,7 @@ i18n
     // Use only HttpBackend - no inline resources
     lng: 'de',
     fallbackLng: 'de',
-    ns: ['translation', 'adminPanel', 'auth', 'nav', 'footer'],
+    ns: ['translation', 'adminPanel', 'auth', 'nav', 'footer', 'hero', 'features'],
     defaultNS: 'translation',
     backend: {
       loadPath: '/locales/{{lng}}/{{ns}}.json',

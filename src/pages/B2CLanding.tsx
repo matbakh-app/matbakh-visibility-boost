@@ -8,43 +8,44 @@ import AppLayout from '@/components/layout/AppLayout';
 import { SeoHead } from '@/components/SeoHead';
 
 const B2CLanding: React.FC = () => {
-  const { t } = useTranslation();
+  const { t: tHero } = useTranslation('hero');
+  const { t: tFeatures } = useTranslation('features');
 
   const features = [
     {
       icon: <Search className="h-8 w-8 text-blue-600" />,
-      titleKey: 'features.search.title',
-      descriptionKey: 'features.search.description'
+      titleKey: 'search.title',
+      descriptionKey: 'search.description'
     },
     {
       icon: <Users className="h-8 w-8 text-green-600" />,
-      titleKey: 'features.voting.title',
-      descriptionKey: 'features.voting.description'
+      titleKey: 'voting.title',
+      descriptionKey: 'voting.description'
     },
     {
       icon: <Calendar className="h-8 w-8 text-purple-600" />,
-      titleKey: 'features.booking.title',
-      descriptionKey: 'features.booking.description'
+      titleKey: 'booking.title',
+      descriptionKey: 'booking.description'
     },
     {
       icon: <ChefHat className="h-8 w-8 text-orange-600" />,
-      titleKey: 'features.weeklyMenu.title',
-      descriptionKey: 'features.weeklyMenu.description'
+      titleKey: 'weeklyMenu.title',
+      descriptionKey: 'weeklyMenu.description'
     },
     {
       icon: <ShoppingCart className="h-8 w-8 text-red-600" />,
-      titleKey: 'features.shoppingList.title',
-      descriptionKey: 'features.shoppingList.description'
+      titleKey: 'shoppingList.title',
+      descriptionKey: 'shoppingList.description'
     },
     {
       icon: <Target className="h-8 w-8 text-indigo-600" />,
-      titleKey: 'features.calendarManagement.title',
-      descriptionKey: 'features.calendarManagement.description'
+      titleKey: 'calendarManagement.title',
+      descriptionKey: 'calendarManagement.description'
     },
     {
       icon: <Utensils className="h-8 w-8 text-pink-600" />,
-      titleKey: 'features.mealAdjustment.title',
-      descriptionKey: 'features.mealAdjustment.description'
+      titleKey: 'mealAdjustment.title',
+      descriptionKey: 'mealAdjustment.description'
     }
   ];
 
@@ -76,14 +77,14 @@ const B2CLanding: React.FC = () => {
           {/* Hero Section */}
           <div className="text-center mb-16">
             <h1 className="text-4xl font-bold text-black mb-4">
-              {t('hero.b2cTitle')}
+              {tHero('b2cTitle')}
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              {t('hero.b2cSubtitle')}
+              {tHero('b2cSubtitle')}
             </p>
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 inline-block">
               <p className="text-yellow-800 font-medium text-lg">
-                {t('hero.b2cNote')}
+                {tHero('b2cNote')}
               </p>
             </div>
           </div>
@@ -91,10 +92,10 @@ const B2CLanding: React.FC = () => {
           {/* Features Grid */}
           <div className="mb-16">
             <h2 className="text-3xl font-bold text-black text-center mb-4">
-              {t('features.title')}
+              {tFeatures('title')}
             </h2>
             <p className="text-lg text-gray-600 text-center mb-12">
-              {t('features.subtitle')}
+              {tFeatures('subtitle')}
             </p>
             
             <div className="grid md:grid-cols-2 gap-8">
@@ -104,11 +105,11 @@ const B2CLanding: React.FC = () => {
                     <div className="flex items-center gap-4">
                       {feature.icon}
                       <CardTitle className="text-xl font-bold text-black">
-                        {t(feature.titleKey)}
+                        {tFeatures(feature.titleKey)}
                       </CardTitle>
                     </div>
                     <CardDescription className="text-gray-600 text-base">
-                      {t(feature.descriptionKey)}
+                      {tFeatures(feature.descriptionKey)}
                     </CardDescription>
                   </CardHeader>
                 </Card>
@@ -119,13 +120,13 @@ const B2CLanding: React.FC = () => {
           {/* CTA Section */}
           <div className="bg-gray-50 rounded-lg p-8 text-center">
             <h2 className="text-2xl font-bold text-black mb-4">
-              {t('hero.b2cInterested')}
+              {tHero('b2cInterested')}
             </h2>
             <p className="text-lg text-gray-600 mb-8">
-              {t('hero.b2cInterestedDescription')}
+              {tHero('b2cInterestedDescription')}
             </p>
             <Button size="lg" disabled className="opacity-50">
-              {t('hero.b2cNote')}
+              {tHero('b2cNote')}
             </Button>
           </div>
         </div>
