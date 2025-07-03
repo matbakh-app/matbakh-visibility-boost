@@ -679,9 +679,5 @@ export const enTranslations = {
     noPrice: 'No price',
     active: 'Active',
     inactive: 'Inactive',
-    category: 'Category',
-    status: 'Status',
-    period: 'Period',
-    edit: 'Edit'
   }
 };

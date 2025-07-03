@@ -654,9 +654,5 @@ export const deTranslations = {
     noPrice: 'Kein Preis',
     active: 'Aktiv',
     inactive: 'Inaktiv',
-    category: 'Kategorie',
-    status: 'Status',
-    period: 'Zeitraum',
-    edit: 'Bearbeiten'
   }
 };
