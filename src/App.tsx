@@ -21,6 +21,12 @@ import NotFound from './pages/NotFound';
 import { Toaster } from '@/components/ui/sonner';
 import CheckoutSuccess from './pages/CheckoutSuccess';
 import AdminPanel from './pages/AdminPanel';
+import BusinessLogin from './pages/BusinessLogin';
+import PartnerDashboard from './pages/PartnerDashboard';
+import PartnerOnboarding from './pages/PartnerOnboarding';
+import PartnerProfile from './pages/PartnerProfile';
+import PartnerCalendar from './pages/PartnerCalendar';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
 
 const queryClient = new QueryClient();
@@ -58,9 +64,37 @@ function AdminRouteWrapper() {
         <Route path="/usage" element={<Usage />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/checkout-success" element={<CheckoutSuccess />} />
+        
+        {/* Auth Routes */}
+        <Route path="/business/partner/login" element={<BusinessLogin />} />
+        
+        {/* Protected Partner Routes */}
+        <Route path="/partner/dashboard" element={
+          <ProtectedRoute requirePartner={true}>
+            <PartnerDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/partner/onboarding" element={
+          <ProtectedRoute requirePartner={true}>
+            <PartnerOnboarding />
+          </ProtectedRoute>
+        } />
+        <Route path="/partner/profile" element={
+          <ProtectedRoute requirePartner={true}>
+            <PartnerProfile />
+          </ProtectedRoute>
+        } />
+        <Route path="/partner/calendar" element={
+          <ProtectedRoute requirePartner={true}>
+            <PartnerCalendar />
+          </ProtectedRoute>
+        } />
+        
+        {/* Admin Routes */}
         {isAdmin && (
           <Route path="/admin" element={<AdminPanel />} />
         )}
+        
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>

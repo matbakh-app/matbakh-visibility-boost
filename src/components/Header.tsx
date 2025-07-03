@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import LanguageToggle from './header/LanguageToggle';
 import NavigationMenu from './header/NavigationMenu';
 import MobileMenu from './header/MobileMenu';
+import UserMenu from './header/UserMenu';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ const Header: React.FC = () => {
           <NavigationMenu />
           
           <div className="flex items-center space-x-4">
+            <UserMenu />
             <LanguageToggle />
             <MobileMenu 
               isOpen={isMobileMenuOpen} 

@@ -14,7 +14,7 @@ i18n
     resources,
     lng: 'de',
     fallbackLng: 'de',
-    ns: ['translation', 'adminPanel'],
+    ns: ['translation', 'adminPanel', 'auth'],
     defaultNS: 'translation',
     backend: {
       loadPath: '/locales/{{lng}}/{{ns}}.json',
