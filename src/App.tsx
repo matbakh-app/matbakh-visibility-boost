@@ -14,12 +14,24 @@ import Nutzung from './pages/legal/Nutzung';
 import Usage from './pages/legal/Usage';
 import { Toaster } from '@/components/ui/sonner';
 import CheckoutSuccess from './pages/CheckoutSuccess';
+import AdminPanel from './pages/AdminPanel';
+import { useAuth } from '@/contexts/AuthContext';
 
 const queryClient = new QueryClient();
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <AdminRouteWrapper />
+    </QueryClientProvider>
+  );
+}
+
+function AdminRouteWrapper() {
+  const { isAdmin } = useAuth();
+  
+  return (
+    <>
       <Toaster />
       <Routes>
         <Route path="/" element={<AngebotePage />} />
@@ -32,8 +44,11 @@ function App() {
         <Route path="/usage" element={<Usage />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/checkout-success" element={<CheckoutSuccess />} />
+        {isAdmin && (
+          <Route path="/admin" element={<AdminPanel />} />
+        )}
       </Routes>
-    </QueryClientProvider>
+    </>
   );
 }
 

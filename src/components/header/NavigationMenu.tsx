@@ -3,11 +3,13 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useNavigationUtils } from './navigationUtils';
+import { useAuth } from '@/contexts/AuthContext';
 
 const NavigationMenu: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { handleNavigation, isActive } = useNavigationUtils();
+  const { isAdmin } = useAuth();
 
   return (
     <nav className="hidden md:flex space-x-8">
@@ -61,6 +63,18 @@ const NavigationMenu: React.FC = () => {
       >
         {t('nav.contact')}
       </button>
+      {isAdmin && (
+        <button
+          onClick={() => navigate('/admin')}
+          className={`px-3 py-2 text-sm font-medium transition-colors ${
+            isActive('/admin')
+              ? 'text-black border-b-2 border-black' 
+              : 'text-gray-700 hover:text-black'
+          }`}
+        >
+          Admin Panel
+        </button>
+      )}
     </nav>
   );
 };
