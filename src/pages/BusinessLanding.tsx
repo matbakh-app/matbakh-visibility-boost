@@ -10,7 +10,7 @@ import Footer from '@/components/Footer';
 import LogoSection from '@/components/LogoSection';
 import ProblemSection from '@/components/ProblemSection';
 import SolutionSection from '@/components/SolutionSection';
-import { SeoHead } from '@/components/SeoHead';
+import { SeoMeta } from '@/components/SeoMeta';
 
 const BusinessLanding: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -69,11 +69,10 @@ const BusinessLanding: React.FC = () => {
 
   return (
     <>
-      <SeoHead
-        title="Business Partner – Matbakh | Google Sichtbarkeit für Gastronomie"
-        description="Automatisierte Google Business Profile Verwaltung für Restaurants. Mehr Sichtbarkeit, bessere Bewertungen, höhere Umsätze."
-        canonical="https://matbakh.app/business/partner"
-        jsonLd={servicesJsonLd}
+      <SeoMeta
+        title={t('landing.heroTitle', 'Business Partner')}
+        description={t('landing.heroSubtitle', 'Google Sichtbarkeit für Gastronomie')}
+        namespace="translation"
       />
       <div className="min-h-screen bg-white">
       <Header />

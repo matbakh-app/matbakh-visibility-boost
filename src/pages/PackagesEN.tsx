@@ -8,7 +8,7 @@ import PackageFAQ from '@/components/PackageFAQ';
 import PricingCard from '@/components/PricingCard';
 import { useServicePackages } from '@/hooks/useServicePackages';
 import AppLayout from '@/components/layout/AppLayout';
-import { SeoHead } from '@/components/SeoHead';
+import { SeoMeta } from '@/components/SeoMeta';
 
 const PackagesEN: React.FC = () => {
   const { t } = useTranslation();
@@ -70,11 +70,10 @@ const PackagesEN: React.FC = () => {
 
   return (
     <>
-      <SeoHead
-        title="Packages – Matbakh | Google Business Management for Restaurants"
-        description="Professional Google Business management packages for restaurants. Setup, maintenance, and optimization services with transparent pricing."
-        canonical="https://matbakh.app/packages"
-        jsonLd={packagesJsonLd}
+      <SeoMeta
+        title={t('pricing.title', 'Packages')}
+        description={t('pricing.subtitle', 'Professional Google Business management packages for restaurants')}
+        namespace="translation"
       />
       <AppLayout>
         <div className="py-16">

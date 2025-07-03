@@ -6,7 +6,7 @@ import { ArrowRight, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/components/layout/AppLayout';
-import { SeoHead } from '@/components/SeoHead';
+import { SeoMeta } from '@/components/SeoMeta';
 
 const ServicesPage: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -79,11 +79,10 @@ const ServicesPage: React.FC = () => {
 
   return (
     <>
-      <SeoHead
-        title="Services – Matbakh | Professional Restaurant Digital Solutions"
-        description="Comprehensive digital services for restaurants including Google Business setup, profile management, and automated analytics solutions."
-        canonical="https://matbakh.app/services"
-        jsonLd={servicesJsonLd}
+      <SeoMeta
+        title={t('services.pageTitle', 'Unsere Leistungen')}
+        description={t('services.pageSubtitle', 'Professionelle digitale Lösungen für Restaurants')}
+        namespace="translation"
       />
       <AppLayout>
         <div className="max-w-4xl mx-auto px-4 py-16">

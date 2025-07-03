@@ -5,7 +5,7 @@ import { Search, Users, Calendar, ChefHat, ShoppingCart, Utensils, Target } from
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/components/layout/AppLayout';
-import { SeoHead } from '@/components/SeoHead';
+import { SeoMeta } from '@/components/SeoMeta';
 
 const B2CLanding: React.FC = () => {
   const { t: tHero } = useTranslation('hero');
@@ -66,13 +66,12 @@ const B2CLanding: React.FC = () => {
 
   return (
     <>
+      <SeoMeta
+        title={tHero('b2cTitle', 'Für Gäste')}
+        description={tHero('b2cSubtitle', 'Smart Restaurant Discovery')}
+        namespace="hero"
+      />
       <AppLayout>
-        <SeoHead
-          title="Für Gäste – Matbakh | Smart Restaurant Discovery"
-          description="Entdecke perfekte Restaurants mit Freunden. Smarte Suche, Gruppenabstimmung und Reservierungen - alles in einer App."
-          canonical="https://matbakh.app/b2c"
-          jsonLd={b2cJsonLd}
-        />
         <div className="max-w-4xl mx-auto px-4 py-16">
           {/* Hero Section */}
           <div className="text-center mb-16">

@@ -8,7 +8,7 @@ import PackageFAQ from '@/components/PackageFAQ';
 import PricingCard from '@/components/PricingCard';
 import { useServicePackages } from '@/hooks/useServicePackages';
 import AppLayout from '@/components/layout/AppLayout';
-import { SeoHead } from '@/components/SeoHead';
+import { SeoMeta } from '@/components/SeoMeta';
 
 const AngeboteDE: React.FC = () => {
   const { t } = useTranslation();
@@ -70,11 +70,10 @@ const AngeboteDE: React.FC = () => {
 
   return (
     <>
-      <SeoHead
-        title="Angebote – Matbakh | Google Business Verwaltung für Restaurants"
-        description="Professionelle Google Business Verwaltung für Restaurants. Einrichtung, Pflege und Optimierung mit transparenten Preisen."
-        canonical="https://matbakh.app/angebote"
-        jsonLd={angeboteJsonLd}
+      <SeoMeta
+        title={t('pricing.title', 'Angebote')}
+        description={t('pricing.subtitle', 'Professionelle Google Business Verwaltung für Restaurants')}
+        namespace="translation"
       />
       <AppLayout>
         <div className="py-16">

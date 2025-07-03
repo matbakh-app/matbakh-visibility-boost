@@ -9,6 +9,7 @@ import PackageComparison from '@/components/PackageComparison';
 import PackageFAQ from '@/components/PackageFAQ';
 import TrustElements from '@/components/TrustElements';
 import ProcessOverview from '@/components/ProcessOverview';
+import { SeoMeta } from '@/components/SeoMeta';
 import { useServicePackages, useAddonServices } from '@/hooks/useServicePackages';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
@@ -174,7 +175,13 @@ const AngebotePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <>
+      <SeoMeta 
+        title={t('pricing.title', 'Unsere Angebote')}
+        description={t('pricing.subtitle', 'Professionelle Google Business Verwaltung für Restaurants')}
+        namespace="translation"
+      />
+      <div className="min-h-screen bg-white">
       <Header />
       <LogoSection />
       
@@ -237,7 +244,8 @@ const AngebotePage: React.FC = () => {
       </section>
 
       <Footer />
-    </div>
+      </div>
+    </>
   );
 };
 

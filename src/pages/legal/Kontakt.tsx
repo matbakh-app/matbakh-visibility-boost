@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import AppLayout from '@/components/layout/AppLayout';
 import ContactForm from '@/components/ContactForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { SeoHead } from '@/components/SeoHead';
+import { SeoMeta } from '@/components/SeoMeta';
 
 const Kontakt: React.FC = () => {
   const { t } = useTranslation();
@@ -29,11 +29,10 @@ const Kontakt: React.FC = () => {
 
   return (
     <>
-      <SeoHead
-        title="Kontakt – Matbakh"
-        description="Kontaktieren Sie uns für Beratung, Service oder Partnerschaft bei Matbakh. Professionelle Gastronomie-Lösungen."
-        canonical="https://matbakh.app/kontakt"
-        jsonLd={organizationJsonLd}
+      <SeoMeta
+        title={t('contact.title', 'Kontakt')}
+        description={t('contact.subtitle', 'Kontaktieren Sie uns für Beratung und Service')}
+        namespace="translation"
       />
       <AppLayout>
         <div className="py-8">
