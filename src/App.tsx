@@ -8,7 +8,7 @@ import AngebotePage from './pages/AngebotePage';
 import AngeboteDE from './pages/AngeboteDE';
 import PackagesEN from './pages/PackagesEN';
 import Impressum from './pages/Impressum';
-import Datenschutz from './pages/Datenschutz';
+import Datenschutz from './pages/legal/Datenschutz';
 import AGB from './pages/AGB';
 import Dashboard from './pages/Dashboard';
 import Nutzung from './pages/legal/Nutzung';

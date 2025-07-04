@@ -1,27 +1,13 @@
 
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { getFooterNavItems } from './navigation/NavigationConfig';
 
 const Footer: React.FC = () => {
   const { t, i18n } = useTranslation('footer');
-  const navigate = useNavigate();
-
-  const handleNavigation = (path: string) => {
-    const currentLang = i18n.language;
-    let translatedPath = path;
-    
-    if (currentLang === 'en') {
-      translatedPath = path
-        .replace('/kontakt', '/contact')
-        .replace('/impressum', '/imprint')
-        .replace('/datenschutz', '/privacy')
-        .replace('/agb', '/terms')
-        .replace('/nutzung', '/usage');
-    }
-    
-    navigate(translatedPath);
-  };
+  const currentLang = (i18n.language || 'de') as 'de' | 'en';
+  const footerLinks = getFooterNavItems(currentLang);
 
   return (
     <footer className="bg-white border-t border-gray-200 mt-16">
@@ -34,36 +20,21 @@ const Footer: React.FC = () => {
           </div>
           
           <div className="flex flex-wrap justify-center gap-4 md:gap-6">
-            <button 
-              onClick={() => handleNavigation('/impressum')}
-              className="text-sm text-gray-600 hover:text-black transition-colors"
-            >
-              {t('imprint')}
-            </button>
-            <button 
-              onClick={() => handleNavigation('/datenschutz')}
-              className="text-sm text-gray-600 hover:text-black transition-colors"
-            >
-              {t('privacy')}
-            </button>
-            <button 
-              onClick={() => handleNavigation('/agb')}
-              className="text-sm text-gray-600 hover:text-black transition-colors"
-            >
-              {t('terms')}
-            </button>
-            <button 
-              onClick={() => handleNavigation('/nutzung')}
-              className="text-sm text-gray-600 hover:text-black transition-colors"
-            >
-              {t('usage')}
-            </button>
-            <button 
-              onClick={() => handleNavigation('/kontakt')}
+            {footerLinks.map((link) => (
+              <Link
+                key={link.key}
+                to={link.currentHref}
+                className="text-sm text-gray-600 hover:text-black transition-colors"
+              >
+                {t(link.currentLabel)}
+              </Link>
+            ))}
+            <Link
+              to={currentLang === 'de' ? '/kontakt' : '/contact'}
               className="text-sm text-gray-600 hover:text-black transition-colors"
             >
               {t('contact')}
-            </button>
+            </Link>
           </div>
         </div>
         

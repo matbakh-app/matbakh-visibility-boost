@@ -60,6 +60,15 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+## Routing & Legal Pages
+
+This app uses a bilingual routing structure with German as the primary language:
+
+- **Legal pages**: All legal pages (Impressum, Datenschutz, AGB, Nutzung) use root-level URLs
+- **Language switching**: DE paths like `/impressum` map to EN paths like `/imprint`
+- **Navigation**: Centralized in `NavigationConfig.ts` with i18n support
+- **Footer**: Uses `getFooterNavItems()` for consistent navigation across languages
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/17fede0a-b45d-4eeb-be93-e21ad2737f99) and click on Share -> Publish.

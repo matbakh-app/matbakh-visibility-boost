@@ -51,30 +51,34 @@ export const NAVIGATION_ITEMS: NavItem[] = [
   },
   { 
     key: "impressum", 
-    labelKey: "nav.impressum", 
+    labelKey: "nav.imprint", 
     href: "/impressum", 
     showInNav: false,
+    showInFooter: true,
     hrefs: { de: "/impressum", en: "/imprint" }
   },
   { 
     key: "datenschutz", 
-    labelKey: "nav.datenschutz", 
+    labelKey: "nav.privacy", 
     href: "/datenschutz", 
     showInNav: false,
+    showInFooter: true,
     hrefs: { de: "/datenschutz", en: "/privacy" }
   },
   { 
     key: "agb", 
-    labelKey: "nav.agb", 
+    labelKey: "nav.terms", 
     href: "/agb", 
     showInNav: false,
+    showInFooter: true,
     hrefs: { de: "/agb", en: "/terms" }
   },
   { 
     key: "nutzung", 
-    labelKey: "nav.nutzung", 
+    labelKey: "nav.usage", 
     href: "/nutzung", 
     showInNav: false,
+    showInFooter: true,
     hrefs: { de: "/nutzung", en: "/usage" }
   },
   { 
@@ -164,6 +168,17 @@ export const getVisibleNavItems = (isAdmin: boolean = false, language: 'de' | 'e
       ...item,
       currentHref: item.hrefs?.[language] || item.href,
       currentLabel: item.labelKey // This will be translated by the component
+    }));
+};
+
+// Helper function to get footer navigation items
+export const getFooterNavItems = (language: 'de' | 'en' = 'de') => {
+  return NAVIGATION_ITEMS
+    .filter(item => item.showInFooter)
+    .map(item => ({
+      ...item,
+      currentHref: item.hrefs?.[language] || item.href,
+      currentLabel: item.labelKey
     }));
 };
 
