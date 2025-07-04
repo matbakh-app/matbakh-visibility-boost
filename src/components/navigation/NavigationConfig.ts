@@ -1,147 +1,161 @@
-// ⚠️ Diese Datei steuert die zentrale Navigation. Änderungen nur mit Review.
-// Central navigation configuration with multi-language support and safety checks
+// src/components/navigation/NavigationConfig.ts
 
-export interface NavigationItem {
+import { TFunction } from 'i18next';
+
+type NavItem = {
   key: string;
-  labels: {
-    de: string;
-    en: string;
-  };
-  hrefs: {
-    de: string;
-    en: string;
-  };
+  labelKey: string; // i18n Key, z. B. "nav.services"
+  href: string;
   showInNav: boolean;
-  requiresAuth?: boolean;
-  adminOnly?: boolean;
-}
+  protected?: boolean;
+  roles?: string[]; // z. B. ["admin", "partner"]
+  hrefs?: { de: string; en: string }; // For backwards compatibility
+};
 
-export const NAVIGATION_ITEMS: NavigationItem[] = [
-  {
-    key: 'home',
-    labels: { de: 'Start', en: 'Home' },
-    hrefs: { de: '/', en: '/' },
-    showInNav: true
-  },
-  {
-    key: 'services',
-    labels: { de: 'Leistungen', en: 'Services' },
-    hrefs: { de: '/services', en: '/services' },
-    showInNav: true
-  },
-  {
-    key: 'packages',
-    labels: { de: 'Angebote', en: 'Packages' },
-    hrefs: { de: '/angebote', en: '/packages' },
-    showInNav: true
-  },
-  {
-    key: 'b2c',
-    labels: { de: 'Für Gäste', en: 'For Guests' },
-    hrefs: { de: '/b2c', en: '/b2c-en' },
-    showInNav: true
-  },
-  {
-    key: 'contact',
-    labels: { de: 'Kontakt', en: 'Contact' },
-    hrefs: { de: '/kontakt', en: '/contact' },
-    showInNav: true
-  },
-  {
-    key: 'admin',
-    labels: { de: 'Admin-Bereich', en: 'Admin Panel' },
-    hrefs: { de: '/admin', en: '/admin' },
+export const NAVIGATION_ITEMS: NavItem[] = [
+  { 
+    key: "home", 
+    labelKey: "nav.home", 
+    href: "/", 
     showInNav: true,
-    adminOnly: true
-  }
+    hrefs: { de: "/", en: "/" }
+  },
+  { 
+    key: "services", 
+    labelKey: "nav.services", 
+    href: "/services", 
+    showInNav: true,
+    hrefs: { de: "/services", en: "/services" }
+  },
+  { 
+    key: "angebote", 
+    labelKey: "nav.angebote", 
+    href: "/angebote", 
+    showInNav: true,
+    hrefs: { de: "/angebote", en: "/packages" }
+  },
+  { 
+    key: "packages", 
+    labelKey: "nav.packages", 
+    href: "/packages", 
+    showInNav: false,
+    hrefs: { de: "/angebote", en: "/packages" }
+  },
+  { 
+    key: "contact", 
+    labelKey: "nav.contact", 
+    href: "/contact", 
+    showInNav: true,
+    hrefs: { de: "/kontakt", en: "/contact" }
+  },
+  { 
+    key: "impressum", 
+    labelKey: "nav.impressum", 
+    href: "/impressum", 
+    showInNav: false,
+    hrefs: { de: "/impressum", en: "/imprint" }
+  },
+  { 
+    key: "datenschutz", 
+    labelKey: "nav.datenschutz", 
+    href: "/datenschutz", 
+    showInNav: false,
+    hrefs: { de: "/datenschutz", en: "/privacy" }
+  },
+  { 
+    key: "agb", 
+    labelKey: "nav.agb", 
+    href: "/agb", 
+    showInNav: false,
+    hrefs: { de: "/agb", en: "/terms" }
+  },
+  { 
+    key: "nutzung", 
+    labelKey: "nav.nutzung", 
+    href: "/nutzung", 
+    showInNav: false,
+    hrefs: { de: "/nutzung", en: "/usage" }
+  },
+  { 
+    key: "usage", 
+    labelKey: "nav.usage", 
+    href: "/usage", 
+    showInNav: false,
+    hrefs: { de: "/nutzung", en: "/usage" }
+  },
+  { 
+    key: "dashboard", 
+    labelKey: "nav.dashboard", 
+    href: "/dashboard", 
+    showInNav: false, 
+    protected: true, 
+    roles: ["admin", "partner"],
+    hrefs: { de: "/dashboard", en: "/dashboard" }
+  },
+  { 
+    key: "partnerDashboard", 
+    labelKey: "nav.partnerDashboard", 
+    href: "/partner/dashboard", 
+    showInNav: false, 
+    protected: true, 
+    roles: ["partner"],
+    hrefs: { de: "/partner/dashboard", en: "/partner/dashboard" }
+  },
+  { 
+    key: "adminPanel", 
+    labelKey: "nav.adminPanel", 
+    href: "/admin", 
+    showInNav: false, 
+    protected: true, 
+    roles: ["admin"],
+    hrefs: { de: "/admin", en: "/admin" }
+  },
 ];
 
-// Get navigation link for specific language
+// Helper function to get navigation link for specific language
 export const getNavLink = (key: string, language: 'de' | 'en'): string => {
   const item = NAVIGATION_ITEMS.find(nav => nav.key === key);
-  return item ? item.hrefs[language] : '/';
+  return item?.hrefs?.[language] || item?.href || '/';
 };
 
-// Get navigation label for specific language
-export const getNavLabel = (key: string, language: 'de' | 'en'): string => {
-  const item = NAVIGATION_ITEMS.find(nav => nav.key === key);
-  return item ? item.labels[language] : key;
+// Helper function to get visible navigation items
+export const getVisibleNavItems = (isAdmin: boolean = false, language: 'de' | 'en' = 'de') => {
+  return NAVIGATION_ITEMS
+    .filter(item => {
+      if (!item.showInNav) return false;
+      if (item.protected && item.roles) {
+        return item.roles.includes('admin') && isAdmin;
+      }
+      return true;
+    })
+    .map(item => ({
+      ...item,
+      currentHref: item.hrefs?.[language] || item.href,
+      currentLabel: item.labelKey // This will be translated by the component
+    }));
 };
 
-// Enhanced validation for new navigation system
-export const validateNavigationConfig = () => {
+// Validation function for development
+export const validateNavigationConfig = (): boolean => {
   if (process.env.NODE_ENV !== 'development') return true;
   
-  const errors: string[] = [];
-  const warnings: string[] = [];
+  const issues: string[] = [];
   
-  NAVIGATION_ITEMS.forEach((item, index) => {
-    // Check required fields
-    if (!item.key) errors.push(`Navigation item ${index}: missing key`);
-    if (!item.labels?.de || !item.labels?.en) {
-      errors.push(`Navigation item ${item.key}: missing labels for de/en`);
-    }
-    if (!item.hrefs?.de || !item.hrefs?.en) {
-      errors.push(`Navigation item ${item.key}: missing hrefs for de/en`);
-    }
-    if (item.showInNav === undefined) {
-      warnings.push(`Navigation item ${item.key}: showInNav not explicitly set`);
-    }
-    
-    // Check language consistency
-    if (item.hrefs?.de && item.hrefs?.en) {
-      if (item.hrefs.de === item.hrefs.en && item.key !== 'home' && item.key !== 'services' && item.key !== 'admin') {
-        warnings.push(`Navigation item ${item.key}: same href for both languages, consider language-specific routes`);
-      }
-    }
-  });
-  
-  // Enhanced checks for translation completeness
-  const requiredNamespaces = ['nav'];
-  const supportedLanguages = ['de', 'en'];
-  
-  // Check if all navigation keys have translations
   NAVIGATION_ITEMS.forEach(item => {
-    supportedLanguages.forEach(lang => {
-      if (!item.labels[lang as 'de' | 'en']) {
-        warnings.push(`Navigation item ${item.key}: missing ${lang} label`);
-      }
-    });
+    if (!item.key) issues.push(`Missing key for item: ${JSON.stringify(item)}`);
+    if (!item.labelKey) issues.push(`Missing labelKey for item: ${item.key}`);
+    if (!item.href && !item.hrefs) issues.push(`Missing href/hrefs for item: ${item.key}`);
+    
+    if (item.hrefs) {
+      if (!item.hrefs.de) issues.push(`Missing German href for item: ${item.key}`);
+      if (!item.hrefs.en) issues.push(`Missing English href for item: ${item.key}`);
+    }
   });
   
-  // Check for route consistency with App.tsx routes
-  const expectedRoutes = NAVIGATION_ITEMS.flatMap(item => [item.hrefs.de, item.hrefs.en]);
-  const uniqueRoutes = [...new Set(expectedRoutes)];
-  
-  if (process.env.NODE_ENV === 'development') {
-    console.log('[Navigation Config] Expected routes:', uniqueRoutes);
+  if (issues.length > 0) {
+    console.warn('NavigationConfig validation issues:', issues);
+    return false;
   }
   
-  // Log warnings
-  warnings.forEach(warning => console.warn(`[Navigation Config] ${warning}`));
-  
-  // Log errors and throw if any
-  if (errors.length > 0) {
-    console.error('[Navigation Config] Validation errors:', errors);
-    throw new Error(`Navigation validation failed: ${errors.join(', ')}`);
-  }
-  
-  console.log('[Navigation Config] Validation passed ✓');
   return true;
 };
-
-// Get visible navigation items with language support
-export const getVisibleNavItems = (isAdmin: boolean = false, language: 'de' | 'en' = 'de') => {
-  return NAVIGATION_ITEMS.filter(item => {
-    if (!item.showInNav) return false;
-    if (item.adminOnly && !isAdmin) return false;
-    return true;
-  }).map(item => ({
-    ...item,
-    currentHref: item.hrefs[language],
-    currentLabel: item.labels[language]
-  }));
-};
-
-// Legacy support - will be deprecated
-export const validateNavigation = validateNavigationConfig;
