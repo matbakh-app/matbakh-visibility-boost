@@ -109,11 +109,6 @@ function AdminRouteWrapper() {
         <Route path="/privacy" element={<Navigate to="/datenschutz" replace />} />
         <Route path="/terms" element={<Navigate to="/agb" replace />} />
         
-        {/* English routing redirects */}
-        <Route path="/terms" element={<Navigate to="/agb" replace />} />
-        <Route path="/privacy" element={<Navigate to="/datenschutz" replace />} />
-        <Route path="/imprint" element={<Navigate to="/impressum" replace />} />
-        
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>

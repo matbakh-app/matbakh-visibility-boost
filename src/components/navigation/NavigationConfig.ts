@@ -29,18 +29,11 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     hrefs: { de: "/services", en: "/services" }
   },
   { 
-    key: "angebote", 
-    labelKey: "nav.angebote", 
-    href: "/angebote", 
+    key: "pricing", 
+    labelKey: "nav.pricing", 
+    href: "/preise", 
     showInNav: true,
-    hrefs: { de: "/angebote", en: "/packages" }
-  },
-  { 
-    key: "packages", 
-    labelKey: "nav.packages", 
-    href: "/packages", 
-    showInNav: false,
-    hrefs: { de: "/angebote", en: "/packages" }
+    hrefs: { de: "/preise", en: "/pricing" }
   },
   { 
     key: "contact", 
@@ -49,8 +42,9 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     showInNav: true,
     hrefs: { de: "/kontakt", en: "/contact" }
   },
+  /* Footer-Links */
   { 
-    key: "impressum", 
+    key: "imprint", 
     labelKey: "nav.imprint", 
     href: "/impressum", 
     showInNav: false,
@@ -58,7 +52,7 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     hrefs: { de: "/impressum", en: "/imprint" }
   },
   { 
-    key: "datenschutz", 
+    key: "privacy", 
     labelKey: "nav.privacy", 
     href: "/datenschutz", 
     showInNav: false,
@@ -66,7 +60,7 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     hrefs: { de: "/datenschutz", en: "/privacy" }
   },
   { 
-    key: "agb", 
+    key: "terms", 
     labelKey: "nav.terms", 
     href: "/agb", 
     showInNav: false,
@@ -74,20 +68,14 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     hrefs: { de: "/agb", en: "/terms" }
   },
   { 
-    key: "nutzung", 
+    key: "usage", 
     labelKey: "nav.usage", 
     href: "/nutzung", 
     showInNav: false,
     showInFooter: true,
     hrefs: { de: "/nutzung", en: "/usage" }
   },
-  { 
-    key: "usage", 
-    labelKey: "nav.usage", 
-    href: "/usage", 
-    showInNav: false,
-    hrefs: { de: "/nutzung", en: "/usage" }
-  },
+  /* Protected Routes */
   { 
     key: "dashboard", 
     labelKey: "nav.dashboard", 
@@ -114,38 +102,7 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     protected: true, 
     roles: ["admin"],
     hrefs: { de: "/admin", en: "/admin" }
-  },
-  {
-    key: "legal.terms",
-    labelKey: "nav.terms",
-    href: "/agb",
-    hrefs: { de: "/agb", en: "/terms" },
-    showInNav: false,
-    showInFooter: true,
-  },
-  {
-    key: "legal.privacy",
-    labelKey: "nav.privacy",
-    href: "/datenschutz",
-    hrefs: { de: "/datenschutz", en: "/privacy" },
-    showInNav: false,
-    showInFooter: true,
-  },
-  {
-    key: "legal.imprint",
-    labelKey: "nav.imprint",
-    href: "/impressum",
-    hrefs: { de: "/impressum", en: "/imprint" },
-    showInNav: false,
-    showInFooter: true,
-  },
-  {
-    key: "legal.pricing",
-    labelKey: "nav.pricing",
-    href: "/preise",
-    hrefs: { de: "/preise", en: "/pricing" },
-    showInNav: true,
-  },
+  }
 ];
 
 // Helper function to get navigation link for specific language
