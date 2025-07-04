@@ -60,6 +60,25 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+## 🚨 Kritische Navigations-Dateien
+
+**WARNUNG**: Die folgenden Dateien steuern die gesamte Website-Navigation und dürfen **NIEMALS** ohne explizite Genehmigung geändert werden:
+
+| Datei | Zweck |
+|-------|-------|
+| `src/components/navigation/NavigationConfig.ts` | Einzelne Quelle aller Haupt-Links |
+| `public/locales/*/nav.json` | Beschriftungen für Navigation |
+| `src/App.tsx` | Route → Component Mapping |
+| `public/sitemap.xml` | SEO-Relevante URL-Liste |
+
+**Änderungs-Prozess** (immer einhalten):
+1. Issue erstellen / Product-Owner zustimmen lassen  
+2. `npm run check:nav` lokal – darf **keine** Fehler bringen  
+3. Code-Review (mind. 1 Maintainer)  
+4. Merge & Deploy
+
+📖 **Detaillierte Informationen**: [docs/CRITICAL_FILES.md](docs/CRITICAL_FILES.md)
+
 ## Routing & Legal Pages
 
 This app uses a bilingual routing structure with German as the primary language:

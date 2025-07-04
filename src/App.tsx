@@ -1,9 +1,27 @@
 
+/*  ⚠️ KRITISCHE ROUTING-DATEI – NICHT OHNE GENEHMIGUNG ÄNDERN! ⚠️
+ *
+ *  Diese Datei definiert alle URL-Routen der Website.
+ *  Eine falsche Änderung bricht:
+ *    – Benutzer-Navigation komplett
+ *    – SEO-URLs (/angebote, /packages)
+ *    – Mehrsprachige Weiterleitung
+ *
+ *  VOR JEDEM COMMIT:
+ *    1) Änderung mit Product-Owner abklären
+ *    2) Routing-Tests durchführen
+ *    3) Sitemap.xml auf Konsistenz prüfen
+ */
+
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import './App.css';
 import './lib/i18n'; // Initialize i18n with validation
+
+if (process.env.NODE_ENV === 'development') {
+  console.warn('🚨 App.tsx Routing geladen – Änderungen nur nach Approval!');
+}
 import AngebotePage from './pages/AngebotePage';
 import AngeboteDE from './pages/AngeboteDE';
 import PackagesEN from './pages/PackagesEN';

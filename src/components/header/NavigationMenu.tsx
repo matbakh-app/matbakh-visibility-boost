@@ -6,6 +6,11 @@ import { getVisibleNavItems, getNavLink, validateNavigationConfig } from '../nav
 import { useAuth } from '@/contexts/AuthContext';
 import { isSafeTranslationKey } from '@/lib/i18n-validator';
 
+// 💡 Dieses File nur ändern, wenn NavigationConfig geändert wurde (Genehmigung!)
+if (process.env.NODE_ENV === 'development') {
+  console.warn('💡 NavigationMenu.tsx geladen – abhängig von NavigationConfig!');
+}
+
 const NavigationMenu: React.FC = () => {
   const { t, i18n } = useTranslation('nav');
   const { isAdmin } = useAuth();

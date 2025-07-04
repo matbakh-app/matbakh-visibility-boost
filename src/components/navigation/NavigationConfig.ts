@@ -1,6 +1,30 @@
+/*  ⚠️ KRITISCHE NAVIGATION-DATEI – NICHT OHNE GENEHMIGUNG ÄNDERN! ⚠️
+ *
+ *  Diese Datei steuert sämtliche Haupt-URLs, Mehrsprachigkeit und SEO-Routen.
+ *  Eine falsche Änderung bricht:
+ *    – Navigation der Benutzer
+ *    – /angebote  &  /packages  Canonicals
+ *    – Sitemap-Konsistenz
+ *
+ *  VOR JEDEM COMMIT:
+ *    1) Änderung mit Product-Owner abklären
+ *    2) validateNavigationIntegrity() lokal ausführen
+ *    3) Neues Sitemap-Diff prüfen
+ */
+
 // src/components/navigation/NavigationConfig.ts
 
 import { TFunction } from 'i18next';
+
+export type NAVIGATION_CHANGE_WARNING = {
+  '⚠️_WARNUNG': 'NavigationConfig NIEMALS ohne Genehmigung ändern!';
+  GRUND: 'Kann gesamte Navigation und SEO zerstören';
+  PROZESS: 'Absprache → Impact-Analyse → Review → Deploy';
+};
+
+if (process.env.NODE_ENV === 'development') {
+  console.warn('🚨 NavigationConfig geladen – Änderungen nur nach Approval!');
+}
 
 type NavItem = {
   key: string;
@@ -159,6 +183,16 @@ export const validateNavigationConfig = (): boolean => {
   if (issues.length > 0) {
     console.warn('NavigationConfig validation issues:', issues);
     return false;
+  }
+
+  // Import und führe erweiterte Validierung aus
+  if (typeof window === 'undefined') { // Nur serverseitig
+    try {
+      const { validateNavigationIntegrity } = require('@/lib/navigationValidator');
+      validateNavigationIntegrity(NAVIGATION_ITEMS);
+    } catch (error) {
+      console.warn('Navigation validator not available:', error);
+    }
   }
   
   return true;

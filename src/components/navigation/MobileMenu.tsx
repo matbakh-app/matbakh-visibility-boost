@@ -7,6 +7,11 @@ import { getNavLink, getVisibleNavItems } from './NavigationConfig';
 import { isSafeTranslationKey } from '@/lib/i18n-validator';
 import { useAuth } from '@/contexts/AuthContext';
 
+// 💡 Dieses File nur ändern, wenn NavigationConfig geändert wurde (Genehmigung!)
+if (process.env.NODE_ENV === 'development') {
+  console.warn('💡 MobileMenu.tsx geladen – abhängig von NavigationConfig!');
+}
+
 interface MobileMenuProps {
   isOpen: boolean;
   onToggle: () => void;
