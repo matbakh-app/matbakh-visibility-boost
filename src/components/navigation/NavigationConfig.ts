@@ -29,11 +29,18 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     hrefs: { de: "/services", en: "/services" }
   },
   { 
-    key: "pricing", 
-    labelKey: "nav.pricing", 
-    href: "/preise", 
+    key: "angebote", 
+    labelKey: "nav.angebote", 
+    href: "/angebote", 
     showInNav: true,
-    hrefs: { de: "/preise", en: "/pricing" }
+    hrefs: { de: "/angebote", en: "/packages" }
+  },
+  { 
+    key: "packages", 
+    labelKey: "nav.packages", 
+    href: "/packages", 
+    showInNav: true,
+    hrefs: { de: "/angebote", en: "/packages" }
   },
   { 
     key: "contact", 
