@@ -7,6 +7,7 @@ import DashboardCard from '@/components/dashboard/DashboardCard';
 import GMBChart from '@/components/dashboard/GMBChart';
 import GA4Chart from '@/components/dashboard/GA4Chart';
 import QuotaWidget from '@/components/dashboard/QuotaWidget';
+import KpiCard from '@/components/dashboard/KpiCard';
 import { useSyncGmb } from '@/hooks/useSyncGmb';
 import { useSyncGa4 } from '@/hooks/useSyncGa4';
 import { useTranslation } from 'react-i18next';
@@ -26,6 +27,39 @@ const Dashboard = () => {
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2">{t('dashboard.title')}</h1>
             <p className="text-gray-600">{t('dashboard.description')}</p>
+          </div>
+
+          {/* KPI Cards Section - Proof of Concept */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-semibold mb-4">Key Performance Indicators</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+              <KpiCard
+                title="Impressionen"
+                titleKey="impressions"
+                description="Summe aller Impressionen deines Google-Profils in Suche & Maps. Zeigt, wie oft dein Eintrag potenziellen Kunden angezeigt wurde."
+                benchmark={1000}
+                comparePercentage={23}
+                optimizeLink="/dashboard/ai-optimization?kpi=impressions"
+              />
+              
+              <KpiCard
+                title="Klickrate (CTR)"
+                titleKey="ctr"
+                description="Verhältnis von Klicks zu Impressionen, angezeigt als Prozent. Misst, wie oft Nutzer auf dein Profil geklickt haben, nachdem es angezeigt wurde."
+                benchmark="5%"
+                comparePercentage={-1.2}
+                optimizeLink="/dashboard/ai-optimization?kpi=ctr"
+              />
+              
+              <KpiCard
+                title="Profilaufrufe"
+                titleKey="profileViews"
+                description="Anzahl der direkten Aufrufe deines Google Business Profils. Zeigt das Interesse der Nutzer an deinem Unternehmen."
+                benchmark={500}
+                comparePercentage={8}
+                optimizeLink="/dashboard/ai-optimization?kpi=profileViews"
+              />
+            </div>
           </div>
           
           {/* Main Dashboard Grid */}
