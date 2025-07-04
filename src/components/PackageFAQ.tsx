@@ -54,7 +54,7 @@ const PackageFAQ: React.FC<PackageFAQProps> = ({ language = 'de' }) => {
               href="mailto:mail@matbakh.app" 
               className="border border-black text-black px-6 py-3 rounded-lg hover:bg-gray-50 transition-colors"
             >
-              {t('faq.cta.email')}
+              mail(at)matbakh(dot)app
             </a>
           </div>
         </div>
