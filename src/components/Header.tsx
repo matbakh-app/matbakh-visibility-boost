@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LanguageToggle from './header/LanguageToggle';
 import NavigationMenu from './header/NavigationMenu';
-import MobileMenu from './header/MobileMenu';
+import MobileMenu from './navigation/MobileMenu';
 import UserMenu from './header/UserMenu';
 
 const Header: React.FC = () => {

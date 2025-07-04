@@ -3,7 +3,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Menu, X } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { getNavLink, getVisibleNavItems } from '../navigation/NavigationConfig';
+import { getNavLink, getVisibleNavItems } from './NavigationConfig';
 import { isSafeTranslationKey } from '@/lib/i18n-validator';
 import { useAuth } from '@/contexts/AuthContext';
 
