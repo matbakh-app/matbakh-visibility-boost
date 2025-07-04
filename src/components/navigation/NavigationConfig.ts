@@ -7,6 +7,7 @@ type NavItem = {
   labelKey: string; // i18n Key, z. B. "nav.services"
   href: string;
   showInNav: boolean;
+  showInFooter?: boolean;
   protected?: boolean;
   roles?: string[]; // z. B. ["admin", "partner"]
   hrefs?: { de: string; en: string }; // For backwards compatibility
@@ -116,6 +117,7 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     href: "/agb",
     hrefs: { de: "/agb", en: "/terms" },
     showInNav: false,
+    showInFooter: true,
   },
   {
     key: "legal.privacy",
@@ -123,6 +125,7 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     href: "/datenschutz",
     hrefs: { de: "/datenschutz", en: "/privacy" },
     showInNav: false,
+    showInFooter: true,
   },
   {
     key: "legal.imprint",
@@ -130,6 +133,7 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     href: "/impressum",
     hrefs: { de: "/impressum", en: "/imprint" },
     showInNav: false,
+    showInFooter: true,
   },
   {
     key: "legal.pricing",

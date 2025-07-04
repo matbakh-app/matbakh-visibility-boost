@@ -13,6 +13,8 @@ import AGB from './pages/AGB';
 import Dashboard from './pages/Dashboard';
 import Nutzung from './pages/legal/Nutzung';
 import Usage from './pages/legal/Usage';
+import Preise from './pages/Preise';
+import Pricing from './pages/Pricing';
 import ServicesPage from './pages/ServicesPage';
 import B2CLanding from './pages/B2CLanding';
 import BusinessLanding from './pages/BusinessLanding';
@@ -63,6 +65,8 @@ function AdminRouteWrapper() {
         <Route path="/impressum" element={<Impressum />} />
         <Route path="/datenschutz" element={<Datenschutz />} />
         <Route path="/agb" element={<AGB />} />
+        <Route path="/preise" element={<Preise />} />
+        <Route path="/pricing" element={<Pricing />} />
         <Route path="/nutzung" element={<Nutzung />} />
         <Route path="/usage" element={<Usage />} />
         <Route path="/dashboard" element={<Dashboard />} />
@@ -104,6 +108,11 @@ function AdminRouteWrapper() {
         <Route path="/imprint" element={<Navigate to="/impressum" replace />} />
         <Route path="/privacy" element={<Navigate to="/datenschutz" replace />} />
         <Route path="/terms" element={<Navigate to="/agb" replace />} />
+        
+        {/* English routing redirects */}
+        <Route path="/terms" element={<Navigate to="/agb" replace />} />
+        <Route path="/privacy" element={<Navigate to="/datenschutz" replace />} />
+        <Route path="/imprint" element={<Navigate to="/impressum" replace />} />
         
         <Route path="*" element={<NotFound />} />
       </Routes>
