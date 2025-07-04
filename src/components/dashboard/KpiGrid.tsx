@@ -3,7 +3,7 @@ import React from 'react';
 import KpiCard from './KpiCard';
 
 interface KpiGridProps {
-  type: 'gmb' | 'ga4';
+  type?: 'gmb' | 'ga4';
 }
 
 const KpiGrid: React.FC<KpiGridProps> = ({ type }) => {
