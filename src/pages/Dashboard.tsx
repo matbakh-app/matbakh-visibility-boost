@@ -6,6 +6,7 @@ import TrialBanner from '@/components/TrialBanner';
 import DashboardCard from '@/components/dashboard/DashboardCard';
 import DashboardTabs from '@/components/dashboard/DashboardTabs';
 import QuotaWidget from '@/components/dashboard/QuotaWidget';
+import HeroSection from '@/components/dashboard/HeroSection';
 import { useSyncGmb } from '@/hooks/useSyncGmb';
 import { useSyncGa4 } from '@/hooks/useSyncGa4';
 import { useTranslation } from 'react-i18next';
@@ -26,6 +27,8 @@ const Dashboard = () => {
             <h1 className="text-3xl font-bold mb-2">{t('title')}</h1>
             <p className="text-gray-600">{t('description')}</p>
           </div>
+
+          <HeroSection />
 
           {/* Main Dashboard Content */}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
