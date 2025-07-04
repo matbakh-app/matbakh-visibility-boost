@@ -1,7 +1,6 @@
 
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useKpi } from '@/hooks/useKpi';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useTranslation } from 'react-i18next';
@@ -24,19 +23,7 @@ const KpiCard: React.FC<KpiCardProps> = ({
   optimizeLink
 }) => {
   const { t } = useTranslation('dashboard');
-  
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['kpi', titleKey],
-    queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('fetch-kpi', {
-        body: { name: titleKey }
-      });
-      if (error) throw error;
-      return data;
-    },
-    refetchInterval: 30000, // Refetch every 30 seconds
-    retry: 3,
-  });
+  const { data, isLoading, error } = useKpi(titleKey);
 
   const getCompareColor = (percentage: number) => {
     return percentage > 0 ? 'text-green-600' : 'text-red-600';
@@ -63,7 +50,7 @@ const KpiCard: React.FC<KpiCardProps> = ({
       ) : error ? (
         <Alert>
           <AlertDescription>
-            Daten konnten nicht geladen werden
+            {t('kpi.loadError', { defaultValue: 'Daten konnten nicht geladen werden' })}
           </AlertDescription>
         </Alert>
       ) : (
@@ -77,17 +64,23 @@ const KpiCard: React.FC<KpiCardProps> = ({
           </p>
           
           <p className="text-sm text-gray-500 mb-3">
-            Durchschnitt: {benchmark} 
+            {t('kpi.benchmark', { defaultValue: 'Durchschnitt' })}: {benchmark} 
             <span className={`ml-1 ${getCompareColor(comparePercentage)}`}>
               ({getComparePrefix(comparePercentage)}{comparePercentage}%)
             </span>
           </p>
           
+          {data?.trend && (
+            <p className={`text-sm mb-3 ${data.trend.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
+              {t('kpi.trend', { defaultValue: 'Trend' })}: {data.trend}
+            </p>
+          )}
+          
           <a 
             href={optimizeLink} 
             className="text-blue-600 hover:underline mt-2 block text-sm font-medium"
           >
-            Zu den Optimierungsvorschlägen (Upgrade erforderlich)
+            {t('kpi.optimizeLink', { defaultValue: 'Zu den Optimierungsvorschlägen (Upgrade erforderlich)' })}
           </a>
         </>
       )}
