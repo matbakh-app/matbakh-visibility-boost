@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useTranslation } from 'react-i18next';
 
 interface KpiCardProps {
   title: string;
@@ -22,6 +23,8 @@ const KpiCard: React.FC<KpiCardProps> = ({
   comparePercentage,
   optimizeLink
 }) => {
+  const { t } = useTranslation('dashboard');
+  
   const { data, isLoading, error } = useQuery({
     queryKey: ['kpi', titleKey],
     queryFn: async () => {
@@ -43,9 +46,13 @@ const KpiCard: React.FC<KpiCardProps> = ({
     return percentage > 0 ? '+' : '';
   };
 
+  // Use translation key if available, otherwise fallback to title prop
+  const translatedTitle = t(`kpi.${titleKey}`, { defaultValue: title });
+  const translatedDescription = t(`kpi.${titleKey}Desc`, { defaultValue: description });
+
   return (
     <article className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
+      <h3 className="text-lg font-semibold mb-2">{translatedTitle}</h3>
       
       {isLoading ? (
         <div className="space-y-3">
@@ -66,7 +73,7 @@ const KpiCard: React.FC<KpiCardProps> = ({
           </p>
           
           <p className="text-sm text-gray-500 mb-1">
-            {description}
+            {translatedDescription}
           </p>
           
           <p className="text-sm text-gray-500 mb-3">

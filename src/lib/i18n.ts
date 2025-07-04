@@ -1,3 +1,4 @@
+
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import HttpBackend from 'i18next-http-backend';
@@ -53,7 +54,7 @@ i18n
     lng: 'de',
     fallbackLng: 'de',
     supportedLngs: ['de', 'en'],
-    ns: ['translation', 'common', 'adminPanel', 'auth', 'nav', 'footer', 'hero', 'features'],
+    ns: ['translation', 'common', 'adminPanel', 'auth', 'nav', 'footer', 'hero', 'features', 'dashboard'],
     defaultNS: 'translation',
     fallbackNS: ['common', 'translation'],
     backend: {

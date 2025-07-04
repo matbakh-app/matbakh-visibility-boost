@@ -11,7 +11,7 @@ import { useSyncGa4 } from '@/hooks/useSyncGa4';
 import { useTranslation } from 'react-i18next';
 
 const Dashboard = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('dashboard');
   const { data: gmbData, isLoading: gmbLoading, error: gmbError } = useSyncGmb();
   const { data: ga4Data, isLoading: ga4Loading, error: ga4Error } = useSyncGa4();
   
@@ -23,8 +23,8 @@ const Dashboard = () => {
           <TrialBanner daysRemaining={14} />
           
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">{t('dashboard.title')}</h1>
-            <p className="text-gray-600">{t('dashboard.description')}</p>
+            <h1 className="text-3xl font-bold mb-2">{t('title')}</h1>
+            <p className="text-gray-600">{t('description')}</p>
           </div>
 
           {/* Main Dashboard Content */}
@@ -36,46 +36,46 @@ const Dashboard = () => {
 
             {/* Sidebar - Takes 1 column */}
             <div className="space-y-6">
-              <DashboardCard title="Upload Quota">
+              <DashboardCard title={t('sidebar.uploadQuota')}>
                 <QuotaWidget 
                   currentUploads={23}
                   maxUploads={50}
-                  title="Monatliche Uploads"
+                  title={t('sidebar.monthlyUploads')}
                 />
               </DashboardCard>
 
-              <DashboardCard title="Schnelle Aktionen">
+              <DashboardCard title={t('sidebar.quickActions')}>
                 <div className="space-y-3">
                   <button className="w-full bg-black text-white px-4 py-2 rounded hover:bg-gray-800 text-sm">
-                    Öffnungszeiten aktualisieren
+                    {t('sidebar.updateHours')}
                   </button>
                   <button className="w-full border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-50 text-sm">
-                    Neue Fotos hochladen
+                    {t('sidebar.uploadPhotos')}
                   </button>
                   <button className="w-full border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-50 text-sm">
-                    Speisekarte aktualisieren
+                    {t('sidebar.updateMenu')}
                   </button>
                 </div>
               </DashboardCard>
 
-              <DashboardCard title="AI Empfehlungen">
+              <DashboardCard title={t('sidebar.aiRecommendations')}>
                 <div className="space-y-4">
                   <div className="p-4 bg-blue-50 rounded-lg">
-                    <h4 className="font-medium text-blue-900 mb-2">📈 Sichtbarkeit verbessern</h4>
+                    <h4 className="font-medium text-blue-900 mb-2">📈 {t('sidebar.improveVisibility')}</h4>
                     <p className="text-sm text-blue-700">
-                      Fügen Sie 3 weitere Fotos hinzu, um Ihre Google-Sichtbarkeit um 15% zu steigern.
+                      {t('sidebar.visibilityTip')}
                     </p>
                   </div>
                   <div className="p-4 bg-green-50 rounded-lg">
-                    <h4 className="font-medium text-green-900 mb-2">⭐ Bewertungen</h4>
+                    <h4 className="font-medium text-green-900 mb-2">⭐ {t('sidebar.reviews')}</h4>
                     <p className="text-sm text-green-700">
-                      Ihre Bewertungen sind ausgezeichnet! Teilen Sie sie auf Social Media.
+                      {t('sidebar.reviewsTip')}
                     </p>
                   </div>
                   <div className="p-4 bg-yellow-50 rounded-lg">
-                    <h4 className="font-medium text-yellow-900 mb-2">🕒 Öffnungszeiten</h4>
+                    <h4 className="font-medium text-yellow-900 mb-2">🕒 {t('sidebar.openingHours')}</h4>
                     <p className="text-sm text-yellow-700">
-                      Aktualisieren Sie Ihre Ferienzeiten für die Sommerpause.
+                      {t('sidebar.hoursTip')}
                     </p>
                   </div>
                 </div>
