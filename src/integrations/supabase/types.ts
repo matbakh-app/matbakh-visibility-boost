@@ -72,6 +72,65 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_recommendations: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          description: string
+          estimated_impact: string | null
+          expires_at: string | null
+          id: string
+          implementation_difficulty: string | null
+          metadata: Json | null
+          partner_id: string
+          priority: string | null
+          recommendation_type: string
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          description: string
+          estimated_impact?: string | null
+          expires_at?: string | null
+          id?: string
+          implementation_difficulty?: string | null
+          metadata?: Json | null
+          partner_id: string
+          priority?: string | null
+          recommendation_type: string
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          description?: string
+          estimated_impact?: string | null
+          expires_at?: string | null
+          id?: string
+          implementation_difficulty?: string | null
+          metadata?: Json | null
+          partner_id?: string
+          priority?: string | null
+          recommendation_type?: string
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_recommendations_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "business_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       billing_events: {
         Row: {
           created_at: string | null
@@ -428,6 +487,139 @@ export type Database = {
             columns: ["session_id"]
             isOneToOne: false
             referencedRelation: "dudle_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ga4_daily: {
+        Row: {
+          avg_session_duration: number | null
+          bounce_rate: number | null
+          conversion_rate: number | null
+          conversions: number | null
+          created_at: string | null
+          date: string
+          device_breakdown: Json | null
+          id: string
+          page_views: number | null
+          partner_id: string
+          sessions: number | null
+          top_pages: Json | null
+          top_queries: Json | null
+          traffic_sources: Json | null
+          unique_users: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          avg_session_duration?: number | null
+          bounce_rate?: number | null
+          conversion_rate?: number | null
+          conversions?: number | null
+          created_at?: string | null
+          date: string
+          device_breakdown?: Json | null
+          id?: string
+          page_views?: number | null
+          partner_id: string
+          sessions?: number | null
+          top_pages?: Json | null
+          top_queries?: Json | null
+          traffic_sources?: Json | null
+          unique_users?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          avg_session_duration?: number | null
+          bounce_rate?: number | null
+          conversion_rate?: number | null
+          conversions?: number | null
+          created_at?: string | null
+          date?: string
+          device_breakdown?: Json | null
+          id?: string
+          page_views?: number | null
+          partner_id?: string
+          sessions?: number | null
+          top_pages?: Json | null
+          top_queries?: Json | null
+          traffic_sources?: Json | null
+          unique_users?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ga4_daily_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "business_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gmb_profiles: {
+        Row: {
+          address: string | null
+          business_name: string | null
+          category: string | null
+          created_at: string | null
+          google_location_id: string | null
+          google_rating: number | null
+          id: string
+          last_synced: string | null
+          partner_id: string
+          phone: string | null
+          photos_count: number | null
+          posts_count: number | null
+          snapshot_date: string
+          total_reviews: number | null
+          updated_at: string | null
+          verification_status: string | null
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          business_name?: string | null
+          category?: string | null
+          created_at?: string | null
+          google_location_id?: string | null
+          google_rating?: number | null
+          id?: string
+          last_synced?: string | null
+          partner_id: string
+          phone?: string | null
+          photos_count?: number | null
+          posts_count?: number | null
+          snapshot_date?: string
+          total_reviews?: number | null
+          updated_at?: string | null
+          verification_status?: string | null
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          business_name?: string | null
+          category?: string | null
+          created_at?: string | null
+          google_location_id?: string | null
+          google_rating?: number | null
+          id?: string
+          last_synced?: string | null
+          partner_id?: string
+          phone?: string | null
+          photos_count?: number | null
+          posts_count?: number | null
+          snapshot_date?: string
+          total_reviews?: number | null
+          updated_at?: string | null
+          verification_status?: string | null
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gmb_profiles_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "business_partners"
             referencedColumns: ["id"]
           },
         ]
