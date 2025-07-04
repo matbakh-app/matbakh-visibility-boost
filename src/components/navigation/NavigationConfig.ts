@@ -110,6 +110,34 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     roles: ["admin"],
     hrefs: { de: "/admin", en: "/admin" }
   },
+  {
+    key: "legal.terms",
+    labelKey: "nav.terms",
+    href: "/agb",
+    hrefs: { de: "/agb", en: "/terms" },
+    showInNav: false,
+  },
+  {
+    key: "legal.privacy",
+    labelKey: "nav.privacy",
+    href: "/datenschutz",
+    hrefs: { de: "/datenschutz", en: "/privacy" },
+    showInNav: false,
+  },
+  {
+    key: "legal.imprint",
+    labelKey: "nav.imprint",
+    href: "/impressum",
+    hrefs: { de: "/impressum", en: "/imprint" },
+    showInNav: false,
+  },
+  {
+    key: "legal.pricing",
+    labelKey: "nav.pricing",
+    href: "/preise",
+    hrefs: { de: "/preise", en: "/pricing" },
+    showInNav: true,
+  },
 ];
 
 // Helper function to get navigation link for specific language
