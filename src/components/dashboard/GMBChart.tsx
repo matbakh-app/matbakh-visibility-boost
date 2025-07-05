@@ -3,6 +3,7 @@ import React from 'react';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import { useTranslation } from 'react-i18next';
+import GMBLegend from './legends/GMBLegend';
 
 // Dummy data for development
 const dummyGmbData = [
@@ -14,24 +15,8 @@ const dummyGmbData = [
   { month: 'Jun', views: 1650, clicks: 125 },
 ];
 
-const CustomLegend = () => {
-  const { t } = useTranslation('dashboard');
-  return (
-    <div className="flex flex-wrap items-center justify-center gap-4 mt-4">
-      <span className="flex items-center gap-2">
-        <span className="inline-block w-3 h-3 rounded bg-[#3b82f6]" />
-        <span className="text-sm">{t('charts.legend.profileViews')}</span>
-      </span>
-      <span className="flex items-center gap-2">
-        <span className="inline-block w-3 h-3 rounded bg-[#10b981]" />
-        <span className="text-sm">{t('charts.legend.clicks')}</span>
-      </span>
-    </div>
-  );
-};
-
 const GMBChart: React.FC = () => {
-  const { t } = useTranslation('dashboard');
+  const { t, i18n } = useTranslation('dashboard');
   
   const chartConfig = {
     views: {
@@ -43,7 +28,7 @@ const GMBChart: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-full flex flex-col">
+    <div className="w-full h-full flex flex-col" key={i18n.language}>
       <ChartContainer config={chartConfig} className="flex-1">
         <ResponsiveContainer width="100%" height="90%">
           <BarChart 
@@ -53,12 +38,12 @@ const GMBChart: React.FC = () => {
             <XAxis dataKey="month" />
             <YAxis />
             <ChartTooltip content={<ChartTooltipContent />} />
-            <Bar dataKey="views" fill="#3b82f6" name={t('charts.legend.profileViews')} />
-            <Bar dataKey="clicks" fill="#10b981" name={t('charts.legend.clicks')} />
+            <Bar dataKey="views" fill="#3b82f6" name="views" />
+            <Bar dataKey="clicks" fill="#10b981" name="clicks" />
           </BarChart>
         </ResponsiveContainer>
       </ChartContainer>
-      <CustomLegend />
+      <GMBLegend lang={i18n.language} />
     </div>
   );
 };
