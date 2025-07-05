@@ -3,11 +3,11 @@ import React from 'react';
 import KpiCard from './KpiCard';
 
 interface KpiGridProps {
-  type?: 'gmb' | 'ga4';
+  category?: 'gmb' | 'ga4' | 'social' | 'all';
 }
 
-const KpiGrid: React.FC<KpiGridProps> = ({ type }) => {
-  if (type === 'gmb') {
+const KpiGrid: React.FC<KpiGridProps> = ({ category }) => {
+  if (category === 'gmb') {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <KpiCard
@@ -85,7 +85,7 @@ const KpiGrid: React.FC<KpiGridProps> = ({ type }) => {
     );
   }
 
-  if (type === 'ga4') {
+  if (category === 'ga4') {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <KpiCard
@@ -163,7 +163,67 @@ const KpiGrid: React.FC<KpiGridProps> = ({ type }) => {
     );
   }
 
-  return null;
+  if (category === 'social') {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <KpiCard
+          title="Instagram Follower"
+          titleKey="instagramFollowers"
+          description="Anzahl der Instagram-Follower"
+          benchmark={1500}
+          comparePercentage={10}
+          optimizeLink="/dashboard/ai-optimization?kpi=instagramFollowers"
+        />
+        
+        <KpiCard
+          title="Facebook Likes"
+          titleKey="facebookLikes"
+          description="Anzahl der Facebook-Likes"
+          benchmark={800}
+          comparePercentage={-5}
+          optimizeLink="/dashboard/ai-optimization?kpi=facebookLikes"
+        />
+        
+        <KpiCard
+          title="Social Media Engagement"
+          titleKey="socialEngagement"
+          description="Engagement-Rate auf Social Media"
+          benchmark="3%"
+          comparePercentage={12}
+          optimizeLink="/dashboard/ai-optimization?kpi=socialEngagement"
+        />
+      </div>
+    );
+  }
+
+  // category === 'all' or default
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
+        <h4 className="text-sm font-medium text-gray-500 mb-1">Impressionen (GMB)</h4>
+        <p className="text-2xl font-bold">1,234</p>
+        <p className="text-sm text-green-600">+23% vs. Durchschnitt</p>
+      </div>
+      
+      <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
+        <h4 className="text-sm font-medium text-gray-500 mb-1">Sitzungen (GA4)</h4>
+        <p className="text-2xl font-bold">2,340</p>
+        <p className="text-sm text-green-600">+7% vs. Durchschnitt</p>
+      </div>
+      
+      <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
+        <h4 className="text-sm font-medium text-gray-500 mb-1">Conversions</h4>
+        <p className="text-2xl font-bold">34</p>
+        <p className="text-sm text-green-600">+25% vs. Durchschnitt</p>
+      </div>
+      
+      <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
+        <h4 className="text-sm font-medium text-gray-500 mb-1">Klickrate (CTR)</h4>
+        <p className="text-2xl font-bold">4.2%</p>
+        <p className="text-sm text-red-600">-1.2% vs. Durchschnitt</p>
+      </div>
+    </div>
+  );
 };
 
 export default KpiGrid;
