@@ -50,7 +50,10 @@ const SocialMediaChart: React.FC = () => {
   return (
     <ChartContainer config={chartConfig} className="h-full">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={dummySocialData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+        <BarChart 
+          data={dummySocialData} 
+          margin={{ top: 16, right: 24, left: 12, bottom: 40 }}
+        >
           <XAxis dataKey="platform" />
           <YAxis />
           <ChartTooltip content={<ChartTooltipContent />} />

@@ -29,7 +29,10 @@ const GA4Chart: React.FC = () => {
   return (
     <ChartContainer config={chartConfig} className="h-full">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={dummyGa4Data} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+        <LineChart 
+          data={dummyGa4Data} 
+          margin={{ top: 16, right: 24, left: 12, bottom: 40 }}
+        >
           <XAxis dataKey="date" />
           <YAxis />
           <ChartTooltip content={<ChartTooltipContent />} />

@@ -29,7 +29,10 @@ const GMBChart: React.FC = () => {
   return (
     <ChartContainer config={chartConfig} className="h-full">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={dummyGmbData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+        <BarChart 
+          data={dummyGmbData} 
+          margin={{ top: 16, right: 24, left: 12, bottom: 40 }}
+        >
           <XAxis dataKey="month" />
           <YAxis />
           <ChartTooltip content={<ChartTooltipContent />} />
