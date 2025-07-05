@@ -41,7 +41,12 @@ const ActionModal: React.FC<ActionModalProps> = ({ isOpen, onClose, recommendati
               question: t('actionModal.photos.step1', { 
                 defaultValue: 'Was möchten Sie zeigen?' 
               }),
-              options: ['Neue Gerichte', 'Restaurant-Atmosphäre', 'Team', 'Events']
+              options: [
+                t('actionModal.photos.option1', { defaultValue: 'Neue Gerichte' }),
+                t('actionModal.photos.option2', { defaultValue: 'Restaurant-Atmosphäre' }),
+                t('actionModal.photos.option3', { defaultValue: 'Team' }),
+                t('actionModal.photos.option4', { defaultValue: 'Events' })
+              ]
             }
           ]
         };
@@ -51,6 +56,44 @@ const ActionModal: React.FC<ActionModalProps> = ({ isOpen, onClose, recommendati
           description: t('actionModal.reviews.description', { 
             defaultValue: 'Antworten auf Bewertungen zeigen Engagement.' 
           }),
+          steps: [
+            {
+              question: t('actionModal.reviews.step1', { 
+                defaultValue: 'Welche Bewertungen möchten Sie bearbeiten?' 
+              }),
+              options: [
+                t('actionModal.reviews.option1', { defaultValue: 'Neue unbeantwortete Bewertungen' }),
+                t('actionModal.reviews.option2', { defaultValue: 'Kritische Bewertungen' }),
+                t('actionModal.reviews.option3', { defaultValue: 'Positive Bewertungen danken' }),
+                t('actionModal.reviews.option4', { defaultValue: 'Alle Bewertungen anzeigen' })
+              ]
+            }
+          ]
+        };
+      case 'hours':
+        return {
+          title: t('actionModal.hours.title', { defaultValue: 'Öffnungszeiten aktualisieren' }),
+          description: t('actionModal.hours.description', { 
+            defaultValue: 'Aktuelle Öffnungszeiten verbessern Ihre Auffindbarkeit.' 
+          }),
+          steps: [
+            {
+              question: t('actionModal.hours.step1', { 
+                defaultValue: 'Was möchten Sie aktualisieren?' 
+              }),
+              options: [
+                t('actionModal.hours.option1', { defaultValue: 'Reguläre Öffnungszeiten' }),
+                t('actionModal.hours.option2', { defaultValue: 'Feiertags-Öffnungszeiten' }),
+                t('actionModal.hours.option3', { defaultValue: 'Sonderöffnungszeiten' }),
+                t('actionModal.hours.option4', { defaultValue: 'Temporäre Schließung' })
+              ]
+            }
+          ]
+        };
+      case 'overview':
+        return {
+          title: recommendation.title,
+          description: recommendation.description,
           steps: []
         };
       default:
@@ -99,11 +142,12 @@ const ActionModal: React.FC<ActionModalProps> = ({ isOpen, onClose, recommendati
                       if (step < content.steps.length) {
                         setStep(step + 1);
                       } else {
-                        // Complete action
+                        // Complete action - hier würde der eigentliche Workflow starten
+                        console.log(`Action completed: ${recommendation.recommendation_type} - ${option}`);
                         onClose();
                       }
                     }}
-                    className="text-sm"
+                    className="text-sm h-auto py-3 px-2 text-center"
                   >
                     {option}
                   </Button>
@@ -113,9 +157,14 @@ const ActionModal: React.FC<ActionModalProps> = ({ isOpen, onClose, recommendati
           ) : (
             <div className="text-center py-4">
               <p className="text-sm text-gray-600 mb-4">
-                {t('actionModal.comingSoon', { 
-                  defaultValue: 'Diese Funktion wird bald verfügbar sein.' 
-                })}
+                {recommendation.recommendation_type === 'overview'
+                  ? t('actionModal.allActionsAvailable', { 
+                      defaultValue: 'Alle Empfehlungen sind über die Quick Actions verfügbar.' 
+                    })
+                  : t('actionModal.comingSoon', { 
+                      defaultValue: 'Diese Funktion wird bald verfügbar sein.' 
+                    })
+                }
               </p>
               <Button onClick={onClose}>
                 {t('common.close', { defaultValue: 'Schließen' })}
