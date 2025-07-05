@@ -1,4 +1,4 @@
-
+// File: src/pages/Dashboard.tsx
 import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -10,19 +10,25 @@ import HeroSection from '@/components/dashboard/HeroSection';
 import { useSyncGmb } from '@/hooks/useSyncGmb';
 import { useSyncGa4 } from '@/hooks/useSyncGa4';
 import { useTranslation } from 'react-i18next';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import DashboardOverview from './DashboardOverview';
+import DashboardGmb from './DashboardGmb';
+import DashboardGa4 from './DashboardGa4';
+import DashboardSocial from './DashboardSocial';
+import DashboardReports from './DashboardReports';
 
-const Dashboard = () => {
+export default function Dashboard() {
   const { t } = useTranslation('dashboard');
   const { data: gmbData, isLoading: gmbLoading, error: gmbError } = useSyncGmb();
   const { data: ga4Data, isLoading: ga4Loading, error: ga4Error } = useSyncGa4();
-  
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white flex flex-col">
       <Header />
-      <main className="py-20 px-4">
+      <main className="flex-grow py-20 px-4">
         <div className="max-w-7xl mx-auto">
           <TrialBanner daysRemaining={14} />
-          
+
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2">{t('title')}</h1>
             <p className="text-gray-600">{t('description')}</p>
@@ -30,17 +36,22 @@ const Dashboard = () => {
 
           <HeroSection />
 
-          {/* Main Dashboard Content */}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-            {/* Dashboard Tabs - Takes 3 columns */}
             <div className="lg:col-span-3">
               <DashboardTabs />
+              <Routes>
+                <Route index element={<DashboardOverview />} />
+                <Route path="gmb" element={<DashboardGmb />} />
+                <Route path="ga4" element={<DashboardGa4 />} />
+                <Route path="social" element={<DashboardSocial />} />
+                <Route path="reports" element={<DashboardReports />} />
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              </Routes>
             </div>
 
-            {/* Sidebar - Takes 1 column */}
             <div className="space-y-6">
               <DashboardCard title={t('sidebar.uploadQuota')}>
-                <QuotaWidget 
+                <QuotaWidget
                   currentUploads={23}
                   maxUploads={50}
                   title={t('sidebar.monthlyUploads')}
@@ -65,28 +76,21 @@ const Dashboard = () => {
                 <div className="space-y-4">
                   <div className="p-4 bg-blue-50 rounded-lg">
                     <h4 className="font-medium text-blue-900 mb-2">📈 {t('sidebar.improveVisibility')}</h4>
-                    <p className="text-sm text-blue-700">
-                      {t('sidebar.visibilityTip')}
-                    </p>
+                    <p className="text-sm text-blue-700">{t('sidebar.visibilityTip')}</p>
                   </div>
                   <div className="p-4 bg-green-50 rounded-lg">
                     <h4 className="font-medium text-green-900 mb-2">⭐ {t('sidebar.reviews')}</h4>
-                    <p className="text-sm text-green-700">
-                      {t('sidebar.reviewsTip')}
-                    </p>
+                    <p className="text-sm text-green-700">{t('sidebar.reviewsTip')}</p>
                   </div>
                   <div className="p-4 bg-yellow-50 rounded-lg">
                     <h4 className="font-medium text-yellow-900 mb-2">🕒 {t('sidebar.openingHours')}</h4>
-                    <p className="text-sm text-yellow-700">
-                      {t('sidebar.hoursTip')}
-                    </p>
+                    <p className="text-sm text-yellow-700">{t('sidebar.hoursTip')}</p>
                   </div>
                 </div>
               </DashboardCard>
             </div>
           </div>
 
-          {/* Status Information */}
           {(gmbData || ga4Data) && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
               {gmbData && (
@@ -112,6 +116,4 @@ const Dashboard = () => {
       <Footer />
     </div>
   );
-};
-
-export default Dashboard;
+}
