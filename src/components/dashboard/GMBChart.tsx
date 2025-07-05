@@ -1,7 +1,8 @@
 
 import React from 'react';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from 'recharts';
+import { useTranslation } from 'react-i18next';
 
 // Dummy data for development
 const dummyGmbData = [
@@ -13,25 +14,28 @@ const dummyGmbData = [
   { month: 'Jun', views: 1650, clicks: 125 },
 ];
 
-const chartConfig = {
-  views: {
-    label: "Profilaufrufe",
-  },
-  clicks: {
-    label: "Klicks",
-  },
-};
-
 const GMBChart: React.FC = () => {
+  const { t } = useTranslation('dashboard');
+  
+  const chartConfig = {
+    views: {
+      label: t('charts.legend.profileViews'),
+    },
+    clicks: {
+      label: t('charts.legend.clicks'),
+    },
+  };
+
   return (
-    <ChartContainer config={chartConfig} className="h-64">
+    <ChartContainer config={chartConfig} className="h-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={dummyGmbData}>
           <XAxis dataKey="month" />
           <YAxis />
           <ChartTooltip content={<ChartTooltipContent />} />
-          <Bar dataKey="views" fill="#3b82f6" name="Profilaufrufe" />
-          <Bar dataKey="clicks" fill="#10b981" name="Klicks" />
+          <ChartLegend content={<ChartLegendContent />} />
+          <Bar dataKey="views" fill="#3b82f6" name={t('charts.legend.profileViews')} />
+          <Bar dataKey="clicks" fill="#10b981" name={t('charts.legend.clicks')} />
         </BarChart>
       </ResponsiveContainer>
     </ChartContainer>
