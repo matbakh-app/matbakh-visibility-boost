@@ -83,7 +83,7 @@ function AdminRouteWrapper() {
         <Route path="/agb" element={<AGB />} />
         <Route path="/nutzung" element={<Nutzung />} />
         <Route path="/usage" element={<Usage />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboard/*" element={<Dashboard />} />
         <Route path="/checkout-success" element={<CheckoutSuccess />} />
         
         {/* Auth Routes */}

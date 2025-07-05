@@ -38,12 +38,12 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           <div className="lg:col-span-3">
             <Routes>
-              <Route path="/" element={<Navigate to="/dashboard/overview" replace />} />
-              <Route path="/overview" element={<DashboardOverview />} />
-              <Route path="/gmb" element={<DashboardGmb />} />
-              <Route path="/ga4" element={<DashboardGa4 />} />
-              <Route path="/social" element={<DashboardSocial />} />
-              <Route path="/reports" element={<DashboardReports />} />
+              <Route index element={<Navigate to="overview" replace />} />
+              <Route path="overview" element={<DashboardOverview />} />
+              <Route path="gmb" element={<DashboardGmb />} />
+              <Route path="ga4" element={<DashboardGa4 />} />
+              <Route path="social" element={<DashboardSocial />} />
+              <Route path="reports" element={<DashboardReports />} />
             </Routes>
           </div>
 
