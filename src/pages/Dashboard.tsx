@@ -49,7 +49,11 @@ export default function Dashboard() {
 
           <div className="lg:col-span-1">
             <div className="space-y-6">
-              <QuotaWidget />
+              <QuotaWidget 
+                currentUploads={42}
+                maxUploads={100}
+                title={t('sidebar.monthlyUploads')}
+              />
               
               <DashboardCard title={t('sidebar.quickActions')}>
                 <div className="space-y-3">
