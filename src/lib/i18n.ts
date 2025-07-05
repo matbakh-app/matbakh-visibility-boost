@@ -54,8 +54,9 @@ i18n
     lng: 'de',
     fallbackLng: 'de',
     supportedLngs: ['de', 'en'],
-    ns: ['translation', 'common', 'adminPanel', 'auth', 'nav', 'footer', 'hero', 'features', 'dashboard'],
-    defaultNS: 'translation',
+    // WICHTIG: common muss hier als erster Namespace stehen!
+    ns: ['common', 'translation', 'adminPanel', 'auth', 'nav', 'footer', 'hero', 'features', 'dashboard'],
+    defaultNS: 'common', // common als Standard-Namespace
     fallbackNS: ['common', 'translation'],
     backend: {
       loadPath: '/locales/{{lng}}/{{ns}}.json',
@@ -68,7 +69,7 @@ i18n
       escapeValue: false
     },
     // Enhanced error handling
-    debug: false, // Disable debug in production
+    debug: process.env.NODE_ENV === 'development', // Debug nur in Development
     saveMissing: false, // Never auto-save missing keys
     missingKeyHandler: handleMissingKey,
     // Improved parsing and loading
