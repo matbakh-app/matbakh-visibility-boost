@@ -7,13 +7,12 @@ import DashboardCard from '@/components/dashboard/DashboardCard';
 import QuotaWidget from '@/components/dashboard/QuotaWidget';
 import HeroSection from '@/components/dashboard/HeroSection';
 import DashboardNavigation from '@/components/dashboard/DashboardNavigation';
-import QuickActionButton from '@/components/dashboard/QuickActionButton';
 import ActionModal from '@/components/dashboard/ActionModal';
 import { useSyncGmb } from '@/hooks/useSyncGmb';
 import { useSyncGa4 } from '@/hooks/useSyncGa4';
 import { useAiRecommendations } from '@/hooks/useAiRecommendations';
 import { useTranslation } from 'react-i18next';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import DashboardOverview from './DashboardOverview';
 import DashboardGmb from './DashboardGmb';
@@ -27,53 +26,70 @@ export default function Dashboard() {
   const { data: ga4Data, isLoading: ga4Loading, error: ga4Error } = useSyncGa4();
   const { data: recommendations, isLoading: recommendationsLoading } = useAiRecommendations();
   const location = useLocation();
+  const navigate = useNavigate();
   
   const [selectedRecommendation, setSelectedRecommendation] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   const isOverviewPage = location.pathname === '/dashboard/overview' || location.pathname === '/dashboard';
 
-  // Fallback AI-Empfehlungen für immer sichtbare Quick-Actions
+  // Fallback AI-Empfehlungen für immer sichtbare AI Recommendations
   const fallbackRecommendations = [
     { 
-      id: 'mock-1', 
-      title: t('quickActions.addPhotos'), 
-      description: t('actionModal.photos.description'), 
+      id: 'ai-photos', 
+      title: t('aiRecommendations.optimizePhotos', { defaultValue: 'Fotos optimieren' }), 
+      description: t('aiRecommendations.photosDesc', { defaultValue: 'KI-gestützte Foto-Optimierung für bessere Sichtbarkeit' }), 
       recommendation_type: 'photos', 
       priority: 'high' 
     },
     { 
-      id: 'mock-2', 
-      title: t('quickActions.respondToReviews'), 
-      description: t('actionModal.reviews.description'), 
+      id: 'ai-reviews', 
+      title: t('aiRecommendations.manageReviews', { defaultValue: 'Bewertungen verwalten' }), 
+      description: t('aiRecommendations.reviewsDesc', { defaultValue: 'Intelligente Bewertungsanalyse und Antwortvorschläge' }), 
       recommendation_type: 'reviews', 
       priority: 'medium' 
     },
     { 
-      id: 'mock-3', 
-      title: t('quickActions.updateHours'), 
-      description: t('actionModal.hours.description'), 
+      id: 'ai-hours', 
+      title: t('aiRecommendations.optimizeHours', { defaultValue: 'Öffnungszeiten prüfen' }), 
+      description: t('aiRecommendations.hoursDesc', { defaultValue: 'KI-basierte Analyse der optimalen Öffnungszeiten' }), 
       recommendation_type: 'hours', 
       priority: 'low' 
     }
   ];
 
-  // Immer Empfehlungen anzeigen - echte Daten oder Fallback (synchronisiert!)
-  const displayRecommendations = (recommendations && recommendations.length > 0)
-    ? recommendations
-    : fallbackRecommendations;
+  // Quick Actions - Direkte Ausführung ohne Modal
+  const handleUploadPhotos = () => {
+    console.log('Direkte Aktion: Foto-Uploader öffnen');
+    // TODO: Implementiere direkten Foto-Upload
+    // Beispiel: openPhotoUploader() oder navigate('/dashboard/photos/upload')
+    alert('Foto-Uploader wird geöffnet (noch nicht implementiert)');
+  };
 
-  const handleQuickAction = (recommendation: any) => {
+  const handleUpdateHours = () => {
+    console.log('Direkte Aktion: Öffnungszeiten bearbeiten');
+    // TODO: Navigate zu Öffnungszeiten-Formular
+    // navigate('/dashboard/business/hours');
+    alert('Öffnungszeiten-Editor wird geöffnet (noch nicht implementiert)');
+  };
+
+  const handleUpdateMenu = () => {
+    console.log('Direkte Aktion: Speisekarte bearbeiten');
+    // TODO: Navigate zu Menü-Editor
+    // navigate('/dashboard/business/menu');
+    alert('Speisekarten-Editor wird geöffnet (noch nicht implementiert)');
+  };
+
+  // AI Recommendations - Modal-Dialog für interaktiven Flow
+  const handleAiRecommendation = (recommendation: any) => {
     setSelectedRecommendation(recommendation);
     setIsModalOpen(true);
   };
 
-  // Harmonische Farben für Quick Action Buttons
-  const getButtonVariant = (priority: string, index: number) => {
-    const variants = ['default', 'secondary', 'outline'];
-    const colors = ['bg-blue-100 text-blue-700 hover:bg-blue-200', 'bg-green-100 text-green-700 hover:bg-green-200', 'bg-purple-100 text-purple-700 hover:bg-purple-200'];
-    return index % 3;
-  };
+  // Immer AI Recommendations anzeigen - echte Daten oder Fallback
+  const displayRecommendations = (recommendations && recommendations.length > 0)
+    ? recommendations
+    : fallbackRecommendations;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -107,34 +123,41 @@ export default function Dashboard() {
           {/* Sidebar - sticky positioning */}
           <div className="lg:col-span-1">
             <div className="sticky top-8 space-y-6">
-              {/* Upload Quota mit korrigierter Limit: 20 statt 100 */}
+              {/* Upload Quota */}
               <QuotaWidget 
                 currentUploads={8}
                 maxUploads={20}
                 title={t('sidebar.monthlyUploads')}
               />
               
-              {/* Quick Actions - vollständig synchronisiert aus AI Recommendations */}
+              {/* Quick Actions - Direkte Ausführung */}
               <DashboardCard title={t('sidebar.quickActions')}>
                 <div className="space-y-3">
-                  {displayRecommendations.map((recommendation, index) => (
-                    <Button
-                      key={recommendation.id}
-                      onClick={() => handleQuickAction(recommendation)}
-                      className={`w-full text-sm font-medium border ${
-                        index === 0 ? 'bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200' :
-                        index === 1 ? 'bg-green-50 text-green-700 hover:bg-green-100 border-green-200' :
-                        'bg-purple-50 text-purple-700 hover:bg-purple-100 border-purple-200'
-                      }`}
-                      variant="outline"
-                    >
-                      {recommendation.title}
-                    </Button>
-                  ))}
+                  <Button
+                    onClick={handleUploadPhotos}
+                    className="w-full text-sm font-medium border bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200"
+                    variant="outline"
+                  >
+                    📤 {t('quickActions.uploadPhotos', { defaultValue: 'Fotos hochladen' })}
+                  </Button>
+                  <Button
+                    onClick={handleUpdateHours}
+                    className="w-full text-sm font-medium border bg-green-50 text-green-700 hover:bg-green-100 border-green-200"
+                    variant="outline"
+                  >
+                    🕒 {t('quickActions.updateHours', { defaultValue: 'Öffnungszeiten ändern' })}
+                  </Button>
+                  <Button
+                    onClick={handleUpdateMenu}
+                    className="w-full text-sm font-medium border bg-purple-50 text-purple-700 hover:bg-purple-100 border-purple-200"
+                    variant="outline"
+                  >
+                    🍽️ {t('quickActions.updateMenu', { defaultValue: 'Speisekarte bearbeiten' })}
+                  </Button>
                 </div>
               </DashboardCard>
 
-              {/* AI Recommendations - klickbare Cards mit harmonischen Farben */}
+              {/* AI Recommendations - Modal für interaktiven Flow */}
               <DashboardCard title={t('sidebar.aiRecommendations')}>
                 <div className="space-y-3">
                   {displayRecommendations.map((recommendation, index) => (
@@ -156,14 +179,14 @@ export default function Dashboard() {
                       <Button 
                         size="sm" 
                         variant="outline"
-                        onClick={() => handleQuickAction(recommendation)}
+                        onClick={() => handleAiRecommendation(recommendation)}
                         className={`w-full ${
                           index === 0 ? 'border-blue-300 text-blue-700 hover:bg-blue-100' :
                           index === 1 ? 'border-green-300 text-green-700 hover:bg-green-100' :
                           'border-purple-300 text-purple-700 hover:bg-purple-100'
                         }`}
                       >
-                        {t('common.takeAction', { defaultValue: 'Jetzt handeln' })}
+                        {t('aiRecommendations.viewSuggestion', { defaultValue: 'Vorschlag prüfen' })}
                       </Button>
                     </div>
                   ))}
@@ -174,7 +197,7 @@ export default function Dashboard() {
         </div>
       </div>
       
-      {/* Action Modal für alle Sidebar-Aktionen */}
+      {/* Action Modal nur für AI Recommendations */}
       <ActionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
