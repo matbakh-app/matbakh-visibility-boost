@@ -21,6 +21,40 @@ const HeroSection: React.FC = () => {
   const greetingKey = getTimeBasedGreeting();
   const greetingEmoji = getGreetingEmoji();
 
+  // Fallback-Insights für immer sichtbare Trends
+  const fallbackInsights = [
+    { key: 'visibility', value: '+23%', trend: '+', type: 'visibility' },
+    { key: 'reviews', value: 14, trend: '+', type: 'reviews' }
+  ];
+
+  // Fallback AI-Empfehlungen für immer sichtbare Quick-Actions
+  const fallbackRecommendations = [
+    { 
+      id: 'mock-1', 
+      title: t('quickActions.addPhotos'), 
+      description: t('actionModal.photos.description'), 
+      recommendation_type: 'photos', 
+      priority: 'high' 
+    },
+    { 
+      id: 'mock-2', 
+      title: t('quickActions.respondToReviews'), 
+      description: t('actionModal.reviews.description'), 
+      recommendation_type: 'reviews', 
+      priority: 'medium' 
+    }
+  ];
+
+  // Immer Insights anzeigen - echte Daten oder Fallback
+  const displayInsights = (kpiData?.insights && kpiData.insights.length > 0) 
+    ? kpiData.insights 
+    : fallbackInsights;
+
+  // Immer Empfehlungen anzeigen - echte Daten oder Fallback
+  const displayRecommendations = (recommendations && recommendations.length > 0)
+    ? recommendations
+    : fallbackRecommendations;
+
   const handleQuickAction = (recommendation: any) => {
     setSelectedRecommendation(recommendation);
     setIsModalOpen(true);
@@ -31,7 +65,7 @@ const HeroSection: React.FC = () => {
   };
 
   const getTrendColor = (trend: string) => {
-    return trend.startsWith('+') ? 'text-green-600' : 'text-red-600';
+    return trend.startsWith('+') ? 'text-green-400' : 'text-red-400';
   };
 
   if (partnerLoading || kpiLoading) {
@@ -68,7 +102,9 @@ const HeroSection: React.FC = () => {
         </p>
         
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-          <div className="flex items-center gap-6">
+          {/* Score + Trend-Indikatoren Bereich */}
+          <div className="flex items-center gap-8">
+            {/* Hauptscore */}
             <div className="text-center">
               <div className="text-5xl font-extrabold">
                 {kpiData?.score || 87}
@@ -79,52 +115,51 @@ const HeroSection: React.FC = () => {
               </p>
             </div>
             
-            {kpiData?.insights && (
-              <div className="space-y-2">
-                {kpiData.insights.slice(0, 2).map((insight, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <span>{getTrendIcon(insight.trend)}</span>
-                    <span className={`text-sm ${getTrendColor(insight.trend)}`}>
-                      {insight.type === 'visibility' 
-                        ? t('hero.visibilityChange', { 
-                            value: insight.value,
-                            defaultValue: `Sichtbarkeit ${insight.trend}${insight.value}` 
-                          })
-                        : t('hero.reviewsCount', { 
-                            value: insight.value,
-                            defaultValue: `${insight.value} Bewertungen` 
-                          })
-                      }
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
+            {/* Trend-Indikatoren - immer sichtbar */}
+            <div className="space-y-2">
+              {displayInsights.slice(0, 2).map((insight, index) => (
+                <div key={insight.key || index} className="flex items-center gap-2">
+                  <span className="text-lg">{getTrendIcon(insight.trend)}</span>
+                  <span className={`text-sm font-medium ${getTrendColor(insight.trend)}`}>
+                    {insight.type === 'visibility' 
+                      ? t('hero.visibilityChange', { 
+                          value: insight.value,
+                          defaultValue: `Sichtbarkeit ${insight.trend}${insight.value}` 
+                        })
+                      : t('hero.reviewsCount', { 
+                          value: insight.value,
+                          defaultValue: `${insight.value} Bewertungen` 
+                        })
+                    }
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {recommendations && recommendations.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {recommendations.slice(0, 2).map((recommendation) => (
-                <QuickActionButton
-                  key={recommendation.id}
-                  recommendation={recommendation}
-                  onClick={handleQuickAction}
-                />
-              ))}
-              {recommendations.length > 2 && (
-                <button className="text-sm underline opacity-75 hover:opacity-100">
-                  {t('hero.moreActions', { 
-                    count: recommendations.length - 2,
-                    defaultValue: `+${recommendations.length - 2} weitere` 
-                  })}
-                </button>
-              )}
-            </div>
-          )}
+          {/* Quick-Actions - immer sichtbar */}
+          <div className="flex flex-wrap gap-2">
+            {displayRecommendations.slice(0, 2).map((recommendation) => (
+              <QuickActionButton
+                key={recommendation.id}
+                recommendation={recommendation}
+                onClick={handleQuickAction}
+              />
+            ))}
+            {displayRecommendations.length > 2 && (
+              <button className="text-sm underline opacity-75 hover:opacity-100 transition-opacity">
+                {t('hero.moreActions', { 
+                  count: displayRecommendations.length - 2,
+                  defaultValue: `+${displayRecommendations.length - 2} weitere` 
+                })}
+              </button>
+            )}
+          </div>
         </div>
         
-        <div className="mt-4 text-sm italic opacity-75">
-          {t('hero.poweredBy')}
+        <div className="mt-4 text-sm italic opacity-75 flex items-center gap-2">
+          <span className="animate-pulse">🤖</span>
+          {t('hero.poweredBy')} • Live-Status: Aktiv
         </div>
       </section>
 
