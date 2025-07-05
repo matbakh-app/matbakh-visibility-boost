@@ -15,13 +15,14 @@ const HeroSection: React.FC = () => {
   const greetingKey = getTimeBasedGreeting();
   const greetingEmoji = getGreetingEmoji();
 
-  // Erweiterte KPI-Trends für Hero-Bereich (mehr als vorher)
+  // Erweiterte KPI-Trends für Hero-Bereich mit korrigierten Beschriftungen
   const extendedKpiTrends = [
-    { key: 'visibility', value: '+23%', trend: '+', type: 'visibility', icon: '📈' },
-    { key: 'reviews', value: 14, trend: '+', type: 'reviews', icon: '⭐' },
-    { key: 'websiteSessions', value: '+15%', trend: '+', type: 'sessions', icon: '🌐' },
-    { key: 'engagement', value: '+12%', trend: '+', type: 'engagement', icon: '💬' },
-    { key: 'ctr', value: '+8%', trend: '+', type: 'ctr', icon: '🎯' }
+    { key: 'visibility', value: '+23%', trend: '+', type: 'visibility', icon: '📈', label: 'Sichtbarkeit' },
+    { key: 'reviews', value: '+14', trend: '+', type: 'reviews', icon: '⭐', label: 'Bewertungen' },
+    { key: 'websiteSessions', value: '+15%', trend: '+', type: 'sessions', icon: '🌐', label: 'Website-Sessions' },
+    { key: 'engagement', value: '+12%', trend: '+', type: 'engagement', icon: '💬', label: 'Engagement' },
+    { key: 'ctr', value: '+8%', trend: '+', type: 'ctr', icon: '🎯', label: 'Klickrate' },
+    { key: 'profileViews', value: '+18%', trend: '+', type: 'profileViews', icon: '👁️', label: 'Profilaufrufe' }
   ];
 
   const getTrendIcon = (trend: string, icon?: string) => {
@@ -77,40 +78,16 @@ const HeroSection: React.FC = () => {
           </p>
         </div>
         
-        {/* Erweiterte KPI-Trends rechts - keine Action Buttons mehr */}
-        <div className="space-y-2">
+        {/* KPI-Trends in 2er-Spalten Layout */}
+        <div className="grid grid-cols-2 gap-x-8 gap-y-2">
           {extendedKpiTrends.map((trend, index) => (
-            <div key={trend.key || index} className="flex items-center gap-3">
+            <div key={trend.key || index} className="flex items-center gap-2">
               <span className="text-lg">{getTrendIcon(trend.trend, trend.icon)}</span>
-              <span className={`text-sm font-medium ${getTrendColor(trend.trend)}`}>
-                {trend.type === 'visibility' 
-                  ? t('hero.visibilityChange', { 
-                      value: trend.value,
-                      defaultValue: `Sichtbarkeit ${trend.value}` 
-                    })
-                  : trend.type === 'reviews'
-                    ? t('hero.reviewsCount', { 
-                        value: trend.value,
-                        defaultValue: `${trend.value} Bewertungen` 
-                      })
-                    : trend.type === 'sessions'
-                      ? t('hero.sessionsChange', {
-                          value: trend.value,
-                          defaultValue: `Website-Sessions ${trend.value}`
-                        })
-                      : trend.type === 'engagement'
-                        ? t('hero.engagementChange', {
-                            value: trend.value,
-                            defaultValue: `Engagement ${trend.value}`
-                          })
-                        : trend.type === 'ctr'
-                          ? t('hero.ctrChange', {
-                              value: trend.value,
-                              defaultValue: `CTR ${trend.value}`
-                            })
-                          : `${trend.type} ${trend.value}`
-                }
-              </span>
+              <div className="flex flex-col">
+                <span className={`text-sm font-medium ${getTrendColor(trend.trend)}`}>
+                  {trend.label} {trend.value}
+                </span>
+              </div>
             </div>
           ))}
         </div>

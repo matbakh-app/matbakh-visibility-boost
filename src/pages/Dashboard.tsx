@@ -68,6 +68,13 @@ export default function Dashboard() {
     setIsModalOpen(true);
   };
 
+  // Harmonische Farben für Quick Action Buttons
+  const getButtonVariant = (priority: string, index: number) => {
+    const variants = ['default', 'secondary', 'outline'];
+    const colors = ['bg-blue-100 text-blue-700 hover:bg-blue-200', 'bg-green-100 text-green-700 hover:bg-green-200', 'bg-purple-100 text-purple-700 hover:bg-purple-200'];
+    return index % 3;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -100,7 +107,7 @@ export default function Dashboard() {
           {/* Sidebar - sticky positioning */}
           <div className="lg:col-span-1">
             <div className="sticky top-8 space-y-6">
-              {/* Upload Quota mit korrigiertem Limit: 20 statt 100 */}
+              {/* Upload Quota mit korrigierter Limit: 20 statt 100 */}
               <QuotaWidget 
                 currentUploads={8}
                 maxUploads={20}
@@ -110,28 +117,51 @@ export default function Dashboard() {
               {/* Quick Actions - vollständig synchronisiert aus AI Recommendations */}
               <DashboardCard title={t('sidebar.quickActions')}>
                 <div className="space-y-3">
-                  {displayRecommendations.map((recommendation) => (
-                    <QuickActionButton
+                  {displayRecommendations.map((recommendation, index) => (
+                    <Button
                       key={recommendation.id}
-                      recommendation={recommendation}
-                      onClick={handleQuickAction}
-                    />
+                      onClick={() => handleQuickAction(recommendation)}
+                      className={`w-full text-sm font-medium border ${
+                        index === 0 ? 'bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200' :
+                        index === 1 ? 'bg-green-50 text-green-700 hover:bg-green-100 border-green-200' :
+                        'bg-purple-50 text-purple-700 hover:bg-purple-100 border-purple-200'
+                      }`}
+                      variant="outline"
+                    >
+                      {recommendation.title}
+                    </Button>
                   ))}
                 </div>
               </DashboardCard>
 
-              {/* AI Recommendations - klickbare Cards */}
+              {/* AI Recommendations - klickbare Cards mit harmonischen Farben */}
               <DashboardCard title={t('sidebar.aiRecommendations')}>
                 <div className="space-y-3">
-                  {displayRecommendations.map((recommendation) => (
-                    <div key={recommendation.id} className="p-3 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors">
-                      <h4 className="font-medium text-blue-900 mb-1">{recommendation.title}</h4>
-                      <p className="text-sm text-blue-700 mb-2">{recommendation.description}</p>
+                  {displayRecommendations.map((recommendation, index) => (
+                    <div key={recommendation.id} className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                      index === 0 ? 'bg-blue-50 hover:bg-blue-100' :
+                      index === 1 ? 'bg-green-50 hover:bg-green-100' :
+                      'bg-purple-50 hover:bg-purple-100'
+                    }`}>
+                      <h4 className={`font-medium mb-1 ${
+                        index === 0 ? 'text-blue-900' :
+                        index === 1 ? 'text-green-900' :
+                        'text-purple-900'
+                      }`}>{recommendation.title}</h4>
+                      <p className={`text-sm mb-2 ${
+                        index === 0 ? 'text-blue-700' :
+                        index === 1 ? 'text-green-700' :
+                        'text-purple-700'
+                      }`}>{recommendation.description}</p>
                       <Button 
                         size="sm" 
                         variant="outline"
                         onClick={() => handleQuickAction(recommendation)}
-                        className="w-full"
+                        className={`w-full ${
+                          index === 0 ? 'border-blue-300 text-blue-700 hover:bg-blue-100' :
+                          index === 1 ? 'border-green-300 text-green-700 hover:bg-green-100' :
+                          'border-purple-300 text-purple-700 hover:bg-purple-100'
+                        }`}
                       >
                         {t('common.takeAction', { defaultValue: 'Jetzt handeln' })}
                       </Button>
