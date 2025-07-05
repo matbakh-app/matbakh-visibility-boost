@@ -15,14 +15,17 @@ const HeroSection: React.FC = () => {
   const greetingKey = getTimeBasedGreeting();
   const greetingEmoji = getGreetingEmoji();
 
-  // Erweiterte KPI-Trends für Hero-Bereich mit korrigierten Beschriftungen
+  // Erweiterte KPI-Trends für Hero-Bereich mit mehr Indikatoren
   const extendedKpiTrends = [
-    { key: 'visibility', value: '+23%', trend: '+', type: 'visibility', icon: '📈', label: 'Sichtbarkeit' },
-    { key: 'reviews', value: '+14', trend: '+', type: 'reviews', icon: '⭐', label: 'Bewertungen' },
-    { key: 'websiteSessions', value: '+15%', trend: '+', type: 'sessions', icon: '🌐', label: 'Website-Sessions' },
-    { key: 'engagement', value: '+12%', trend: '+', type: 'engagement', icon: '💬', label: 'Engagement' },
-    { key: 'ctr', value: '+8%', trend: '+', type: 'ctr', icon: '🎯', label: 'Klickrate' },
-    { key: 'profileViews', value: '+18%', trend: '+', type: 'profileViews', icon: '👁️', label: 'Profilaufrufe' }
+    { key: 'visibility', value: '+23%', trend: '+', type: 'visibility', icon: '📈', labelKey: 'visibilityChange' },
+    { key: 'reviews', value: '+14', trend: '+', type: 'reviews', icon: '⭐', labelKey: 'reviewsCount' },
+    { key: 'websiteSessions', value: '+15%', trend: '+', type: 'sessions', icon: '🌐', labelKey: 'sessionsChange' },
+    { key: 'engagement', value: '+12%', trend: '+', type: 'engagement', icon: '💬', labelKey: 'engagementChange' },
+    { key: 'ctr', value: '+8%', trend: '+', type: 'ctr', icon: '🎯', labelKey: 'ctrChange' },
+    { key: 'profileViews', value: '+18%', trend: '+', type: 'profileViews', icon: '👁️', labelKey: 'profileViewsChange' },
+    { key: 'clicks', value: '+11%', trend: '+', type: 'clicks', icon: '🖱️', labelKey: 'clicksChange' },
+    { key: 'conversions', value: '+9%', trend: '+', type: 'conversions', icon: '🎯', labelKey: 'conversionsChange' },
+    { key: 'photoViews', value: '+16%', trend: '+', type: 'photoViews', icon: '📸', labelKey: 'photoViewsChange' }
   ];
 
   const getTrendIcon = (trend: string, icon?: string) => {
@@ -78,14 +81,17 @@ const HeroSection: React.FC = () => {
           </p>
         </div>
         
-        {/* KPI-Trends in 2er-Spalten Layout */}
-        <div className="grid grid-cols-2 gap-x-8 gap-y-2">
+        {/* KPI-Trends in 3er-Spalten Layout (3x3 Grid) */}
+        <div className="grid grid-cols-3 gap-x-6 gap-y-2">
           {extendedKpiTrends.map((trend, index) => (
             <div key={trend.key || index} className="flex items-center gap-2">
               <span className="text-lg">{getTrendIcon(trend.trend, trend.icon)}</span>
               <div className="flex flex-col">
                 <span className={`text-sm font-medium ${getTrendColor(trend.trend)}`}>
-                  {trend.label} {trend.value}
+                  {t(`hero.${trend.labelKey}`, { 
+                    value: trend.value,
+                    defaultValue: `${trend.key} ${trend.value}` 
+                  })}
                 </span>
               </div>
             </div>
