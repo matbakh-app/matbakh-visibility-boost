@@ -29,18 +29,14 @@ const KpiCard: React.FC<KpiCardProps> = ({
     return percentage > 0 ? 'text-green-600' : 'text-red-600';
   };
 
-  const getComparePrefix = (percentage: number) => {
-    return percentage > 0 ? '+' : '';
-  };
-
-  // Verwende i18n-Keys für alle Texte
-  const translatedTitle = t(`kpi.${titleKey}`, { defaultValue: title });
-  const translatedDescription = t(`kpi.${titleKey}Desc`, { defaultValue: description });
+  // Verwende die korrekten i18n-Keys für KPI-Titel und -Beschreibungen
+  const translatedTitle = t(`kpi.${titleKey}`, title);
+  const translatedDescription = t(`kpi.${titleKey}Desc`, description);
   
-  // Trend-Text mit Internationalisierung
+  // Trend-Text mit korrekter Internationalisierung
   const trendText = comparePercentage > 0 
-    ? t('kpi.trendUp', { value: Math.abs(comparePercentage), defaultValue: `+${Math.abs(comparePercentage)}% vs. Durchschnitt` })
-    : t('kpi.trendDown', { value: Math.abs(comparePercentage), defaultValue: `-${Math.abs(comparePercentage)}% vs. Durchschnitt` });
+    ? t('kpi.trendUp', { value: Math.abs(comparePercentage) })
+    : t('kpi.trendDown', { value: Math.abs(comparePercentage) });
 
   return (
     <article className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
@@ -55,7 +51,7 @@ const KpiCard: React.FC<KpiCardProps> = ({
       ) : error ? (
         <Alert>
           <AlertDescription>
-            {t('kpi.loadError', { defaultValue: 'Daten konnten nicht geladen werden' })}
+            {t('kpi.loadError')}
           </AlertDescription>
         </Alert>
       ) : (
@@ -69,7 +65,7 @@ const KpiCard: React.FC<KpiCardProps> = ({
           </p>
           
           <p className="text-sm text-gray-500 mb-3">
-            {t('kpi.benchmark', { defaultValue: 'Durchschnitt' })}: {benchmark} 
+            {t('kpi.benchmark')}: {benchmark} 
             <span className={`ml-1 ${getCompareColor(comparePercentage)}`}>
               ({trendText})
             </span>
@@ -77,7 +73,7 @@ const KpiCard: React.FC<KpiCardProps> = ({
           
           {data?.trend && (
             <p className={`text-sm mb-3 ${data.trend.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
-              {t('kpi.trend', { defaultValue: 'Trend' })}: {data.trend}
+              {t('kpi.trend')}: {data.trend}
             </p>
           )}
           
@@ -85,7 +81,7 @@ const KpiCard: React.FC<KpiCardProps> = ({
             href={optimizeLink} 
             className="text-blue-600 hover:underline mt-2 block text-sm font-medium"
           >
-            {t('kpi.optimizeLink', { defaultValue: 'Zu den Optimierungsvorschlägen (Upgrade erforderlich)' })}
+            {t('kpi.optimizeLink')}
           </a>
         </>
       )}
