@@ -11,8 +11,8 @@ export default function DashboardOverview() {
   
   return (
     <div className="space-y-10">
-      {/* Chart-Grid: 3 Cards nebeneinander, 1 auf Mobile */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Erste Zeile: Zwei Hauptcharts nebeneinander */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl shadow-md p-6 min-h-[360px] flex flex-col justify-between">
           <h3 className="font-bold text-lg mb-4">{t('charts.gmbTitle')}</h3>
           <div className="flex-1 flex flex-col">
@@ -25,11 +25,13 @@ export default function DashboardOverview() {
             <GA4Chart />
           </div>
         </div>
-        <div className="bg-white rounded-xl shadow-md p-6 min-h-[360px] flex flex-col justify-between">
-          <h3 className="font-bold text-lg mb-4">{t('charts.socialTitle')}</h3>
-          <div className="flex-1 flex flex-col">
-            <SocialMediaChart />
-          </div>
+      </div>
+      
+      {/* Zweite Zeile: Social Media Chart über volle Breite */}
+      <div className="bg-white rounded-xl shadow-md p-6 min-h-[360px] flex flex-col justify-between">
+        <h3 className="font-bold text-lg mb-4">{t('charts.socialTitle')}</h3>
+        <div className="flex-1 flex flex-col">
+          <SocialMediaChart />
         </div>
       </div>
       
