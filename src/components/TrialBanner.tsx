@@ -2,6 +2,7 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Clock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface TrialBannerProps {
   daysRemaining?: number;
@@ -12,6 +13,8 @@ const TrialBanner: React.FC<TrialBannerProps> = ({
   daysRemaining = 14, 
   isActive = true 
 }) => {
+  const { t } = useTranslation('common');
+
   if (!isActive) return null;
 
   return (
@@ -20,17 +23,17 @@ const TrialBanner: React.FC<TrialBannerProps> = ({
         <div className="flex items-center gap-2">
           <Clock className="h-5 w-5 text-green-600" />
           <Badge variant="secondary" className="bg-green-100 text-green-800">
-            Kostenlose Testphase
+            {t('trial.badge')}
           </Badge>
         </div>
         <div className="flex-1">
           <h3 className="font-semibold text-gray-900">
-            14 Tage kostenlos testen
+            {t('trial.title')}
           </h3>
           <p className="text-sm text-gray-600">
             {daysRemaining > 0 
-              ? `Noch ${daysRemaining} Tage in Ihrer kostenlosen Testphase. Danach nur €39/Monat.`
-              : 'Ihr kostenloses Trial endet heute. Upgraden Sie jetzt für nur €39/Monat.'
+              ? t('trial.description', { days: daysRemaining })
+              : t('trial.expired')
             }
           </p>
         </div>
