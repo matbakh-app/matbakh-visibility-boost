@@ -3,6 +3,7 @@ import React from 'react';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import { useTranslation } from 'react-i18next';
+import GA4Legend from './legends/GA4Legend';
 
 // Dummy data for development
 const dummyGa4Data = [
@@ -14,24 +15,8 @@ const dummyGa4Data = [
   { date: '06.06', sessions: 334, users: 256 },
 ];
 
-const CustomLegend = () => {
-  const { t } = useTranslation('dashboard');
-  return (
-    <div className="flex flex-wrap items-center justify-center gap-4 mt-4">
-      <span className="flex items-center gap-2">
-        <span className="inline-block w-3 h-3 rounded bg-[#3b82f6]" />
-        <span className="text-sm">{t('charts.legend.sessions')}</span>
-      </span>
-      <span className="flex items-center gap-2">
-        <span className="inline-block w-3 h-3 rounded bg-[#10b981]" />
-        <span className="text-sm">{t('charts.legend.users')}</span>
-      </span>
-    </div>
-  );
-};
-
 const GA4Chart: React.FC = () => {
-  const { t } = useTranslation('dashboard');
+  const { t, i18n } = useTranslation('dashboard');
   
   const chartConfig = {
     sessions: {
@@ -43,7 +28,7 @@ const GA4Chart: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-full flex flex-col">
+    <div className="w-full h-full flex flex-col" key={i18n.language}>
       <ChartContainer config={chartConfig} className="flex-1">
         <ResponsiveContainer width="100%" height="90%">
           <LineChart 
@@ -58,19 +43,19 @@ const GA4Chart: React.FC = () => {
               dataKey="sessions" 
               stroke="#3b82f6" 
               strokeWidth={2}
-              name={t('charts.legend.sessions')}
+              name="sessions"
             />
             <Line 
               type="monotone" 
               dataKey="users" 
               stroke="#10b981" 
               strokeWidth={2}
-              name={t('charts.legend.users')}
+              name="users"
             />
           </LineChart>
         </ResponsiveContainer>
       </ChartContainer>
-      <CustomLegend />
+      <GA4Legend lang={i18n.language} />
     </div>
   );
 };

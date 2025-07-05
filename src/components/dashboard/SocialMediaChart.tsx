@@ -3,6 +3,7 @@ import React from 'react';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import { useTranslation } from 'react-i18next';
+import SocialMediaLegend from './legends/SocialMediaLegend';
 
 // Erweiterte Dummy-Daten mit mehreren KPIs
 const dummySocialData = [
@@ -29,32 +30,8 @@ const dummySocialData = [
   },
 ];
 
-const CustomLegend = () => {
-  const { t } = useTranslation('dashboard');
-  return (
-    <div className="flex flex-wrap items-center justify-center gap-4 mt-4">
-      <span className="flex items-center gap-2">
-        <span className="inline-block w-3 h-3 rounded bg-[#3b82f6]" />
-        <span className="text-sm">{t('charts.legend.followers')}</span>
-      </span>
-      <span className="flex items-center gap-2">
-        <span className="inline-block w-3 h-3 rounded bg-[#10b981]" />
-        <span className="text-sm">{t('charts.legend.likes')}</span>
-      </span>
-      <span className="flex items-center gap-2">
-        <span className="inline-block w-3 h-3 rounded bg-[#f59e0b]" />
-        <span className="text-sm">{t('charts.legend.postViews')}</span>
-      </span>
-      <span className="flex items-center gap-2">
-        <span className="inline-block w-3 h-3 rounded bg-[#8b5cf6]" />
-        <span className="text-sm">{t('charts.legend.comments')}</span>
-      </span>
-    </div>
-  );
-};
-
 const SocialMediaChart: React.FC = () => {
-  const { t } = useTranslation('dashboard');
+  const { t, i18n } = useTranslation('dashboard');
   
   const chartConfig = {
     followers: {
@@ -72,7 +49,7 @@ const SocialMediaChart: React.FC = () => {
   };
   
   return (
-    <div className="w-full h-full flex flex-col">
+    <div className="w-full h-full flex flex-col" key={i18n.language}>
       <ChartContainer config={chartConfig} className="flex-1">
         <ResponsiveContainer width="100%" height="90%">
           <BarChart 
@@ -82,14 +59,14 @@ const SocialMediaChart: React.FC = () => {
             <XAxis dataKey="platform" />
             <YAxis />
             <ChartTooltip content={<ChartTooltipContent />} />
-            <Bar dataKey="followers" fill="#3b82f6" name={t('charts.legend.followers')} />
-            <Bar dataKey="likes" fill="#10b981" name={t('charts.legend.likes')} />
-            <Bar dataKey="postViews" fill="#f59e0b" name={t('charts.legend.postViews')} />
-            <Bar dataKey="comments" fill="#8b5cf6" name={t('charts.legend.comments')} />
+            <Bar dataKey="followers" fill="#3b82f6" name="followers" />
+            <Bar dataKey="likes" fill="#10b981" name="likes" />
+            <Bar dataKey="postViews" fill="#f59e0b" name="postViews" />
+            <Bar dataKey="comments" fill="#8b5cf6" name="comments" />
           </BarChart>
         </ResponsiveContainer>
       </ChartContainer>
-      <CustomLegend />
+      <SocialMediaLegend lang={i18n.language} />
     </div>
   );
 };
