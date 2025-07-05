@@ -33,9 +33,14 @@ const KpiCard: React.FC<KpiCardProps> = ({
     return percentage > 0 ? '+' : '';
   };
 
-  // Use translation key if available, otherwise fallback to title prop
+  // Verwende i18n-Keys für alle Texte
   const translatedTitle = t(`kpi.${titleKey}`, { defaultValue: title });
   const translatedDescription = t(`kpi.${titleKey}Desc`, { defaultValue: description });
+  
+  // Trend-Text mit Internationalisierung
+  const trendText = comparePercentage > 0 
+    ? t('kpi.trendUp', { value: Math.abs(comparePercentage), defaultValue: `+${Math.abs(comparePercentage)}% vs. Durchschnitt` })
+    : t('kpi.trendDown', { value: Math.abs(comparePercentage), defaultValue: `-${Math.abs(comparePercentage)}% vs. Durchschnitt` });
 
   return (
     <article className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
@@ -50,7 +55,7 @@ const KpiCard: React.FC<KpiCardProps> = ({
       ) : error ? (
         <Alert>
           <AlertDescription>
-            {t('kpi.loadError')}
+            {t('kpi.loadError', { defaultValue: 'Daten konnten nicht geladen werden' })}
           </AlertDescription>
         </Alert>
       ) : (
@@ -64,15 +69,15 @@ const KpiCard: React.FC<KpiCardProps> = ({
           </p>
           
           <p className="text-sm text-gray-500 mb-3">
-            {t('kpi.benchmark')}: {benchmark} 
+            {t('kpi.benchmark', { defaultValue: 'Durchschnitt' })}: {benchmark} 
             <span className={`ml-1 ${getCompareColor(comparePercentage)}`}>
-              ({getComparePrefix(comparePercentage)}{comparePercentage}%)
+              ({trendText})
             </span>
           </p>
           
           {data?.trend && (
             <p className={`text-sm mb-3 ${data.trend.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
-              {t('kpi.trend')}: {data.trend}
+              {t('kpi.trend', { defaultValue: 'Trend' })}: {data.trend}
             </p>
           )}
           
@@ -80,7 +85,7 @@ const KpiCard: React.FC<KpiCardProps> = ({
             href={optimizeLink} 
             className="text-blue-600 hover:underline mt-2 block text-sm font-medium"
           >
-            {t('kpi.optimizeLink')}
+            {t('kpi.optimizeLink', { defaultValue: 'Zu den Optimierungsvorschlägen (Upgrade erforderlich)' })}
           </a>
         </>
       )}

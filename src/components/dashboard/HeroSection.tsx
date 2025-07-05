@@ -42,6 +42,13 @@ const HeroSection: React.FC = () => {
       description: t('actionModal.reviews.description'), 
       recommendation_type: 'reviews', 
       priority: 'medium' 
+    },
+    { 
+      id: 'mock-3', 
+      title: t('quickActions.updateHours'), 
+      description: t('actionModal.hours.description'), 
+      recommendation_type: 'hours', 
+      priority: 'low' 
     }
   ];
 
@@ -137,7 +144,7 @@ const HeroSection: React.FC = () => {
             </div>
           </div>
 
-          {/* Quick-Actions - immer sichtbar */}
+          {/* Quick-Actions - synchronisiert mit AI Recommendations */}
           <div className="flex flex-wrap gap-2">
             {displayRecommendations.slice(0, 2).map((recommendation) => (
               <QuickActionButton
@@ -147,7 +154,21 @@ const HeroSection: React.FC = () => {
               />
             ))}
             {displayRecommendations.length > 2 && (
-              <button className="text-sm underline opacity-75 hover:opacity-100 transition-opacity">
+              <button 
+                className="text-sm underline opacity-75 hover:opacity-100 transition-opacity"
+                onClick={() => {
+                  // Zeige alle weiteren Empfehlungen in einem Modal oder erweiterten Bereich
+                  setSelectedRecommendation({ 
+                    id: 'more-actions', 
+                    title: t('hero.allRecommendations', { defaultValue: 'Alle Empfehlungen' }),
+                    recommendation_type: 'overview',
+                    description: t('hero.allRecommendationsDesc', { 
+                      defaultValue: 'Hier sind alle verfügbaren Empfehlungen für Ihr Restaurant' 
+                    })
+                  });
+                  setIsModalOpen(true);
+                }}
+              >
                 {t('hero.moreActions', { 
                   count: displayRecommendations.length - 2,
                   defaultValue: `+${displayRecommendations.length - 2} weitere` 
@@ -159,7 +180,7 @@ const HeroSection: React.FC = () => {
         
         <div className="mt-4 text-sm italic opacity-75 flex items-center gap-2">
           <span className="animate-pulse">🤖</span>
-          {t('hero.poweredBy')} • Live-Status: Aktiv
+          {t('hero.poweredBy')} • {t('hero.liveStatus', { defaultValue: 'Live-Status: Aktiv' })}
         </div>
       </section>
 
