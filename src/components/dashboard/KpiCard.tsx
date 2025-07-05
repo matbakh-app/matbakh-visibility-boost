@@ -50,7 +50,7 @@ const KpiCard: React.FC<KpiCardProps> = ({
       ) : error ? (
         <Alert>
           <AlertDescription>
-            {t('kpi.loadError', { defaultValue: 'Daten konnten nicht geladen werden' })}
+            {t('kpi.loadError')}
           </AlertDescription>
         </Alert>
       ) : (
@@ -64,7 +64,7 @@ const KpiCard: React.FC<KpiCardProps> = ({
           </p>
           
           <p className="text-sm text-gray-500 mb-3">
-            {t('kpi.benchmark', { defaultValue: 'Durchschnitt' })}: {benchmark} 
+            {t('kpi.benchmark')}: {benchmark} 
             <span className={`ml-1 ${getCompareColor(comparePercentage)}`}>
               ({getComparePrefix(comparePercentage)}{comparePercentage}%)
             </span>
@@ -72,7 +72,7 @@ const KpiCard: React.FC<KpiCardProps> = ({
           
           {data?.trend && (
             <p className={`text-sm mb-3 ${data.trend.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
-              {t('kpi.trend', { defaultValue: 'Trend' })}: {data.trend}
+              {t('kpi.trend')}: {data.trend}
             </p>
           )}
           
@@ -80,7 +80,7 @@ const KpiCard: React.FC<KpiCardProps> = ({
             href={optimizeLink} 
             className="text-blue-600 hover:underline mt-2 block text-sm font-medium"
           >
-            {t('kpi.optimizeLink', { defaultValue: 'Zu den Optimierungsvorschlägen (Upgrade erforderlich)' })}
+            {t('kpi.optimizeLink')}
           </a>
         </>
       )}

@@ -10,8 +10,8 @@ export default function DashboardGmb() {
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow p-6">
         <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-2">{t('tabs.gmb')} KPIs</h2>
-          <p className="text-gray-600">Überwache die Performance deines Google Business Profils</p>
+          <h2 className="text-xl font-semibold mb-2">{t('tabs.gmb')} {t('overview.importantKpis')}</h2>
+          <p className="text-gray-600">{t('description')}</p>
         </div>
         <KpiGrid category="gmb" />
       </div>
