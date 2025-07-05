@@ -8,6 +8,7 @@ import QuotaWidget from '@/components/dashboard/QuotaWidget';
 import HeroSection from '@/components/dashboard/HeroSection';
 import DashboardNavigation from '@/components/dashboard/DashboardNavigation';
 import ActionModal from '@/components/dashboard/ActionModal';
+import QuickActions from '@/components/dashboard/QuickActions';
 import { useSyncGmb } from '@/hooks/useSyncGmb';
 import { useSyncGa4 } from '@/hooks/useSyncGa4';
 import { useAiRecommendations } from '@/hooks/useAiRecommendations';
@@ -57,28 +58,6 @@ export default function Dashboard() {
       priority: 'low' 
     }
   ];
-
-  // Quick Actions - Direkte Ausführung ohne Modal
-  const handleUploadPhotos = () => {
-    console.log('Direkte Aktion: Foto-Uploader öffnen');
-    // TODO: Implementiere direkten Foto-Upload
-    // Beispiel: openPhotoUploader() oder navigate('/dashboard/photos/upload')
-    alert('Foto-Uploader wird geöffnet (noch nicht implementiert)');
-  };
-
-  const handleUpdateHours = () => {
-    console.log('Direkte Aktion: Öffnungszeiten bearbeiten');
-    // TODO: Navigate zu Öffnungszeiten-Formular
-    // navigate('/dashboard/business/hours');
-    alert('Öffnungszeiten-Editor wird geöffnet (noch nicht implementiert)');
-  };
-
-  const handleUpdateMenu = () => {
-    console.log('Direkte Aktion: Speisekarte bearbeiten');
-    // TODO: Navigate zu Menü-Editor
-    // navigate('/dashboard/business/menu');
-    alert('Speisekarten-Editor wird geöffnet (noch nicht implementiert)');
-  };
 
   // AI Recommendations - Modal-Dialog für interaktiven Flow
   const handleAiRecommendation = (recommendation: any) => {
@@ -132,29 +111,7 @@ export default function Dashboard() {
               
               {/* Quick Actions - Direkte Ausführung */}
               <DashboardCard title={t('sidebar.quickActions')}>
-                <div className="space-y-3">
-                  <Button
-                    onClick={handleUploadPhotos}
-                    className="w-full text-sm font-medium border bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200"
-                    variant="outline"
-                  >
-                    📤 {t('quickActions.uploadPhotos', { defaultValue: 'Fotos hochladen' })}
-                  </Button>
-                  <Button
-                    onClick={handleUpdateHours}
-                    className="w-full text-sm font-medium border bg-green-50 text-green-700 hover:bg-green-100 border-green-200"
-                    variant="outline"
-                  >
-                    🕒 {t('quickActions.updateHours', { defaultValue: 'Öffnungszeiten ändern' })}
-                  </Button>
-                  <Button
-                    onClick={handleUpdateMenu}
-                    className="w-full text-sm font-medium border bg-purple-50 text-purple-700 hover:bg-purple-100 border-purple-200"
-                    variant="outline"
-                  >
-                    🍽️ {t('quickActions.updateMenu', { defaultValue: 'Speisekarte bearbeiten' })}
-                  </Button>
-                </div>
+                <QuickActions />
               </DashboardCard>
 
               {/* AI Recommendations - Modal für interaktiven Flow */}
