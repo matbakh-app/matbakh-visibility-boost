@@ -3,7 +3,7 @@ import React from 'react';
 import GMBChart from '@/components/dashboard/GMBChart';
 import GA4Chart from '@/components/dashboard/GA4Chart';
 import SocialMediaChart from '@/components/dashboard/SocialMediaChart';
-import KpiGrid from '@/components/dashboard/KpiGrid';
+import KpiCards from '@/components/dashboard/KpiCards';
 import { useTranslation } from 'react-i18next';
 
 export default function DashboardOverview() {
@@ -35,10 +35,10 @@ export default function DashboardOverview() {
         </div>
       </div>
       
-      {/* KPIs Grid darunter */}
+      {/* KPI Cards - neue dynamische Komponente */}
       <div>
         <h4 className="font-semibold text-base mb-3">{t('overview.importantKpis')}</h4>
-        <KpiGrid category="all" />
+        <KpiCards />
       </div>
     </div>
   );
