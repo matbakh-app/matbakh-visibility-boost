@@ -4,13 +4,13 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import TrialBanner from '@/components/TrialBanner';
 import DashboardCard from '@/components/dashboard/DashboardCard';
-import DashboardTabs from '@/components/dashboard/DashboardTabs';
 import QuotaWidget from '@/components/dashboard/QuotaWidget';
 import HeroSection from '@/components/dashboard/HeroSection';
+import DashboardNavigation from '@/components/dashboard/DashboardNavigation';
 import { useSyncGmb } from '@/hooks/useSyncGmb';
 import { useSyncGa4 } from '@/hooks/useSyncGa4';
 import { useTranslation } from 'react-i18next';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import DashboardOverview from './DashboardOverview';
 import DashboardGmb from './DashboardGmb';
 import DashboardGa4 from './DashboardGa4';
@@ -21,6 +21,9 @@ export default function Dashboard() {
   const { t } = useTranslation('dashboard');
   const { data: gmbData, isLoading: gmbLoading, error: gmbError } = useSyncGmb();
   const { data: ga4Data, isLoading: ga4Loading, error: ga4Error } = useSyncGa4();
+  const location = useLocation();
+  
+  const isOverviewPage = location.pathname === '/dashboard/overview' || location.pathname === '/dashboard';
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -33,9 +36,13 @@ export default function Dashboard() {
           <p className="text-gray-600">{t('description')}</p>
         </div>
 
-        <HeroSection />
+        {/* Navigation */}
+        <DashboardNavigation />
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        {/* Hero Section nur auf Overview anzeigen */}
+        {isOverviewPage && <HeroSection />}
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mt-8">
           <div className="lg:col-span-3">
             <Routes>
               <Route index element={<Navigate to="overview" replace />} />
@@ -47,8 +54,9 @@ export default function Dashboard() {
             </Routes>
           </div>
 
+          {/* Sidebar - sticky positioning */}
           <div className="lg:col-span-1">
-            <div className="space-y-6">
+            <div className="sticky top-8 space-y-6">
               <QuotaWidget 
                 currentUploads={42}
                 maxUploads={100}
@@ -57,13 +65,13 @@ export default function Dashboard() {
               
               <DashboardCard title={t('sidebar.quickActions')}>
                 <div className="space-y-3">
-                  <button className="w-full text-left p-2 rounded hover:bg-gray-50">
+                  <button className="w-full text-left p-2 rounded hover:bg-gray-50 transition-colors">
                     {t('sidebar.updateHours')}
                   </button>
-                  <button className="w-full text-left p-2 rounded hover:bg-gray-50">
+                  <button className="w-full text-left p-2 rounded hover:bg-gray-50 transition-colors">
                     {t('sidebar.uploadPhotos')}
                   </button>
-                  <button className="w-full text-left p-2 rounded hover:bg-gray-50">
+                  <button className="w-full text-left p-2 rounded hover:bg-gray-50 transition-colors">
                     {t('sidebar.updateMenu')}
                   </button>
                 </div>
