@@ -11,26 +11,26 @@ export default function DashboardOverview() {
   
   return (
     <div className="space-y-8">
-      {/* Charts Grid - 2 Spalten Layout mit größeren Containern */}
+      {/* Charts Grid - 2 Spalten Layout mit einheitlichen Container-Größen */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow p-6 min-h-[400px] flex flex-col">
           <h3 className="text-lg font-semibold mb-4">{t('charts.gmbTitle')}</h3>
-          <div className="h-80">
+          <div className="flex-1">
             <GMBChart />
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow p-6 min-h-[400px] flex flex-col">
           <h3 className="text-lg font-semibold mb-4">{t('charts.ga4Title')}</h3>
-          <div className="h-80">
+          <div className="flex-1">
             <GA4Chart />
           </div>
         </div>
       </div>
       
-      {/* Social Media Chart - volle Breite mit größerem Container */}
-      <div className="bg-white rounded-lg shadow p-6">
+      {/* Social Media Chart - volle Breite mit einheitlicher Container-Größe */}
+      <div className="bg-white rounded-lg shadow p-6 min-h-[400px] flex flex-col">
         <h3 className="text-lg font-semibold mb-4">{t('charts.socialTitle')}</h3>
-        <div className="h-80">
+        <div className="flex-1">
           <SocialMediaChart />
         </div>
       </div>
