@@ -70,7 +70,7 @@ const DashboardTabs: React.FC = () => {
           <h3 className="text-xl font-semibold mb-2">{t('tabs.gmb')} KPIs</h3>
           <p className="text-gray-600">Überwache die Performance deines Google Business Profils</p>
         </div>
-        <KpiGrid type="gmb" />
+        <KpiGrid category="gmb" />
       </TabsContent>
       
       <TabsContent value="ga4" className="space-y-6">
@@ -78,7 +78,7 @@ const DashboardTabs: React.FC = () => {
           <h3 className="text-xl font-semibold mb-2">{t('tabs.ga4')} KPIs</h3>
           <p className="text-gray-600">Analysiere den Traffic und das Verhalten auf deiner Website</p>
         </div>
-        <KpiGrid type="ga4" />
+        <KpiGrid category="ga4" />
       </TabsContent>
       
       <TabsContent value="social" className="space-y-6">
