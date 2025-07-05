@@ -10,34 +10,32 @@ export default function DashboardOverview() {
   const { t } = useTranslation('dashboard');
   
   return (
-    <div className="space-y-8">
-      {/* Charts Grid - 2 Spalten Layout mit einheitlichen Container-Größen */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow p-6 min-h-[400px] flex flex-col">
-          <h3 className="text-lg font-semibold mb-4">{t('charts.gmbTitle')}</h3>
-          <div className="flex-1">
+    <div className="space-y-10">
+      {/* Chart-Grid: 3 Cards nebeneinander, 1 auf Mobile */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="bg-white rounded-xl shadow-md p-6 min-h-[360px] flex flex-col justify-between">
+          <h3 className="font-bold text-lg mb-4">{t('charts.gmbTitle')}</h3>
+          <div className="flex-1 flex flex-col">
             <GMBChart />
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-6 min-h-[400px] flex flex-col">
-          <h3 className="text-lg font-semibold mb-4">{t('charts.ga4Title')}</h3>
-          <div className="flex-1">
+        <div className="bg-white rounded-xl shadow-md p-6 min-h-[360px] flex flex-col justify-between">
+          <h3 className="font-bold text-lg mb-4">{t('charts.ga4Title')}</h3>
+          <div className="flex-1 flex flex-col">
             <GA4Chart />
+          </div>
+        </div>
+        <div className="bg-white rounded-xl shadow-md p-6 min-h-[360px] flex flex-col justify-between">
+          <h3 className="font-bold text-lg mb-4">{t('charts.socialTitle')}</h3>
+          <div className="flex-1 flex flex-col">
+            <SocialMediaChart />
           </div>
         </div>
       </div>
       
-      {/* Social Media Chart - volle Breite mit einheitlicher Container-Größe */}
-      <div className="bg-white rounded-lg shadow p-6 min-h-[400px] flex flex-col">
-        <h3 className="text-lg font-semibold mb-4">{t('charts.socialTitle')}</h3>
-        <div className="flex-1">
-          <SocialMediaChart />
-        </div>
-      </div>
-      
-      {/* Overview KPIs */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold mb-4">{t('overview.importantKpis')}</h3>
+      {/* KPIs Grid darunter */}
+      <div>
+        <h4 className="font-semibold text-base mb-3">{t('overview.importantKpis')}</h4>
         <KpiGrid category="all" />
       </div>
     </div>
