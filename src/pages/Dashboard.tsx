@@ -8,7 +8,7 @@ import QuotaWidget from '@/components/dashboard/QuotaWidget';
 import HeroSection from '@/components/dashboard/HeroSection';
 import DashboardNavigation from '@/components/dashboard/DashboardNavigation';
 import ActionModal from '@/components/dashboard/ActionModal';
-import QuickActions from '@/components/dashboard/QuickActions';
+import { QuickActions } from '@/components/dashboard/QuickActions';
 import { useSyncGmb } from '@/hooks/useSyncGmb';
 import { useSyncGa4 } from '@/hooks/useSyncGa4';
 import { useAiRecommendations } from '@/hooks/useAiRecommendations';
