@@ -156,16 +156,16 @@ Deno.serve(async (req) => {
   }
 });
 
-// Helper function to get valid OAuth token
-async function getValidToken(userId: string, supabase: any) {
+// Helper function to get valid OAuth token with automatic refresh
+async function getValidToken(partnerId: string, supabase: any) {
   const { data: token, error } = await supabase
     .from('google_oauth_tokens')
     .select('*')
-    .eq('user_id', userId)
+    .eq('user_id', partnerId)
     .single();
 
   if (error || !token) {
-    throw new Error('No valid OAuth token found for user');
+    throw new Error('No valid OAuth token found for partner');
   }
 
   // Check if token is expired
@@ -178,18 +178,26 @@ async function getValidToken(userId: string, supabase: any) {
       throw new Error('Token expired and no refresh token available');
     }
     
-    // Trigger token refresh
-    await refreshToken(token.refresh_token, token.user_id, supabase);
+    console.log(`Token expired for partner ${partnerId}, refreshing...`);
+    
+    // Call token refresh function
+    const refreshResult = await supabase.functions.invoke('token-refresh', {
+      body: { partner_id: partnerId }
+    });
+    
+    if (refreshResult.error) {
+      throw new Error(`Token refresh failed: ${refreshResult.error.message}`);
+    }
     
     // Fetch refreshed token
     const { data: refreshedToken, error: refreshError } = await supabase
       .from('google_oauth_tokens')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id', partnerId)
       .single();
       
     if (refreshError || !refreshedToken) {
-      throw new Error('Failed to refresh token');
+      throw new Error('Failed to fetch refreshed token');
     }
     
     return refreshedToken.access_token;
@@ -198,55 +206,27 @@ async function getValidToken(userId: string, supabase: any) {
   return token.access_token;
 }
 
-// Helper function to refresh token
-async function refreshToken(refreshToken: string, userId: string, supabase: any) {
-  const clientId = Deno.env.get('GOOGLE_CLIENT_ID');
-  const clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET');
-  
-  if (!clientId || !clientSecret) {
-    throw new Error('Google OAuth credentials not configured');
-  }
-  
-  const response = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: new URLSearchParams({
-      client_id: clientId,
-      client_secret: clientSecret,
-      refresh_token: refreshToken,
-      grant_type: 'refresh_token',
-    }),
-  });
+// Helper function to get or fetch Google Account ID
+async function getGoogleAccountId(partnerId: string, accessToken: string, supabase: any) {
+  // First check if we have accountId stored in business_partners table
+  const { data: partner, error: partnerError } = await supabase
+    .from('business_partners')
+    .select('*')
+    .eq('id', partnerId)
+    .single();
 
-  const refreshData = await response.json();
-
-  if (!response.ok) {
-    throw new Error(`Token refresh failed: ${refreshData.error_description || refreshData.error}`);
+  if (partnerError) {
+    throw new Error(`Failed to fetch partner: ${partnerError.message}`);
   }
 
-  // Update token in database
-  const expiresAt = new Date(Date.now() + (refreshData.expires_in * 1000)).toISOString();
-  
-  const { error: updateError } = await supabase
-    .from('google_oauth_tokens')
-    .update({
-      access_token: refreshData.access_token,
-      expires_at: expiresAt,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('user_id', userId);
-
-  if (updateError) {
-    throw updateError;
+  // Check if we have google_account_id stored (we need to add this column)
+  if (partner.google_account_id) {
+    console.log(`Using cached account ID for partner ${partnerId}: ${partner.google_account_id}`);
+    return partner.google_account_id;
   }
 
-  console.log(`Successfully refreshed token for user ${userId}`);
-}
-
-// Helper function to get Google account ID
-async function getGoogleAccountId(accessToken: string) {
+  // Fetch from Google API
+  console.log(`Fetching Google account ID for partner ${partnerId}...`);
   const response = await fetch('https://mybusinessaccountmanagement.googleapis.com/v1/accounts', {
     headers: {
       'Authorization': `Bearer ${accessToken}`,
@@ -265,8 +245,57 @@ async function getGoogleAccountId(accessToken: string) {
     throw new Error('No Google My Business accounts found');
   }
 
-  // Return the first account ID (or implement logic to select specific account)
-  return data.accounts[0].name; // Format: accounts/{accountId}
+  const accountId = data.accounts[0].name; // Format: accounts/{accountId}
+  
+  // Store accountId for future use
+  await supabase
+    .from('business_partners')
+    .update({ 
+      google_account_id: accountId,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', partnerId);
+
+  console.log(`Cached Google account ID for partner ${partnerId}: ${accountId}`);
+  return accountId;
+}
+
+// Helper function to handle Google API errors with automatic token refresh
+async function handleGoogleApiCall(apiCall: () => Promise<Response>, partnerId: string, supabase: any, maxRetries = 1) {
+  let attempt = 0;
+  
+  while (attempt <= maxRetries) {
+    try {
+      const response = await apiCall();
+      
+      if (response.status === 401 || response.status === 403) {
+        if (attempt < maxRetries) {
+          console.log(`Auth error (${response.status}) for partner ${partnerId}, refreshing token and retrying...`);
+          
+          // Trigger token refresh
+          const refreshResult = await supabase.functions.invoke('token-refresh', {
+            body: { partner_id: partnerId }
+          });
+          
+          if (refreshResult.error) {
+            throw new Error(`Token refresh failed: ${refreshResult.error.message}`);
+          }
+          
+          attempt++;
+          continue; // Retry with new token
+        }
+      }
+      
+      return response;
+    } catch (error) {
+      if (attempt >= maxRetries) {
+        throw error;
+      }
+      attempt++;
+    }
+  }
+  
+  throw new Error('Max retries exceeded');
 }
 
 // Job processing functions with real Google API calls
@@ -278,8 +307,8 @@ async function createBusinessProfile(payload: any, supabase: any) {
   // Get partner's OAuth token
   const accessToken = await getValidToken(partner_id, supabase);
   
-  // Get Google account ID
-  const accountId = await getGoogleAccountId(accessToken);
+  // Get Google account ID (cached or fetch from API)
+  const accountId = await getGoogleAccountId(partner_id, accessToken, supabase);
   
   // Prepare location data for Google API
   const locationData = {
@@ -306,15 +335,19 @@ async function createBusinessProfile(payload: any, supabase: any) {
     };
   }
 
-  // Create location via Google API
-  const response = await fetch(`https://mybusinessbusinessinformation.googleapis.com/v1/${accountId}/locations`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(locationData),
-  });
+  // Create location via Google API with error handling
+  const response = await handleGoogleApiCall(
+    () => fetch(`https://mybusinessbusinessinformation.googleapis.com/v1/${accountId}/locations`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(locationData),
+    }),
+    partner_id,
+    supabase
+  );
 
   if (!response.ok) {
     const error = await response.json();
@@ -393,15 +426,19 @@ async function updateBusinessProfile(payload: any, supabase: any) {
     throw new Error('No valid updates provided');
   }
 
-  // Update location via Google API
-  const response = await fetch(`https://mybusinessbusinessinformation.googleapis.com/v1/${location_id}?updateMask=${updateMask.join(',')}`, {
-    method: 'PATCH',
-    headers: {
-      'Authorization': `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(updateData),
-  });
+  // Update location via Google API with error handling
+  const response = await handleGoogleApiCall(
+    () => fetch(`https://mybusinessbusinessinformation.googleapis.com/v1/${location_id}?updateMask=${updateMask.join(',')}`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updateData),
+    }),
+    partner_id,
+    supabase
+  );
 
   if (!response.ok) {
     const error = await response.json();
@@ -448,8 +485,13 @@ async function publishPost(payload: any, supabase: any) {
   // Get partner's OAuth token
   const accessToken = await getValidToken(partner_id, supabase);
   
-  // Get account ID from location ID
-  const accountId = location_id.split('/locations/')[0]; // Extract account from location path
+  // Get account ID from location ID or fetch it
+  let accountId;
+  if (location_id && location_id.includes('/locations/')) {
+    accountId = location_id.split('/locations/')[0]; // Extract account from location path
+  } else {
+    accountId = await getGoogleAccountId(partner_id, accessToken, supabase);
+  }
   
   // Prepare post data for Google API
   const postPayload = {
@@ -479,15 +521,19 @@ async function publishPost(payload: any, supabase: any) {
     };
   }
 
-  // Publish post via Google API
-  const response = await fetch(`https://mybusiness.googleapis.com/v4/${accountId}/${location_id}/localPosts`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(postPayload),
-  });
+  // Publish post via Google API with error handling
+  const response = await handleGoogleApiCall(
+    () => fetch(`https://mybusiness.googleapis.com/v4/${accountId}/${location_id}/localPosts`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(postPayload),
+    }),
+    partner_id,
+    supabase
+  );
 
   if (!response.ok) {
     const error = await response.json();
