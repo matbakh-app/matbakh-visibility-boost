@@ -4,12 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { X, Cookie, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-interface CookieConsentBanner {
-  onAccept: () => void;
-  onDecline: () => void;
-  onClose: () => void;
-}
-
 const CookieConsentBanner: React.FC = () => {
   const { t } = useTranslation('common');
   const [isVisible, setIsVisible] = useState(false);
@@ -27,31 +21,57 @@ const CookieConsentBanner: React.FC = () => {
     }
   }, []);
 
+  const updateGoogleConsent = (consentType: 'granted' | 'denied') => {
+    if (typeof window !== 'undefined' && window.gtag) {
+      // Update Google Consent Mode v2 IMMEDIATELY
+      window.gtag('consent', 'update', {
+        'ad_storage': consentType,
+        'ad_user_data': consentType,
+        'ad_personalization': consentType,
+        'analytics_storage': consentType,
+        'functionality_storage': consentType,
+        'personalization_storage': consentType
+      });
+
+      // If consent granted, re-configure GA4 with full features
+      if (consentType === 'granted') {
+        window.gtag('config', 'G-0R0Y9QT6JK', {
+          'anonymize_ip': false,
+          'allow_google_signals': true,
+          'allow_ad_personalization_signals': true
+        });
+      } else {
+        // If denied, ensure privacy-first configuration
+        window.gtag('config', 'G-0R0Y9QT6JK', {
+          'anonymize_ip': true,
+          'allow_google_signals': false,
+          'allow_ad_personalization_signals': false
+        });
+      }
+    }
+  };
+
   const handleAccept = () => {
+    // Update consent BEFORE localStorage to prevent race conditions
+    updateGoogleConsent('granted');
+    
+    // Store consent decision
     localStorage.setItem('cookieConsent', 'accepted');
     localStorage.setItem('cookieConsentDate', new Date().toISOString());
     
-    // Enable Google Analytics
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('consent', 'update', {
-        'analytics_storage': 'granted'
-      });
-    }
-    
+    console.log('✅ Google Consent Mode v2: All consent types GRANTED');
     setIsVisible(false);
   };
 
   const handleDecline = () => {
+    // Update consent BEFORE localStorage to prevent race conditions
+    updateGoogleConsent('denied');
+    
+    // Store consent decision
     localStorage.setItem('cookieConsent', 'declined');
     localStorage.setItem('cookieConsentDate', new Date().toISOString());
     
-    // Disable Google Analytics
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('consent', 'update', {
-        'analytics_storage': 'denied'
-      });
-    }
-    
+    console.log('❌ Google Consent Mode v2: All consent types DENIED');
     setIsVisible(false);
   };
 
@@ -95,6 +115,9 @@ const CookieConsentBanner: React.FC = () => {
                     <div>
                       <strong>{t('cookieConsent.analytics', 'Analytics-Cookies')}:</strong>{' '}
                       {t('cookieConsent.analyticsDesc', 'Google Analytics hilft uns zu verstehen, wie Besucher unsere Website nutzen (anonymisiert).')}
+                    </div>
+                    <div className="mt-2 p-2 bg-blue-50 rounded text-xs">
+                      <strong>Google Consent Mode v2:</strong> Unsere Website verwendet Google's neueste Consent-Technologie für maximalen Datenschutz und Compliance.
                     </div>
                   </div>
                 </div>
