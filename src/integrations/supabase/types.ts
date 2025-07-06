@@ -158,6 +158,7 @@ export type Database = {
           contact_phone: string | null
           created_at: string | null
           document_uploaded: boolean | null
+          google_account_id: string | null
           id: string
           notes: string | null
           onboarding_completed: boolean | null
@@ -177,6 +178,7 @@ export type Database = {
           contact_phone?: string | null
           created_at?: string | null
           document_uploaded?: boolean | null
+          google_account_id?: string | null
           id?: string
           notes?: string | null
           onboarding_completed?: boolean | null
@@ -196,6 +198,7 @@ export type Database = {
           contact_phone?: string | null
           created_at?: string | null
           document_uploaded?: boolean | null
+          google_account_id?: string | null
           id?: string
           notes?: string | null
           onboarding_completed?: boolean | null
