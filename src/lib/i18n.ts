@@ -48,14 +48,14 @@ const handleMissingKey = (lng: string[], ns: string, key: string, fallbackValue:
 i18n
   .use(HttpBackend)
   .use(LanguageDetector)
-  .use(initReactI18next)
+  .use(initReactI18n)
   .init({
     // Enhanced configuration for maximum stability
     lng: 'de',
     fallbackLng: 'de',
     supportedLngs: ['de', 'en'],
     // WICHTIG: common muss hier als erster Namespace stehen!
-    ns: ['common', 'translation', 'adminPanel', 'auth', 'nav', 'footer', 'hero', 'features', 'dashboard'],
+    ns: ['common', 'translation', 'adminPanel', 'auth', 'nav', 'footer', 'hero', 'features', 'dashboard', 'cookieConsent'],
     defaultNS: 'common', // common als Standard-Namespace
     fallbackNS: ['common', 'translation'],
     backend: {
