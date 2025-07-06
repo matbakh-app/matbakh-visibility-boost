@@ -1,4 +1,3 @@
-
 /*  ⚠️ KRITISCHE ROUTING-DATEI – NICHT OHNE GENEHMIGUNG ÄNDERN! ⚠️
  *
  *  Diese Datei definiert alle URL-Routen der Website.
@@ -16,12 +15,14 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import CookieConsentBanner from '@/components/CookieConsentBanner';
 import './App.css';
 import './lib/i18n'; // Initialize i18n with validation
 
 if (process.env.NODE_ENV === 'development') {
   console.warn('🚨 App.tsx Routing geladen – Änderungen nur nach Approval!');
 }
+
 import AngebotePage from './pages/AngebotePage';
 import AngeboteDE from './pages/AngeboteDE';
 import PackagesEN from './pages/PackagesEN';
@@ -55,6 +56,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AdminRouteWrapper />
+      <CookieConsentBanner />
     </QueryClientProvider>
   );
 }
