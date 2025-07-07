@@ -50,7 +50,7 @@ export const useOnboardingQuestions = (step?: number) => {
   // Fetch GMB categories with proper error handling
   const fetchGmbCategories = async () => {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('gmb_categories')
         .select('*')
         .order('sort_order', { ascending: true });
@@ -74,7 +74,7 @@ export const useOnboardingQuestions = (step?: number) => {
     try {
       setLoading(true);
       
-      let query = (supabase as any)
+      let query = supabase
         .from('onboarding_questions')
         .select('*')
         .order('step', { ascending: true })
