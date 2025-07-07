@@ -50,13 +50,14 @@ export const useOnboardingQuestions = (step?: number) => {
   // Fetch GMB categories
   const fetchGmbCategories = async () => {
     try {
+      // @ts-ignore - Temporary fix for missing Supabase types
       const { data, error } = await supabase
         .from('gmb_categories')
         .select('*')
         .order('sort_order', { ascending: true });
 
       if (error) throw error;
-      setGmbCategories(data || []);
+      setGmbCategories((data as GmbCategory[]) || []);
     } catch (err) {
       console.error('Error fetching GMB categories:', err);
     }
@@ -67,6 +68,7 @@ export const useOnboardingQuestions = (step?: number) => {
     try {
       setLoading(true);
       
+      // @ts-ignore - Temporary fix for missing Supabase types
       let query = supabase
         .from('onboarding_questions')
         .select('*')
@@ -83,7 +85,7 @@ export const useOnboardingQuestions = (step?: number) => {
 
       // Process questions with dynamic options
       const processedQuestions = await Promise.all(
-        (data || []).map(async (q: any) => {
+        ((data as any[]) || []).map(async (q: any) => {
           const question: OnboardingQuestion = {
             id: q.id,
             step: q.step,
