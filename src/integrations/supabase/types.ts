@@ -564,6 +564,42 @@ export type Database = {
           },
         ]
       }
+      gmb_categories: {
+        Row: {
+          category_id: string
+          created_at: string
+          id: string
+          is_popular: boolean
+          name_de: string
+          name_en: string
+          parent_category_id: string | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          id?: string
+          is_popular?: boolean
+          name_de: string
+          name_en: string
+          parent_category_id?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          id?: string
+          is_popular?: boolean
+          name_de?: string
+          name_en?: string
+          parent_category_id?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       gmb_profiles: {
         Row: {
           address: string | null
@@ -1016,6 +1052,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      onboarding_questions: {
+        Row: {
+          conditional_logic: Json | null
+          created_at: string
+          id: string
+          options: Json | null
+          order_index: number
+          required: boolean
+          slug: string
+          step: number
+          translations: Json
+          type: string
+          updated_at: string
+          validation_rules: Json | null
+        }
+        Insert: {
+          conditional_logic?: Json | null
+          created_at?: string
+          id?: string
+          options?: Json | null
+          order_index?: number
+          required?: boolean
+          slug: string
+          step: number
+          translations?: Json
+          type: string
+          updated_at?: string
+          validation_rules?: Json | null
+        }
+        Update: {
+          conditional_logic?: Json | null
+          created_at?: string
+          id?: string
+          options?: Json | null
+          order_index?: number
+          required?: boolean
+          slug?: string
+          step?: number
+          translations?: Json
+          type?: string
+          updated_at?: string
+          validation_rules?: Json | null
+        }
+        Relationships: []
       }
       partner_bookings: {
         Row: {
