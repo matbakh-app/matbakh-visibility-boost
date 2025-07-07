@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 
 export interface OnboardingQuestion {
   id: string;
@@ -62,7 +63,18 @@ export const useOnboardingQuestions = (step?: number) => {
         return;
       }
       
-      setGmbCategories(data || []);
+      // Map the database response to our interface
+      const mappedCategories: GmbCategory[] = (data || []).map((cat: Database['public']['Tables']['gmb_categories']['Row']) => ({
+        id: cat.id,
+        category_id: cat.category_id,
+        name_de: cat.name_de,
+        name_en: cat.name_en,
+        is_popular: cat.is_popular,
+        sort_order: cat.sort_order,
+        parent_category_id: cat.parent_category_id || undefined
+      }));
+      
+      setGmbCategories(mappedCategories);
     } catch (err) {
       console.error('Error fetching GMB categories:', err);
       setGmbCategories([]);
@@ -95,24 +107,24 @@ export const useOnboardingQuestions = (step?: number) => {
 
       // Process questions with dynamic options
       const processedQuestions = await Promise.all(
-        (data || []).map(async (q: any) => {
+        (data || []).map(async (q: Database['public']['Tables']['onboarding_questions']['Row']) => {
           const question: OnboardingQuestion = {
             id: q.id,
             step: q.step,
-            type: q.type,
+            type: q.type as 'text' | 'select' | 'checkbox' | 'info',
             slug: q.slug,
             required: q.required,
             order_index: q.order_index,
-            translations: q.translations || {},
-            options: q.options,
-            validation_rules: q.validation_rules || {},
-            conditional_logic: q.conditional_logic || {}
+            translations: q.translations as OnboardingQuestion['translations'] || {},
+            options: q.options as OnboardingQuestion['options'],
+            validation_rules: q.validation_rules as Record<string, any> || {},
+            conditional_logic: q.conditional_logic as Record<string, any> || {}
           };
 
           // Handle dynamic options from GMB categories
-          if (q.options?.source === 'gmb_categories') {
+          if (q.options && typeof q.options === 'object' && 'source' in q.options && q.options.source === 'gmb_categories') {
             const categories = gmbCategories.filter(cat => {
-              if (q.options.filter?.is_popular) {
+              if (q.options && typeof q.options === 'object' && 'filter' in q.options && q.options.filter && typeof q.options.filter === 'object' && 'is_popular' in q.options.filter) {
                 return cat.is_popular;
               }
               return true;
