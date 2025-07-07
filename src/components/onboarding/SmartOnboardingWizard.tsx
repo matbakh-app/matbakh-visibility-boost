@@ -105,6 +105,9 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
             <p className="text-red-600">
               {t('onboarding.error', 'Fehler beim Laden der Fragen:')} {error}
             </p>
+            <p className="text-sm text-gray-500 mt-2">
+              {t('onboarding.fallback', 'Das System wird mit Standard-Fragen fortfahren.')}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -187,7 +190,7 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
                   gmailAddress={answers.gmail_account}
                   onConnectionComplete={(connectionData) => {
                     setAnswers(prev => ({ ...prev, ...connectionData }));
-                    onComplete?.(answers);
+                    onComplete?.({ ...answers, ...connectionData });
                   }}
                 />
               )}

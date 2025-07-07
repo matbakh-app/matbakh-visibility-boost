@@ -47,29 +47,34 @@ export const useOnboardingQuestions = (step?: number) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch GMB categories
+  // Fetch GMB categories with proper error handling
   const fetchGmbCategories = async () => {
     try {
-      // @ts-ignore - Temporary fix for missing Supabase types
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('gmb_categories')
         .select('*')
         .order('sort_order', { ascending: true });
 
-      if (error) throw error;
-      setGmbCategories((data as GmbCategory[]) || []);
+      if (error) {
+        console.error('Error fetching GMB categories:', error);
+        // Continue without categories if they don't exist yet
+        setGmbCategories([]);
+        return;
+      }
+      
+      setGmbCategories(data || []);
     } catch (err) {
       console.error('Error fetching GMB categories:', err);
+      setGmbCategories([]);
     }
   };
 
-  // Fetch onboarding questions
+  // Fetch onboarding questions with proper error handling
   const fetchQuestions = async () => {
     try {
       setLoading(true);
       
-      // @ts-ignore - Temporary fix for missing Supabase types
-      let query = supabase
+      let query = (supabase as any)
         .from('onboarding_questions')
         .select('*')
         .order('step', { ascending: true })
@@ -81,11 +86,16 @@ export const useOnboardingQuestions = (step?: number) => {
 
       const { data, error } = await query;
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching onboarding questions:', error);
+        setError('Failed to load questions');
+        setLoading(false);
+        return;
+      }
 
       // Process questions with dynamic options
       const processedQuestions = await Promise.all(
-        ((data as any[]) || []).map(async (q: any) => {
+        (data || []).map(async (q: any) => {
           const question: OnboardingQuestion = {
             id: q.id,
             step: q.step,
@@ -138,7 +148,8 @@ export const useOnboardingQuestions = (step?: number) => {
   }, []);
 
   useEffect(() => {
-    if (gmbCategories.length > 0) {
+    // Only fetch questions after categories are loaded or if no categories are needed
+    if (gmbCategories.length > 0 || step !== 1) {
       fetchQuestions();
     }
   }, [step, gmbCategories]);
