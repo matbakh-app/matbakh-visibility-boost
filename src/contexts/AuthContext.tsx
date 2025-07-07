@@ -27,7 +27,59 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     console.log('AuthProvider: Initializing auth state');
     
-    // Get initial session
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('AuthProvider: Auth state changed:', event, session?.user?.email || 'No session');
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user && event === 'SIGNED_IN') {
+          console.log('AuthProvider: User signed in, checking profile and redirecting');
+          
+          // Defer data fetching to prevent deadlocks
+          setTimeout(async () => {
+            try {
+              // Check admin role
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', session.user.id)
+                .single();
+              
+              setIsAdmin(profile?.role === 'admin');
+              
+              // Check if onboarding is completed
+              const { data: partner } = await supabase
+                .from('business_partners')
+                .select('onboarding_completed')
+                .eq('user_id', session.user.id)
+                .single();
+              
+              // Only redirect if not on login or landing pages
+              const isOnLandingPage = location.pathname === '/' || 
+                                     location.pathname.startsWith('/business/partner');
+              
+              if (!isOnLandingPage || location.pathname === '/business/partner/login') {
+                if (!partner?.onboarding_completed) {
+                  console.log('AuthProvider: Redirecting to onboarding');
+                  navigate('/partner/onboarding', { replace: true });
+                } else {
+                  console.log('AuthProvider: Redirecting to dashboard');
+                  navigate('/partner/dashboard', { replace: true });
+                }
+              }
+            } catch (error) {
+              console.log('AuthProvider: No partner record found, will redirect to onboarding on next navigation');
+            }
+          }, 0);
+        }
+        
+        setLoading(false);
+      }
+    );
+
+    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
         console.error('AuthProvider: Error getting session:', error);
@@ -37,56 +89,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       setLoading(false);
     });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('AuthProvider: Auth state changed:', event, session?.user?.email || 'No session');
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          // Only check admin role and redirect if user is actually logged in
-          try {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('role')
-              .eq('id', session.user.id)
-              .single();
-            
-            setIsAdmin(profile?.role === 'admin');
-          } catch (error) {
-            console.log('AuthProvider: No profile found, assuming regular user');
-            setIsAdmin(false);
-          }
-          
-          // Only redirect if not on landing page or login page
-          const isOnLandingPage = location.pathname === '/' || 
-                                 location.pathname.startsWith('/business/partner');
-          if (!isOnLandingPage) {
-            // Check if onboarding is completed
-            try {
-              const { data: partner } = await supabase
-                .from('business_partners')
-                .select('onboarding_completed')
-                .eq('user_id', session.user.id)
-                .single();
-              
-              if (!partner?.onboarding_completed) {
-                navigate('/partner/onboarding');
-              } else {
-                navigate('/partner/dashboard');
-              }
-            } catch (error) {
-              console.log('AuthProvider: No partner record found, redirecting to onboarding');
-              navigate('/partner/onboarding');
-            }
-          }
-        }
-        
-        setLoading(false);
-      }
-    );
 
     return () => subscription.unsubscribe();
   }, [navigate, location.pathname]);
@@ -105,6 +107,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     if (error) {
       console.error('AuthProvider: Login error:', error);
+      throw error;
     }
   };
 

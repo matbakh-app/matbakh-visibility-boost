@@ -1,3 +1,4 @@
+
 import React, { useEffect, Suspense } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -31,8 +32,10 @@ const BusinessLogin: React.FC = () => {
 
         <main className="flex items-center justify-center min-h-[80vh] px-4">
           <div className="w-full max-w-md space-y-6 p-6 border rounded-2xl shadow-sm bg-white">
-            <h1 className="text-2xl font-bold text-center">{t('login.title')}</h1>
-            <p className="text-sm text-gray-600 text-center">{t('login.subtitle')}</p>
+            <div className="text-center space-y-2">
+              <h1 className="text-2xl font-bold">{t('login.title')}</h1>
+              <p className="text-sm text-gray-600">{t('login.subtitle')}</p>
+            </div>
 
             <AuthModeSelector />
 
