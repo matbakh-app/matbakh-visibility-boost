@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Check } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface OnboardingStepIndicatorProps {
   currentStep: number;
@@ -11,11 +12,13 @@ export const OnboardingStepIndicator: React.FC<OnboardingStepIndicatorProps> = (
   currentStep,
   totalSteps
 }) => {
+  const { t } = useTranslation('onboarding');
+  
   const steps = [
-    { number: 1, title: 'Unternehmen', description: 'Grunddaten' },
-    { number: 2, title: 'Services', description: 'Auswahl' },
-    { number: 3, title: 'Fragen', description: 'Qualifikation' },
-    { number: 4, title: 'Google', description: 'Verknüpfung' }
+    { number: 1, title: t('steps.1.title'), description: t('steps.1.desc') },
+    { number: 2, title: t('steps.2.title'), description: t('steps.2.desc') },
+    { number: 3, title: t('steps.3.title'), description: t('steps.3.desc') },
+    { number: 4, title: t('steps.4.title'), description: t('steps.4.desc') }
   ];
 
   return (
