@@ -49,13 +49,13 @@ const UserMenu: React.FC = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuItem onClick={() => navigate('/partner/dashboard')}>
+        <DropdownMenuItem onClick={() => navigate('/dashboard')}>
           {tAuth('dashboard')}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate('/partner/profile')}>
+        <DropdownMenuItem onClick={() => navigate('/dashboard/profile')}>
           {tAuth('profile')}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate('/partner/calendar')}>
+        <DropdownMenuItem onClick={() => navigate('/dashboard/calendar')}>
           {tAuth('calendar')}
         </DropdownMenuItem>
         <DropdownMenuSeparator />

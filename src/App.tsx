@@ -94,22 +94,22 @@ function AdminRouteWrapper() {
         {/* Protected Partner Routes */}
         <Route path="/partner/dashboard" element={
           <ProtectedRoute requirePartner={true}>
-            <PartnerDashboard />
+            <Navigate to="/dashboard" replace />
+          </ProtectedRoute>
+        } />
+        <Route path="/partner/profile" element={
+          <ProtectedRoute requirePartner={true}>
+            <Navigate to="/dashboard/profile" replace />
+          </ProtectedRoute>
+        } />
+        <Route path="/partner/calendar" element={
+          <ProtectedRoute requirePartner={true}>
+            <Navigate to="/dashboard/calendar" replace />
           </ProtectedRoute>
         } />
         <Route path="/partner/onboarding" element={
           <ProtectedRoute requirePartner={true}>
             <PartnerOnboarding />
-          </ProtectedRoute>
-        } />
-        <Route path="/partner/profile" element={
-          <ProtectedRoute requirePartner={true}>
-            <PartnerProfile />
-          </ProtectedRoute>
-        } />
-        <Route path="/partner/calendar" element={
-          <ProtectedRoute requirePartner={true}>
-            <PartnerCalendar />
           </ProtectedRoute>
         } />
         
