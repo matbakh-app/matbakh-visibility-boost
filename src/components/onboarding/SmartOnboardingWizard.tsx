@@ -101,13 +101,7 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
   };
 
   const getStepTitle = () => {
-    switch (currentStep) {
-      case 1: return t('onboarding:step1.title');
-      case 2: return t('onboarding:step2.title');
-      case 3: return t('onboarding:step3.title');
-      case 4: return t('onboarding:step4.title');
-      default: return t('onboarding:title');
-    }
+    return t(`onboarding:steps.${currentStep}.title`);
   };
 
   const getStepDescription = () => {
