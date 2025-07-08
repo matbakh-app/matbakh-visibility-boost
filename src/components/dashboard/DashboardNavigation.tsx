@@ -2,7 +2,7 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { BarChart3, Globe, TrendingUp, Users, FileText } from 'lucide-react';
+import { BarChart3, Globe, TrendingUp, Users, FileText, User, Calendar } from 'lucide-react';
 
 const DashboardNavigation: React.FC = () => {
   const { t } = useTranslation('dashboard');
@@ -33,6 +33,16 @@ const DashboardNavigation: React.FC = () => {
       path: '/dashboard/reports',
       label: t('tabs.reports'),
       icon: FileText
+    },
+    {
+      path: '/dashboard/profile',
+      label: t('tabs.profile', 'Profil'),
+      icon: User
+    },
+    {
+      path: '/dashboard/calendar',
+      label: t('tabs.calendar', 'Kalender'),
+      icon: Calendar
     }
   ];
 

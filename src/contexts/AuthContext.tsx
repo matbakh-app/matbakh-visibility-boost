@@ -81,7 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   navigate('/partner/onboarding', { replace: true });
                 } else {
                   console.log('AuthProvider: Redirecting to dashboard');
-                  navigate('/partner/dashboard', { replace: true });
+                  navigate('/dashboard', { replace: true });
                 }
               }
             } catch (error) {

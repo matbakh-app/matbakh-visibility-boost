@@ -20,6 +20,8 @@ import DashboardGmb from './DashboardGmb';
 import DashboardGa4 from './DashboardGa4';
 import DashboardSocial from './DashboardSocial';
 import DashboardReports from './DashboardReports';
+import DashboardProfile from './DashboardProfile';
+import PartnerCalendar from './PartnerCalendar';
 
 export default function Dashboard() {
   const { t } = useTranslation('dashboard');
@@ -96,6 +98,8 @@ export default function Dashboard() {
               <Route path="ga4" element={<DashboardGa4 />} />
               <Route path="social" element={<DashboardSocial />} />
               <Route path="reports" element={<DashboardReports />} />
+              <Route path="profile" element={<DashboardProfile />} />
+              <Route path="calendar" element={<PartnerCalendar />} />
             </Routes>
           </div>
 
