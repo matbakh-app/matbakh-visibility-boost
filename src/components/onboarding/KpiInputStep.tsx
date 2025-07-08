@@ -4,8 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { AlertCircle, TrendingUp, ArrowLeft, ArrowRight } from 'lucide-react';
+import { CurrencyInput } from './CurrencyInput';
+import { KpiSelector } from './KpiSelector';
+
+interface KpiEntry {
+  key: string;
+  value: string;
+}
 
 interface KpiInputStepProps {
   onComplete: (kpiData: any) => void;
@@ -26,13 +32,13 @@ export const KpiInputStep: React.FC<KpiInputStepProps> = ({
     food_cost_ratio: '',
     labor_cost_ratio: '',
     employee_count: '',
-    opening_hours: '',
-    additional_kpis: ''
+    opening_hours_per_day: '',
+    additional_kpis: [] as KpiEntry[]
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | KpiEntry[]) => {
     setKpiData(prev => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
@@ -64,8 +70,13 @@ export const KpiInputStep: React.FC<KpiInputStepProps> = ({
         food_cost_ratio: parseFloat(kpiData.food_cost_ratio) || null,
         labor_cost_ratio: parseFloat(kpiData.labor_cost_ratio) || null,
         employee_count: parseInt(kpiData.employee_count) || null,
-        opening_hours: kpiData.opening_hours.trim() || null,
-        additional_kpis: kpiData.additional_kpis.trim() || null
+        opening_hours: parseFloat(kpiData.opening_hours_per_day) || null,
+        additional_kpis: kpiData.additional_kpis.reduce((acc, kpi) => {
+          if (kpi.key && kpi.value) {
+            acc[kpi.key] = kpi.value;
+          }
+          return acc;
+        }, {} as Record<string, string>)
       };
       
       onComplete(processedData);
@@ -106,26 +117,16 @@ export const KpiInputStep: React.FC<KpiInputStepProps> = ({
         <CardContent className="space-y-6">
           {/* Mandatory Fields */}
           <div className="grid md:grid-cols-2 gap-6">
-            <div>
-              <Label htmlFor="annual_revenue" className="flex items-center gap-2">
-                {t('kpiInput.fields.annualRevenue', 'Jahresumsatz')}
-                <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="annual_revenue"
-                type="number"
-                placeholder={t('kpiInput.placeholders.annualRevenue', 'z.B. 500000')}
-                value={kpiData.annual_revenue}
-                onChange={(e) => handleInputChange('annual_revenue', e.target.value)}
-                className={errors.annual_revenue ? 'border-red-500' : ''}
-              />
-              {errors.annual_revenue && (
-                <p className="text-sm text-red-600 mt-1">{errors.annual_revenue}</p>
-              )}
-              <p className="text-xs text-gray-500 mt-1">
-                {t('kpiInput.hints.annualRevenue', 'Euro pro Jahr')}
-              </p>
-            </div>
+            <CurrencyInput
+              id="annual_revenue"
+              label={t('kpiInput.fields.annualRevenue', 'Jahresumsatz')}
+              placeholder={t('kpiInput.placeholders.annualRevenue', 'z.B. 500.000')}
+              value={kpiData.annual_revenue}
+              onChange={(value) => handleInputChange('annual_revenue', value)}
+              error={errors.annual_revenue}
+              hint={t('kpiInput.hints.annualRevenue', 'Euro pro Jahr')}
+              required
+            />
 
             <div>
               <Label htmlFor="seating_capacity" className="flex items-center gap-2">
@@ -190,50 +191,44 @@ export const KpiInputStep: React.FC<KpiInputStepProps> = ({
                 </p>
               </div>
 
-              <div>
-                <Label htmlFor="employee_count">
-                  {t('kpiInput.fields.employeeCount', 'Anzahl Mitarbeiter')}
-                </Label>
-                <Input
-                  id="employee_count"
-                  type="number"
-                  placeholder={t('kpiInput.placeholders.employeeCount', 'z.B. 8')}
-                  value={kpiData.employee_count}
-                  onChange={(e) => handleInputChange('employee_count', e.target.value)}
-                />
-              </div>
+            <div>
+              <Label htmlFor="employee_count">
+                {t('kpiInput.fields.employeeCount', 'Anzahl Mitarbeiter')}
+              </Label>
+              <Input
+                id="employee_count"
+                type="number"
+                placeholder={t('kpiInput.placeholders.employeeCount', 'z.B. 8')}
+                value={kpiData.employee_count}
+                onChange={(e) => handleInputChange('employee_count', e.target.value)}
+              />
+            </div>
 
-              <div>
-                <Label htmlFor="opening_hours">
-                  {t('kpiInput.fields.openingHours', 'Öffnungszeiten')}
-                </Label>
-                <Input
-                  id="opening_hours"
-                  placeholder={t('kpiInput.placeholders.openingHours', 'z.B. Mo-So 11:00-22:00')}
-                  value={kpiData.opening_hours}
-                  onChange={(e) => handleInputChange('opening_hours', e.target.value)}
-                />
-              </div>
+            <div>
+              <Label htmlFor="opening_hours_per_day">
+                {t('kpiInput.fields.openingHoursPerDay', 'Öffnungszeiten pro Tag')}
+              </Label>
+              <Input
+                id="opening_hours_per_day"
+                type="number"
+                placeholder={t('kpiInput.placeholders.openingHoursPerDay', 'z.B. 15')}
+                value={kpiData.opening_hours_per_day}
+                onChange={(e) => handleInputChange('opening_hours_per_day', e.target.value)}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {t('kpiInput.hints.openingHoursPerDay', 'Stunden pro Tag')}
+              </p>
+            </div>
             </div>
           </div>
 
           {/* Additional KPIs */}
           <div className="border-t pt-6">
-            <div>
-              <Label htmlFor="additional_kpis">
-                {t('kpiInput.fields.additionalKpis', 'Weitere bekannte KPIs')}
-              </Label>
-              <Textarea
-                id="additional_kpis"
-                placeholder={t('kpiInput.placeholders.additionalKpis', 'z.B. Durchschnittlicher Bon: 25€, Tischrotation: 2.5x pro Abend')}
-                rows={3}
-                value={kpiData.additional_kpis}
-                onChange={(e) => handleInputChange('additional_kpis', e.target.value)}
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                {t('kpiInput.hints.additionalKpis', 'Freies Textfeld für weitere Kennzahlen')}
-              </p>
-            </div>
+            <KpiSelector
+              selectedKpis={kpiData.additional_kpis}
+              onChange={(kpis) => handleInputChange('additional_kpis', kpis)}
+              language={language}
+            />
           </div>
 
           {/* Navigation */}
