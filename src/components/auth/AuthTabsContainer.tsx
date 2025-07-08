@@ -21,7 +21,7 @@ const AuthTabsContainer: React.FC = () => {
     try {
       await signInWithGoogle();
     } catch (err: any) {
-      setError('Google Anmeldung fehlgeschlagen! Bitte versuche es erneut.');
+      setError(t('messages.googleAuthError'));
     } finally {
       setLoading(false);
     }
@@ -41,8 +41,8 @@ const AuthTabsContainer: React.FC = () => {
 
       <Tabs defaultValue="login" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="login">Anmelden</TabsTrigger>
-          <TabsTrigger value="register">Registrieren</TabsTrigger>
+          <TabsTrigger value="login">{t('tabs.login')}</TabsTrigger>
+          <TabsTrigger value="register">{t('tabs.register')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="login" className="space-y-4 mt-6">
@@ -53,7 +53,7 @@ const AuthTabsContainer: React.FC = () => {
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-muted-foreground">oder</span>
+              <span className="bg-white px-2 text-muted-foreground">{t('separators.or')}</span>
             </div>
           </div>
 
@@ -65,7 +65,7 @@ const AuthTabsContainer: React.FC = () => {
               onClick={handlePasswordReset}
               className="text-sm text-muted-foreground hover:text-primary underline"
             >
-              Passwort vergessen?
+              {t('form.forgotPassword')}
             </button>
           </div>
         </TabsContent>
@@ -78,7 +78,7 @@ const AuthTabsContainer: React.FC = () => {
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-muted-foreground">oder</span>
+              <span className="bg-white px-2 text-muted-foreground">{t('separators.or')}</span>
             </div>
           </div>
 
@@ -87,9 +87,9 @@ const AuthTabsContainer: React.FC = () => {
       </Tabs>
 
       <p className="text-xs text-gray-500 mt-4 text-center">
-        Mit der Registrierung stimmen Sie unseren{' '}
-        <a href="/legal/terms" className="underline">Nutzungsbedingungen</a> und{' '}
-        <a href="/legal/privacy" className="underline">Datenschutzbestimmungen</a> zu.
+        {t('terms.acceptTerms')}{' '}
+        <a href="/legal/terms" className="underline">{t('terms.termsOfService')}</a> {t('terms.and')}{' '}
+        <a href="/legal/privacy" className="underline">{t('terms.privacyPolicy')}</a> {t('terms.to')}
       </p>
     </div>
   );

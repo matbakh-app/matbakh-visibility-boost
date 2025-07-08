@@ -47,19 +47,19 @@ const EmailLoginForm: React.FC<EmailLoginFormProps> = ({ onBack }) => {
       )}
       
       <div className="space-y-2">
-        <Label htmlFor="email">Geschäftliche E-Mail</Label>
+        <Label htmlFor="email">{t('form.businessEmail')}</Label>
         <Input
           id="email"
           type="email"
           value={formData.email}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          placeholder="ihr.name@unternehmen.de"
+          placeholder={t('form.emailPlaceholder')}
           required
         />
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="password">Passwort</Label>
+        <Label htmlFor="password">{t('form.password')}</Label>
         <Input
           id="password"
           type="password"
@@ -74,7 +74,7 @@ const EmailLoginForm: React.FC<EmailLoginFormProps> = ({ onBack }) => {
         className="w-full"
         disabled={loading}
       >
-        {loading ? 'Anmeldung läuft...' : 'Anmelden'}
+        {loading ? t('form.loginLoading') : t('form.loginButton')}
       </Button>
     </form>
   );
