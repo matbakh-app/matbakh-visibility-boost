@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useOnboardingQuestions } from '@/hooks/useOnboardingQuestions';
 import { useAiCategorySuggestions } from '@/hooks/useAiCategorySuggestions';
+import { useOnboardingPersistence } from '@/hooks/useOnboardingPersistence';
 import { SmartQuestionField } from './SmartQuestionField';
+import { ServiceSelectionStep } from './ServiceSelectionStep';
 import { AiSuggestionCard } from './AiSuggestionCard';
 import { OnboardingStepIndicator } from './OnboardingStepIndicator';
 import { GmailSetupGuide } from './GmailSetupGuide';
@@ -18,7 +20,7 @@ interface SmartOnboardingWizardProps {
 }
 
 export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ onComplete }) => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation(['onboarding', 'common']);
   const currentLang = (i18n.language === 'en' ? 'en' : 'de') as 'de' | 'en';
   
   const [currentStep, setCurrentStep] = useState(1);
@@ -27,9 +29,26 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
   
   const { questions, gmbCategories, loading, error } = useOnboardingQuestions(currentStep);
   const { suggestions, loading: aiLoading, getSuggestions } = useAiCategorySuggestions();
+  const { saveData, restoreData, clearData } = useOnboardingPersistence();
 
   const totalSteps = 4;
   const progress = (currentStep / totalSteps) * 100;
+
+  // Restore data on component mount
+  useEffect(() => {
+    const restored = restoreData();
+    if (restored) {
+      setCurrentStep(restored.step);
+      setAnswers(restored.answers);
+    }
+  }, [restoreData]);
+
+  // Auto-save data when answers or step change
+  useEffect(() => {
+    if (Object.keys(answers).length > 0) {
+      saveData(currentStep, answers);
+    }
+  }, [answers, currentStep, saveData]);
 
   // Trigger AI suggestions when business info is provided
   useEffect(() => {
@@ -42,6 +61,13 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
     setAnswers(prev => ({
       ...prev,
       [questionSlug]: value
+    }));
+  };
+
+  const handleServiceSelection = (services: string[]) => {
+    setAnswers(prev => ({
+      ...prev,
+      selected_services: services
     }));
   };
 
@@ -62,6 +88,8 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
     if (currentStep < totalSteps) {
       setCurrentStep(prev => prev + 1);
     } else {
+      // Clear saved data on completion
+      clearData();
       onComplete?.(answers);
     }
   };
@@ -74,25 +102,30 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
 
   const getStepTitle = () => {
     switch (currentStep) {
-      case 1: return t('onboarding.step1.title', 'Unternehmensdaten');
-      case 2: return t('onboarding.step2.title', 'Service-Auswahl');
-      case 3: return t('onboarding.step3.title', 'Qualifikationsfragen');
-      case 4: return t('onboarding.step4.title', 'Google-Konto verknüpfen');
-      default: return t('onboarding.title', 'Onboarding');
+      case 1: return t('onboarding:step1.title');
+      case 2: return t('onboarding:step2.title');
+      case 3: return t('onboarding:step3.title');
+      case 4: return t('onboarding:step4.title');
+      default: return t('onboarding:title');
     }
   };
 
   const getStepDescription = () => {
     switch (currentStep) {
-      case 1: return t('onboarding.step1.description', 'Erzählen Sie uns von Ihrem Unternehmen');
-      case 2: return t('onboarding.step2.description', 'Wählen Sie die gewünschten Services');
-      case 3: return t('onboarding.step3.description', 'Einige wichtige Fragen zu Ihrem Setup');
-      case 4: return t('onboarding.step4.description', 'Verbinden Sie Ihr Google-Konto für die Synchronisation');
+      case 1: return t('onboarding:step1.description');
+      case 2: return t('onboarding:step2.description');
+      case 3: return t('onboarding:step3.description');
+      case 4: return t('onboarding:step4.description');
       default: return '';
     }
   };
 
   const canProceed = () => {
+    if (currentStep === 2) {
+      // For service selection, at least one service must be selected
+      return answers.selected_services && answers.selected_services.length > 0;
+    }
+    
     const requiredQuestions = questions.filter(q => q.required);
     return requiredQuestions.every(q => answers[q.slug] !== undefined && answers[q.slug] !== '');
   };
@@ -103,10 +136,10 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
         <Card>
           <CardContent className="p-6">
             <p className="text-red-600">
-              {t('onboarding.error', 'Fehler beim Laden der Fragen:')} {error}
+              {t('onboarding:messages.error')} {error}
             </p>
             <p className="text-sm text-gray-500 mt-2">
-              {t('onboarding.fallback', 'Das System wird mit Standard-Fragen fortfahren.')}
+              {t('onboarding:messages.fallback')}
             </p>
           </CardContent>
         </Card>
@@ -144,7 +177,7 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-              <p className="mt-4 text-gray-600">{t('onboarding.loading', 'Lade Fragen...')}</p>
+              <p className="mt-4 text-gray-600">{t('onboarding:messages.loading')}</p>
             </div>
           ) : (
             <>
@@ -154,7 +187,7 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
                   <div className="flex items-center gap-2 mb-3">
                     <Lightbulb className="w-5 h-5 text-yellow-500" />
                     <h3 className="font-semibold text-gray-900">
-                      {t('onboarding.aiSuggestions', 'KI-Vorschläge für Ihre Kategorie')}
+                      {t('onboarding:aiSuggestions')}
                     </h3>
                   </div>
                   <div className="grid gap-3">
@@ -171,25 +204,35 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
                 </div>
               )}
 
-              {/* Questions */}
-              <div className="space-y-6">
-                {questions.map((question) => (
-                  <SmartQuestionField
-                    key={question.id}
-                    question={question}
-                    value={answers[question.slug]}
-                    onChange={(value) => handleAnswerChange(question.slug, value)}
-                    language={currentLang}
-                  />
-                ))}
-              </div>
+              {/* Step-specific content */}
+              {currentStep === 2 ? (
+                <ServiceSelectionStep
+                  selectedServices={answers.selected_services || []}
+                  onChange={handleServiceSelection}
+                  language={currentLang}
+                />
+              ) : (
+                <div className="space-y-6">
+                  {questions.map((question) => (
+                    <SmartQuestionField
+                      key={question.id}
+                      question={question}
+                      value={answers[question.slug]}
+                      onChange={(value) => handleAnswerChange(question.slug, value)}
+                      language={currentLang}
+                    />
+                  ))}
+                </div>
+              )}
 
               {/* Special handling for Google connection step */}
               {currentStep === 4 && (
                 <GoogleConnectionStep 
                   gmailAddress={answers.gmail_account}
+                  language={currentLang}
                   onConnectionComplete={(connectionData) => {
                     setAnswers(prev => ({ ...prev, ...connectionData }));
+                    clearData(); // Clear saved data on successful connection
                     onComplete?.({ ...answers, ...connectionData });
                   }}
                 />
@@ -206,7 +249,7 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
               className="flex items-center gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
-              {t('common.back', 'Zurück')}
+              {t('onboarding:navigation.back')}
             </Button>
             
             <Button 
@@ -215,8 +258,8 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
               className="flex items-center gap-2"
             >
               {currentStep === totalSteps ? 
-                t('onboarding.complete', 'Abschließen') : 
-                t('common.next', 'Weiter')
+                t('onboarding:navigation.complete') : 
+                t('onboarding:navigation.next')
               }
               <ArrowRight className="w-4 h-4" />
             </Button>

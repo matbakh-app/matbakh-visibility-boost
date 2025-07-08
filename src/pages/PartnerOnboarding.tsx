@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 const PartnerOnboarding: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('onboarding');
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -34,7 +34,7 @@ const PartnerOnboarding: React.FC = () => {
           contact_email: answers.gmail_account || user.email,
           contact_phone: answers.business_phone,
           website: answers.business_website,
-          services_selected: answers.google_setup ? [answers.google_setup] : [],
+          services_selected: answers.selected_services || [],
           onboarding_completed: true,
           status: 'active'
         }, {
@@ -67,7 +67,7 @@ const PartnerOnboarding: React.FC = () => {
       // Save onboarding steps
       const onboardingSteps = [
         { step_name: 'business_data', data: answers, completed: true },
-        { step_name: 'service_selection', data: { services: answers.google_setup }, completed: true },
+        { step_name: 'service_selection', data: { services: answers.selected_services }, completed: true },
         { step_name: 'qualification', data: { has_gmail: answers.has_gmail }, completed: true },
         { step_name: 'google_connection', data: { connected: answers.google_connected }, completed: !!answers.google_connected }
       ];
@@ -85,8 +85,8 @@ const PartnerOnboarding: React.FC = () => {
       }
 
       toast({
-        title: t('onboarding.success', 'Onboarding abgeschlossen!'),
-        description: t('onboarding.successDescription', 'Willkommen bei matbakh.app! Wir leiten Sie jetzt zu Ihrem Dashboard weiter.'),
+        title: t('onboarding:messages.success'),
+        description: t('onboarding:messages.successDescription'),
       });
 
       // Redirect to dashboard
@@ -97,8 +97,8 @@ const PartnerOnboarding: React.FC = () => {
     } catch (error) {
       console.error('Onboarding error:', error);
       toast({
-        title: t('onboarding.error', 'Fehler beim Abschließen'),
-        description: t('onboarding.errorDescription', 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.'),
+        title: t('onboarding:messages.errorTitle'),
+        description: t('onboarding:messages.errorDescription'),
         variant: 'destructive'
       });
     }
