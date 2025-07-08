@@ -64,6 +64,20 @@ const PartnerOnboarding: React.FC = () => {
 
       if (profileError) throw profileError;
 
+      // Save KPI data if provided (KPI bypass flow)
+      if (answers.kpi_data) {
+        const { error: kpiError } = await supabase
+          .from('partner_kpis')
+          .upsert({
+            partner_id: partner.id,
+            ...answers.kpi_data
+          }, {
+            onConflict: 'partner_id'
+          });
+        
+        if (kpiError) throw kpiError;
+      }
+
       // Save onboarding steps
       const onboardingSteps = [
         { step_name: 'business_data', data: answers, completed: true },
@@ -89,9 +103,9 @@ const PartnerOnboarding: React.FC = () => {
         description: t('onboarding:messages.successDescription'),
       });
 
-      // Redirect to dashboard
+      // Redirect to dashboard - use unified dashboard
       setTimeout(() => {
-        navigate('/partner/dashboard');
+        navigate('/dashboard');
       }, 2000);
 
     } catch (error) {

@@ -13,6 +13,7 @@ import { AiSuggestionCard } from './AiSuggestionCard';
 import { OnboardingStepIndicator } from './OnboardingStepIndicator';
 import { GmailSetupGuide } from './GmailSetupGuide';
 import { GoogleConnectionStep } from './GoogleConnectionStep';
+import { KpiInputStep } from './KpiInputStep';
 import { Lightbulb, ArrowRight, ArrowLeft } from 'lucide-react';
 
 interface SmartOnboardingWizardProps {
@@ -26,6 +27,7 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
   const [currentStep, setCurrentStep] = useState(1);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [showGmailGuide, setShowGmailGuide] = useState(false);
+  const [showKpiInput, setShowKpiInput] = useState(false);
   
   const { questions, gmbCategories, loading, error } = useOnboardingQuestions(currentStep);
   const { suggestions, loading: aiLoading, getSuggestions } = useAiCategorySuggestions();
@@ -82,6 +84,12 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
     // Special handling for Gmail setup
     if (currentStep === 3 && answers.has_gmail === 'no') {
       setShowGmailGuide(true);
+      return;
+    }
+    
+    // Special handling for KPI bypass
+    if (currentStep === 3 && answers.has_gmail === 'no_google_registration') {
+      setShowKpiInput(true);
       return;
     }
 
@@ -153,6 +161,20 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
     );
   }
 
+  if (showKpiInput) {
+    return (
+      <KpiInputStep
+        onComplete={(kpiData) => {
+          setAnswers(prev => ({ ...prev, kpi_data: kpiData, skip_google: true }));
+          clearData();
+          onComplete?.({ ...answers, kpi_data: kpiData, skip_google: true });
+        }}
+        onBack={() => setShowKpiInput(false)}
+        language={currentLang}
+      />
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <Card>
@@ -209,8 +231,9 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
                 <div className="space-y-6">
                   {questions
                     .filter((question) => {
-                      // Hide Gmail address field if user doesn't have Gmail
-                      if (question.slug === 'gmail_account' && answers.has_gmail === 'no') {
+                      // Hide Gmail address field if user doesn't have Gmail or chooses KPI bypass
+                      if (question.slug === 'gmail_account' && 
+                          (answers.has_gmail === 'no' || answers.has_gmail === 'no_google_registration')) {
                         return false;
                       }
                       return true;

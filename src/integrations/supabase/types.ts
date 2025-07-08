@@ -1172,6 +1172,56 @@ export type Database = {
           },
         ]
       }
+      partner_kpis: {
+        Row: {
+          additional_kpis: Json | null
+          annual_revenue: number | null
+          created_at: string
+          employee_count: number | null
+          food_cost_ratio: number | null
+          id: string
+          labor_cost_ratio: number | null
+          opening_hours: Json | null
+          partner_id: string
+          seating_capacity: number | null
+          updated_at: string
+        }
+        Insert: {
+          additional_kpis?: Json | null
+          annual_revenue?: number | null
+          created_at?: string
+          employee_count?: number | null
+          food_cost_ratio?: number | null
+          id?: string
+          labor_cost_ratio?: number | null
+          opening_hours?: Json | null
+          partner_id: string
+          seating_capacity?: number | null
+          updated_at?: string
+        }
+        Update: {
+          additional_kpis?: Json | null
+          annual_revenue?: number | null
+          created_at?: string
+          employee_count?: number | null
+          food_cost_ratio?: number | null
+          id?: string
+          labor_cost_ratio?: number | null
+          opening_hours?: Json | null
+          partner_id?: string
+          seating_capacity?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_kpis_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "business_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       partner_onboarding_steps: {
         Row: {
           completed: boolean | null
