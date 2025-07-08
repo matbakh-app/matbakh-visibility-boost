@@ -34,7 +34,7 @@ const EmailRegisterForm: React.FC<EmailRegisterFormProps> = ({ onBack }) => {
     setLoading(true);
 
     if (formData.password !== formData.confirmPassword) {
-      setError(t('passwordMismatch'));
+      setError(t('messages.passwordMismatch'));
       setLoading(false);
       return;
     }
@@ -48,7 +48,7 @@ const EmailRegisterForm: React.FC<EmailRegisterFormProps> = ({ onBack }) => {
         .single();
 
       if (existingPartner) {
-        setError('Ein Unternehmen mit diesem Namen ist bereits registriert');
+        setError(t('messages.companyExists'));
         setLoading(false);
         return;
       }
@@ -88,7 +88,7 @@ const EmailRegisterForm: React.FC<EmailRegisterFormProps> = ({ onBack }) => {
         }
 
         setError(null);
-        alert('Registrierung erfolgreich! Bitte bestätigen Sie Ihre E-Mail und melden Sie sich dann an.');
+        alert(t('messages.registrationSuccess'));
       }
     } catch (err: any) {
       setError(err.message);
@@ -106,19 +106,19 @@ const EmailRegisterForm: React.FC<EmailRegisterFormProps> = ({ onBack }) => {
       )}
       
       <div className="space-y-2">
-        <Label htmlFor="email">Geschäftliche E-Mail</Label>
+        <Label htmlFor="email">{t('form.businessEmail')}</Label>
         <Input
           id="email"
           type="email"
           value={formData.email}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          placeholder="ihr.name@unternehmen.de"
+          placeholder={t('form.emailPlaceholder')}
           required
         />
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="password">Passwort</Label>
+        <Label htmlFor="password">{t('form.password')}</Label>
         <Input
           id="password"
           type="password"
@@ -130,7 +130,7 @@ const EmailRegisterForm: React.FC<EmailRegisterFormProps> = ({ onBack }) => {
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="confirmPassword">Passwort bestätigen</Label>
+        <Label htmlFor="confirmPassword">{t('form.confirmPassword')}</Label>
         <Input
           id="confirmPassword"
           type="password"
@@ -142,34 +142,34 @@ const EmailRegisterForm: React.FC<EmailRegisterFormProps> = ({ onBack }) => {
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="companyName">Firmenname</Label>
+        <Label htmlFor="companyName">{t('form.companyName')}</Label>
         <Input
           id="companyName"
           type="text"
           value={formData.companyName}
           onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-          placeholder="Ihr Unternehmen GmbH"
+          placeholder={t('form.companyPlaceholder')}
           required
         />
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="contactPerson">Ansprechpartner</Label>
+        <Label htmlFor="contactPerson">{t('form.contactPerson')}</Label>
         <Input
           id="contactPerson"
           type="text"
           value={formData.contactPerson}
           onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
-          placeholder="Max Mustermann"
+          placeholder={t('form.contactPlaceholder')}
           required
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="businessCategory">Branche</Label>
+        <Label htmlFor="businessCategory">{t('form.businessCategory')}</Label>
         <Select value={formData.businessCategory} onValueChange={(value) => setFormData({ ...formData, businessCategory: value })}>
           <SelectTrigger>
-            <SelectValue placeholder="Wählen Sie Ihre Branche" />
+            <SelectValue placeholder={t('form.categoryPlaceholder')} />
           </SelectTrigger>
           <SelectContent>
             {gmbCategories
@@ -188,7 +188,7 @@ const EmailRegisterForm: React.FC<EmailRegisterFormProps> = ({ onBack }) => {
         className="w-full"
         disabled={loading || !formData.businessCategory}
       >
-        {loading ? 'Registrierung läuft...' : 'Unternehmen registrieren'}
+        {loading ? t('form.registerLoading') : t('form.registerButton')}
       </Button>
     </form>
   );
