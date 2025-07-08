@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useGoogleConnection } from '@/hooks/useGoogleConnection';
@@ -8,12 +9,15 @@ import { Shield, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 interface GoogleConnectionStepProps {
   gmailAddress?: string;
   onConnectionComplete: (data: any) => void;
+  language?: 'de' | 'en';
 }
 
 export const GoogleConnectionStep: React.FC<GoogleConnectionStepProps> = ({
   gmailAddress,
-  onConnectionComplete
+  onConnectionComplete,
+  language = 'de'
 }) => {
+  const { t } = useTranslation('onboarding');
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { data: connectionData, refetch } = useGoogleConnection();
@@ -41,7 +45,7 @@ export const GoogleConnectionStep: React.FC<GoogleConnectionStepProps> = ({
       
       window.location.href = authUrl;
     } catch (err) {
-      setError('Fehler beim Verbinden mit Google. Bitte versuchen Sie es erneut.');
+      setError(t('messages.connectionError'));
       setConnecting(false);
     }
   };
@@ -63,12 +67,12 @@ export const GoogleConnectionStep: React.FC<GoogleConnectionStepProps> = ({
             
             <div>
               <h3 className="text-lg font-semibold text-gray-900">
-                {isConnected ? 'Google-Konto verbunden!' : 'Google-Konto verknüpfen'}
+                {isConnected ? t('step4.connected') : t('step4.notConnected')}
               </h3>
               <p className="text-gray-600 mt-2">
                 {isConnected ? 
-                  'Ihr Google-Konto wurde erfolgreich mit matbakh.app verknüpft.' :
-                  'Verbinden Sie Ihr Google-Konto, um Ihr Business Profil automatisch zu verwalten.'
+                  t('step4.connectionSuccess') :
+                  t('step4.connectionDescription')
                 }
               </p>
             </div>
@@ -76,7 +80,7 @@ export const GoogleConnectionStep: React.FC<GoogleConnectionStepProps> = ({
             {gmailAddress && (
               <div className="bg-gray-50 p-3 rounded-lg">
                 <p className="text-sm text-gray-700">
-                  <strong>Gmail-Adresse:</strong> {gmailAddress}
+                  <strong>{t('step3.gmailAccount')}:</strong> {gmailAddress}
                 </p>
               </div>
             )}
@@ -99,7 +103,7 @@ export const GoogleConnectionStep: React.FC<GoogleConnectionStepProps> = ({
                   {connecting ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Verbinde mit Google...
+                      {t('step4.connecting')}
                     </>
                   ) : (
                     <>
@@ -108,17 +112,17 @@ export const GoogleConnectionStep: React.FC<GoogleConnectionStepProps> = ({
                         alt="Google"
                         className="w-4 h-4 mr-2"
                       />
-                      Mit Google verbinden
+                      {t('step4.connectButton')}
                     </>
                   )}
                 </Button>
                 
                 <div className="text-xs text-gray-500 space-y-1">
-                  <p>Durch die Verbindung erhalten wir Zugriff auf:</p>
+                  <p>{t('step4.permissions.title')}</p>
                   <ul className="text-left max-w-sm mx-auto">
-                    <li>• Ihr Google Business Profil</li>
-                    <li>• Grundlegende Kontoinformationen</li>
-                    <li>• Berechtigung zur Profil-Bearbeitung</li>
+                    <li>• {t('step4.permissions.businessProfile')}</li>
+                    <li>• {t('step4.permissions.basicInfo')}</li>
+                    <li>• {t('step4.permissions.editPermissions')}</li>
                   </ul>
                 </div>
               </div>
@@ -130,7 +134,7 @@ export const GoogleConnectionStep: React.FC<GoogleConnectionStepProps> = ({
                 className="w-full bg-green-600 hover:bg-green-700 text-white"
                 size="lg"
               >
-                Onboarding abschließen
+                {t('navigation.finishOnboarding')}
               </Button>
             )}
           </div>
@@ -138,12 +142,12 @@ export const GoogleConnectionStep: React.FC<GoogleConnectionStepProps> = ({
       </Card>
 
       <div className="bg-blue-50 p-4 rounded-lg">
-        <h4 className="font-medium text-blue-900 mb-2">Was passiert als nächstes?</h4>
+        <h4 className="font-medium text-blue-900 mb-2">{t('step4.nextSteps.title')}</h4>
         <ul className="text-sm text-blue-700 space-y-1">
-          <li>• Wir richten Ihr Google Business Profil ein</li>
-          <li>• Ihre Unternehmensdaten werden übertragen</li>
-          <li>• Sie erhalten Zugang zu Ihrem Dashboard</li>
-          <li>• Die Synchronisation beginnt automatisch</li>
+          <li>• {t('step4.nextSteps.setupProfile')}</li>
+          <li>• {t('step4.nextSteps.transferData')}</li>
+          <li>• {t('step4.nextSteps.dashboardAccess')}</li>
+          <li>• {t('step4.nextSteps.autoSync')}</li>
         </ul>
       </div>
     </div>
