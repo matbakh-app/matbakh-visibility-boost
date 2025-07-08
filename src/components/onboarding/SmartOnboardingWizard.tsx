@@ -207,15 +207,23 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
                 />
               ) : (
                 <div className="space-y-6">
-                  {questions.map((question) => (
-                    <SmartQuestionField
-                      key={question.id}
-                      question={question}
-                      value={answers[question.slug]}
-                      onChange={(value) => handleAnswerChange(question.slug, value)}
-                      language={currentLang}
-                    />
-                  ))}
+                  {questions
+                    .filter((question) => {
+                      // Hide Gmail address field if user doesn't have Gmail
+                      if (question.slug === 'gmail_account' && answers.has_gmail === 'no') {
+                        return false;
+                      }
+                      return true;
+                    })
+                    .map((question) => (
+                      <SmartQuestionField
+                        key={question.id}
+                        question={question}
+                        value={answers[question.slug]}
+                        onChange={(value) => handleAnswerChange(question.slug, value)}
+                        language={currentLang}
+                      />
+                    ))}
                 </div>
               )}
 
@@ -223,6 +231,7 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
               {currentStep === 4 && (
                 <GoogleConnectionStep 
                   gmailAddress={answers.gmail_account}
+                  hasGmail={answers.has_gmail === 'yes'}
                   language={currentLang}
                   onConnectionComplete={(connectionData) => {
                     setAnswers(prev => ({ ...prev, ...connectionData }));
