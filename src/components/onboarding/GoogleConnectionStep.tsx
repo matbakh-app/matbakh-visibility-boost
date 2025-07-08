@@ -8,12 +8,14 @@ import { Shield, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 interface GoogleConnectionStepProps {
   gmailAddress?: string;
+  hasGmail?: boolean;
   onConnectionComplete: (data: any) => void;
   language?: 'de' | 'en';
 }
 
 export const GoogleConnectionStep: React.FC<GoogleConnectionStepProps> = ({
   gmailAddress,
+  hasGmail = true,
   onConnectionComplete,
   language = 'de'
 }) => {
@@ -51,6 +53,59 @@ export const GoogleConnectionStep: React.FC<GoogleConnectionStepProps> = ({
   };
 
   const isConnected = connectionData?.isGoogleConnected;
+
+  // If user doesn't have Gmail, show different content
+  if (!hasGmail) {
+    return (
+      <div className="space-y-6">
+        <Card className="border-2 border-dashed border-yellow-300">
+          <CardContent className="p-6">
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 mx-auto bg-yellow-100 rounded-full flex items-center justify-center">
+                <AlertCircle className="w-8 h-8 text-yellow-600" />
+              </div>
+              
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {t('step4.setupRequired', 'Google Account Setup Required')}
+                </h3>
+                <p className="text-gray-600 mt-2">
+                  {t('step4.setupDescription', 'Please create a Google account first to continue with the connection.')}
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <Button
+                  onClick={() => window.open('https://accounts.google.com/signup', '_blank')}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                  size="lg"
+                >
+                  {t('step4.createGoogleAccount', 'Create Google Account')}
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  onClick={() => onConnectionComplete({ google_connected: false, skip_google: true })}
+                  className="w-full"
+                >
+                  {t('step4.skipForNow', 'Skip for now - Setup later in Dashboard')}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <h4 className="font-medium text-gray-900 mb-2">{t('step4.setupLater.title', 'You can setup Google integration later')}</h4>
+          <ul className="text-sm text-gray-600 space-y-1">
+            <li>• {t('step4.setupLater.dashboard', 'Access from your partner dashboard')}</li>
+            <li>• {t('step4.setupLater.guided', 'Guided setup process available')}</li>
+            <li>• {t('step4.setupLater.support', 'Full support documentation provided')}</li>
+          </ul>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
