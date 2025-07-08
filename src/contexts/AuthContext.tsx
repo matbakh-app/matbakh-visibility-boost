@@ -49,12 +49,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               
               setIsAdmin(profile?.role === 'admin');
               
-              // Check if onboarding is completed
+               // Check if onboarding is completed
               const { data: partner } = await supabase
                 .from('business_partners')
-                .select('onboarding_completed')
+                .select('id, onboarding_completed')
                 .eq('user_id', session.user.id)
                 .single();
+
+              // Log auth event
+              await supabase
+                .from('oauth_event_logs')
+                .insert({
+                  event_type: 'login_success',
+                  provider: 'email',
+                  user_id: session.user.id,
+                  partner_id: partner?.id,
+                  success: true,
+                  context: { 
+                    has_partner: !!partner,
+                    onboarding_completed: partner?.onboarding_completed 
+                  }
+                });
               
               // Only redirect if not on login or landing pages
               const isOnLandingPage = location.pathname === '/' || 
@@ -71,6 +86,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               }
             } catch (error) {
               console.log('AuthProvider: No partner record found, will redirect to onboarding on next navigation');
+              
+              // Log auth event with error
+              await supabase
+                .from('oauth_event_logs')
+                .insert({
+                  event_type: 'login_success',
+                  provider: 'email',
+                  user_id: session.user.id,
+                  success: false,
+                  error_message: 'No partner record found'
+                });
             }
           }, 0);
         }
