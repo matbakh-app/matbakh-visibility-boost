@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import { useAnalyticsEvent } from '@/hooks/useAnalyticsEvent';
 
 interface AuthErrorDialogProps {
   isOpen: boolean;
@@ -21,6 +22,14 @@ const AuthErrorDialog: React.FC<AuthErrorDialogProps> = ({
   onContactSupport
 }) => {
   const { t } = useTranslation('auth');
+  const { trackEvent } = useAnalyticsEvent();
+
+  // Track dialog display
+  useEffect(() => {
+    if (isOpen) {
+      trackEvent('auth_error_dialog_shown', { errorType });
+    }
+  }, [isOpen, errorType, trackEvent]);
 
   const getErrorMessage = () => {
     switch (errorType) {
@@ -44,10 +53,20 @@ const AuthErrorDialog: React.FC<AuthErrorDialogProps> = ({
       <AlertDialogContent className="sm:max-w-md">
         <AlertDialogHeader>
           <AlertDialogTitle>
-            {errorType === 'emailRateLimit' ? 'E-Mail Limit erreicht' : 'Registrierung fehlgeschlagen'}
+            {errorType === 'emailRateLimit' ? t('messages.emailRateLimitTitle', 'E-Mail Limit erreicht') : t('messages.registrationFailed', 'Registrierung fehlgeschlagen')}
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-left">
-            {getErrorMessage()}
+          <AlertDialogDescription className="text-left space-y-2">
+            <div>{getErrorMessage()}</div>
+            {errorType === 'emailRateLimit' && (
+              <div className="text-sm text-muted-foreground mt-2">
+                {t('messages.emailRateLimitTimeout')}
+              </div>
+            )}
+            {(errorType === 'emailRateLimit' || errorType === 'partnerCreationError') && showSupport && (
+              <div className="text-sm text-muted-foreground mt-2 p-2 bg-muted rounded">
+                {t('messages.supportInfo')}
+              </div>
+            )}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-col sm:flex-row gap-2">
