@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { useOnboardingQuestions } from '@/hooks/useOnboardingQuestions';
+import { useToast } from '@/hooks/use-toast';
 import AuthErrorDialog from './AuthErrorDialog';
+import FeedbackModal from './FeedbackModal';
 
 interface EmailRegisterFormProps {
   onBack: () => void;
@@ -19,6 +21,8 @@ interface EmailRegisterFormProps {
 const EmailRegisterForm: React.FC<EmailRegisterFormProps> = ({ onBack }) => {
   const { t } = useTranslation('auth');
   const { gmbCategories } = useOnboardingQuestions();
+  const { toast } = useToast();
+  const emailInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -33,6 +37,7 @@ const EmailRegisterForm: React.FC<EmailRegisterFormProps> = ({ onBack }) => {
   const [progress, setProgress] = useState(0);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [errorType, setErrorType] = useState<'emailRateLimit' | 'technicalError' | 'partnerCreationError' | 'general'>('general');
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
   const handleSupabaseError = (error: any) => {
     const message = error?.message?.toLowerCase() || '';
@@ -152,9 +157,16 @@ const EmailRegisterForm: React.FC<EmailRegisterFormProps> = ({ onBack }) => {
               setProgress(100);
               setError(null);
               // Use toast instead of alert for better UX
+              toast({
+                title: t('messages.registrationSuccessTitle', 'Registrierung erfolgreich!'),
+                description: t('messages.registrationSuccess'),
+                duration: 5000,
+              });
+              
+              // Show feedback modal after successful registration
               setTimeout(() => {
-                alert(t('messages.registrationSuccess'));
-              }, 500);
+                setShowFeedbackModal(true);
+              }, 1000);
             }
           } catch (partnerErr: any) {
             console.error('Partner creation error:', partnerErr);
@@ -169,7 +181,17 @@ const EmailRegisterForm: React.FC<EmailRegisterFormProps> = ({ onBack }) => {
       } else {
         setProgress(100);
         setError(null);
-        alert(t('messages.registrationSuccess'));
+        toast({
+          title: t('messages.registrationSuccessTitle', 'Registrierung erfolgreich!'),
+          description: t('messages.registrationSuccess'),
+          duration: 5000,
+        });
+        
+        // Show feedback modal after successful registration
+        setTimeout(() => {
+          setShowFeedbackModal(true);
+        }, 1000);
+        
         setLoading(false);
         setRegistrationStep('');
         setProgress(0);
@@ -207,6 +229,7 @@ const EmailRegisterForm: React.FC<EmailRegisterFormProps> = ({ onBack }) => {
           <Label htmlFor="email">{t('form.businessEmail')}</Label>
           <Input
             id="email"
+            ref={emailInputRef}
             type="email"
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -311,11 +334,21 @@ const EmailRegisterForm: React.FC<EmailRegisterFormProps> = ({ onBack }) => {
         onUseOtherEmail={() => {
           setShowErrorDialog(false);
           setFormData({ ...formData, email: '' });
+          // Focus and clear email field
+          setTimeout(() => {
+            emailInputRef.current?.focus();
+          }, 100);
         }}
         onContactSupport={() => {
           setShowErrorDialog(false);
           window.location.href = '/legal/contact';
         }}
+      />
+
+      {/* Feedback Modal */}
+      <FeedbackModal
+        isOpen={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
       />
     </>
   );
