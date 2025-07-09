@@ -1581,6 +1581,69 @@ export type Database = {
         }
         Relationships: []
       }
+      security_events: {
+        Row: {
+          created_at: string | null
+          details: Json | null
+          event_type: string
+          id: string
+          ip_address: unknown | null
+          severity: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          details?: Json | null
+          event_type: string
+          id?: string
+          ip_address?: unknown | null
+          severity?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          details?: Json | null
+          event_type?: string
+          id?: string
+          ip_address?: unknown | null
+          severity?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      service_audit_log: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          old_data: Json | null
+          row_data: Json | null
+          table_name: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          old_data?: Json | null
+          row_data?: Json | null
+          table_name: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          old_data?: Json | null
+          row_data?: Json | null
+          table_name?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       service_packages: {
         Row: {
           code: string
@@ -2269,6 +2332,10 @@ export type Database = {
           updated_at: string | null
           website: string | null
         }[]
+      }
+      validate_additional_kpis: {
+        Args: { kpis: Json }
+        Returns: boolean
       }
     }
     Enums: {
