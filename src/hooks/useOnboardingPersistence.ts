@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
+import { onboardingStorage } from '@/utils/localStorage';
 
-const STORAGE_KEY = 'matbakh_onboarding_data';
 const STORAGE_VERSION = '1.0';
 
 interface OnboardingData {
@@ -19,14 +19,14 @@ export const useOnboardingPersistence = () => {
 
   const saveData = useCallback((step: number, answers: Record<string, any>) => {
     try {
-      const data: OnboardingData = {
+      const data = {
         version: STORAGE_VERSION,
         currentStep: step,
         answers,
         timestamp: new Date().toISOString()
       };
       
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      onboardingStorage.save(step, data);
       
       // Show brief success indication (optional, only on major steps)
       if (step > 1) {
@@ -42,21 +42,12 @@ export const useOnboardingPersistence = () => {
 
   const loadData = useCallback((): { step: number; answers: Record<string, any> } | null => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (!stored) return null;
-
-      const data: OnboardingData = JSON.parse(stored);
+      const data = onboardingStorage.restore();
+      if (!data) return null;
       
       // Check version compatibility
       if (data.version !== STORAGE_VERSION) {
-        localStorage.removeItem(STORAGE_KEY);
-        return null;
-      }
-
-      // Check if data is not too old (24 hours)
-      const age = Date.now() - new Date(data.timestamp).getTime();
-      if (age > 24 * 60 * 60 * 1000) {
-        localStorage.removeItem(STORAGE_KEY);
+        onboardingStorage.clear();
         return null;
       }
 
@@ -66,17 +57,13 @@ export const useOnboardingPersistence = () => {
       };
     } catch (error) {
       console.error('Failed to load onboarding data:', error);
-      localStorage.removeItem(STORAGE_KEY);
+      onboardingStorage.clear();
       return null;
     }
   }, []);
 
   const clearData = useCallback(() => {
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch (error) {
-      console.error('Failed to clear onboarding data:', error);
-    }
+    onboardingStorage.clear();
   }, []);
 
   const restoreData = useCallback(() => {
