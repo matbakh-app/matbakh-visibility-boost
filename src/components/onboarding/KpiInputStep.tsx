@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { AlertCircle, TrendingUp, ArrowLeft, ArrowRight } from 'lucide-react';
 import { CurrencyInput } from './CurrencyInput';
 import { KpiSelector } from './KpiSelector';
+import { kpiSchema } from '@/utils/validation';
+import { logSecurityEvent } from '@/utils/security';
 
 interface KpiEntry {
   key: string;
@@ -49,12 +51,47 @@ export const KpiInputStep: React.FC<KpiInputStepProps> = ({
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
+    // Basic required field validation
     if (!kpiData.annual_revenue.trim()) {
       newErrors.annual_revenue = t('kpiInput.validation.annualRevenueRequired', 'Jahresumsatz ist erforderlich');
     }
     
     if (!kpiData.seating_capacity.trim()) {
       newErrors.seating_capacity = t('kpiInput.validation.seatingCapacityRequired', 'Sitzkapazität ist erforderlich');
+    }
+
+    // Security validation using Zod schema
+    try {
+      const processedData = {
+        annual_revenue: parseFloat(kpiData.annual_revenue) || null,
+        seating_capacity: parseInt(kpiData.seating_capacity) || null,
+        food_cost_ratio: parseFloat(kpiData.food_cost_ratio) || null,
+        labor_cost_ratio: parseFloat(kpiData.labor_cost_ratio) || null,
+        employee_count: parseInt(kpiData.employee_count) || null,
+        opening_hours: parseFloat(kpiData.opening_hours_per_day) || null,
+        additional_kpis: kpiData.additional_kpis.reduce((acc, kpi) => {
+          if (kpi.key && kpi.value) {
+            acc[kpi.key] = kpi.value;
+          }
+          return acc;
+        }, {} as Record<string, string>)
+      };
+
+      kpiSchema.parse(processedData);
+    } catch (validationError: any) {
+      // Log security validation failure
+      logSecurityEvent('kpi_validation_failed', {
+        errors: validationError.errors,
+        data: kpiData
+      });
+
+      // Map Zod errors to form fields
+      if (validationError.errors) {
+        validationError.errors.forEach((error: any) => {
+          const field = error.path[0];
+          newErrors[field] = error.message;
+        });
+      }
     }
 
     setErrors(newErrors);

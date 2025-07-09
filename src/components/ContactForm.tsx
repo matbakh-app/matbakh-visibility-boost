@@ -12,46 +12,50 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { toast } from '@/components/ui/sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
+import { contactFormSchema } from '@/utils/validation';
+import { rateLimiter, logSecurityEvent } from '@/utils/security';
 
 const ContactForm: React.FC = () => {
   const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const formSchema = z.object({
-    name: z.string().min(1, t('contact.form.validation.nameRequired')),
-    email: z.string()
-      .min(1, t('contact.form.validation.emailRequired'))
-      .email(t('contact.form.validation.emailInvalid')),
-    subject: z.string().min(1, t('contact.form.validation.subjectRequired')),
-    message: z.string().min(1, t('contact.form.validation.messageRequired'))
-  });
+  // Use enhanced validation schema
+  const formSchema = contactFormSchema;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
       email: '',
-      subject: '',
+      company_name: '',
+      phone: '',
       message: ''
     }
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    // Rate limiting check
+    const userIdentifier = values.email || 'anonymous';
+    if (!rateLimiter.canMakeRequest(userIdentifier, 3, 300000)) { // 3 requests per 5 minutes
+      toast.error('Too many requests. Please wait before trying again.');
+      logSecurityEvent('contact_form_rate_limited', { email: values.email });
+      return;
+    }
+
     setIsSubmitting(true);
     console.log('Submitting contact form:', values);
 
     try {
-      const { data, error } = await supabase.functions.invoke('send-contact-email', {
-        body: {
-          name: values.name,
-          email: values.email,
-          subject: values.subject,
-          message: values.message
-        }
+      const { data, error } = await supabase.functions.invoke('enhanced-contact-email', {
+        body: values
       });
 
       if (error) {
         console.error('Error sending email:', error);
+        logSecurityEvent('contact_form_submission_failed', {
+          error: error.message,
+          email: values.email
+        });
         toast.error('Fehler beim Versenden der Nachricht. Bitte versuchen Sie es später erneut.');
         return;
       }
@@ -61,6 +65,10 @@ const ContactForm: React.FC = () => {
       form.reset();
     } catch (error) {
       console.error('Unexpected error:', error);
+      logSecurityEvent('contact_form_unexpected_error', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        email: values.email
+      });
       toast.error('Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.');
     } finally {
       setIsSubmitting(false);
@@ -114,13 +122,31 @@ const ContactForm: React.FC = () => {
             
             <FormField
               control={form.control}
-              name="subject"
+              name="company_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('contact.form.subject')}</FormLabel>
+                  <FormLabel>{t('contact.form.company', 'Company (optional)')}</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder={t('contact.form.subject')} 
+                      placeholder={t('contact.form.company', 'Your company')} 
+                      disabled={isSubmitting}
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('contact.form.phone', 'Phone (optional)')}</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder={t('contact.form.phone', 'Your phone number')} 
                       disabled={isSubmitting}
                       {...field} 
                     />
