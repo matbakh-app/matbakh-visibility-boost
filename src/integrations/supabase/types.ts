@@ -2184,25 +2184,7 @@ export type Database = {
     }
     Views: {
       admin_booking_details: {
-        Row: {
-          activated_at: string | null
-          booking_date: string | null
-          computed_status: string | null
-          created_at: string | null
-          days_until_expiry: number | null
-          expires_at: string | null
-          id: string | null
-          partner_email: string | null
-          partner_name: string | null
-          partner_phone: string | null
-          partner_status: string | null
-          payment_status: string | null
-          price: number | null
-          service_name: string | null
-          service_slug: string | null
-          service_type: string | null
-          status: string | null
-        }
+        Row: {}
         Relationships: []
       }
       admin_booking_kpis: {
