@@ -1,5 +1,5 @@
 
-import React, { useEffect, Suspense } from 'react';
+import React, { useEffect, Suspense, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -7,12 +7,32 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AuthTabsContainer from '@/components/auth/AuthTabsContainer';
 import AuthLoadingState from '@/components/auth/AuthLoadingState';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle, CheckCircle } from 'lucide-react';
 
 const BusinessLogin: React.FC = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, oauthError } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { t, ready } = useTranslation('auth');
+  const [callbackStatus, setCallbackStatus] = useState<'success' | 'error' | null>(null);
+
+  // OAuth Callback Parameter Verarbeitung
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const hasError = urlParams.get('error');
+    const hasCode = urlParams.get('code');
+    const hasAccessToken = urlParams.get('access_token');
+    
+    // Debug OAuth Callback
+    if (hasError) {
+      console.error('OAuth Callback Error:', hasError, urlParams.get('error_description'));
+      setCallbackStatus('error');
+    } else if (hasCode || hasAccessToken) {
+      console.log('OAuth Callback Success - Code/Token received');
+      setCallbackStatus('success');
+    }
+  }, [location.search]);
 
   useEffect(() => {
     if (user && !loading) {
@@ -36,6 +56,32 @@ const BusinessLogin: React.FC = () => {
               <h1 className="text-2xl font-bold">Business Partner Portal</h1>
               <p className="text-sm text-gray-600">Melden Sie sich an oder registrieren Sie Ihr Unternehmen</p>
             </div>
+
+            {/* OAuth Error/Success Status */}
+            {oauthError && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{oauthError}</AlertDescription>
+              </Alert>
+            )}
+
+            {callbackStatus === 'success' && (
+              <Alert>
+                <CheckCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Google Login erfolgreich - Sie werden weitergeleitet...
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {callbackStatus === 'error' && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Google Login fehlgeschlagen. Bitte versuchen Sie es erneut.
+                </AlertDescription>
+              </Alert>
+            )}
 
             <AuthTabsContainer />
           </div>
