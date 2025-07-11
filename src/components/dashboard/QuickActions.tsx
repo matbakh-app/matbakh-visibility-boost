@@ -7,11 +7,13 @@ import { useGoogleConnection } from '@/hooks/useGoogleConnection';
 import { GoogleConnectModal } from './GoogleConnectModal';
 import { PhotoUploader } from './PhotoUploader';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const QuickActions: React.FC = () => {
   const { t } = useTranslation('dashboard');
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signInWithGoogle } = useAuth();
   const { data: connectionData } = useGoogleConnection();
   const [showGoogleModal, setShowGoogleModal] = useState(false);
   const [showUploader, setShowUploader] = useState(false);
@@ -52,12 +54,19 @@ export const QuickActions: React.FC = () => {
   };
 
   // Google OAuth initialisieren
-  const handleGoogleConnect = () => {
-    // TODO: Implement actual Google OAuth flow
-    // For now, redirect to Google auth or open OAuth popup
-    const redirectUrl = encodeURIComponent(`${window.location.origin}/dashboard`);
-    window.location.href = `/auth/google?redirect=${redirectUrl}`;
-    setShowGoogleModal(false);
+  const handleGoogleConnect = async () => {
+    try {
+      // Verwende AuthContext für konsistenten OAuth-Flow
+      await signInWithGoogle();
+      setShowGoogleModal(false);
+    } catch (error) {
+      console.error('Google Connect Error:', error);
+      toast({
+        title: "Google Verbindung fehlgeschlagen",
+        description: "Bitte versuchen Sie es erneut",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
