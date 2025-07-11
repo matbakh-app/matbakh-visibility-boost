@@ -17,6 +17,30 @@ const BusinessLogin: React.FC = () => {
   const { t, ready } = useTranslation('auth');
   const [callbackStatus, setCallbackStatus] = useState<'success' | 'error' | null>(null);
 
+    // OAuth Callback Hash (Access Token im Hash-Fragment)
+  useEffect(() => {
+    if (window.location.hash && window.location.hash.includes("access_token")) {
+      const hash = window.location.hash.substring(1); // Entfernt das '#'
+      const params = new URLSearchParams(hash);
+
+      const accessToken = params.get("access_token");
+      // Optional: RefreshToken usw.
+      if (accessToken) {
+        setCallbackStatus("success");
+
+        // Hash aus der URL entfernen für eine schöne URL
+        window.history.replaceState(null, '', window.location.pathname);
+
+        // Optional: Token im Kontext speichern
+
+        // Nach kurzer Zeit weiterleiten (du kannst auch sofort redirecten)
+        setTimeout(() => {
+          navigate("/dashboard", { replace: true });
+        }, 1200);
+      }
+    }
+  }, [navigate]);
+
   // OAuth Callback Parameter Verarbeitung
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
