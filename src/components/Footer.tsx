@@ -6,7 +6,9 @@ import { getFooterNavItems } from './navigation/NavigationConfig';
 
 const Footer: React.FC = () => {
   const { t, i18n } = useTranslation('footer');
+  // WICHTIG: currentLang muss bei jedem Render neu evaluiert werden für Live-Übersetzung
   const currentLang = (i18n.language || 'de') as 'de' | 'en';
+  // WICHTIG: footerLinks muss bei jedem Render neu geholt werden für Live-Übersetzung  
   const footerLinks = getFooterNavItems(currentLang);
 
   return (

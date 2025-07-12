@@ -96,25 +96,6 @@ const LegalLayout: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType 
               <LanguageToggle />
             </div>
           </div>
-          
-          {/* Legal Navigation Quicklinks */}
-          <nav className="flex flex-wrap gap-4 text-sm mt-4 pt-4 border-t border-border">
-            <Link to={i18n.language === "en" ? "/privacy" : "/datenschutz"} className="hover:text-primary transition-colors">
-              {t("nav:privacy")}
-            </Link>
-            <span className="text-muted-foreground">|</span>
-            <Link to={i18n.language === "en" ? "/terms" : "/agb"} className="hover:text-primary transition-colors">
-              {t("nav:terms")}
-            </Link>
-            <span className="text-muted-foreground">|</span>
-            <Link to={i18n.language === "en" ? "/imprint" : "/impressum"} className="hover:text-primary transition-colors">
-              {t("nav:imprint")}
-            </Link>
-            <span className="text-muted-foreground">|</span>
-            <Link to={i18n.language === "en" ? "/usage" : "/nutzung"} className="hover:text-primary transition-colors">
-              {t("nav:usage")}
-            </Link>
-          </nav>
         </div>
       </section>
       
