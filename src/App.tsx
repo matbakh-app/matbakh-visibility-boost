@@ -26,9 +26,10 @@ if (process.env.NODE_ENV === 'development') {
 import AngebotePage from './pages/AngebotePage';
 import AngeboteDE from './pages/AngeboteDE';
 import PackagesEN from './pages/PackagesEN';
-import Impressum from './pages/Impressum';
 import Datenschutz from './pages/legal/Datenschutz';
-import AGB from './pages/AGB';
+import Privacy from './pages/legal/Privacy';
+import Imprint from './pages/legal/Imprint';
+import Terms from './pages/legal/Terms';
 import Dashboard from './pages/Dashboard';
 import Nutzung from './pages/legal/Nutzung';
 import Usage from './pages/legal/Usage';
@@ -78,12 +79,18 @@ function AdminRouteWrapper() {
         <Route path="/business/partner" element={<BusinessLanding />} />
         <Route path="/angebote" element={<AngeboteDE />} />
         <Route path="/packages" element={<PackagesEN />} />
+        {/* Legal Routes - DE */}
         <Route path="/kontakt" element={<Kontakt />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/impressum" element={<Impressum />} />
         <Route path="/datenschutz" element={<Datenschutz />} />
-        <Route path="/agb" element={<AGB />} />
+        <Route path="/impressum" element={<Imprint />} />
+        <Route path="/agb" element={<Terms />} />
         <Route path="/nutzung" element={<Nutzung />} />
+        
+        {/* Legal Routes - EN */}
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/imprint" element={<Imprint />} />
+        <Route path="/terms" element={<Terms />} />
         <Route path="/usage" element={<Usage />} />
         <Route path="/dashboard/*" element={<Dashboard />} />
         <Route path="/checkout-success" element={<CheckoutSuccess />} />
@@ -118,11 +125,7 @@ function AdminRouteWrapper() {
           <Route path="/admin" element={<AdminPanel />} />
         )}
         
-        {/* Legacy Redirects for stability */}
-        <Route path="/contact" element={<Navigate to="/kontakt" replace />} />
-        <Route path="/imprint" element={<Navigate to="/impressum" replace />} />
-        <Route path="/privacy" element={<Navigate to="/datenschutz" replace />} />
-        <Route path="/terms" element={<Navigate to="/agb" replace />} />
+        {/* Legacy Redirects removed - now using proper dual-language routes */}
         
         <Route path="*" element={<NotFound />} />
       </Routes>

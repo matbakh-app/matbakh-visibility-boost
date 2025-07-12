@@ -1,53 +1,97 @@
+/*
+ * ⚠️  KRITISCHE LEGAL-DATEI – ÄNDERUNGEN NUR DURCH CTO! ⚠️
+ * 
+ * Diese Datei ist nach dem 14.07.2025 FINAL und darf NICHT mehr durch:
+ * - Lovable AI
+ * - Automatisierte Tools 
+ * - Entwickler ohne CTO-Genehmigung
+ * verändert werden.
+ * 
+ * Auch Übersetzungsdateien (public/locales/legal.json) sind geschützt!
+ * 
+ * Bei Unsicherheit: CTO kontaktieren BEVOR Änderungen gemacht werden!
+ */
 
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import LogoSection from '@/components/LogoSection';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import LegalLayout from '@/layouts/LegalLayout';
 
 const Terms: React.FC = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="py-8">
-      <LogoSection />
-      <div className="max-w-4xl mx-auto px-4">
-        <h1 className="text-3xl font-bold mb-8">{t('legal.terms.title')}</h1>
+    <LegalLayout titleKey="legal.terms.title" pageType="terms">
+      <div className="prose max-w-none space-y-6">
+        <section>
+          <h2 className="text-xl font-semibold mb-4">{t('legal.terms.scopeTitle')}</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            {t('legal.terms.scopeText')}
+          </p>
+        </section>
         
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('legal.terms.title')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">{t('legal.terms.scope')}</h3>
-                <p>{t('legal.terms.scopeText')}</p>
-              </div>
-              
-              <div>
-                <h3 className="text-lg font-semibold mb-2">{t('legal.terms.services')}</h3>
-                <p>{t('legal.terms.servicesText')}</p>
-              </div>
-              
-              <div>
-                <h3 className="text-lg font-semibold mb-2">{t('legal.terms.payment')}</h3>
-                <p>{t('legal.terms.paymentText')}</p>
-              </div>
-              
-              <div>
-                <h3 className="text-lg font-semibold mb-2">{t('legal.terms.liability')}</h3>
-                <p>{t('legal.terms.liabilityText')}</p>
-              </div>
-              
-              <div>
-                <h3 className="text-lg font-semibold mb-2">{t('legal.terms.law')}</h3>
-                <p>{t('legal.terms.lawText')}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <section>
+          <h2 className="text-xl font-semibold mb-4">{t('legal.terms.servicesTitle')}</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            {t('legal.terms.servicesText')}
+          </p>
+        </section>
+        
+        <section>
+          <h2 className="text-xl font-semibold mb-4">{t('legal.terms.contractTitle')}</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            {t('legal.terms.contractText')}
+          </p>
+        </section>
+        
+        <section>
+          <h2 className="text-xl font-semibold mb-4">{t('legal.terms.pricesTitle')}</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            {t('legal.terms.pricesText')}
+          </p>
+        </section>
+        
+        <section>
+          <h2 className="text-xl font-semibold mb-4">{t('legal.terms.performanceTitle')}</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            {t('legal.terms.performanceText')}
+          </p>
+        </section>
+        
+        <section>
+          <h2 className="text-xl font-semibold mb-4">{t('legal.terms.cancellationTitle')}</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            {t('legal.terms.cancellationText')}
+          </p>
+        </section>
+        
+        <section>
+          <h2 className="text-xl font-semibold mb-4">{t('legal.terms.liabilityTitle')}</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            {t('legal.terms.liabilityText')}
+          </p>
+        </section>
+        
+        <section>
+          <h2 className="text-xl font-semibold mb-4">{t('legal.terms.dataTitle')}</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            {t('legal.terms.dataText')}
+          </p>
+        </section>
+        
+        <section>
+          <h2 className="text-xl font-semibold mb-4">{t('legal.terms.finalTitle')}</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            {t('legal.terms.finalText')}
+          </p>
+        </section>
+
+        <div className="mt-8 pt-4 border-t border-border">
+          <p className="text-sm text-muted-foreground">
+            {t('legal.terms.lastUpdated')}
+          </p>
+        </div>
       </div>
-    </div>
+    </LegalLayout>
   );
 };
 
