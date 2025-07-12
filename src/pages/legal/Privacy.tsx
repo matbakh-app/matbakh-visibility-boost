@@ -55,9 +55,24 @@ const Privacy: React.FC = () => {
             {t(`${sectionKey}.googleInfo`)}
           </p>
           <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-            {(t(`${sectionKey}.dataList`, { returnObjects: true }) as string[]).map((item, index) => (
-              <li key={index}>{item}</li>
-            ))}
+            {(() => {
+              const dataList = t(`${sectionKey}.dataList`, { returnObjects: true });
+              console.log('Current language:', i18n.language);
+              console.log('Section key:', sectionKey);
+              console.log('Translation key:', `${sectionKey}.dataList`);
+              console.log('dataList result:', dataList);
+              console.log('dataList type:', typeof dataList);
+              console.log('Is array?', Array.isArray(dataList));
+              
+              if (Array.isArray(dataList)) {
+                return dataList.map((item, index) => (
+                  <li key={index}>{item}</li>
+                ));
+              } else {
+                // Fallback if not an array
+                return <li className="text-red-500">Error: Translation data is not an array (received: {typeof dataList})</li>;
+              }
+            })()}
           </ul>
           <p className="text-muted-foreground leading-relaxed mt-4">
             {t(`${sectionKey}.dataUsage`)}
