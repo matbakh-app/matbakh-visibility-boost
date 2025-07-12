@@ -1,22 +1,26 @@
-# Welcome to your Lovable project
+# matbakh.app - Restaurant Business Management Platform
+
+## 🔒 CTO-Governance & Audit-Ready Architecture
+
+⚠️ **Neue Entwickler & Auditoren müssen ZUERST `docs/CRITICAL_FILES.md` lesen!** ⚠️
+
+Diese Plattform für Restaurant-Management ist enterprise-ready mit vollständiger CTO-Governance für Legal-Compliance und Audit-Sicherheit.
+
+### 🎯 Legal-Governance System
+- **Alle Rechtstexte** zentral in `public/locales/{lang}/legal.json`  
+- **Automatisierte Konsistenz-Checks** mit `npm run check-legal`
+- **CTO-geschützte Bereiche** mit strikter Review-Pflicht
+- **Audit-Dokumentation** in `docs/CRITICAL_FILES.md`
+
+### 🛡️ Entwickler-Onboarding 
+1. **PFLICHT**: `docs/CRITICAL_FILES.md` vollständig lesen
+2. **PFLICHT**: Legal-Governance-Workflow verstehen  
+3. **PFLICHT**: PR-Templates für Legal-Änderungen beachten
+4. **TEST**: `npm run check-legal` erfolgreich ausführen
 
 ## Project info
 
 **URL**: https://lovable.dev/projects/17fede0a-b45d-4eeb-be93-e21ad2737f99
-
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/17fede0a-b45d-4eeb-be93-e21ad2737f99) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
 
 The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
