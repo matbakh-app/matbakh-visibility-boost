@@ -54,7 +54,7 @@ const Privacy: React.FC = () => {
             {t('legal.privacy.googleInfo')}
           </p>
           <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-            {(t('legal.privacy.dataList', { returnObjects: true }) as string[]).map((item, index) => (
+            {(t('privacy.dataList', { returnObjects: true }) as string[]).map((item, index) => (
               <li key={index}>{item}</li>
             ))}
           </ul>
