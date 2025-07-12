@@ -1,4 +1,7 @@
 /*
+ * ⚠️  Diese Datei ist FINAL und darf NUR durch den CTO geändert werden. 
+ * Jede Änderung ohne CTO-Genehmigung führt zum Rollback!
+ *
  * ⚠️  KRITISCHE LEGAL-DATEI – ÄNDERUNGEN NUR DURCH CTO! ⚠️
  * 
  * Diese Datei ist nach dem 14.07.2025 FINAL und darf NICHT mehr durch:
@@ -8,8 +11,6 @@
  * verändert werden.
  * 
  * Auch Übersetzungsdateien (public/locales/legal.json) sind geschützt!
- * 
- * Bei Unsicherheit: CTO kontaktieren BEVOR Änderungen gemacht werden!
  */
 
 import React from 'react';
@@ -17,7 +18,8 @@ import { useTranslation } from 'react-i18next';
 import LegalLayout from '@/layouts/LegalLayout';
 
 const Nutzung: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('legal');
+  
 
   return (
     <LegalLayout titleKey="legal.usage.title" pageType="usage">
