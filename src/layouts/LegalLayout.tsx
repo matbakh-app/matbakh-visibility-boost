@@ -27,7 +27,7 @@ import { Globe } from "lucide-react";
 type LegalLayoutProps = {
   titleKey: string; // z.B. "legal.datenschutz.title"
   children: React.ReactNode;
-  pageType: 'privacy' | 'imprint' | 'terms' | 'usage';
+  pageType: 'privacy' | 'imprint' | 'terms' | 'usage' | 'contact';
 };
 
 const LegalLayout: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType }) => {
@@ -43,14 +43,16 @@ const LegalLayout: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType 
         'imprint': 'impressum',
         'privacy': 'datenschutz', 
         'terms': 'agb',
-        'usage': 'nutzung'
+        'usage': 'nutzung',
+        'contact': 'kontakt'
       };
       return keyMap[pageType] || pageType;
     }
     return pageType;
   };
   
-  const description = t(`${getTranslationKey('intro')}.intro`, "Rechtliche Hinweise und Datenschutzinformationen zu matbakh.app.");
+  const sectionKey = getTranslationKey('section');
+  const description = t(`${sectionKey}.intro`, "Rechtliche Hinweise und Datenschutzinformationen zu matbakh.app.");
 
   // Canonical URL basierend auf Sprache und Seitentyp
   const getCanonicalUrl = () => {
@@ -59,7 +61,8 @@ const LegalLayout: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType 
       privacy: i18n.language === "en" ? "/privacy" : "/datenschutz",
       imprint: i18n.language === "en" ? "/imprint" : "/impressum", 
       terms: i18n.language === "en" ? "/terms" : "/agb",
-      usage: i18n.language === "en" ? "/usage" : "/nutzung"
+      usage: i18n.language === "en" ? "/usage" : "/nutzung",
+      contact: i18n.language === "en" ? "/contact" : "/kontakt"
     };
     return `${baseUrl}${routeMap[pageType]}`;
   };
@@ -99,7 +102,7 @@ const LegalLayout: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType 
               <h1 className="text-3xl font-bold text-foreground mb-2">{title}</h1>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Globe className="h-4 w-4" />
-                <span>{t(`${getTranslationKey('lastUpdated')}.lastUpdated`, "Stand: 2025")}</span>
+                <span>{t(`${sectionKey}.lastUpdated`, "Stand: 2025")}</span>
               </div>
             </div>
             
