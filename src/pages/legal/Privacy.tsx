@@ -22,36 +22,36 @@ const Privacy: React.FC = () => {
   
 
   return (
-    <LegalLayout titleKey="legal.privacy.title" pageType="privacy">
+    <LegalLayout titleKey="privacy.title" pageType="privacy">
       <div className="prose max-w-none space-y-6">
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.privacy.controllerTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('privacy.controllerTitle')}</h2>
           <div className="whitespace-pre-line text-muted-foreground">
-            {t('legal.privacy.controller')}
+            {t('privacy.controller')}
           </div>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.privacy.collectionTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('privacy.collectionTitle')}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t('legal.privacy.intro')}
+            {t('privacy.intro')}
           </p>
           <p className="text-muted-foreground leading-relaxed mt-4">
-            {t('legal.privacy.collectionText')}
+            {t('privacy.collectionText')}
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.privacy.serverLogsTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('privacy.serverLogsTitle')}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t('legal.privacy.serverLogsText')}
+            {t('privacy.serverLogsText')}
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.privacy.googleTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('privacy.googleTitle')}</h2>
           <p className="text-muted-foreground leading-relaxed mb-4">
-            {t('legal.privacy.googleInfo')}
+            {t('privacy.googleInfo')}
           </p>
           <ul className="list-disc list-inside space-y-2 text-muted-foreground">
             {(t('privacy.dataList', { returnObjects: true }) as string[]).map((item, index) => (
@@ -59,34 +59,34 @@ const Privacy: React.FC = () => {
             ))}
           </ul>
           <p className="text-muted-foreground leading-relaxed mt-4">
-            {t('legal.privacy.dataUsage')}
+            {t('privacy.dataUsage')}
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.privacy.cookiesTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('privacy.cookiesTitle')}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t('legal.privacy.cookiesText')}
+            {t('privacy.cookiesText')}
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.privacy.rightsTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('privacy.rightsTitle')}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t('legal.privacy.rightsText')}
+            {t('privacy.rightsText')}
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.privacy.contactTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('privacy.contactTitle')}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t('legal.privacy.contactText')}
+            {t('privacy.contactText')}
           </p>
         </section>
 
         <div className="mt-8 pt-4 border-t border-border">
           <p className="text-sm text-muted-foreground">
-            {t('legal.privacy.disclaimerText')}
+            {t('privacy.disclaimerText')}
           </p>
         </div>
       </div>
