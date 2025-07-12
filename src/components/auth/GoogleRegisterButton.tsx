@@ -1,11 +1,12 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import GoogleCtaNotice from './GoogleCtaNotice';
 
 const GoogleRegisterButton: React.FC = () => {
-  const { t } = useTranslation('auth');
+  const { t, i18n } = useTranslation('auth');
   const { signInWithGoogle } = useAuth();
 
   const handleGoogleRegister = async () => {
@@ -34,8 +35,12 @@ const GoogleRegisterButton: React.FC = () => {
       
       <p className="text-xs text-gray-500 text-center">
         {t('acceptTerms')} {' '}
-        <a href="/agb" className="underline">{t('termsOfService')}</a> {t('and')} {' '}
-        <a href="/datenschutz" className="underline">{t('privacyPolicy')}</a> {t('to')}
+        <Link to={i18n.language === "en" ? "/terms" : "/agb"} className="underline hover:text-primary transition-colors">
+          {t('termsOfService')}
+        </Link> {t('and')} {' '}
+        <Link to={i18n.language === "en" ? "/privacy" : "/datenschutz"} className="underline hover:text-primary transition-colors">
+          {t('privacyPolicy')}
+        </Link> {t('to')}
       </p>
     </div>
   );
