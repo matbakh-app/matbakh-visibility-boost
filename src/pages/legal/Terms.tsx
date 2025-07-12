@@ -19,77 +19,78 @@ import LegalLayout from '@/layouts/LegalLayout';
 
 const Terms: React.FC = () => {
   const { t } = useTranslation('legal');
+  const sectionKey = 'terms'; // Always use English key for English page
   
 
   return (
-    <LegalLayout titleKey="legal.terms.title" pageType="terms">
+    <LegalLayout titleKey={`${sectionKey}.title`} pageType="terms">
       <div className="prose max-w-none space-y-6">
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.terms.scopeTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.scopeTitle`)}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t('legal.terms.scopeText')}
+            {t(`${sectionKey}.scopeText`)}
           </p>
         </section>
         
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.terms.servicesTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.servicesTitle`)}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t('legal.terms.servicesText')}
+            {t(`${sectionKey}.servicesText`)}
           </p>
         </section>
         
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.terms.contractTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.contractTitle`)}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t('legal.terms.contractText')}
+            {t(`${sectionKey}.contractText`)}
           </p>
         </section>
         
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.terms.pricesTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.pricesTitle`)}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t('legal.terms.pricesText')}
+            {t(`${sectionKey}.pricesText`)}
           </p>
         </section>
         
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.terms.performanceTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.performanceTitle`)}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t('legal.terms.performanceText')}
+            {t(`${sectionKey}.performanceText`)}
           </p>
         </section>
         
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.terms.cancellationTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.cancellationTitle`)}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t('legal.terms.cancellationText')}
+            {t(`${sectionKey}.cancellationText`)}
           </p>
         </section>
         
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.terms.liabilityTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.liabilityTitle`)}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t('legal.terms.liabilityText')}
+            {t(`${sectionKey}.liabilityText`)}
           </p>
         </section>
         
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.terms.dataTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.dataTitle`)}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t('legal.terms.dataText')}
+            {t(`${sectionKey}.dataText`)}
           </p>
         </section>
         
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.terms.finalTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.finalTitle`)}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t('legal.terms.finalText')}
+            {t(`${sectionKey}.finalText`)}
           </p>
         </section>
 
         <div className="mt-8 pt-4 border-t border-border">
           <p className="text-sm text-muted-foreground">
-            {t('legal.terms.lastUpdated')}
+            {t(`${sectionKey}.lastUpdated`)}
           </p>
         </div>
       </div>

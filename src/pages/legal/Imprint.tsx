@@ -19,48 +19,48 @@ import LegalLayout from '@/layouts/LegalLayout';
 
 const Imprint: React.FC = () => {
   const { t } = useTranslation('legal');
+  const sectionKey = 'imprint'; // Always use English key for English page
   
 
   return (
-    <LegalLayout titleKey="legal.imprint.title" pageType="imprint">
+    <LegalLayout titleKey={`${sectionKey}.title`} pageType="imprint">
       <div className="prose max-w-none space-y-6">
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.imprint.companyInfo')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.companyInfo`)}</h2>
           <div className="space-y-2 text-muted-foreground">
-            <p><strong>{t('nav.contact')}</strong></p>
-            <p>{t('legal.imprint.company')}</p>
-            <p>{t('legal.imprint.location')}</p>
+            <p>{t(`${sectionKey}.company`)}</p>
+            <p>{t(`${sectionKey}.location`)}</p>
           </div>
         </section>
         
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.imprint.contactTitle')}</h2>
-          <p className="text-muted-foreground">{t('legal.imprint.email')}</p>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.contactTitle`)}</h2>
+          <p className="text-muted-foreground">{t(`${sectionKey}.email`)}</p>
         </section>
         
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.imprint.responsibleTitle')}</h2>
-          <p className="text-muted-foreground">{t('legal.imprint.responsible')}</p>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.responsibleTitle`)}</h2>
+          <p className="text-muted-foreground">{t(`${sectionKey}.responsible`)}</p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.imprint.disclaimerTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.disclaimerTitle`)}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t('legal.imprint.disclaimer')}
+            {t(`${sectionKey}.disclaimer`)}
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.imprint.linksTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.linksTitle`)}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t('legal.imprint.linksText')}
+            {t(`${sectionKey}.linksText`)}
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.imprint.copyrightTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.copyrightTitle`)}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t('legal.imprint.copyrightText')}
+            {t(`${sectionKey}.copyrightText`)}
           </p>
         </section>
       </div>

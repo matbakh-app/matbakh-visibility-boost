@@ -28,7 +28,9 @@ import AngeboteDE from './pages/AngeboteDE';
 import PackagesEN from './pages/PackagesEN';
 import Datenschutz from './pages/legal/Datenschutz';
 import Privacy from './pages/legal/Privacy';
+import Impressum from './pages/legal/Impressum';
 import Imprint from './pages/legal/Imprint';
+import AGB from './pages/legal/AGB';
 import Terms from './pages/legal/Terms';
 import Dashboard from './pages/Dashboard';
 import Nutzung from './pages/legal/Nutzung';
@@ -82,8 +84,8 @@ function AdminRouteWrapper() {
         {/* Legal Routes - DE */}
         <Route path="/kontakt" element={<Kontakt />} />
         <Route path="/datenschutz" element={<Datenschutz />} />
-        <Route path="/impressum" element={<Imprint />} />
-        <Route path="/agb" element={<Terms />} />
+        <Route path="/impressum" element={<Impressum />} />
+        <Route path="/agb" element={<AGB />} />
         <Route path="/nutzung" element={<Nutzung />} />
         
         {/* Legal Routes - EN */}
