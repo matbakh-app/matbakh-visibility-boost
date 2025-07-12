@@ -18,75 +18,83 @@ import { useTranslation } from 'react-i18next';
 import LegalLayout from '@/layouts/LegalLayout';
 
 const Datenschutz: React.FC = () => {
-  const { t } = useTranslation('legal');
+  const { t, i18n } = useTranslation('legal');
+  const sectionKey = 'datenschutz'; // Always use German key for German page
   
 
   return (
-    <LegalLayout titleKey="legal.datenschutz.title" pageType="privacy">
+    <LegalLayout titleKey={`${sectionKey}.title`} pageType="privacy">
       <div className="prose max-w-none space-y-6">
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.datenschutz.controllerTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.controllerTitle`)}</h2>
           <div className="whitespace-pre-line text-muted-foreground">
-            {t('legal.datenschutz.controller')}
+            {t(`${sectionKey}.controller`)}
           </div>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.datenschutz.collectionTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.collectionTitle`)}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t('legal.datenschutz.intro')}
+            {t(`${sectionKey}.intro`)}
           </p>
           <p className="text-muted-foreground leading-relaxed mt-4">
-            {t('legal.datenschutz.collectionText')}
+            {t(`${sectionKey}.collectionText`)}
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.datenschutz.serverLogsTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.serverLogsTitle`)}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t('legal.datenschutz.serverLogsText')}
+            {t(`${sectionKey}.serverLogsText`)}
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.datenschutz.googleTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.googleTitle`)}</h2>
           <p className="text-muted-foreground leading-relaxed mb-4">
-            {t('legal.datenschutz.googleInfo')}
+            {t(`${sectionKey}.googleInfo`)}
           </p>
           <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-            {(t('legal.datenschutz.dataList', { returnObjects: true }) as string[]).map((item, index) => (
-              <li key={index}>{item}</li>
-            ))}
+            {(() => {
+              const dataList = t(`${sectionKey}.dataList`, { returnObjects: true });
+              if (Array.isArray(dataList)) {
+                return dataList.map((item, index) => (
+                  <li key={index}>{item}</li>
+                ));
+              } else {
+                return <li className="text-red-500">Error: Translation data is not an array</li>;
+              }
+            })()}
           </ul>
           <p className="text-muted-foreground leading-relaxed mt-4">
-            {t('legal.datenschutz.dataUsage')}
+            {t(`${sectionKey}.dataUsage`)}
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.datenschutz.cookiesTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.cookiesTitle`)}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t('legal.datenschutz.cookiesText')}
+            {t(`${sectionKey}.cookiesText`)}
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.datenschutz.rightsTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.rightsTitle`)}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t('legal.datenschutz.rightsText')}
+            {t(`${sectionKey}.rightsText`)}
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('legal.datenschutz.contactTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.contactTitle`)}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t('legal.datenschutz.contactText')}
+            {t(`${sectionKey}.contactText`)}
           </p>
         </section>
 
         <div className="mt-8 pt-4 border-t border-border">
           <p className="text-sm text-muted-foreground">
-            {t('legal.datenschutz.disclaimerText')}
+            {t(`${sectionKey}.disclaimerText`)}
           </p>
         </div>
       </div>

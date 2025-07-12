@@ -1,42 +1,60 @@
 
+/*
+ * ⚠️  Diese Datei ist FINAL und darf NUR durch den CTO geändert werden. 
+ * Jede Änderung ohne CTO-Genehmigung führt zum Rollback!
+ */
+
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import LogoSection from '@/components/LogoSection';
+import LegalLayout from '@/layouts/LegalLayout';
 
 const Impressum: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('legal');
+  const sectionKey = 'impressum'; // Always use German key for German page
 
   return (
-    <div className="py-8">
-      <LogoSection />
-      <div className="max-w-4xl mx-auto px-4">
-        <h1 className="text-3xl font-bold mb-8">{t('legal.impressum.title')}</h1>
+    <LegalLayout titleKey={`${sectionKey}.title`} pageType="imprint">
+      <div className="prose max-w-none space-y-6">
+        <section>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.companyInfo`)}</h2>
+          <div className="space-y-2 text-muted-foreground">
+            <p>{t(`${sectionKey}.company`)}</p>
+            <p>{t(`${sectionKey}.location`)}</p>
+          </div>
+        </section>
         
-        <div className="prose max-w-none space-y-6">
-          <section>
-            <h2 className="text-xl font-semibold mb-4">{t('legal.impressum.companyInfo')}</h2>
-            <p className="text-gray-700 leading-relaxed">
-              {t('legal.impressum.company')}<br />
-              {t('legal.impressum.location')}
-            </p>
-          </section>
-          
-          <section>
-            <h2 className="text-xl font-semibold mb-4">{t('legal.impressum.contactTitle')}</h2>
-            <p className="text-gray-700 leading-relaxed">
-              {t('legal.impressum.email')}
-            </p>
-          </section>
-          
-          <section>
-            <h2 className="text-xl font-semibold mb-4">{t('legal.impressum.disclaimerTitle')}</h2>
-            <p className="text-gray-700 leading-relaxed">
-              {t('legal.impressum.disclaimer')}
-            </p>
-          </section>
-        </div>
+        <section>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.contactTitle`)}</h2>
+          <p className="text-muted-foreground">{t(`${sectionKey}.email`)}</p>
+        </section>
+        
+        <section>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.responsibleTitle`)}</h2>
+          <p className="text-muted-foreground">{t(`${sectionKey}.responsible`)}</p>
+        </section>
+
+        <section>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.disclaimerTitle`)}</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            {t(`${sectionKey}.disclaimer`)}
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.linksTitle`)}</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            {t(`${sectionKey}.linksText`)}
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.copyrightTitle`)}</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            {t(`${sectionKey}.copyrightText`)}
+          </p>
+        </section>
       </div>
-    </div>
+    </LegalLayout>
   );
 };
 
