@@ -1,44 +1,68 @@
+/*
+ * ⚠️  KRITISCHE LEGAL-DATEI – ÄNDERUNGEN NUR DURCH CTO! ⚠️
+ * 
+ * Diese Datei ist nach dem 14.07.2025 FINAL und darf NICHT mehr durch:
+ * - Lovable AI
+ * - Automatisierte Tools 
+ * - Entwickler ohne CTO-Genehmigung
+ * verändert werden.
+ * 
+ * Auch Übersetzungsdateien (public/locales/legal.json) sind geschützt!
+ * 
+ * Bei Unsicherheit: CTO kontaktieren BEVOR Änderungen gemacht werden!
+ */
 
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import LogoSection from '@/components/LogoSection';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import LegalLayout from '@/layouts/LegalLayout';
 
 const Imprint: React.FC = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="py-8">
-      <LogoSection />
-      <div className="max-w-4xl mx-auto px-4">
-        <h1 className="text-3xl font-bold mb-8">{t('legal.imprint.title')}</h1>
+    <LegalLayout titleKey="legal.imprint.title" pageType="imprint">
+      <div className="prose max-w-none space-y-6">
+        <section>
+          <h2 className="text-xl font-semibold mb-4">{t('legal.imprint.companyInfo')}</h2>
+          <div className="space-y-2 text-muted-foreground">
+            <p><strong>{t('nav.contact')}</strong></p>
+            <p>{t('legal.imprint.company')}</p>
+            <p>{t('legal.imprint.location')}</p>
+          </div>
+        </section>
         
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('legal.imprint.companyInfo')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <h3 className="font-semibold">{t('nav.contact')}</h3>
-                <p>{t('legal.imprint.company')}</p>
-                <p>{t('legal.imprint.location')}</p>
-              </div>
-              
-              <div>
-                <h3 className="font-semibold">{t('legal.imprint.contactTitle')}</h3>
-                <p>{t('legal.imprint.email')}</p>
-              </div>
-              
-              <div>
-                <h3 className="font-semibold">{t('legal.imprint.responsibleTitle')}</h3>
-                <p>{t('legal.imprint.responsible')}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <section>
+          <h2 className="text-xl font-semibold mb-4">{t('legal.imprint.contactTitle')}</h2>
+          <p className="text-muted-foreground">{t('legal.imprint.email')}</p>
+        </section>
+        
+        <section>
+          <h2 className="text-xl font-semibold mb-4">{t('legal.imprint.responsibleTitle')}</h2>
+          <p className="text-muted-foreground">{t('legal.imprint.responsible')}</p>
+        </section>
+
+        <section>
+          <h2 className="text-xl font-semibold mb-4">{t('legal.imprint.disclaimerTitle')}</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            {t('legal.imprint.disclaimer')}
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-xl font-semibold mb-4">{t('legal.imprint.linksTitle')}</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            {t('legal.imprint.linksText')}
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-xl font-semibold mb-4">{t('legal.imprint.copyrightTitle')}</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            {t('legal.imprint.copyrightText')}
+          </p>
+        </section>
       </div>
-    </div>
+    </LegalLayout>
   );
 };
 
