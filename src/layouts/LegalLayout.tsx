@@ -30,11 +30,11 @@ type LegalLayoutProps = {
 };
 
 const LegalLayout: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType }) => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation(['legal', 'nav']);
 
-  // Meta für SEO
-  const title = t(titleKey, "Legal");
-  const description = t("legal.datenschutz.intro", "Rechtliche Hinweise und Datenschutzinformationen zu matbakh.app.");
+  // Meta für SEO - dynamisch basierend auf pageType
+  const title = t(`legal:${titleKey}`, "Legal");
+  const description = t(`legal:${pageType}.intro`, "Rechtliche Hinweise und Datenschutzinformationen zu matbakh.app.");
 
   // Canonical URL basierend auf Sprache und Seitentyp
   const getCanonicalUrl = () => {
@@ -83,18 +83,37 @@ const LegalLayout: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType 
               <h1 className="text-3xl font-bold text-foreground mb-2">{title}</h1>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Globe className="h-4 w-4" />
-                <span>{t("legal.datenschutz.lastUpdated", "Stand: Januar 2025")}</span>
+                <span>{t(`legal:${pageType}.lastUpdated`, "Stand: 2025")}</span>
               </div>
             </div>
             
             {/* Language Switcher explizit im Banner */}
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground hidden sm:inline">
-                {t("nav.language", "Sprache")}:
+                {t("nav:language", "Sprache")}:
               </span>
               <LanguageToggle />
             </div>
           </div>
+          
+          {/* Legal Navigation Quicklinks */}
+          <nav className="flex flex-wrap gap-4 text-sm mt-4 pt-4 border-t border-border">
+            <Link to={i18n.language === "en" ? "/privacy" : "/datenschutz"} className="hover:text-primary transition-colors">
+              {t("nav:privacy")}
+            </Link>
+            <span className="text-muted-foreground">|</span>
+            <Link to={i18n.language === "en" ? "/terms" : "/agb"} className="hover:text-primary transition-colors">
+              {t("nav:terms")}
+            </Link>
+            <span className="text-muted-foreground">|</span>
+            <Link to={i18n.language === "en" ? "/imprint" : "/impressum"} className="hover:text-primary transition-colors">
+              {t("nav:imprint")}
+            </Link>
+            <span className="text-muted-foreground">|</span>
+            <Link to={i18n.language === "en" ? "/usage" : "/nutzung"} className="hover:text-primary transition-colors">
+              {t("nav:usage")}
+            </Link>
+          </nav>
         </div>
       </section>
       
