@@ -24,7 +24,11 @@ const Footer: React.FC = () => {
               <Link
                 key={link.key}
                 to={link.currentHref}
-                className="text-sm text-gray-600 hover:text-black transition-colors"
+                className={`text-sm transition-colors ${
+                  link.key === 'datenschutz' || link.key === 'privacy' 
+                    ? 'text-black font-bold hover:text-gray-700' 
+                    : 'text-gray-600 hover:text-black'
+                }`}
               >
                 {t(link.currentLabel)}
               </Link>
