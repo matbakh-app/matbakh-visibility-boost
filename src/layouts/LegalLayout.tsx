@@ -35,7 +35,22 @@ const LegalLayout: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType 
 
   // Meta für SEO - dynamisch basierend auf pageType
   const title = t(titleKey, "Legal");
-  const description = t(`${pageType}.intro`, "Rechtliche Hinweise und Datenschutzinformationen zu matbakh.app.");
+  
+  // Map pageType to correct translation keys based on language
+  const getTranslationKey = (key: string) => {
+    if (i18n.language === 'de') {
+      const keyMap: Record<string, string> = {
+        'imprint': 'impressum',
+        'privacy': 'datenschutz', 
+        'terms': 'agb',
+        'usage': 'nutzung'
+      };
+      return keyMap[pageType] || pageType;
+    }
+    return pageType;
+  };
+  
+  const description = t(`${getTranslationKey('intro')}.intro`, "Rechtliche Hinweise und Datenschutzinformationen zu matbakh.app.");
 
   // Canonical URL basierend auf Sprache und Seitentyp
   const getCanonicalUrl = () => {
@@ -84,7 +99,7 @@ const LegalLayout: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType 
               <h1 className="text-3xl font-bold text-foreground mb-2">{title}</h1>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Globe className="h-4 w-4" />
-                <span>{t(`${pageType}.lastUpdated`, "Stand: 2025")}</span>
+                <span>{t(`${getTranslationKey('lastUpdated')}.lastUpdated`, "Stand: 2025")}</span>
               </div>
             </div>
             
