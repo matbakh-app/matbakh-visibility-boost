@@ -1,4 +1,7 @@
 /*
+ * ⚠️  Diese Datei ist FINAL und darf NUR durch den CTO geändert werden. 
+ * Jede Änderung ohne CTO-Genehmigung führt zum Rollback!
+ *
  * ⚠️  KRITISCHE LEGAL-LAYOUT-DATEI – ÄNDERUNGEN NUR DURCH CTO! ⚠️
  * 
  * Diese Datei ist nach dem 14.07.2025 FINAL und darf NICHT mehr durch:
@@ -8,8 +11,6 @@
  * verändert werden.
  * 
  * Auch Übersetzungsdateien (public/locales/legal.json) sind geschützt!
- * 
- * Bei Unsicherheit: CTO kontaktieren BEVOR Änderungen gemacht werden!
  * 
  * Alle Legal-Seiten MÜSSEN dieses Layout verwenden!
  */
