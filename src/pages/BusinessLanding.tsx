@@ -11,6 +11,7 @@ import LogoSection from '@/components/LogoSection';
 import ProblemSection from '@/components/ProblemSection';
 import SolutionSection from '@/components/SolutionSection';
 import { SeoMeta } from '@/components/SeoMeta';
+import { Link } from 'react-router-dom';
 
 const BusinessLanding: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -74,6 +75,25 @@ const BusinessLanding: React.FC = () => {
         description={t('landing.heroSubtitle', 'Google Sichtbarkeit für Gastronomie')}
         namespace="translation"
       />
+      
+      {/* Enhanced SEO & Structured Data */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "http://schema.org",
+          "@type": "Organization",
+          "url": "https://matbakh.app",
+          "name": "matbakh.app",
+          "contactPoint": [{
+            "@type": "ContactPoint",
+            "email": "mail(at)matbakh(dot)app",
+            "contactType": "customer support"
+          }],
+          "sameAs": [
+            "https://matbakh.app/datenschutz",
+            "https://matbakh.app/privacy"
+          ]
+        })}
+      </script>
       <div className="min-h-screen bg-white">
       <Header />
       <LogoSection />
@@ -81,6 +101,15 @@ const BusinessLanding: React.FC = () => {
       {/* Hero Section */}
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
+          {/* Privacy Policy Link - Prominent for Google */}
+          <div className="mb-6">
+            <Link
+              to={i18n.language === 'de' ? '/datenschutz' : '/privacy'}
+              className="inline-block text-sm font-bold text-primary hover:underline"
+            >
+              {i18n.language === 'de' ? 'Datenschutz' : 'Privacy Policy'}
+            </Link>
+          </div>
           <h1 className="text-5xl font-bold mb-6 text-sky-500">{t('landing.heroTitle')}</h1>
           <p className="text-xl mb-8 max-w-3xl mx-auto leading-relaxed text-center text-sky-800">{t('landing.heroSubtitle')}</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
