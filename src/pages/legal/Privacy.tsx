@@ -18,75 +18,76 @@ import { useTranslation } from 'react-i18next';
 import LegalLayout from '@/layouts/LegalLayout';
 
 const Privacy: React.FC = () => {
-  const { t } = useTranslation('legal');
+  const { t, i18n } = useTranslation('legal');
+  const sectionKey = i18n.language === 'de' ? 'datenschutz' : 'privacy';
   
 
   return (
-    <LegalLayout titleKey="privacy.title" pageType="privacy">
+    <LegalLayout titleKey={`${sectionKey}.title`} pageType="privacy">
       <div className="prose max-w-none space-y-6">
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('privacy.controllerTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.controllerTitle`)}</h2>
           <div className="whitespace-pre-line text-muted-foreground">
-            {t('privacy.controller')}
+            {t(`${sectionKey}.controller`)}
           </div>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('privacy.collectionTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.collectionTitle`)}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t('privacy.intro')}
+            {t(`${sectionKey}.intro`)}
           </p>
           <p className="text-muted-foreground leading-relaxed mt-4">
-            {t('privacy.collectionText')}
+            {t(`${sectionKey}.collectionText`)}
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('privacy.serverLogsTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.serverLogsTitle`)}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t('privacy.serverLogsText')}
+            {t(`${sectionKey}.serverLogsText`)}
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('privacy.googleTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.googleTitle`)}</h2>
           <p className="text-muted-foreground leading-relaxed mb-4">
-            {t('privacy.googleInfo')}
+            {t(`${sectionKey}.googleInfo`)}
           </p>
           <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-            {(t('privacy.dataList', { returnObjects: true }) as string[]).map((item, index) => (
+            {(t(`${sectionKey}.dataList`, { returnObjects: true }) as string[]).map((item, index) => (
               <li key={index}>{item}</li>
             ))}
           </ul>
           <p className="text-muted-foreground leading-relaxed mt-4">
-            {t('privacy.dataUsage')}
+            {t(`${sectionKey}.dataUsage`)}
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('privacy.cookiesTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.cookiesTitle`)}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t('privacy.cookiesText')}
+            {t(`${sectionKey}.cookiesText`)}
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('privacy.rightsTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.rightsTitle`)}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t('privacy.rightsText')}
+            {t(`${sectionKey}.rightsText`)}
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('privacy.contactTitle')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.contactTitle`)}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t('privacy.contactText')}
+            {t(`${sectionKey}.contactText`)}
           </p>
         </section>
 
         <div className="mt-8 pt-4 border-t border-border">
           <p className="text-sm text-muted-foreground">
-            {t('privacy.disclaimerText')}
+            {t(`${sectionKey}.disclaimerText`)}
           </p>
         </div>
       </div>
