@@ -28,7 +28,7 @@ if (process.env.NODE_ENV === 'development') {
 
 type NavItem = {
   key: string;
-  labelKey: string; // i18n Key, z. B. "nav.services"
+  labelKey: string; // i18n Key, z. B. "nav.services" oder "footer.imprint"
   href: string;
   showInNav: boolean;
   showInFooter?: boolean;
@@ -66,10 +66,10 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     showInNav: true,
     hrefs: { de: "/kontakt", en: "/contact" }
   },
-  /* Footer-Links */
+  /* Footer-Links - ALLE auf footer Namespace umgestellt */
   { 
     key: "imprint", 
-    labelKey: "nav.imprint", 
+    labelKey: "footer.imprint", 
     href: "/impressum", 
     showInNav: false,
     showInFooter: true,
@@ -77,7 +77,7 @@ export const NAVIGATION_ITEMS: NavItem[] = [
   },
   { 
     key: "privacy", 
-    labelKey: "nav.privacy", 
+    labelKey: "footer.privacy", 
     href: "/datenschutz", 
     showInNav: false,
     showInFooter: true,
@@ -85,7 +85,7 @@ export const NAVIGATION_ITEMS: NavItem[] = [
   },
   { 
     key: "terms", 
-    labelKey: "nav.terms", 
+    labelKey: "footer.terms", 
     href: "/agb", 
     showInNav: false,
     showInFooter: true,
@@ -93,7 +93,7 @@ export const NAVIGATION_ITEMS: NavItem[] = [
   },
   { 
     key: "usage", 
-    labelKey: "nav.usage", 
+    labelKey: "footer.usage", 
     href: "/nutzung", 
     showInNav: false,
     showInFooter: true,
