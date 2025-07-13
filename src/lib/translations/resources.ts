@@ -1,12 +1,12 @@
 
-import { deTranslations } from './de';
-import { enTranslations } from './en';
+import { de } from './de';
+import { en } from './en';
 
 export const resources = {
   de: {
-    translation: deTranslations
+    translation: de
   },
   en: {
-    translation: enTranslations
+    translation: en
   }
 };
