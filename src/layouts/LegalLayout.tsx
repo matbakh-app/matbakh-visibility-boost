@@ -37,7 +37,7 @@ const LegalLayout: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType 
   const title = t(titleKey, "Legal");
   
   // Map pageType to correct translation keys based on language
-  const getTranslationKey = (key: string) => {
+  const getTranslationKey = () => {
     if (i18n.language === 'de') {
       const keyMap: Record<string, string> = {
         'imprint': 'impressum',
@@ -51,7 +51,7 @@ const LegalLayout: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType 
     return pageType;
   };
   
-  const sectionKey = getTranslationKey('section');
+  const sectionKey = getTranslationKey();
   const description = t(`${sectionKey}.intro`, "Rechtliche Hinweise und Datenschutzinformationen zu matbakh.app.");
 
   // Canonical URL basierend auf Sprache und Seitentyp
