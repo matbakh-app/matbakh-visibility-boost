@@ -54,8 +54,8 @@ i18n
     lng: 'de',
     fallbackLng: 'de',
     supportedLngs: ['de', 'en'],
-    // WICHTIG: common muss hier als erster Namespace stehen!
-    ns: ['common', 'translation', 'adminPanel', 'auth', 'nav', 'footer', 'hero', 'features', 'dashboard', 'cookieConsent'],
+    // WICHTIG: legal muss hier als Namespace aufgeführt werden!
+    ns: ['common', 'translation', 'adminPanel', 'auth', 'nav', 'footer', 'hero', 'features', 'dashboard', 'cookieConsent', 'legal'],
     defaultNS: 'common', // common als Standard-Namespace
     fallbackNS: ['common', 'translation'],
     backend: {
