@@ -1,31 +1,39 @@
+
 #!/usr/bin/env node
 
 /**
- * Legal Locales Consistency Checker
- * Prüft ob alle legal.json Dateien identische Keys haben
+ * Legal Locales Consistency Checker - Updated for Separate Legal Files
+ * Prüft ob alle legal-*.json Dateien identische Keys haben
  * Verhindert fehlende Übersetzungen und strukturelle Inkonsistenzen
  */
 
 const fs = require('fs');
 const path = require('path');
 
-console.log('🔍 Checking legal.json consistency across locales...\n');
+console.log('🔍 Checking separate legal-*.json consistency across locales...\n');
 
-// Legal JSON Dateien laden
-const loadLegalJson = (locale) => {
-  const filePath = path.join(__dirname, '../public/locales', locale, 'legal.json');
+// Legal-Seiten Definitionen
+const LEGAL_PAGES = [
+  { de: 'legal-impressum', en: 'legal-imprint' },
+  { de: 'legal-datenschutz', en: 'legal-privacy' },
+  { de: 'legal-agb', en: 'legal-terms' },
+  { de: 'legal-nutzung', en: 'legal-usage' },
+  { de: 'legal-kontakt', en: 'legal-contact' }
+];
+
+// Legal JSON Datei laden
+const loadLegalJson = (locale, filename) => {
+  const filePath = path.join(__dirname, '../public/locales', locale, `${filename}.json`);
   if (!fs.existsSync(filePath)) {
-    console.error(`❌ Missing legal.json for locale: ${locale}`);
+    console.error(`❌ Missing ${filename}.json for locale: ${locale}`);
     return null;
   }
   
   try {
     const content = fs.readFileSync(filePath, 'utf8');
-    // Entferne Kommentare für JSON.parse
-    const cleanContent = content.replace(/\/\/.*$/gm, '');
-    return JSON.parse(cleanContent);
+    return JSON.parse(content);
   } catch (error) {
-    console.error(`❌ Invalid JSON in ${locale}/legal.json:`, error.message);
+    console.error(`❌ Invalid JSON in ${locale}/${filename}.json:`, error.message);
     return null;
   }
 };
@@ -44,89 +52,68 @@ function flatten(obj, prefix = '', out = {}) {
   return out;
 }
 
-// Alle verfügbaren Locales finden
-const localesDir = path.join(__dirname, '../public/locales');
-const availableLocales = fs.readdirSync(localesDir)
-  .filter(dir => fs.statSync(path.join(localesDir, dir)).isDirectory())
-  .filter(dir => fs.existsSync(path.join(localesDir, dir, 'legal.json')));
+console.log(`📂 Checking ${LEGAL_PAGES.length} legal page pairs...\n`);
 
-console.log(`📂 Found locales with legal.json: ${availableLocales.join(', ')}\n`);
-
-if (availableLocales.length < 2) {
-  console.log('ℹ️ Less than 2 locales found, skipping consistency check');
-  process.exit(0);
-}
-
-// Legal JSONs laden
-const legalData = {};
-const flattenedData = {};
-
-for (const locale of availableLocales) {
-  const data = loadLegalJson(locale);
-  if (!data) {
-    process.exit(1);
-  }
-  legalData[locale] = data;
-  flattenedData[locale] = flatten(data);
-}
-
-// Konsistenz-Check
 let hasErrors = false;
-const baseLocale = availableLocales[0]; // Erste Sprache als Referenz
-const baseKeys = Object.keys(flattenedData[baseLocale]).sort();
 
-console.log(`🔑 Using ${baseLocale} as reference (${baseKeys.length} keys)\n`);
-
-for (const locale of availableLocales.slice(1)) {
-  const currentKeys = Object.keys(flattenedData[locale]).sort();
+// Prüfe jede Legal-Seite einzeln
+for (const pageMap of LEGAL_PAGES) {
+  console.log(`🔍 Checking: ${pageMap.de} ↔ ${pageMap.en}`);
   
-  const missingKeys = baseKeys.filter(key => !currentKeys.includes(key));
-  const extraKeys = currentKeys.filter(key => !baseKeys.includes(key));
+  const deData = loadLegalJson('de', pageMap.de);
+  const enData = loadLegalJson('en', pageMap.en);
   
-  if (missingKeys.length > 0) {
-    console.error(`❌ Missing keys in ${locale}/legal.json:`);
-    missingKeys.forEach(key => console.error(`   - ${key}`));
-    console.error('');
+  if (!deData || !enData) {
+    hasErrors = true;
+    continue;
+  }
+  
+  const deKeys = Object.keys(flatten(deData)).sort();
+  const enKeys = Object.keys(flatten(enData)).sort();
+  
+  const missingInEn = deKeys.filter(key => !enKeys.includes(key));
+  const missingInDe = enKeys.filter(key => !deKeys.includes(key));
+  
+  if (missingInEn.length > 0) {
+    console.error(`  ❌ Missing keys in ${pageMap.en}:`);
+    missingInEn.forEach(key => console.error(`     - ${key}`));
     hasErrors = true;
   }
   
-  if (extraKeys.length > 0) {
-    console.error(`❌ Extra keys in ${locale}/legal.json:`);
-    extraKeys.forEach(key => console.error(`   + ${key}`));
-    console.error('');
+  if (missingInDe.length > 0) {
+    console.error(`  ❌ Missing keys in ${pageMap.de}:`);
+    missingInDe.forEach(key => console.error(`     - ${key}`));
     hasErrors = true;
   }
   
-  if (missingKeys.length === 0 && extraKeys.length === 0) {
-    console.log(`✅ ${locale}/legal.json - All keys consistent (${currentKeys.length} keys)`);
-  }
-}
-
-// Array-Konsistenz prüfen
-console.log('\n🔍 Checking array consistency...');
-
-for (const key of baseKeys) {
-  const baseValue = flattenedData[baseLocale][key];
-  
-  if (Array.isArray(baseValue)) {
-    for (const locale of availableLocales.slice(1)) {
-      const currentValue = flattenedData[locale][key];
-      
-      if (!Array.isArray(currentValue)) {
-        console.error(`❌ Key "${key}" is array in ${baseLocale} but not in ${locale}`);
-        hasErrors = true;
-      }
+  // Array-Konsistenz prüfen
+  for (const key of deKeys) {
+    const deValue = flatten(deData)[key];
+    const enValue = flatten(enData)[key];
+    
+    if (Array.isArray(deValue) && !Array.isArray(enValue)) {
+      console.error(`  ❌ Key "${key}" is array in DE but not in EN`);
+      hasErrors = true;
+    } else if (!Array.isArray(deValue) && Array.isArray(enValue)) {
+      console.error(`  ❌ Key "${key}" is array in EN but not in DE`);
+      hasErrors = true;
     }
   }
+  
+  if (missingInEn.length === 0 && missingInDe.length === 0) {
+    console.log(`  ✅ ${pageMap.de} ↔ ${pageMap.en} - All keys consistent (${deKeys.length} keys)`);
+  }
+  
+  console.log('');
 }
 
 // Ergebnis
 if (hasErrors) {
-  console.error('\n❌ Legal locales consistency check FAILED!');
+  console.error('❌ Legal locales consistency check FAILED!');
   console.error('⚠️ Fix all inconsistencies before merging!');
   process.exit(1);
 } else {
-  console.log('\n✅ All legal.json files are consistent across locales!');
+  console.log('✅ All separate legal-*.json files are consistent across locales!');
   console.log('🎉 Legal governance check passed - ready for production');
   process.exit(0);
 }

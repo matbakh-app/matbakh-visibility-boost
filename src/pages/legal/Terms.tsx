@@ -1,16 +1,7 @@
+
 /*
  * ⚠️  Diese Datei ist FINAL und darf NUR durch den CTO geändert werden. 
  * Jede Änderung ohne CTO-Genehmigung führt zum Rollback!
- *
- * ⚠️  KRITISCHE LEGAL-DATEI – ÄNDERUNGEN NUR DURCH CTO! ⚠️
- * 
- * Diese Datei ist nach dem 14.07.2025 FINAL und darf NICHT mehr durch:
- * - Lovable AI
- * - Automatisierte Tools 
- * - Entwickler ohne CTO-Genehmigung
- * verändert werden.
- * 
- * Auch Übersetzungsdateien (public/locales/legal.json) sind geschützt!
  */
 
 import React from 'react';
@@ -18,79 +9,77 @@ import { useTranslation } from 'react-i18next';
 import LegalLayout from '@/layouts/LegalLayout';
 
 const Terms: React.FC = () => {
-  const { t } = useTranslation('legal');
-  const sectionKey = 'terms'; // Always use English key for English page
-  
+  const { t } = useTranslation('legal-terms');
 
   return (
-    <LegalLayout titleKey={`${sectionKey}.title`} pageType="terms">
+    <LegalLayout titleKey="title" pageType="terms">
       <div className="prose max-w-none space-y-6">
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.scopeTitle`)}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('scopeTitle')}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t(`${sectionKey}.scopeText`)}
+            {t('scopeText')}
           </p>
         </section>
         
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.servicesTitle`)}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('servicesTitle')}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t(`${sectionKey}.servicesText`)}
+            {t('servicesText')}
           </p>
         </section>
         
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.contractTitle`)}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('contractTitle')}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t(`${sectionKey}.contractText`)}
+            {t('contractText')}
           </p>
         </section>
         
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.pricesTitle`)}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('pricesTitle')}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t(`${sectionKey}.pricesText`)}
+            {t('pricesText')}
           </p>
         </section>
         
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.performanceTitle`)}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('performanceTitle')}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t(`${sectionKey}.performanceText`)}
+            {t('performanceText')}
           </p>
         </section>
         
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.cancellationTitle`)}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('cancellationTitle')}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t(`${sectionKey}.cancellationText`)}
+            {t('cancellationText')}
           </p>
         </section>
         
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.liabilityTitle`)}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('liabilityTitle')}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t(`${sectionKey}.liabilityText`)}
+            {t('liabilityText')}
           </p>
         </section>
         
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.dataTitle`)}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('dataTitle')}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t(`${sectionKey}.dataText`)}
+            {t('dataText')}
           </p>
         </section>
         
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.finalTitle`)}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('finalTitle')}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t(`${sectionKey}.finalText`)}
+            {t('finalText')}
           </p>
         </section>
 
         <div className="mt-8 pt-4 border-t border-border">
           <p className="text-sm text-muted-foreground">
-            {t(`${sectionKey}.lastUpdated`)}
+            {t('lastUpdated')}
           </p>
         </div>
       </div>

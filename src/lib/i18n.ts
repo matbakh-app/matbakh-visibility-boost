@@ -54,8 +54,13 @@ i18n
     lng: 'de',
     fallbackLng: 'de',
     supportedLngs: ['de', 'en'],
-    // WICHTIG: legal muss hier als Namespace aufgeführt werden!
-    ns: ['common', 'translation', 'adminPanel', 'auth', 'nav', 'footer', 'hero', 'features', 'dashboard', 'cookieConsent', 'legal'],
+    // WICHTIG: Alle neuen Legal-Namespaces hinzufügen!
+    ns: [
+      'common', 'translation', 'adminPanel', 'auth', 'nav', 'footer', 'hero', 'features', 'dashboard', 'cookieConsent',
+      // Neue separate Legal-Namespaces
+      'legal-impressum', 'legal-datenschutz', 'legal-agb', 'legal-nutzung', 'legal-kontakt',
+      'legal-imprint', 'legal-privacy', 'legal-terms', 'legal-usage', 'legal-contact'
+    ],
     defaultNS: 'common', // common als Standard-Namespace
     fallbackNS: ['common', 'translation'],
     backend: {

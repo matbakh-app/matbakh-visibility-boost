@@ -1,18 +1,7 @@
+
 /*
  * ⚠️  Diese Datei ist FINAL und darf NUR durch den CTO geändert werden. 
  * Jede Änderung ohne CTO-Genehmigung führt zum Rollback!
- *
- * ⚠️  KRITISCHE LEGAL-LAYOUT-DATEI – ÄNDERUNGEN NUR DURCH CTO! ⚠️
- * 
- * Diese Datei ist nach dem 14.07.2025 FINAL und darf NICHT mehr durch:
- * - Lovable AI
- * - Automatisierte Tools 
- * - Entwickler ohne CTO-Genehmigung
- * verändert werden.
- * 
- * Auch Übersetzungsdateien (public/locales/legal.json) sind geschützt!
- * 
- * Alle Legal-Seiten MÜSSEN dieses Layout verwenden!
  */
 
 import React from "react";
@@ -25,34 +14,33 @@ import { Helmet } from "react-helmet-async";
 import { Globe } from "lucide-react";
 
 type LegalLayoutProps = {
-  titleKey: string; // z.B. "legal.datenschutz.title"
+  titleKey: string; // z.B. "title" (wird vom jeweiligen Namespace geholt)
   children: React.ReactNode;
   pageType: 'privacy' | 'imprint' | 'terms' | 'usage' | 'contact';
 };
 
 const LegalLayout: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType }) => {
-  const { t, i18n } = useTranslation(['legal', 'nav']);
+  const { t, i18n } = useTranslation(['nav']);
 
-  // Meta für SEO - dynamisch basierend auf pageType
-  const title = t(titleKey, "Legal");
-  
-  // Map pageType to correct translation keys based on language
-  const getTranslationKey = () => {
-    if (i18n.language === 'de') {
-      const keyMap: Record<string, string> = {
-        'imprint': 'impressum',
-        'privacy': 'datenschutz', 
-        'terms': 'agb',
-        'usage': 'nutzung',
-        'contact': 'kontakt'
-      };
-      return keyMap[pageType] || pageType;
-    }
-    return pageType;
+  // Bestimme den korrekten Namespace basierend auf Sprache und pageType
+  const getNamespace = () => {
+    const namespaceMap = {
+      privacy: i18n.language === 'de' ? 'legal-datenschutz' : 'legal-privacy',
+      imprint: i18n.language === 'de' ? 'legal-impressum' : 'legal-imprint',
+      terms: i18n.language === 'de' ? 'legal-agb' : 'legal-terms',
+      usage: i18n.language === 'de' ? 'legal-nutzung' : 'legal-usage',
+      contact: i18n.language === 'de' ? 'legal-kontakt' : 'legal-contact'
+    };
+    return namespaceMap[pageType] || 'legal-impressum';
   };
+
+  const namespace = getNamespace();
+  const { t: tLegal } = useTranslation(namespace);
   
-  const sectionKey = getTranslationKey();
-  const description = t(`${sectionKey}.intro`, "Rechtliche Hinweise und Datenschutzinformationen zu matbakh.app.");
+  // Meta für SEO - dynamisch basierend auf pageType
+  const title = tLegal(titleKey, "Legal");
+  
+  const description = tLegal('intro', "Rechtliche Hinweise und Datenschutzinformationen zu matbakh.app.");
 
   // Canonical URL basierend auf Sprache und Seitentyp
   const getCanonicalUrl = () => {
@@ -102,14 +90,14 @@ const LegalLayout: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType 
               <h1 className="text-3xl font-bold text-foreground mb-2">{title}</h1>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Globe className="h-4 w-4" />
-                <span>{t(`${sectionKey}.lastUpdated`, "Stand: 2025")}</span>
+                <span>{tLegal('lastUpdated', "Stand: 2025")}</span>
               </div>
             </div>
             
             {/* Language Switcher explizit im Banner */}
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground hidden sm:inline">
-                {t("nav:language", "Sprache")}:
+                {t("language", "Sprache")}:
               </span>
               <LanguageToggle />
             </div>
