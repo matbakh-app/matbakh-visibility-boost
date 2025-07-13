@@ -50,8 +50,8 @@ const Footer: React.FC = () => {
           </p>
           <p className="text-xs text-gray-400">
             {currentLang === 'de' 
-              ? 'Rechtstexte: CTO-Governance • Letztes Audit: Januar 2025' 
-              : 'Legal texts: CTO-Governance • Last audit: January 2025'
+              ? 'Rechtstexte: CTO-Governance • Letztes Audit: Juli 2025' 
+              : 'Legal texts: CTO-Governance • Last audit: July 2025'
             }
           </p>
         </div>
