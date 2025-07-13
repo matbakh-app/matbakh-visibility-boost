@@ -5,22 +5,21 @@ import LegalLayout from '@/layouts/LegalLayout';
 import ContactForm from '@/components/ContactForm';
 
 const Contact: React.FC = () => {
-  const { t } = useTranslation('legal');
-  const sectionKey = 'contact';
+  const { t } = useTranslation('legal-contact');
   
   return (
-    <LegalLayout titleKey={`${sectionKey}.title`} pageType="contact">
+    <LegalLayout titleKey="title" pageType="contact">
       <div className="space-y-8">
         <div className="prose max-w-none space-y-6">
           <section>
-            <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.contactTitle`)}</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('contactTitle')}</h2>
             <div className="whitespace-pre-line text-muted-foreground">
-              {t(`${sectionKey}.contactText`)}
+              {t('contactText')}
             </div>
           </section>
           <div className="mt-8 pt-4 border-t border-border">
             <p className="text-sm text-muted-foreground">
-              {t(`${sectionKey}.disclaimerText`)}
+              {t('disclaimerText')}
             </p>
           </div>
         </div>

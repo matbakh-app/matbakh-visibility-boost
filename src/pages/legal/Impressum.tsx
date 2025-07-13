@@ -9,48 +9,47 @@ import { useTranslation } from 'react-i18next';
 import LegalLayout from '@/layouts/LegalLayout';
 
 const Impressum: React.FC = () => {
-  const { t } = useTranslation('legal');
-  const sectionKey = 'impressum'; // Always use German key for German page
+  const { t } = useTranslation('legal-impressum');
 
   return (
-    <LegalLayout titleKey={`${sectionKey}.title`} pageType="imprint">
+    <LegalLayout titleKey="title" pageType="imprint">
       <div className="prose max-w-none space-y-6">
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.companyInfo`)}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('companyInfo')}</h2>
           <div className="space-y-2 text-muted-foreground">
-            <p>{t(`${sectionKey}.company`)}</p>
-            <p>{t(`${sectionKey}.location`)}</p>
+            <p>{t('company')}</p>
+            <p>{t('location')}</p>
           </div>
         </section>
         
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.contactTitle`)}</h2>
-          <p className="text-muted-foreground">{t(`${sectionKey}.email`)}</p>
+          <h2 className="text-xl font-semibold mb-4">{t('contactTitle')}</h2>
+          <p className="text-muted-foreground">{t('email')}</p>
         </section>
         
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.responsibleTitle`)}</h2>
-          <p className="text-muted-foreground">{t(`${sectionKey}.responsible`)}</p>
+          <h2 className="text-xl font-semibold mb-4">{t('responsibleTitle')}</h2>
+          <p className="text-muted-foreground">{t('responsible')}</p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.disclaimerTitle`)}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('disclaimerTitle')}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t(`${sectionKey}.disclaimer`)}
+            {t('disclaimer')}
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.linksTitle`)}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('linksTitle')}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t(`${sectionKey}.linksText`)}
+            {t('linksText')}
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t(`${sectionKey}.copyrightTitle`)}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('copyrightTitle')}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {t(`${sectionKey}.copyrightText`)}
+            {t('copyrightText')}
           </p>
         </section>
       </div>
