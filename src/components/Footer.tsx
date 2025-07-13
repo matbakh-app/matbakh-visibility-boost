@@ -27,12 +27,12 @@ const Footer: React.FC = () => {
                 key={link.key}
                 to={link.currentHref}
                 className={`text-sm transition-colors ${
-                  link.key === 'datenschutz' || link.key === 'privacy' 
+                  link.key === 'privacy' 
                     ? 'text-black font-bold hover:text-gray-700' 
                     : 'text-gray-600 hover:text-black'
                 }`}
               >
-                {t(link.currentLabel)}
+                {t(link.currentLabel.replace('footer.', ''))}
               </Link>
             ))}
             <Link
