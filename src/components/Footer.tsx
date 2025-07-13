@@ -2,14 +2,36 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { getFooterNavItems } from './navigation/NavigationConfig';
 
 const Footer: React.FC = () => {
   const { t, i18n } = useTranslation('footer');
   // WICHTIG: currentLang muss bei jedem Render neu evaluiert werden für Live-Übersetzung
   const currentLang = (i18n.language || 'de') as 'de' | 'en';
-  // WICHTIG: footerLinks muss bei jedem Render neu geholt werden für Live-Übersetzung  
-  const footerLinks = getFooterNavItems(currentLang);
+
+  // Direkte Footer-Links Definition mit korrekten Sprach-Routen
+  const footerLinks = [
+    {
+      key: 'imprint',
+      href: currentLang === 'de' ? '/impressum' : '/imprint',
+      label: t('imprint')
+    },
+    {
+      key: 'privacy',
+      href: currentLang === 'de' ? '/datenschutz' : '/privacy',
+      label: t('privacy'),
+      isPrivacy: true // Markierung für SEO-Hervorhebung
+    },
+    {
+      key: 'terms',
+      href: currentLang === 'de' ? '/agb' : '/terms',
+      label: t('terms')
+    },
+    {
+      key: 'usage',
+      href: currentLang === 'de' ? '/nutzung' : '/usage',
+      label: t('usage')
+    }
+  ];
 
   return (
     <footer className="bg-white border-t border-gray-200 mt-16">
@@ -25,14 +47,14 @@ const Footer: React.FC = () => {
             {footerLinks.map((link) => (
               <Link
                 key={link.key}
-                to={link.currentHref}
+                to={link.href}
                 className={`text-sm transition-colors ${
-                  link.key === 'privacy' 
+                  link.isPrivacy 
                     ? 'text-black font-bold hover:text-gray-700' 
                     : 'text-gray-600 hover:text-black'
                 }`}
               >
-                {t(link.currentLabel.replace('footer.', ''))}
+                {link.label}
               </Link>
             ))}
             <Link
@@ -49,10 +71,7 @@ const Footer: React.FC = () => {
             {t('email')}
           </p>
           <p className="text-xs text-gray-400">
-            {currentLang === 'de' 
-              ? 'Rechtstexte: CTO-Governance • Letztes Audit: Juli 2025' 
-              : 'Legal texts: CTO-Governance • Last audit: July 2025'
-            }
+            {t('auditInfo')}
           </p>
         </div>
       </div>
