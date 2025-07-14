@@ -20,20 +20,20 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   customButtons,
   className = "" 
 }) => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation('landing');
   const navigate = useNavigate();
 
   const getPackagesRoute = () => {
     return i18n.language === 'en' ? '/packages' : '/angebote';
   };
 
-  const getContactRoute = () => {
-    return i18n.language === 'en' ? '/contact' : '/kontakt';
+  const getLoginRoute = () => {
+    return '/business/partner/login';
   };
 
   // Use custom props or fallback to translation keys
-  const heroTitle = title || t('landing.heroTitle');
-  const heroSubtitle = subtitle || t('landing.heroSubtitle');
+  const heroTitle = title || t('heroTitle');
+  const heroSubtitle = subtitle || t('heroSubtitle');
 
   return (
     <section className={`w-full text-center ${className}`}>
@@ -52,15 +52,15 @@ const HeroSection: React.FC<HeroSectionProps> = ({
             className="bg-black hover:bg-gray-800 text-white px-8 py-3" 
             onClick={() => navigate(getPackagesRoute())}
           >
-            {t('landing.cta1')}
+            {t('cta1')}
           </Button>
           <Button 
             variant="outline" 
             size="lg" 
             className="border-black text-black hover:bg-gray-50 px-8 py-3" 
-            onClick={() => navigate(getContactRoute())}
+            onClick={() => navigate(getLoginRoute())}
           >
-            {t('landing.cta2')}
+            {t('cta2')}
           </Button>
         </div>
       )}
