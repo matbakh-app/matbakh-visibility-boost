@@ -15,36 +15,47 @@ interface PricingCardProps {
 const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = false, language = 'de' }) => {
   const { t } = useTranslation();
 
-  // Package name mapping for internationalization
+  // Package name mapping for new package structure
   const packageNameMap: Record<string, Record<'de' | 'en', string>> = {
-    'google-business-setup': {
-      de: 'Google Business Setup',
-      en: 'Google Business Setup'
+    'profile_dashboard_basic': {
+      de: 'Dashboard Basic',
+      en: 'Dashboard Basic'
     },
-    'profilpflege-basis': {
-      de: 'Profilpflege Basis',
-      en: 'Profile Management Basic'
+    'google_profile_setup': {
+      de: 'Google Profil Setup',
+      en: 'Google Profile Setup'
     },
-    'social-media-management': {
-      de: 'Social Media Management',
-      en: 'Social Media Management'
+    'profile_management_classic': {
+      de: 'Profil Management Classic',
+      en: 'Profile Management Classic'
     },
-    'premium-business-paket': {
-      de: 'Premium Business Paket',
-      en: 'Premium Business Package'
+    'profile_management_premium': {
+      de: 'Profil Management Premium',
+      en: 'Profile Management Premium'
+    },
+    'meta_business_suite_setup': {
+      de: 'Meta Business Suite Setup',
+      en: 'Meta Business Suite Setup'
+    },
+    'starter_kit': {
+      de: 'Starter Kit',
+      en: 'Starter Kit'
     }
   };
 
   const getFeaturesBySlug = (packageSlug: string) => {
-    const slugMap: Record<string, string> = {
-      'google-business-setup': 'google_setup',
-      'profilpflege-basis': 'profile_basic',
-      'social-media-management': 'social_media',
-      'premium-business-paket': 'premium'
-    };
+    try {
+      // Try to get features from translation files first
+      const translatedFeatures = t(`packages.${packageSlug}.features`, { returnObjects: true });
+      if (Array.isArray(translatedFeatures)) {
+        return translatedFeatures;
+      }
+    } catch (error) {
+      console.warn(`No translation found for packages.${packageSlug}.features`);
+    }
     
-    const mappedSlug = slugMap[packageSlug] || packageSlug;
-    return t(`packages.${mappedSlug}.features`, { returnObjects: true }) as string[] || pkg.features;
+    // Fallback to package.features if translation fails
+    return pkg.features || [];
   };
 
   const getPackageName = (packageSlug: string) => {
@@ -92,7 +103,9 @@ const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = fals
             </span>
           )}
           <p className="text-gray-600 mt-1">
-            {pkg.period === 'monthly' ? `/${t('pricing.month')}` : t('pricing.oneTime')}
+            {pkg.period === 'monthly' ? `/${t('pricing.month')}` : 
+             pkg.slug === 'starter_kit' ? t('pricing.sixMonths') : 
+             t('pricing.oneTime')}
           </p>
         </div>
       </CardHeader>

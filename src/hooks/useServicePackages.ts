@@ -91,7 +91,7 @@ export const useServicePackages = () =>
           original_price: promoPrice && price?.promo_active ? basePrice : null,
           features: getFeaturesByCode(pkg.code),
           is_active: true,
-          is_recommended: pkg.code === 'premium-business-paket',
+          is_recommended: pkg.code === 'profile_management_premium', // Premium is now recommended
           period: pkg.is_recurring ? 'monthly' : 'one-time',
           min_duration_months: pkg.interval_months || 0
         };
@@ -106,45 +106,45 @@ export const useServicePackages = () =>
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
-// Helper function to get features by package code
+// Helper function to get features by package code - now uses translation keys
 const getFeaturesByCode = (code: string): string[] => {
   const featureMap: Record<string, string[]> = {
     'profile_dashboard_basic': [
-      'Einfach angebunden: Google, Facebook & Instagram im Griff',
-      'Ihre wichtigsten Zahlen (KPIs) – immer aktuell ausgewertet',
-      'Monatlicher Erfolgsbericht per Mail – kein Aufwand für Sie'
+      'packages.profile_dashboard_basic.features.0',
+      'packages.profile_dashboard_basic.features.1',
+      'packages.profile_dashboard_basic.features.2'
     ],
     'google_profile_setup': [
-      'Sofort startklar: Ihr Google Business Profil komplett eingerichtet',
-      'Besser gefunden werden – SEO für lokale Gäste',
-      'Kategorien, Attribute & Fotos optimal gepflegt',
-      'Alle Öffnungszeiten und Kontaktdaten korrekt integriert'
+      'packages.google_profile_setup.features.0',
+      'packages.google_profile_setup.features.1',
+      'packages.google_profile_setup.features.2',
+      'packages.google_profile_setup.features.3'
     ],
     'profile_management_classic': [
-      'Alle Basic-Vorteile plus:',
-      'Ihr persönlicher Business Agent – mit KI-Empfehlungen',
-      'Analytics rund um die Uhr, automatisch für Sie aktualisiert',
-      'Speisekarten schnell online, Angebote per Klick promoten',
-      'Monatlicher Erfolgsbericht – einfach & verständlich'
+      'packages.profile_management_classic.features.0',
+      'packages.profile_management_classic.features.1',
+      'packages.profile_management_classic.features.2',
+      'packages.profile_management_classic.features.3',
+      'packages.profile_management_classic.features.4'
     ],
     'profile_management_premium': [
-      'Alle Classic-Features plus:',
-      'Noch leistungsstärkere KI-Empfehlungen für Ihr Wachstum',
-      'Intelligenter Content-Generator – immer frische Ideen für Posts',
-      'Benchmark Ihrer Speisekarten im Vergleich zum Wettbewerb',
-      'Komplette Social Media Strategie & 6-Wochen-Contentplan',
-      'Exklusive Aktionen je nach Event & Stadt – automatisch für Sie'
+      'packages.profile_management_premium.features.0',
+      'packages.profile_management_premium.features.1',
+      'packages.profile_management_premium.features.2',
+      'packages.profile_management_premium.features.3',
+      'packages.profile_management_premium.features.4',
+      'packages.profile_management_premium.features.5'
     ],
     'meta_business_suite_setup': [
-      'Einheitliche Kanal-Erstellung & Konfiguration',
-      'Individuelle Design-Vorlagen für beide Plattformen',
-      'Zielgruppen-Recherche & Setup'
+      'packages.meta_business_suite_setup.features.0',
+      'packages.meta_business_suite_setup.features.1',
+      'packages.meta_business_suite_setup.features.2'
     ],
     'starter_kit': [
-      'Business-Profil Setup in Google Console & Meta Business Suite mit proaktivem Management inklusive',
-      '6 Monate Rundum-Service ohne Extrakosten',
-      'Social Media Management auf Wunsch-Kanal',
-      'Ihr persönlicher Account Manager für alle Fragen'
+      'packages.starter_kit.features.0',
+      'packages.starter_kit.features.1',
+      'packages.starter_kit.features.2',
+      'packages.starter_kit.features.3'
     ]
   };
   
