@@ -6,7 +6,6 @@
 
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import LanguageToggle from "@/components/header/LanguageToggle";
@@ -69,7 +68,7 @@ const LegalLayout: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType 
   };
 
   return (
-    <>
+    <div className="min-h-screen bg-white flex flex-col">
       <Helmet>
         <title>{title} | matbakh.app</title>
         <meta name="description" content={description} />
@@ -106,8 +105,8 @@ const LegalLayout: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType 
       </section>
       
       {/* Content Area */}
-      <main className="min-h-[50vh] py-8">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main className="flex-1">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="bg-card rounded-lg border border-border p-6 sm:p-8 shadow-sm">
             {children}
           </div>
@@ -115,7 +114,7 @@ const LegalLayout: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType 
       </main>
       
       <Footer />
-    </>
+    </div>
   );
 };
 
