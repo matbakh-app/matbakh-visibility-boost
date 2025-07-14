@@ -11,57 +11,34 @@ import LegalLayout from '@/layouts/LegalLayout';
 const Nutzung: React.FC = () => {
   const { t } = useTranslation('legal-nutzung');
 
+  // Clean mapping of existing translation keys from legal-nutzung.json
+  const LEGAL_SECTIONS = [
+    ['scopeTitle', 'scopeText'],
+    ['servicesTitle', 'servicesText'],
+    ['userRightsTitle', 'userRightsText'],
+    ['userObligationsTitle', 'userObligationsText'],
+    ['liabilityTitle', 'liabilityText'],
+    ['terminationTitle', 'terminationText'],
+    ['lawTitle', 'lawText'],
+  ];
+
   return (
     <LegalLayout titleKey="title" pageType="usage">
       <div className="prose max-w-none space-y-6">
-        <section>
-          <h2 className="text-xl font-semibold mb-4">{t('scopeTitle')}</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            {t('scopeText')}
+        {LEGAL_SECTIONS.map(([titleKey, textKey]) => (
+          <section key={titleKey}>
+            <h2 className="text-xl font-semibold mb-4">{t(titleKey)}</h2>
+            <p className="text-muted-foreground leading-relaxed">
+              {t(textKey)}
+            </p>
+          </section>
+        ))}
+
+        <div className="mt-8 pt-4 border-t border-border">
+          <p className="text-sm text-muted-foreground">
+            {t('lastUpdated')}
           </p>
-        </section>
-        
-        <section>
-          <h2 className="text-xl font-semibold mb-4">{t('servicesTitle')}</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            {t('servicesText')}
-          </p>
-        </section>
-        
-        <section>
-          <h2 className="text-xl font-semibold mb-4">{t('userRightsTitle')}</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            {t('userRightsText')}
-          </p>
-        </section>
-        
-        <section>
-          <h2 className="text-xl font-semibold mb-4">{t('userObligationsTitle')}</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            {t('userObligationsText')}
-          </p>
-        </section>
-        
-        <section>
-          <h2 className="text-xl font-semibold mb-4">{t('liabilityTitle')}</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            {t('liabilityText')}
-          </p>
-        </section>
-        
-        <section>
-          <h2 className="text-xl font-semibold mb-4">{t('terminationTitle')}</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            {t('terminationText')}
-          </p>
-        </section>
-        
-        <section>
-          <h2 className="text-xl font-semibold mb-4">{t('lawTitle')}</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            {t('lawText')}
-          </p>
-        </section>
+        </div>
       </div>
     </LegalLayout>
   );

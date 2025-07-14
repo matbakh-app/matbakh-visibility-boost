@@ -11,47 +11,32 @@ import LegalLayout from '@/layouts/LegalLayout';
 const Imprint: React.FC = () => {
   const { t } = useTranslation('legal-imprint');
 
+  // Clean mapping of existing translation keys from legal-imprint.json
+  const LEGAL_SECTIONS = [
+    ['companyInfo', null], // Special handling for company info
+    ['contactTitle', 'email'],
+    ['responsibleTitle', 'responsible'],
+    ['disclaimerTitle', 'disclaimer'],
+    ['linksTitle', 'linksText'],
+    ['copyrightTitle', 'copyrightText'],
+  ];
+
   return (
     <LegalLayout titleKey="title" pageType="imprint">
       <div className="prose max-w-none space-y-6">
-        <section>
-          <h2 className="text-xl font-semibold mb-4">{t('companyInfo')}</h2>
-          <div className="space-y-2 text-muted-foreground">
-            <p>{t('company')}</p>
-            <p>{t('location')}</p>
-          </div>
-        </section>
-        
-        <section>
-          <h2 className="text-xl font-semibold mb-4">{t('contactTitle')}</h2>
-          <p className="text-muted-foreground">{t('email')}</p>
-        </section>
-        
-        <section>
-          <h2 className="text-xl font-semibold mb-4">{t('responsibleTitle')}</h2>
-          <p className="text-muted-foreground">{t('responsible')}</p>
-        </section>
-
-        <section>
-          <h2 className="text-xl font-semibold mb-4">{t('disclaimerTitle')}</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            {t('disclaimer')}
-          </p>
-        </section>
-
-        <section>
-          <h2 className="text-xl font-semibold mb-4">{t('linksTitle')}</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            {t('linksText')}
-          </p>
-        </section>
-
-        <section>
-          <h2 className="text-xl font-semibold mb-4">{t('copyrightTitle')}</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            {t('copyrightText')}
-          </p>
-        </section>
+        {LEGAL_SECTIONS.map(([titleKey, textKey]) => (
+          <section key={titleKey}>
+            <h2 className="text-xl font-semibold mb-4">{t(titleKey)}</h2>
+            {titleKey === 'companyInfo' ? (
+              <div className="space-y-2 text-muted-foreground">
+                <p>{t('company')}</p>
+                <p>{t('location')}</p>
+              </div>
+            ) : (
+              <p className="text-muted-foreground leading-relaxed">{t(textKey)}</p>
+            )}
+          </section>
+        ))}
       </div>
     </LegalLayout>
   );
