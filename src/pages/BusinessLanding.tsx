@@ -1,4 +1,3 @@
-
 /**
  * ⚠️ Alle sichtbaren Landing-Page-Texte werden ausschließlich aus translation.json > landing geladen. 
  * Änderungen an Texten nur über die JSON-Dateien!
@@ -24,87 +23,68 @@ import ProblemSection from '@/components/ProblemSection';
 import SolutionSection from '@/components/SolutionSection';
 import { SeoMeta } from '@/components/SeoMeta';
 import { Link } from 'react-router-dom';
-
 const BusinessLanding: React.FC = () => {
-  const { t, i18n } = useTranslation('landing');
+  const {
+    t,
+    i18n
+  } = useTranslation('landing');
   const navigate = useNavigate();
-
   const getPackagesRoute = () => {
     return i18n.language === 'en' ? '/packages' : '/angebote';
   };
-
   const getLoginRoute = () => {
     return '/business/partner/login';
   };
-
-  const services = [
-    {
-      icon: Wrench,
-      title: t('services.setup.coreTitle'),
-      description: t('services.setup.coreDescription')
-    },
-    {
-      icon: BarChart3,
-      title: t('services.management.title'),
-      description: t('services.management.coreDescription')
-    },
-    {
-      icon: Brain,
-      title: t('services.analytics.coreTitle'),
-      description: t('services.analytics.coreDescription')
-    }
-  ];
-
+  const services = [{
+    icon: Wrench,
+    title: t('services.setup.coreTitle'),
+    description: t('services.setup.coreDescription')
+  }, {
+    icon: BarChart3,
+    title: t('services.management.title'),
+    description: t('services.management.coreDescription')
+  }, {
+    icon: Brain,
+    title: t('services.analytics.coreTitle'),
+    description: t('services.analytics.coreDescription')
+  }];
   const servicesJsonLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "Matbakh",
     url: "https://matbakh.app",
     description: "Professional Google Business profile management and social media automation for restaurants",
-    offers: [
-      {
-        "@type": "Service",
-        name: "Google Business Profile Setup",
-        description: "Complete setup and optimization of Google Business profiles for restaurants"
-      },
-      {
-        "@type": "Service", 
-        name: "Profile Management",
-        description: "Ongoing management and updates of Google Business profiles"
-      },
-      {
-        "@type": "Service",
-        name: "Social Media Automation",
-        description: "Automated social media management for restaurants"
-      }
-    ]
+    offers: [{
+      "@type": "Service",
+      name: "Google Business Profile Setup",
+      description: "Complete setup and optimization of Google Business profiles for restaurants"
+    }, {
+      "@type": "Service",
+      name: "Profile Management",
+      description: "Ongoing management and updates of Google Business profiles"
+    }, {
+      "@type": "Service",
+      name: "Social Media Automation",
+      description: "Automated social media management for restaurants"
+    }]
   };
-
-  return (
-    <>
-      <SeoMeta
-        title={t('heroTitle')}
-        description={t('heroSubtitle')}
-        namespace="landing"
-      />
+  return <>
+      <SeoMeta title={t('heroTitle')} description={t('heroSubtitle')} namespace="landing" />
       
       {/* Enhanced SEO & Structured Data */}
       <script type="application/ld+json">
         {JSON.stringify({
-          "@context": "http://schema.org",
-          "@type": "Organization",
-          "url": "https://matbakh.app",
-          "name": "matbakh.app",
-          "contactPoint": [{
-            "@type": "ContactPoint",
-            "email": "mail(at)matbakh(dot)app",
-            "contactType": "customer support"
-          }],
-          "sameAs": [
-            "https://matbakh.app/datenschutz",
-            "https://matbakh.app/privacy"
-          ]
-        })}
+        "@context": "http://schema.org",
+        "@type": "Organization",
+        "url": "https://matbakh.app",
+        "name": "matbakh.app",
+        "contactPoint": [{
+          "@type": "ContactPoint",
+          "email": "mail(at)matbakh(dot)app",
+          "contactType": "customer support"
+        }],
+        "sameAs": ["https://matbakh.app/datenschutz", "https://matbakh.app/privacy"]
+      })}
       </script>
       <div className="min-h-screen bg-white">
       <Header />
@@ -114,10 +94,7 @@ const BusinessLanding: React.FC = () => {
         <div className="max-w-4xl mx-auto">
           {/* Privacy Policy Link - Prominent for Google */}
           <div className="text-center mb-6">
-            <Link
-              to={i18n.language === 'de' ? '/datenschutz' : '/privacy'}
-              className="inline-block text-sm font-bold text-primary hover:underline"
-            >
+            <Link to={i18n.language === 'de' ? '/datenschutz' : '/privacy'} className="inline-block text-sm font-bold text-primary hover:underline">
               {i18n.language === 'de' ? 'Datenschutz' : 'Privacy Policy'}
             </Link>
           </div>
@@ -143,8 +120,7 @@ const BusinessLanding: React.FC = () => {
           <div className="grid md:grid-cols-3 gap-8">
             {services.map((service, index) => {
               const IconComponent = service.icon;
-              return (
-                <Card key={index} className="bg-white border-0 shadow-sm hover:shadow-md transition-shadow">
+              return <Card key={index} className="bg-white border-0 shadow-sm hover:shadow-md transition-shadow">
                   <CardHeader className="text-center pb-4">
                     <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center mx-auto mb-4">
                       <IconComponent className="h-6 w-6 text-white" />
@@ -158,8 +134,7 @@ const BusinessLanding: React.FC = () => {
                       {service.description}
                     </p>
                   </CardContent>
-                </Card>
-              );
+                </Card>;
             })}
           </div>
         </div>
@@ -175,19 +150,10 @@ const BusinessLanding: React.FC = () => {
             {t('ctaFinalSubtitle')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              className="bg-white hover:bg-gray-100 text-black px-8 py-3" 
-              onClick={() => navigate(getLoginRoute())}
-            >
+            <Button size="lg" className="bg-white hover:bg-gray-100 text-black px-8 py-3" onClick={() => navigate(getLoginRoute())}>
               {t('ctaFinalButton1')}
             </Button>
-            <Button 
-              variant="outline" 
-              size="lg" 
-              onClick={() => navigate(getPackagesRoute())} 
-              className="border-white hover:bg-white px-8 py-3 text-white hover:text-black"
-            >
+            <Button variant="outline" size="lg" onClick={() => navigate(getPackagesRoute())} className="border-white hover:bg-white px-8 py-3 text-stone-950">
               {t('ctaFinalButton2')}
             </Button>
           </div>
@@ -196,8 +162,6 @@ const BusinessLanding: React.FC = () => {
 
       <Footer />
     </div>
-    </>
-  );
+    </>;
 };
-
 export default BusinessLanding;
