@@ -48,7 +48,7 @@ const handleMissingKey = (lng: string[], ns: string, key: string, fallbackValue:
 i18n
   .use(HttpBackend)
   .use(LanguageDetector)
-  .use(initReactI18n)
+  .use(initReactI18next)
   .init({
     // Enhanced configuration for maximum stability
     lng: 'de',
