@@ -4,6 +4,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { monitoring } from "@/utils/monitoring";
 
 /**
  * Raw shape returned by Supabase join query
@@ -45,7 +46,7 @@ export const useServicePackages = () =>
   useQuery({
     queryKey: ["service-packages"],
     queryFn: async () => {
-      console.log('useServicePackages: Starting fetch with explicit JOIN strategy...');
+      const endTimer = monitoring.startTimer('useServicePackages fetch');
       
       try {
         // Step 1: Fetch all service packages
@@ -56,16 +57,18 @@ export const useServicePackages = () =>
           .order('code');
 
         if (packagesError) {
-          console.error('useServicePackages: Packages query error:', packagesError);
+          monitoring.error('Failed to fetch service packages', packagesError, { 
+            query: 'service_packages' 
+          });
           throw new Error(`Fehler beim Laden der Pakete: ${packagesError.message}`);
         }
 
         if (!packages || packages.length === 0) {
-          console.warn('useServicePackages: No packages found');
+          monitoring.warn('No service packages found in database');
           return [];
         }
 
-        console.log('useServicePackages: Loaded packages:', packages.length);
+        monitoring.info('Successfully loaded service packages', { count: packages.length });
 
         // Step 2: Fetch all service prices
         const { data: prices, error: pricesError } = await supabase
@@ -74,11 +77,13 @@ export const useServicePackages = () =>
           .order('package_id');
 
         if (pricesError) {
-          console.error('useServicePackages: Prices query error:', pricesError);
+          monitoring.error('Failed to fetch service prices', pricesError, { 
+            query: 'service_prices' 
+          });
           throw new Error(`Fehler beim Laden der Preise: ${pricesError.message}`);
         }
 
-        console.log('useServicePackages: Loaded prices:', prices?.length || 0);
+        monitoring.info('Successfully loaded service prices', { count: prices?.length || 0 });
 
         // Step 3: Merge packages with their prices
         const mappedPackages = packages.map((pkg) => {
@@ -98,7 +103,10 @@ export const useServicePackages = () =>
           const finalPrice = (promoPrice && promoActive) ? promoPrice : normalPrice;
           const originalPrice = (promoPrice && promoActive) ? normalPrice : null;
           
-          console.log(`Package ${pkg.code}: normal=${normalPrice}€, promo=${promoPrice}€, active=${promoActive}, final=${finalPrice}€`);
+          // Log pricing issues for monitoring
+          if (!priceData) {
+            monitoring.warn('Package missing price data', { packageCode: pkg.code });
+          }
           
           return {
             id: pkg.id,
@@ -122,13 +130,18 @@ export const useServicePackages = () =>
           };
         });
         
-        console.log('useServicePackages: Successfully mapped packages:', mappedPackages.length);
-        console.log('useServicePackages: Final package data:', mappedPackages);
+        endTimer();
+        monitoring.trackPackageLoad(packages.length, prices?.length || 0, performance.now());
+        monitoring.info('Package mapping completed successfully', { 
+          totalPackages: mappedPackages.length,
+          packagesWithPrices: mappedPackages.filter(p => p.base_price > 0).length
+        });
         
         return mappedPackages as ServicePackage[];
         
       } catch (error) {
-        console.error('useServicePackages: Critical error:', error);
+        endTimer();
+        monitoring.error('Critical error in useServicePackages', error as Error);
         throw error;
       }
     },

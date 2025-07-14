@@ -1803,6 +1803,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_service_prices_package_id"
+            columns: ["package_id"]
+            isOneToOne: true
+            referencedRelation: "service_packages"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "service_prices_package_id_fkey"
             columns: ["package_id"]
             isOneToOne: true
