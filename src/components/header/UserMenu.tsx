@@ -35,7 +35,7 @@ const UserMenu: React.FC = () => {
       <Button
         variant="outline"
         onClick={() => navigate('/business/partner/login')}
-        className="flex" // Entfernt hidden md:flex - jetzt immer sichtbar
+        className="" // KRITISCHER FIX: Keine hidden/md:flex Klassen - immer sichtbar!
       >
         {tNav('login')}
       </Button>
@@ -45,7 +45,7 @@ const UserMenu: React.FC = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="flex"> {/* Entfernt hidden md:flex */}
+        <Button variant="outline" className=""> {/* KRITISCHER FIX: Immer sichtbar */}
           {user.email || tAuth('profile')}
         </Button>
       </DropdownMenuTrigger>
