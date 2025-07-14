@@ -12,23 +12,30 @@ const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <header className="bg-white border-b border-gray-200 w-full sticky top-0 z-50 shadow-sm">
+    <header className="bg-white border-b border-gray-200 w-full sticky top-0 z-50 shadow-sm min-h-[64px]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center min-w-0">
+          {/* Logo Section - Enhanced visibility */}
+          <div className="flex items-center min-w-0 flex-shrink-0">
             <button 
               onClick={() => navigate('/')}
-              className="hover:opacity-80 transition-opacity flex-shrink-0"
+              className="hover:opacity-80 transition-opacity flex items-center p-1 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               aria-label="Go to homepage"
             >
-              <Logo size="sm" />
+              <Logo size="sm" className="max-w-none" />
             </button>
           </div>
           
-          <NavigationMenu />
+          {/* Navigation Menu - Hidden on mobile */}
+          <div className="hidden md:block">
+            <NavigationMenu />
+          </div>
           
-          <div className="flex items-center space-x-4">
-            <UserMenu />
+          {/* Right side controls */}
+          <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
+            <div className="hidden sm:block">
+              <UserMenu />
+            </div>
             <LanguageToggle />
             <MobileMenu 
               isOpen={isMobileMenuOpen} 

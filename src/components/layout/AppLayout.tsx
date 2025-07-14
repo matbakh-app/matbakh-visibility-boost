@@ -22,19 +22,29 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
+      {/* Header ist IMMER sichtbar */}
       <Header />
-      <main className="flex-1">
+      
+      {/* Main Content */}
+      <main className="flex-1 w-full">
+        {/* Back Navigation - nur auf bestimmten Seiten */}
         {showBackButtons && (
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="py-4">
-              <BackHomeButtons />
+          <div className="w-full border-b border-gray-100">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="py-4">
+                <BackHomeButtons />
+              </div>
             </div>
           </div>
         )}
-        <div className="max-w-7xl mx-auto px-4">
+        
+        {/* Page Content - vereinfachte Container-Struktur */}
+        <div className="w-full">
           {children}
         </div>
       </main>
+      
+      {/* Footer ist IMMER sichtbar */}
       <Footer />
     </div>
   );
