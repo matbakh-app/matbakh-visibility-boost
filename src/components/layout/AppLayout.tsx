@@ -12,8 +12,9 @@ interface AppLayoutProps {
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const location = useLocation();
   
-  // Seiten ohne Navigation/Layout
-  const hideLayoutOn = ['/'];
+  // KRITISCHER FIX: Header/Footer sollten IMMER sichtbar sein
+  // Entferne hideLayoutOn = ['/'] - das war der Hauptfehler!
+  const hideLayoutOn: string[] = []; // Leer lassen - Layout immer anzeigen
   
   // Seiten ohne BackHomeButtons (Landing und Home)
   const hideBackButtonsOn = ['/', '/business/partner'];

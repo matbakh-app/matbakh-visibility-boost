@@ -25,7 +25,7 @@ const handleMissingKey = (lng: string[], ns: string, key: string, fallbackValue:
     if (process.env.NODE_ENV === 'development') {
       console.warn(`🚨 [i18n] Missing translation key: ${keyPath} for language(s): ${lng.join(', ')}`);
       
-      // Log to sessionStorage for debugging
+      // Sichere sessionStorage-Behandlung mit Error-Handling
       try {
         const existing = JSON.parse(sessionStorage.getItem('i18n-missing-keys') || '[]');
         existing.push({ 
@@ -54,13 +54,13 @@ i18n
     lng: 'de',
     fallbackLng: 'de',
     supportedLngs: ['de', 'en'],
-    // WICHTIG: Neue Namespaces hinzugefügt!
+    // ERWEITERT: Alle neuen Legal-Namespaces hinzugefügt!
     ns: [
       'common', 'translation', 'adminPanel', 'auth', 'nav', 'footer', 'hero', 'features', 'dashboard', 'cookieConsent',
       'landing',
-      // Neue Service-Namespaces
+      // Service-Namespaces
       'packages', 'services', 'admin', 'pricing',
-      // Legal-Namespaces
+      // Legal-Namespaces - KRITISCHER FIX: Alle legal-* Namespaces
       'legal-impressum', 'legal-datenschutz', 'legal-agb', 'legal-nutzung', 'legal-kontakt',
       'legal-imprint', 'legal-privacy', 'legal-terms', 'legal-usage', 'legal-contact'
     ],
@@ -77,8 +77,8 @@ i18n
       escapeValue: false
     },
     // Enhanced error handling
-    debug: process.env.NODE_ENV === 'development', // Debug nur in Development
-    saveMissing: false, // Never auto-save missing keys
+    debug: process.env.NODE_ENV === 'development',
+    saveMissing: false,
     missingKeyHandler: handleMissingKey,
     // Improved parsing and loading
     parseMissingKeyHandler: (key: string) => {
@@ -87,12 +87,32 @@ i18n
     // Better error recovery
     load: 'languageOnly',
     preload: ['de', 'en'],
-    // Cache management
+    // KRITISCHER FIX: Sichere localStorage-Behandlung
     detection: {
       order: ['localStorage', 'navigator', 'htmlTag'],
-      caches: ['localStorage']
+      caches: ['localStorage'],
+      // localStorage Error-Handling
+      lookupLocalStorage: 'i18nextLng',
+      checkWhitelist: true
     }
   });
+
+// KRITISCHER FIX: localStorage säubern bei JSON-Parse-Fehlern
+try {
+  const stored = localStorage.getItem('i18nextLng');
+  if (stored && stored !== 'de' && stored !== 'en' && !stored.startsWith('"')) {
+    console.warn('🔧 [i18n] Fixing corrupted localStorage language setting');
+    localStorage.setItem('i18nextLng', 'de');
+  }
+} catch (error) {
+  console.error('localStorage cleanup failed:', error);
+  // Fallback: localStorage komplett löschen für i18n
+  try {
+    localStorage.removeItem('i18nextLng');
+  } catch (e) {
+    console.error('Could not clear localStorage:', e);
+  }
+}
 
 // Debug current language and loaded namespaces
 i18n.on('initialized', (options) => {
