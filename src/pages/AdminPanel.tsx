@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import Header from '@/components/Header';
+import AdminLayout from '@/components/layout/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -89,9 +90,7 @@ const AdminPanel: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-
+    <AdminLayout>
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold">{t('title')}</h1>
@@ -259,7 +258,7 @@ const AdminPanel: React.FC = () => {
           onSuccess={loadData}
         />
       </div>
-    </div>
+    </AdminLayout>
   );
 };
 
