@@ -49,9 +49,9 @@ const TrustElements: React.FC<TrustElementsProps> = ({ language = 'de' }) => {
                 <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center mx-auto mb-4">
                   <Star className="h-6 w-6 text-white" />
                 </div>
-                <div className="text-3xl font-bold text-black mb-2">{t('trust.stats.rating.number')}</div>
-                <div className="font-semibold text-gray-900 mb-2">{t('trust.stats.rating.label')}</div>
-                <p className="text-sm text-gray-600">{t('trust.stats.rating.description')}</p>
+                <div className="text-3xl font-bold text-black mb-2">{t('trust.stats.dashboard.number')}</div>
+                <div className="font-semibold text-gray-900 mb-2">{t('trust.stats.dashboard.label')}</div>
+                <p className="text-sm text-gray-600">{t('trust.stats.dashboard.description')}</p>
               </CardContent>
             </Card>
 
