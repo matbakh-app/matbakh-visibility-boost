@@ -109,29 +109,42 @@ export const useServicePackages = () =>
 // Helper function to get features by package code
 const getFeaturesByCode = (code: string): string[] => {
   const featureMap: Record<string, string[]> = {
-    'google-business-setup': [
-      'Vollständige Google Business Profil-Erstellung',
-      'SEO-Optimierung für lokale Suche',
-      'Kategorien und Attribute einrichten',
-      'Öffnungszeiten und Kontaktdaten pflegen'
+    'profile_dashboard_basic': [
+      'Einfach angebunden: Google, Facebook & Instagram im Griff',
+      'Ihre wichtigsten Zahlen (KPIs) – immer aktuell ausgewertet',
+      'Monatlicher Erfolgsbericht per Mail – kein Aufwand für Sie'
     ],
-    'profilpflege-basis': [
-      '4 monatliche Updates Ihrer Daten',
-      'Neue Speisekarten hochladen',
-      'Angebote und Aktionen erstellen',
-      'Monatlicher Erfolgsbericht'
+    'google_profile_setup': [
+      'Sofort startklar: Ihr Google Business Profil komplett eingerichtet',
+      'Besser gefunden werden – SEO für lokale Gäste',
+      'Kategorien, Attribute & Fotos optimal gepflegt',
+      'Alle Öffnungszeiten und Kontaktdaten korrekt integriert'
     ],
-    'social-media-management': [
-      'Einheitliches Design für wiederkehrende Posts',
-      '1 Post pro Tag (30 Posts/Monat)',
-      'Content-Vorabprüfung durch Sie',
-      'Performance-Tracking und Analytics'
+    'profile_management_classic': [
+      'Alle Basic-Vorteile plus:',
+      'Ihr persönlicher Business Agent – mit KI-Empfehlungen',
+      'Analytics rund um die Uhr, automatisch für Sie aktualisiert',
+      'Speisekarten schnell online, Angebote per Klick promoten',
+      'Monatlicher Erfolgsbericht – einfach & verständlich'
     ],
-    'premium-business-paket': [
-      'Google Business Setup inklusive',
-      '6 Monate Profilpflege inklusive',
-      '1 Social Media Kanal für 6 Monate',
-      'Persönlicher Account Manager'
+    'profile_management_premium': [
+      'Alle Classic-Features plus:',
+      'Noch leistungsstärkere KI-Empfehlungen für Ihr Wachstum',
+      'Intelligenter Content-Generator – immer frische Ideen für Posts',
+      'Benchmark Ihrer Speisekarten im Vergleich zum Wettbewerb',
+      'Komplette Social Media Strategie & 6-Wochen-Contentplan',
+      'Exklusive Aktionen je nach Event & Stadt – automatisch für Sie'
+    ],
+    'meta_business_suite_setup': [
+      'Einheitliche Kanal-Erstellung & Konfiguration',
+      'Individuelle Design-Vorlagen für beide Plattformen',
+      'Zielgruppen-Recherche & Setup'
+    ],
+    'starter_kit': [
+      'Business-Profil Setup in Google Console & Meta Business Suite mit proaktivem Management inklusive',
+      '6 Monate Rundum-Service ohne Extrakosten',
+      'Social Media Management auf Wunsch-Kanal',
+      'Ihr persönlicher Account Manager für alle Fragen'
     ]
   };
   
