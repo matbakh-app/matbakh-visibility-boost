@@ -85,7 +85,7 @@ const ServicesPage: React.FC = () => {
         namespace="translation"
       />
       <AppLayout>
-        <div className="max-w-4xl mx-auto px-4 py-16">
+        <div className="py-16">
           {/* Header */}
           <div className="text-center mb-16">
             <h1 className="text-4xl font-bold text-black mb-4">

@@ -24,12 +24,14 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     <div className="min-h-screen bg-white flex flex-col">
       <Header />
       <main className="flex-1">
-        <div className="max-w-7xl mx-auto px-4">
-          {showBackButtons && (
+        {showBackButtons && (
+          <div className="max-w-7xl mx-auto px-4">
             <div className="py-4">
               <BackHomeButtons />
             </div>
-          )}
+          </div>
+        )}
+        <div className="max-w-7xl mx-auto px-4">
           {children}
         </div>
       </main>
