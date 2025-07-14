@@ -11,22 +11,29 @@ import LegalLayout from '@/layouts/LegalLayout';
 const AGB: React.FC = () => {
   const { t } = useTranslation('legal-agb');
 
+  // Clean mapping of existing translation keys from legal-agb.json
+  const LEGAL_SECTIONS = [
+    ['scopeTitle', 'scopeText'],
+    ['servicesTitle', 'servicesText'],
+  ];
+
   return (
     <LegalLayout titleKey="title" pageType="terms">
       <div className="prose max-w-none space-y-6">
-        <section>
-          <h2 className="text-xl font-semibold mb-4">{t('scopeTitle')}</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            {t('scopeText')}
-          </p>
-        </section>
+        {LEGAL_SECTIONS.map(([titleKey, textKey]) => (
+          <section key={titleKey}>
+            <h2 className="text-xl font-semibold mb-4">{t(titleKey)}</h2>
+            <p className="text-muted-foreground leading-relaxed">
+              {t(textKey)}
+            </p>
+          </section>
+        ))}
 
-        <section>
-          <h2 className="text-xl font-semibold mb-4">{t('servicesTitle')}</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            {t('servicesText')}
+        <div className="mt-8 pt-4 border-t border-border">
+          <p className="text-sm text-muted-foreground">
+            {t('lastUpdated')}
           </p>
-        </section>
+        </div>
       </div>
     </LegalLayout>
   );
