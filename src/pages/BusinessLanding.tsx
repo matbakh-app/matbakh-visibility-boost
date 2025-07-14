@@ -1,3 +1,14 @@
+/**
+ * ⚠️ Alle sichtbaren Landing-Page-Texte werden ausschließlich aus translation.json > landing geladen. 
+ * Änderungen an Texten nur über die JSON-Dateien!
+ * 
+ * Landing-Page Schlüsselstruktur:
+ * - landing.heroTitle: Hauptüberschrift der Hero-Sektion
+ * - landing.heroSubtitle: Untertitel der Hero-Sektion
+ * - landing.cta1/cta2: Call-to-Action Buttons
+ * - landing.servicesTitle/servicesSubtitle: Services-Sektion
+ * - landing.ctaFinalTitle/ctaFinalSubtitle/ctaFinalButton1/ctaFinalButton2: Finale CTA-Sektion
+ */
 
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -71,8 +82,8 @@ const BusinessLanding: React.FC = () => {
   return (
     <>
       <SeoMeta
-        title={t('landing.heroTitle', 'Business Partner')}
-        description={t('landing.heroSubtitle', 'Plattformübergreifende Sichtbarkeit für Gastronomie')}
+        title={t('landing.heroTitle')}
+        description={t('landing.heroSubtitle')}
         namespace="translation"
       />
       
