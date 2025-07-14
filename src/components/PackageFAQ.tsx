@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -12,7 +13,7 @@ interface PackageFAQProps {
 }
 
 const PackageFAQ: React.FC<PackageFAQProps> = ({ language = 'de' }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('pricing');
 
   return (
     <section className="py-16 bg-white">

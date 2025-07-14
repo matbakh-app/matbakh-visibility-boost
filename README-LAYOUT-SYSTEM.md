@@ -1,191 +1,177 @@
 
-# Layout-System & i18n-Struktur - Entwickler-Dokumentation
+# 🏗️ Layout & i18n System Documentation
 
-## 🏗️ Zentrale Layout-Komponenten
+## 📋 Übersicht
 
-### 1. AppLayout (Standard für öffentliche Seiten)
-**Verwendet für:** Landing, Packages, Services, Legal-Seiten, B2C-Bereiche
+Dieses Dokument beschreibt das zentrale Layout-System und die i18n-Namespace-Architektur der matbakh.app.
 
-```tsx
-import AppLayout from '@/components/layout/AppLayout';
+## 🎯 Layout-Komponenten
 
-export default function MyPage() {
-  return (
-    <AppLayout>
-      <div>Mein Seiteninhalt</div>
-    </AppLayout>
-  );
-}
-```
+### Zentrale Layout-Dateien
 
-**Enthält:**
-- Header mit Logo und Navigation
-- Footer
-- BackHomeButtons (auf Unterseiten)
-- Responsive Container
+| Layout | Verwendung | Enthält |
+|--------|------------|---------|
+| `AppLayout.tsx` | Alle öffentlichen Seiten | Header, Footer, Logo zentral |
+| `LegalLayout.tsx` | Rechtliche Seiten | Minimaler Header, Fokus auf Content |
+| `DashboardLayout.tsx` | Partner-Dashboard & Unterseiten | Sidebar, Navigation, Header |
+| `AdminLayout.tsx` | Admin-Bereiche | Admin-Navigation, Header |
 
-### 2. DashboardLayout (für Partner-Bereiche)
-**Verwendet für:** Dashboard, Analytics, Profile-Management
+### Logo-Integration
 
-```tsx
-import DashboardLayout from '@/components/layout/DashboardLayout';
-
-export default function DashboardPage() {
-  return (
-    <DashboardLayout>
-      <h1>Dashboard Inhalt</h1>
-    </DashboardLayout>
-  );
-}
-```
-
-**Enthält:**
-- Header mit Logo
-- TrialBanner
-- Footer
-- Container für Dashboard-Content
-
-### 3. AdminLayout (für Admin-Bereiche)
-**Verwendet für:** AdminPanel, Content-Management
-
-```tsx
-import AdminLayout from '@/components/layout/AdminLayout';
-
-export default function AdminPage() {
-  return (
-    <AdminLayout>
-      <div>Admin Inhalt</div>
-    </AdminLayout>
-  );
-}
-```
-
-### 4. LegalLayout (für rechtliche Seiten)
-**Verwendet für:** Impressum, Datenschutz, AGB, etc.
-
-Bereits vorhanden, funktioniert wie gehabt.
+- **Zentral:** `Header.tsx` enthält das Logo
+- **Einzige Quelle:** Logo wird nur einmal gerendert
+- **Überall sichtbar:** Durch zentrale Layouts auf allen Seiten
 
 ## 🌐 i18n-Namespace-Struktur
 
-### Aktuelle Namespaces:
-- `landing.json` - Landing-Page Hero, CTAs, Services
-- `packages.json` - **ERSTELLEN** - Alle Paket-Informationen  
-- `services.json` - **ERSTELLEN** - Service-Beschreibungen
-- `dashboard.json` - Dashboard-Texte
-- `admin.json` - **ERSTELLEN** - Admin-Panel-Texte
-- `common.json` - Allgemeine Begriffe
-- `footer.json` - Footer-Links
-- `nav.json` - Navigation
+### Core Namespaces
 
-### Verwendung in Komponenten:
+| Namespace | Inhalt | Verwendung |
+|-----------|--------|------------|
+| `common` | Basis-Übersetzungen | Buttons, Aktionen, Status |
+| `translation` | Legacy-Inhalte | Wird schrittweise aufgelöst |
+
+### Feature-Namespaces
+
+| Namespace | Inhalt | Verwendung |
+|-----------|--------|------------|
+| `landing` | Landing-Page Texte | Hero, CTAs, Services |
+| `packages` | Paket-Informationen | Titel, Beschreibungen, Preise |
+| `services` | Service-Details | Features, Benefits, Beschreibungen |
+| `pricing` | Preisgestaltung | Vergleiche, FAQ, Prozesse |
+| `admin` | Admin-Interface | Verwaltung, Navigation, Status |
+| `dashboard` | Dashboard-Texte | KPIs, Charts, Aktionen |
+
+### Legal Namespaces
+
+| Namespace | Inhalt |
+|-----------|--------|
+| `legal-impressum` / `legal-imprint` | Impressum |
+| `legal-datenschutz` / `legal-privacy` | Datenschutz |
+| `legal-agb` / `legal-terms` | AGB |
+
+## 🚀 Neue Seiten erstellen
+
+### 1. Layout wählen
+
 ```tsx
-import { useTranslation } from 'react-i18next';
+// Öffentliche Seite
+<AppLayout>
+  <MeinContent />
+</AppLayout>
 
-export default function MyComponent() {
-  const { t } = useTranslation('packages'); // Namespace wählen
-  
-  return (
-    <div>
-      <h2>{t('basic.title')}</h2>
-      <p>{t('basic.description')}</p>
-      <span>{t('basic.price')}</span>
-    </div>
-  );
+// Dashboard-Seite
+<DashboardLayout>
+  <MeinDashboard />
+</DashboardLayout>
+
+// Admin-Seite
+<AdminLayout>
+  <MeinAdmin />
+</AdminLayout>
+```
+
+### 2. i18n-Namespace verwenden
+
+```tsx
+const { t } = useTranslation('mein-namespace');
+
+// Texte aus JSON laden
+<h1>{t('title')}</h1>
+<p>{t('description')}</p>
+```
+
+### 3. JSON-Dateien erstellen
+
+```
+public/locales/de/mein-namespace.json
+public/locales/en/mein-namespace.json
+```
+
+## 📝 Content-Management
+
+### Phase 1: JSON-basiert ✅
+- Alle Texte in strukturierten JSON-Dateien
+- Flache Hierarchien für bessere Wartbarkeit
+- Separate Namespaces pro Feature
+
+### Phase 2: Admin-Interface (geplant)
+- Grafische Bearbeitungsmasken
+- Live-Vorschau der Änderungen
+- Preise und Features editierbar
+
+### Phase 3: Automatisierung (Zukunft)
+- Automatische Übersetzungen
+- Content-Versionierung
+- Workflow-Management
+
+## 🔧 Entwickler-Guidelines
+
+### Neue Übersetzungen hinzufügen
+
+1. **Namespace registrieren** in `src/lib/i18n.ts`:
+```tsx
+ns: ['common', 'mein-neuer-namespace', ...]
+```
+
+2. **JSON-Dateien erstellen**:
+```json
+// public/locales/de/mein-namespace.json
+{
+  "title": "Mein Titel",
+  "cta": {
+    "button": "Jetzt starten"
+  }
 }
 ```
 
-## 🎯 Neue Seite erstellen - Checkliste
-
-### ✅ Schritt 1: Layout wählen
-```tsx
-// Öffentliche Seite
-import AppLayout from '@/components/layout/AppLayout';
-
-// Dashboard-Seite  
-import DashboardLayout from '@/components/layout/DashboardLayout';
-
-// Admin-Seite
-import AdminLayout from '@/components/layout/AdminLayout';
-```
-
-### ✅ Schritt 2: i18n-Namespace definieren
+3. **In Komponente verwenden**:
 ```tsx
 const { t } = useTranslation('mein-namespace');
+return <h1>{t('title')}</h1>;
 ```
 
-### ✅ Schritt 3: JSON-Dateien erstellen
-- `/public/locales/de/mein-namespace.json`
-- `/public/locales/en/mein-namespace.json`
+### Hardcoded Texte vermeiden
 
-### ✅ Schritt 4: Namespace in i18n.ts registrieren
-```typescript
-// In src/lib/i18n.ts
-ns: ['common', 'landing', 'packages', 'mein-namespace', ...]
-```
-
-### ✅ Schritt 5: KEINE Hardcoded-Texte!
+❌ **Schlecht:**
 ```tsx
-// ❌ NICHT so:
-<h1>Mein Titel</h1>
+<h1>Unsere Angebote</h1>
+```
 
-// ✅ SONDERN so:
+✅ **Gut:**
+```tsx
+const { t } = useTranslation('packages');
 <h1>{t('title')}</h1>
 ```
 
-## 🚀 Logo-System
+## 📊 Aktueller Status
 
-**Zentrale Logo-Komponente:** `src/components/Logo.tsx`
+### ✅ Implementiert
+- [x] Zentrale Layout-Komponenten
+- [x] Logo-Integration überall
+- [x] Separate i18n-Namespaces
+- [x] Packages & Services Namespace
+- [x] Admin & Pricing Namespace
+- [x] Automatische Namespace-Registrierung
 
-**Verwendung:**
-```tsx
-import Logo from '@/components/Logo';
+### 🚧 In Arbeit
+- [ ] Alle Komponenten auf neue Namespaces migriert
+- [ ] Hardcoded Texte eliminiert
+- [ ] Admin-Interface für Content-Management
 
-<Logo size="sm" />   // Header
-<Logo size="lg" />   // Hero-Sektion  
-<Logo size="hero" /> // Große Landing-Pages
-```
+### 🎯 Geplant
+- [ ] Preise aus DB steuerbar
+- [ ] Live-Content-Editor
+- [ ] Multi-Language Content-Sync
 
-**Das Logo wird AUTOMATISCH in allen Layouts gerendert via Header.tsx**
+## 🎨 Design-Prinzipien
 
-## ⚡ Performance & Wartung
-
-### Layout-Vorteile:
-- **Ein Logo-Import** → überall sichtbar
-- **Einheitliche Navigation** → konsistente UX  
-- **Zentrale Komponenten** → einfache Updates
-- **Klare Verantwortlichkeiten** → weniger Bugs
-
-### i18n-Vorteile:
-- **Admin-steuerbare Inhalte** → keine Code-Deployments für Textänderungen
-- **Mehrsprachigkeit** → automatisch für alle Texte
-- **SEO-Optimierung** → strukturierte, übersetzbare Metadaten
-- **Skalierbarkeit** → neue Sprachen einfach hinzufügbar
-
-## 🔧 Admin-Steuerung (Roadmap)
-
-**Phase 2-3:** Admin-Panel erweitern für:
-- Live-Text-Editing aller i18n-Keys
-- Preisänderungen ohne Code-Deployment  
-- Feature-Toggle für Pakete/Services
-- Content-Vorschau vor Publikation
-
-## 🐛 Troubleshooting
-
-### Logo nicht sichtbar?
-1. Browser-Cache leeren (Strg+Shift+R)
-2. Dev-Server neustarten
-3. Prüfen: `/lovable-uploads/cac34de9-55d9-46d4-a2ad-62bc4d429666.png` lädt?
-
-### Layout bricht?
-1. Prüfen: Richtiges Layout importiert?
-2. Prüfen: Layout-Komponente schliesst mit children?
-3. Prüfen: CSS-Konflikte in DevTools?
-
-### i18n-Key fehlt?
-1. JSON-Datei erstellt und befüllt?
-2. Namespace in i18n.ts registriert?  
-3. Browser-Cache für Locales geleert?
+1. **Ein Logo überall** - Zentral in Header.tsx
+2. **Konsistente Layouts** - Jede Seite nutzt passenden Layout-Wrapper
+3. **Flache i18n-Struktur** - Einfache Schlüssel ohne tiefe Verschachtelung
+4. **Feature-basierte Namespaces** - Ein Namespace pro Anwendungsbereich
+5. **Admin-steuerbar** - Alle Inhalte später über Admin-Panel editierbar
 
 ---
-**Erstellt:** Phase 1 Layout-Konsistenz  
-**Nächste Schritte:** Phase 2 i18n-Namespaces erweitern
+
+*Stand: Phase 2 abgeschlossen - Zentrale Layouts & i18n-Namespaces implementiert*

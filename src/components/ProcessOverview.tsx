@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,7 +9,7 @@ interface ProcessOverviewProps {
 }
 
 const ProcessOverview: React.FC<ProcessOverviewProps> = ({ language = 'de' }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('pricing');
 
   return (
     <section className="py-16 bg-white">

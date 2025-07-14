@@ -54,15 +54,17 @@ i18n
     lng: 'de',
     fallbackLng: 'de',
     supportedLngs: ['de', 'en'],
-    // WICHTIG: landing-Namespace hinzugefügt!
+    // WICHTIG: Neue Namespaces hinzugefügt!
     ns: [
       'common', 'translation', 'adminPanel', 'auth', 'nav', 'footer', 'hero', 'features', 'dashboard', 'cookieConsent',
       'landing',
-      // Neue separate Legal-Namespaces
+      // Neue Service-Namespaces
+      'packages', 'services', 'admin', 'pricing',
+      // Legal-Namespaces
       'legal-impressum', 'legal-datenschutz', 'legal-agb', 'legal-nutzung', 'legal-kontakt',
       'legal-imprint', 'legal-privacy', 'legal-terms', 'legal-usage', 'legal-contact'
     ],
-    defaultNS: 'common', // common als Standard-Namespace
+    defaultNS: 'common',
     fallbackNS: ['common', 'translation'],
     backend: {
       loadPath: '/locales/{{lng}}/{{ns}}.json',
