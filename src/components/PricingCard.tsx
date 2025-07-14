@@ -59,6 +59,16 @@ const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = fals
   };
 
   const getPackageName = (packageSlug: string) => {
+    // First try translation key, then fallback to mapping, then default name
+    try {
+      const translatedName = t(`packages.${packageSlug}.title`);
+      if (translatedName && translatedName !== `packages.${packageSlug}.title`) {
+        return translatedName;
+      }
+    } catch (error) {
+      console.warn(`No translation found for packages.${packageSlug}.title`);
+    }
+    
     return packageNameMap[packageSlug]?.[language as 'de' | 'en'] || pkg.name;
   };
 
@@ -82,31 +92,45 @@ const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = fals
           {getPackageName(pkg.slug)}
         </CardTitle>
         <div className="mt-4">
-          {pkg.original_price && pkg.original_price > pkg.base_price && (
-            <>
-              <p className="text-sm text-red-600 font-medium mb-1">
-                {t('pricing.limitedTime')}
+          {/* Handle missing price gracefully */}
+          {pkg.base_price === 0 ? (
+            <div className="text-center">
+              <span className="text-2xl font-bold text-gray-600">
+                {t('pricing.priceOnRequest')}
+              </span>
+              <p className="text-gray-500 mt-1 text-sm">
+                {t('pricing.contactUs')}
               </p>
-              <div className="flex items-center justify-center gap-2">
-                <span className="text-2xl text-gray-400 line-through">
-                  €{pkg.original_price}
-                </span>
+            </div>
+          ) : (
+            <>
+              {pkg.original_price && pkg.original_price > pkg.base_price && (
+                <>
+                  <p className="text-sm text-red-600 font-medium mb-1">
+                    {t('pricing.limitedTime')}
+                  </p>
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-2xl text-gray-400 line-through">
+                      {pkg.original_price.toFixed(2)} €
+                    </span>
+                    <span className="text-3xl font-bold text-black">
+                      {pkg.base_price.toFixed(2)} €
+                    </span>
+                  </div>
+                </>
+              )}
+              {(!pkg.original_price || pkg.original_price <= pkg.base_price) && (
                 <span className="text-3xl font-bold text-black">
-                  €{pkg.base_price}
+                  {pkg.base_price.toFixed(2)} €
                 </span>
-              </div>
+              )}
+              <p className="text-gray-600 mt-1">
+                {pkg.period === 'monthly' ? `/${t('pricing.month')}` : 
+                 pkg.slug === 'starter_kit' ? t('pricing.sixMonths') : 
+                 t('pricing.oneTime')}
+              </p>
             </>
           )}
-          {(!pkg.original_price || pkg.original_price <= pkg.base_price) && (
-            <span className="text-3xl font-bold text-black">
-              €{pkg.base_price}
-            </span>
-          )}
-          <p className="text-gray-600 mt-1">
-            {pkg.period === 'monthly' ? `/${t('pricing.month')}` : 
-             pkg.slug === 'starter_kit' ? t('pricing.sixMonths') : 
-             t('pricing.oneTime')}
-          </p>
         </div>
       </CardHeader>
       

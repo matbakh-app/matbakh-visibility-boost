@@ -45,62 +45,92 @@ export const useServicePackages = () =>
   useQuery({
     queryKey: ["service-packages"],
     queryFn: async () => {
-      console.log('useServicePackages: Starting fetch...');
+      console.log('useServicePackages: Starting fetch with explicit JOIN strategy...');
       
-      const { data, error } = await supabase
-        .from("service_packages")
-        .select(`
-          id, 
-          code, 
-          default_name, 
-          is_recurring, 
-          interval_months, 
-          service_prices(
-            normal_price_cents, 
-            promo_price_cents, 
-            promo_active
-          )
-        `);
+      try {
+        // Step 1: Fetch all service packages
+        const { data: packages, error: packagesError } = await supabase
+          .from("service_packages")
+          .select("id, code, default_name, is_recurring, interval_months")
+          .eq('is_active', true)
+          .order('code');
 
-      console.log('useServicePackages: Raw database response:', { data, error });
+        if (packagesError) {
+          console.error('useServicePackages: Packages query error:', packagesError);
+          throw new Error(`Fehler beim Laden der Pakete: ${packagesError.message}`);
+        }
 
-      if (error) {
-        console.error('useServicePackages: Database error:', error);
-        throw new Error(`Fehler beim Laden der Pakete: ${error.message}`);
-      }
-      
-      if (!data) {
-        console.warn('useServicePackages: No data returned from database');
-        return [];
-      }
+        if (!packages || packages.length === 0) {
+          console.warn('useServicePackages: No packages found');
+          return [];
+        }
 
-      console.log('useServicePackages: Total records from database:', data.length);
-      
-      // Map the new schema to the expected UI format
-      const mappedPackages = data.map((pkg) => {
-        const price = pkg.service_prices?.[0];
-        const basePrice = (price?.normal_price_cents ?? 0) / 100;
-        const promoPrice = price?.promo_price_cents ? price.promo_price_cents / 100 : null;
+        console.log('useServicePackages: Loaded packages:', packages.length);
+
+        // Step 2: Fetch all service prices
+        const { data: prices, error: pricesError } = await supabase
+          .from("service_prices")
+          .select("package_id, normal_price_cents, promo_price_cents, promo_active")
+          .order('package_id');
+
+        if (pricesError) {
+          console.error('useServicePackages: Prices query error:', pricesError);
+          throw new Error(`Fehler beim Laden der Preise: ${pricesError.message}`);
+        }
+
+        console.log('useServicePackages: Loaded prices:', prices?.length || 0);
+
+        // Step 3: Merge packages with their prices
+        const mappedPackages = packages.map((pkg) => {
+          // Find price for this package
+          const priceData = prices?.find(p => p.package_id === pkg.id);
+          
+          // Calculate prices defensively
+          const normalPriceCents = priceData?.normal_price_cents || 0;
+          const promoPriceCents = priceData?.promo_price_cents;
+          const promoActive = priceData?.promo_active || false;
+          
+          // Convert cents to euros with proper formatting
+          const normalPrice = normalPriceCents / 100;
+          const promoPrice = promoPriceCents ? promoPriceCents / 100 : null;
+          
+          // Determine final pricing
+          const finalPrice = (promoPrice && promoActive) ? promoPrice : normalPrice;
+          const originalPrice = (promoPrice && promoActive) ? normalPrice : null;
+          
+          console.log(`Package ${pkg.code}: normal=${normalPrice}€, promo=${promoPrice}€, active=${promoActive}, final=${finalPrice}€`);
+          
+          return {
+            id: pkg.id,
+            slug: pkg.code,
+            name: pkg.default_name,
+            description: `Service package: ${pkg.default_name}`,
+            base_price: finalPrice,
+            original_price: originalPrice,
+            features: getFeaturesByCode(pkg.code),
+            is_active: true,
+            is_recommended: pkg.code === 'profile_management_premium',
+            period: pkg.is_recurring ? 'monthly' : 'one-time',
+            min_duration_months: pkg.interval_months || 0,
+            // Add debug info
+            _debug: {
+              hasPrice: !!priceData,
+              normalPriceCents,
+              promoPriceCents,
+              promoActive
+            }
+          };
+        });
         
-        return {
-          id: pkg.id,
-          slug: pkg.code, // keep old property name for existing components
-          name: pkg.default_name,
-          description: `Service package: ${pkg.default_name}`,
-          base_price: promoPrice && price?.promo_active ? promoPrice : basePrice,
-          original_price: promoPrice && price?.promo_active ? basePrice : null,
-          features: getFeaturesByCode(pkg.code),
-          is_active: true,
-          is_recommended: pkg.code === 'profile_management_premium', // Premium is now recommended
-          period: pkg.is_recurring ? 'monthly' : 'one-time',
-          min_duration_months: pkg.interval_months || 0
-        };
-      });
-      
-      console.log('useServicePackages: Successfully mapped packages:', mappedPackages.length);
-      console.log('useServicePackages: Final package data:', mappedPackages);
-      
-      return mappedPackages as ServicePackage[];
+        console.log('useServicePackages: Successfully mapped packages:', mappedPackages.length);
+        console.log('useServicePackages: Final package data:', mappedPackages);
+        
+        return mappedPackages as ServicePackage[];
+        
+      } catch (error) {
+        console.error('useServicePackages: Critical error:', error);
+        throw error;
+      }
     },
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
