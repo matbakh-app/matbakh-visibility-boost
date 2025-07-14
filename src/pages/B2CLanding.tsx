@@ -9,8 +9,8 @@ import Logo from '@/components/Logo';
 import { SeoMeta } from '@/components/SeoMeta';
 
 const B2CLanding: React.FC = () => {
-  const { t: tHero } = useTranslation('hero');
   const { t: tFeatures } = useTranslation('features');
+  const { t } = useTranslation(); // Für landing namespace
 
   const features = [
     {
@@ -68,24 +68,24 @@ const B2CLanding: React.FC = () => {
   return (
     <>
       <SeoMeta
-        title={tHero('b2cTitle', 'Für Gäste')}
-        description={tHero('b2cSubtitle', 'Smart Restaurant Discovery')}
-        namespace="hero"
+        title={t('landing.heroTitle')}
+        description={t('landing.heroSubtitle')}
+        namespace="translation"
       />
       <AppLayout>
         <div className="max-w-4xl mx-auto px-4 py-16">
-          {/* Hero Section with Logo */}
+          {/* Hero Section with Logo - using unified landing namespace */}
           <div className="text-center mb-16">
             <Logo size="lg" className="mx-auto mb-2" />
             <h1 className="mt-2 text-4xl font-bold text-black mb-4">
-              {tHero('b2cTitle')}
+              Für Gäste
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              {tHero('b2cSubtitle')}
+              Smart Restaurant Discovery
             </p>
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 inline-block">
               <p className="text-yellow-800 font-medium text-lg">
-                {tHero('b2cNote')}
+                Demnächst verfügbar
               </p>
             </div>
           </div>
@@ -121,13 +121,13 @@ const B2CLanding: React.FC = () => {
           {/* CTA Section */}
           <div className="bg-gray-50 rounded-lg p-8 text-center">
             <h2 className="text-2xl font-bold text-black mb-4">
-              {tHero('b2cInterested')}
+              Interessiert?
             </h2>
             <p className="text-lg text-gray-600 mb-8">
-              {tHero('b2cInterestedDescription')}
+              Lassen Sie sich benachrichtigen, wenn wir für Gäste verfügbar sind.
             </p>
             <Button size="lg" disabled className="opacity-50">
-              {tHero('b2cNote')}
+              Demnächst verfügbar
             </Button>
           </div>
         </div>

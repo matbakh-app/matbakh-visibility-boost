@@ -40,18 +40,18 @@ const BusinessLanding: React.FC = () => {
   const services = [
     {
       icon: Wrench,
-      title: t('services.setup.title'),
-      description: t('services.setup.description')
+      title: t('services.setup.coreTitle'),
+      description: t('services.setup.coreDescription')
     },
     {
       icon: BarChart3,
       title: t('services.management.title'),
-      description: t('services.management.description')
+      description: t('services.management.coreDescription')
     },
     {
       icon: Brain,
-      title: t('services.analytics.title'),
-      description: t('services.analytics.description')
+      title: t('services.analytics.coreTitle'),
+      description: t('services.analytics.coreDescription')
     }
   ];
 
