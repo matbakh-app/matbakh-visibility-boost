@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -34,7 +35,7 @@ const UserMenu: React.FC = () => {
       <Button
         variant="outline"
         onClick={() => navigate('/business/partner/login')}
-        className="hidden md:flex"
+        className="flex" // Entfernt hidden md:flex - jetzt immer sichtbar
       >
         {tNav('login')}
       </Button>
@@ -44,7 +45,7 @@ const UserMenu: React.FC = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="hidden md:flex">
+        <Button variant="outline" className="flex"> {/* Entfernt hidden md:flex */}
           {user.email || tAuth('profile')}
         </Button>
       </DropdownMenuTrigger>

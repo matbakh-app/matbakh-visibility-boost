@@ -1,3 +1,4 @@
+
 /*  ⚠️ KRITISCHE NAVIGATION-DATEI – NICHT OHNE GENEHMIGUNG ÄNDERN! ⚠️
  *
  *  Diese Datei steuert sämtliche Haupt-URLs, Mehrsprachigkeit und SEO-Routen.
@@ -104,7 +105,7 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     key: "dashboard", 
     labelKey: "nav.dashboard", 
     href: "/dashboard", 
-    showInNav: false, 
+    showInNav: true, // Jetzt in der Hauptnavigation sichtbar für angemeldete User
     protected: true, 
     roles: ["admin", "partner"],
     hrefs: { de: "/dashboard", en: "/dashboard" }
@@ -122,7 +123,7 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     key: "adminPanel", 
     labelKey: "nav.adminPanel", 
     href: "/admin", 
-    showInNav: false, 
+    showInNav: true, // Sichtbar für Admins
     protected: true, 
     roles: ["admin"],
     hrefs: { de: "/admin", en: "/admin" }
