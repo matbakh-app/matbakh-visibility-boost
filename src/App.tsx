@@ -72,13 +72,13 @@ function AdminRouteWrapper() {
       <Toaster />
       <I18nDebugPanel />
       <Routes>
-        <Route path="/" element={<AngebotePage />} />
+        <Route path="/" element={<BusinessLanding />} />
         <Route path="/de" element={<AngeboteDE />} />
         <Route path="/en" element={<PackagesEN />} />
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/b2c" element={<B2CLanding />} />
         <Route path="/b2c-en" element={<B2CLanding />} />
-        <Route path="/business/partner" element={<BusinessLanding />} />
+        <Route path="/business/partner" element={<AngebotePage />} />
         <Route path="/angebote" element={<AngeboteDE />} />
         <Route path="/packages" element={<PackagesEN />} />
         {/* Legal Routes - DE */}
