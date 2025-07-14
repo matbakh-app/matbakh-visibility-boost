@@ -2,7 +2,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import TrustElements from '@/components/TrustElements';
-import ProcessOverview from '@/components/ProcessOverview';
+
 import PackageComparison from '@/components/PackageComparison';
 import PackageFAQ from '@/components/PackageFAQ';
 import PricingCard from '@/components/PricingCard';
@@ -103,7 +103,6 @@ const AngeboteDE: React.FC = () => {
 
           {/* Components */}
           <TrustElements language="de" />
-          <ProcessOverview language="de" />
           <PackageComparison packages={packages} language="de" />
           <PackageFAQ language="de" />
         </div>

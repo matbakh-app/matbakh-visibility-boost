@@ -109,9 +109,9 @@ const ServicesPage: React.FC = () => {
 
             <div className="grid md:grid-cols-3 gap-8 mb-12">
               {coreServices.map((service, index) => (
-                <Card key={index} className="border-2 hover:border-gray-300 transition-colors">
-                  <CardHeader className="text-center">
-                    <div className="text-4xl mb-4">{service.icon}</div>
+                 <Card key={index} className="bg-white border-2 hover:border-gray-300 transition-colors">
+                   <CardHeader className="text-center">
+                     <div className="text-4xl mb-4 flex justify-center">{service.icon}</div>
                     <CardTitle className="text-xl font-bold text-black">
                       {t(service.titleKey)}
                     </CardTitle>
@@ -147,9 +147,9 @@ const ServicesPage: React.FC = () => {
 
             <div className="grid md:grid-cols-3 gap-8">
               {additionalServices.map((service, index) => (
-                <Card key={index} className="border hover:border-gray-300 transition-colors">
+                <Card key={index} className="bg-white border hover:border-gray-300 transition-colors">
                   <CardHeader className="text-center">
-                    <div className="text-3xl mb-4">{service.icon}</div>
+                    <div className="text-3xl mb-4 flex justify-center">{service.icon}</div>
                     <CardTitle className="text-lg font-bold text-black">
                       {t(service.titleKey)}
                     </CardTitle>
