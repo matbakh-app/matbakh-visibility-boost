@@ -18,8 +18,16 @@ const AdminPanel: React.FC = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('service_packages')
-        .select('*')
-        .order('sort_order', { ascending: true });
+        .select(`
+          *,
+          service_prices (
+            normal_price_cents,
+            promo_price_cents,
+            promo_active,
+            currency
+          )
+        `)
+        .order('created_at', { ascending: true });
       
       if (error) throw error;
       return data;
@@ -39,6 +47,20 @@ const AdminPanel: React.FC = () => {
     }
   });
 
+  // Helper function to format price from cents
+  const formatPrice = (priceInCents: number | null | undefined, currency = 'EUR') => {
+    if (!priceInCents) return t('noPrice');
+    return `${(priceInCents / 100).toFixed(2)} €`;
+  };
+
+  // Helper function to get period text
+  const getPeriodText = (isRecurring: boolean, intervalMonths: number | null) => {
+    if (!isRecurring) return t('period.oneTime');
+    if (intervalMonths === 1) return t('period.monthly');
+    if (intervalMonths === 12) return t('period.yearly');
+    return `${intervalMonths} ${t('period.months')}`;
+  };
+
   return (
     <>
       <SeoMeta
@@ -47,7 +69,7 @@ const AdminPanel: React.FC = () => {
         namespace="admin"
       />
       <AdminLayout>
-        <div className="space-y-6">
+        <div className="space-y-6 container mx-auto px-6 py-8">
           <div>
             <h1 className="text-3xl font-bold text-black">{t('title')}</h1>
             <p className="text-gray-600 mt-2">{t('subtitle')}</p>
@@ -55,8 +77,8 @@ const AdminPanel: React.FC = () => {
 
           <Tabs defaultValue="packages" className="space-y-6">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="packages">{t('navigation.packages')}</TabsTrigger>
-              <TabsTrigger value="addons">{t('navigation.services')}</TabsTrigger>
+              <TabsTrigger value="packages">{t('tabs.packages')}</TabsTrigger>
+              <TabsTrigger value="addons">{t('tabs.addons')}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="packages" className="space-y-6">
@@ -68,7 +90,7 @@ const AdminPanel: React.FC = () => {
               {packagesLoading ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto mb-4"></div>
-                  <p className="text-gray-600">{t('loading', { ns: 'common' })}</p>
+                  <p className="text-gray-600">{t('loading')}</p>
                 </div>
               ) : (
                 <div className="grid gap-4">
@@ -77,9 +99,9 @@ const AdminPanel: React.FC = () => {
                       <CardHeader>
                         <div className="flex justify-between items-start">
                           <div>
-                            <CardTitle>{pkg.name}</CardTitle>
+                            <CardTitle>{pkg.default_name}</CardTitle>
                             <CardDescription className="mt-2">
-                              {pkg.description}
+                              {t('packages.code')}: {pkg.code}
                             </CardDescription>
                           </div>
                           <Badge variant={pkg.is_active ? "default" : "secondary"}>
@@ -91,15 +113,27 @@ const AdminPanel: React.FC = () => {
                         <div className="flex justify-between items-center">
                           <div className="space-y-1">
                             <p className="text-sm text-gray-600">
-                              <span className="font-medium">Preis:</span> €{pkg.base_price}
-                              {pkg.original_price && (
-                                <span className="ml-2 line-through text-gray-400">
-                                  €{pkg.original_price}
-                                </span>
+                              <span className="font-medium">{t('packages.price')}:</span>{' '}
+                              {pkg.service_prices && pkg.service_prices.length > 0 ? (
+                                <>
+                                  {formatPrice(pkg.service_prices[0].normal_price_cents)}
+                                  {pkg.service_prices[0].promo_active && pkg.service_prices[0].promo_price_cents && (
+                                    <span className="ml-2 line-through text-gray-400">
+                                      {formatPrice(pkg.service_prices[0].promo_price_cents)}
+                                    </span>
+                                  )}
+                                </>
+                              ) : (
+                                t('noPrice')
                               )}
                             </p>
                             <p className="text-sm text-gray-600">
-                              <span className="font-medium">Zeitraum:</span> {pkg.period}
+                              <span className="font-medium">{t('packages.period')}:</span>{' '}
+                              {getPeriodText(pkg.is_recurring || false, pkg.interval_months)}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              <span className="font-medium">{t('packages.type')}:</span>{' '}
+                              {pkg.is_recurring ? t('packages.recurring') : t('packages.oneTime')}
                             </p>
                           </div>
                           <div className="space-x-2">
@@ -120,14 +154,14 @@ const AdminPanel: React.FC = () => {
 
             <TabsContent value="addons" className="space-y-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-semibold">{t('navigation.services')}</h2>
-                <Button>{t('packages.add')}</Button>
+                <h2 className="text-2xl font-semibold">{t('addons.title')}</h2>
+                <Button>{t('addons.add')}</Button>
               </div>
 
               {addonsLoading ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto mb-4"></div>
-                  <p className="text-gray-600">{t('loading', { ns: 'common' })}</p>
+                  <p className="text-gray-600">{t('loading')}</p>
                 </div>
               ) : (
                 <div className="grid gap-4">
@@ -138,7 +172,7 @@ const AdminPanel: React.FC = () => {
                           <div>
                             <CardTitle>{addon.name}</CardTitle>
                             <CardDescription className="mt-2">
-                              {addon.description}
+                              {addon.description || t('addons.noDescription')}
                             </CardDescription>
                           </div>
                           <Badge variant={addon.is_active ? "default" : "secondary"}>
@@ -150,15 +184,18 @@ const AdminPanel: React.FC = () => {
                         <div className="flex justify-between items-center">
                           <div className="space-y-1">
                             <p className="text-sm text-gray-600">
-                              <span className="font-medium">Kategorie:</span> {addon.category}
+                              <span className="font-medium">{t('addons.category')}:</span> {addon.category}
                             </p>
                             <p className="text-sm text-gray-600">
-                              <span className="font-medium">Preis:</span> €{addon.price}
+                              <span className="font-medium">{t('addons.price')}:</span> €{addon.price}
                               {addon.original_price && (
                                 <span className="ml-2 line-through text-gray-400">
                                   €{addon.original_price}
                                 </span>
                               )}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              <span className="font-medium">{t('addons.period')}:</span> {addon.period}
                             </p>
                           </div>
                           <div className="space-x-2">
