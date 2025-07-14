@@ -45,6 +45,43 @@ const handleMissingKey = (lng: string[], ns: string, key: string, fallbackValue:
   return fallbackValue || key.split('.').pop() || key;
 };
 
+// KRITISCHER FIX: localStorage säubern bei JSON-Parse-Fehlern
+const cleanupCorruptedLocalStorage = () => {
+  try {
+    const stored = localStorage.getItem('i18nextLng');
+    if (stored) {
+      // Prüfe ob es valid JSON ist
+      try {
+        JSON.parse(stored);
+        // Wenn erfolgreich geparst, prüfe ob es ein gültiger Sprach-Code ist
+        if (stored !== 'de' && stored !== 'en' && !stored.startsWith('"de"') && !stored.startsWith('"en"')) {
+          console.warn('🔧 [i18n] Invalid language setting in localStorage, fixing...');
+          localStorage.setItem('i18nextLng', 'de');
+        }
+      } catch (parseError) {
+        console.warn('🔧 [i18n] Corrupted localStorage language setting detected, cleaning up...');
+        // Versuche zuerst zu reparieren
+        if (stored === 'de' || stored === 'en') {
+          localStorage.setItem('i18nextLng', `"${stored}"`);
+        } else {
+          localStorage.setItem('i18nextLng', 'de');
+        }
+      }
+    }
+  } catch (error) {
+    console.error('localStorage cleanup failed:', error);
+    // Fallback: localStorage komplett löschen für i18n
+    try {
+      localStorage.removeItem('i18nextLng');
+    } catch (e) {
+      console.error('Could not clear localStorage:', e);
+    }
+  }
+};
+
+// Cleanup vor i18n-Initialisierung
+cleanupCorruptedLocalStorage();
+
 i18n
   .use(HttpBackend)
   .use(LanguageDetector)
@@ -87,32 +124,19 @@ i18n
     // Better error recovery
     load: 'languageOnly',
     preload: ['de', 'en'],
-    // KRITISCHER FIX: Sichere localStorage-Behandlung OHNE veraltete checkWhitelist-Option
+    // KRITISCHER FIX: Sichere localStorage-Behandlung mit robuster Fehlerbehandlung
     detection: {
       order: ['localStorage', 'navigator', 'htmlTag'],
       caches: ['localStorage'],
-      // localStorage Error-Handling
-      lookupLocalStorage: 'i18nextLng'
-      // WICHTIG: checkWhitelist ist NICHT mehr gültig - entfernt!
+      // localStorage Error-Handling - robuster
+      lookupLocalStorage: 'i18nextLng',
+      // Sichere Parser-Funktion hinzufügen
+      convertDetectedLanguage: (lng: string) => {
+        // Sicherstellen dass nur gültige Sprachen zurückgegeben werden
+        return ['de', 'en'].includes(lng) ? lng : 'de';
+      }
     }
   });
-
-// KRITISCHER FIX: localStorage säubern bei JSON-Parse-Fehlern
-try {
-  const stored = localStorage.getItem('i18nextLng');
-  if (stored && stored !== 'de' && stored !== 'en' && !stored.startsWith('"')) {
-    console.warn('🔧 [i18n] Fixing corrupted localStorage language setting');
-    localStorage.setItem('i18nextLng', 'de');
-  }
-} catch (error) {
-  console.error('localStorage cleanup failed:', error);
-  // Fallback: localStorage komplett löschen für i18n
-  try {
-    localStorage.removeItem('i18nextLng');
-  } catch (e) {
-    console.error('Could not clear localStorage:', e);
-  }
-}
 
 // Debug current language and loaded namespaces
 i18n.on('initialized', (options) => {
@@ -129,6 +153,11 @@ i18n.on('languageChanged', (lng) => {
 
 i18n.on('loaded', (loaded) => {
   debugI18n('Namespaces loaded:', loaded);
+});
+
+// Error-Handler für Backend-Loading-Fehler
+i18n.on('failedLoading', (lng, ns, msg) => {
+  console.warn(`🚨 [i18n] Failed to load namespace "${ns}" for language "${lng}":`, msg);
 });
 
 export default i18n;
