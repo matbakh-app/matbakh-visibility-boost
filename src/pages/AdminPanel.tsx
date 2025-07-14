@@ -94,60 +94,67 @@ const AdminPanel: React.FC = () => {
                 </div>
               ) : (
                 <div className="grid gap-4">
-                  {packages?.map((pkg) => (
-                    <Card key={pkg.id}>
-                      <CardHeader>
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <CardTitle>{pkg.default_name}</CardTitle>
-                            <CardDescription className="mt-2">
-                              {t('packages.code')}: {pkg.code}
-                            </CardDescription>
+                  {packages?.map((pkg) => {
+                    // Robust gegen beide: Array oder Objekt bei service_prices
+                    const priceObj = Array.isArray(pkg.service_prices)
+                      ? pkg.service_prices[0]
+                      : pkg.service_prices;
+
+                    return (
+                      <Card key={pkg.id}>
+                        <CardHeader>
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <CardTitle>{pkg.default_name}</CardTitle>
+                              <CardDescription className="mt-2">
+                                {t('packages.code')}: {pkg.code}
+                              </CardDescription>
+                            </div>
+                            <Badge variant={pkg.is_active ? "default" : "secondary"}>
+                              {pkg.is_active ? t('status.active') : t('status.inactive')}
+                            </Badge>
                           </div>
-                          <Badge variant={pkg.is_active ? "default" : "secondary"}>
-                            {pkg.is_active ? t('status.active') : t('status.inactive')}
-                          </Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex justify-between items-center">
-                          <div className="space-y-1">
-                            <p className="text-sm text-gray-600">
-                              <span className="font-medium">{t('packages.price')}:</span>{' '}
-                              {pkg.service_prices && pkg.service_prices.length > 0 ? (
-                                <>
-                                  {formatPrice(pkg.service_prices[0].normal_price_cents)}
-                                  {pkg.service_prices[0].promo_active && pkg.service_prices[0].promo_price_cents && (
-                                    <span className="ml-2 line-through text-gray-400">
-                                      {formatPrice(pkg.service_prices[0].promo_price_cents)}
-                                    </span>
-                                  )}
-                                </>
-                              ) : (
-                                t('noPrice')
-                              )}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              <span className="font-medium">{t('packages.period')}:</span>{' '}
-                              {getPeriodText(pkg.is_recurring || false, pkg.interval_months)}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              <span className="font-medium">{t('packages.type')}:</span>{' '}
-                              {pkg.is_recurring ? t('packages.recurring') : t('packages.oneTime')}
-                            </p>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex justify-between items-center">
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-600">
+                                <span className="font-medium">{t('packages.price')}:</span>{' '}
+                                {priceObj && priceObj.normal_price_cents ? (
+                                  <>
+                                    {formatPrice(priceObj.normal_price_cents)}
+                                    {priceObj.promo_active && priceObj.promo_price_cents && (
+                                      <span className="ml-2 line-through text-gray-400">
+                                        {formatPrice(priceObj.promo_price_cents)}
+                                      </span>
+                                    )}
+                                  </>
+                                ) : (
+                                  t('noPrice')
+                                )}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                <span className="font-medium">{t('packages.period')}:</span>{' '}
+                                {getPeriodText(pkg.is_recurring || false, pkg.interval_months)}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                <span className="font-medium">{t('packages.type')}:</span>{' '}
+                                {pkg.is_recurring ? t('packages.recurring') : t('packages.oneTime')}
+                              </p>
+                            </div>
+                            <div className="space-x-2">
+                              <Button variant="outline" size="sm">
+                                {t('actions.edit')}
+                              </Button>
+                              <Button variant="outline" size="sm">
+                                {t('packages.pricing')}
+                              </Button>
+                            </div>
                           </div>
-                          <div className="space-x-2">
-                            <Button variant="outline" size="sm">
-                              {t('actions.edit')}
-                            </Button>
-                            <Button variant="outline" size="sm">
-                              {t('packages.pricing')}
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               )}
             </TabsContent>
