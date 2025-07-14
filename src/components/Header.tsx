@@ -17,13 +17,9 @@ const Header: React.FC = () => {
           <div className="flex items-center">
             <button 
               onClick={() => navigate('/')}
-              className="flex items-center hover:opacity-80 transition-opacity"
+              className="text-xl font-bold text-black hover:text-gray-700 transition-colors"
             >
-              <img
-                src="/lovable-uploads/ae05f535-e3d9-4e92-bee2-510cdb845f90.png"
-                alt="matbakh Logo"
-                className="h-8 w-auto"
-              />
+              matbakh
             </button>
           </div>
           
