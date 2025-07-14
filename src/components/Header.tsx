@@ -5,6 +5,7 @@ import LanguageToggle from './header/LanguageToggle';
 import NavigationMenu from './header/NavigationMenu';
 import MobileMenu from './navigation/MobileMenu';
 import UserMenu from './header/UserMenu';
+import Logo from './Logo';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -17,9 +18,9 @@ const Header: React.FC = () => {
           <div className="flex items-center">
             <button 
               onClick={() => navigate('/')}
-              className="text-xl font-bold text-black hover:text-gray-700 transition-colors"
+              className="hover:opacity-80 transition-opacity"
             >
-              matbakh
+              <Logo size="sm" />
             </button>
           </div>
           
