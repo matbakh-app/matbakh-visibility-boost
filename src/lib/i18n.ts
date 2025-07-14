@@ -87,13 +87,13 @@ i18n
     // Better error recovery
     load: 'languageOnly',
     preload: ['de', 'en'],
-    // KRITISCHER FIX: Sichere localStorage-Behandlung
+    // KRITISCHER FIX: Sichere localStorage-Behandlung OHNE veraltete checkWhitelist-Option
     detection: {
       order: ['localStorage', 'navigator', 'htmlTag'],
       caches: ['localStorage'],
       // localStorage Error-Handling
-      lookupLocalStorage: 'i18nextLng',
-      checkWhitelist: true
+      lookupLocalStorage: 'i18nextLng'
+      // WICHTIG: checkWhitelist ist NICHT mehr gültig - entfernt!
     }
   });
 
