@@ -48,15 +48,16 @@ const handleMissingKey = (lng: string[], ns: string, key: string, fallbackValue:
 i18n
   .use(HttpBackend)
   .use(LanguageDetector)
-  .use(initReactI18next)
+  .use(initReactI18n)
   .init({
     // Enhanced configuration for maximum stability
     lng: 'de',
     fallbackLng: 'de',
     supportedLngs: ['de', 'en'],
-    // WICHTIG: Alle neuen Legal-Namespaces hinzufügen!
+    // WICHTIG: landing-Namespace hinzugefügt!
     ns: [
       'common', 'translation', 'adminPanel', 'auth', 'nav', 'footer', 'hero', 'features', 'dashboard', 'cookieConsent',
+      'landing',
       // Neue separate Legal-Namespaces
       'legal-impressum', 'legal-datenschutz', 'legal-agb', 'legal-nutzung', 'legal-kontakt',
       'legal-imprint', 'legal-privacy', 'legal-terms', 'legal-usage', 'legal-contact'
