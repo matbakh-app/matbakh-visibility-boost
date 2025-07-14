@@ -72,7 +72,7 @@ const BusinessLanding: React.FC = () => {
     <>
       <SeoMeta
         title={t('landing.heroTitle', 'Business Partner')}
-        description={t('landing.heroSubtitle', 'Google Sichtbarkeit für Gastronomie')}
+        description={t('landing.heroSubtitle', 'Plattformübergreifende Sichtbarkeit für Gastronomie')}
         namespace="translation"
       />
       
