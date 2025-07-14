@@ -11,7 +11,7 @@ interface PackageComparisonProps {
 }
 
 const PackageComparison: React.FC<PackageComparisonProps> = ({ packages = [], language = 'de' }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('pricing');
 
   const hasFeature = (pkg: ServicePackage, featureKey: string): boolean => {
     const featureMap: Record<string, string[]> = {
