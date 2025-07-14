@@ -12,19 +12,13 @@ interface AppLayoutProps {
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const location = useLocation();
   
-  // KRITISCHER FIX: Header/Footer sollten IMMER sichtbar sein
-  // Entferne hideLayoutOn = ['/'] - das war der Hauptfehler!
-  const hideLayoutOn: string[] = []; // Leer lassen - Layout immer anzeigen
+  // CTO-KONFORM: Header/Footer sind IMMER sichtbar - keine Ausnahmen!
+  // Das Logo muss auf ALLEN Seiten verfügbar sein für Orientierung und Seriosität
   
   // Seiten ohne BackHomeButtons (Landing und Home)
   const hideBackButtonsOn = ['/', '/business/partner'];
   
-  const showLayout = !hideLayoutOn.includes(location.pathname);
   const showBackButtons = !hideBackButtonsOn.includes(location.pathname);
-
-  if (!showLayout) {
-    return <>{children}</>;
-  }
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
