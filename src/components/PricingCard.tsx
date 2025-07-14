@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Check } from 'lucide-react';
 import { ServicePackage } from '@/hooks/useServicePackages';
+import { monitoring } from '@/utils/monitoring';
 
 interface PricingCardProps {
   package: ServicePackage;
@@ -51,7 +52,10 @@ const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = fals
         return translatedFeatures;
       }
     } catch (error) {
-      console.warn(`No translation found for packages.${packageSlug}.features`);
+      monitoring.warn('Translation missing for package features', { 
+        packageSlug, 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
     }
     
     // Fallback to package.features if translation fails
@@ -66,10 +70,24 @@ const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = fals
         return translatedName;
       }
     } catch (error) {
-      console.warn(`No translation found for packages.${packageSlug}.title`);
+      monitoring.warn('Translation missing for package title', { 
+        packageSlug, 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
     }
     
     return packageNameMap[packageSlug]?.[language as 'de' | 'en'] || pkg.name;
+  };
+
+  const handleSelectPackage = () => {
+    monitoring.trackUserAction('package_selected', {
+      packageSlug: pkg.slug,
+      packageName: getPackageName(pkg.slug),
+      price: pkg.base_price,
+      hasPromo: !!pkg.original_price,
+      period: pkg.period
+    });
+    // TODO: Implement actual package selection logic
   };
 
   const packageFeatures = getFeaturesBySlug(pkg.slug);
@@ -150,6 +168,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = fals
           className={`w-full ${viewOnly ? 'bg-gray-400 hover:bg-gray-400 cursor-not-allowed' : 'bg-black hover:bg-gray-800'} text-white`}
           size="lg"
           disabled={viewOnly}
+          onClick={viewOnly ? undefined : handleSelectPackage}
         >
           {viewOnly ? t('pricing.viewOnly') : t('pricing.selectPackage')}
         </Button>
