@@ -5,6 +5,7 @@ import { Search, Users, Calendar, ChefHat, ShoppingCart, Utensils, Target } from
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/components/layout/AppLayout';
+import Logo from '@/components/Logo';
 import { SeoMeta } from '@/components/SeoMeta';
 
 const B2CLanding: React.FC = () => {
@@ -73,9 +74,10 @@ const B2CLanding: React.FC = () => {
       />
       <AppLayout>
         <div className="max-w-4xl mx-auto px-4 py-16">
-          {/* Hero Section */}
+          {/* Hero Section with Logo */}
           <div className="text-center mb-16">
-            <h1 className="text-4xl font-bold text-black mb-4">
+            <Logo size="lg" className="mx-auto mb-2" />
+            <h1 className="mt-2 text-4xl font-bold text-black mb-4">
               {tHero('b2cTitle')}
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">

@@ -1,3 +1,4 @@
+
 /**
  * ⚠️ Alle sichtbaren Landing-Page-Texte werden ausschließlich aus translation.json > landing geladen. 
  * Änderungen an Texten nur über die JSON-Dateien!
@@ -18,7 +19,7 @@ import { Wrench, BarChart3, Brain } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import LogoSection from '@/components/LogoSection';
+import HeroSection from '@/components/HeroSection';
 import ProblemSection from '@/components/ProblemSection';
 import SolutionSection from '@/components/SolutionSection';
 import { SeoMeta } from '@/components/SeoMeta';
@@ -107,13 +108,12 @@ const BusinessLanding: React.FC = () => {
       </script>
       <div className="min-h-screen bg-white">
       <Header />
-      <LogoSection />
       
-      {/* Hero Section */}
+      {/* Hero Section with integrated Logo */}
       <section className="py-12 px-4">
-        <div className="max-w-4xl mx-auto text-center">
+        <div className="max-w-4xl mx-auto">
           {/* Privacy Policy Link - Prominent for Google */}
-          <div className="mb-6">
+          <div className="text-center mb-6">
             <Link
               to={i18n.language === 'de' ? '/datenschutz' : '/privacy'}
               className="inline-block text-sm font-bold text-primary hover:underline"
@@ -121,25 +121,7 @@ const BusinessLanding: React.FC = () => {
               {i18n.language === 'de' ? 'Datenschutz' : 'Privacy Policy'}
             </Link>
           </div>
-          <h1 className="text-5xl font-bold mb-6 text-sky-500">{t('landing.heroTitle')}</h1>
-          <p className="text-xl mb-8 max-w-3xl mx-auto leading-relaxed text-center text-sky-800">{t('landing.heroSubtitle')}</p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              className="bg-black hover:bg-gray-800 text-white px-8 py-3" 
-              onClick={() => navigate(getPackagesRoute())}
-            >
-              {t('landing.cta1')}
-            </Button>
-            <Button 
-              variant="outline" 
-              size="lg" 
-              className="border-black text-black hover:bg-gray-50 px-8 py-3" 
-              onClick={() => navigate(getContactRoute())}
-            >
-              {t('landing.cta2')}
-            </Button>
-          </div>
+          <HeroSection />
         </div>
       </section>
 
