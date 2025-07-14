@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import LogoSection from '@/components/LogoSection';
+import HeroSection from '@/components/HeroSection';
 import PricingCard from '@/components/PricingCard';
 import PackageComparison from '@/components/PackageComparison';
 import PackageFAQ from '@/components/PackageFAQ';
@@ -182,68 +181,66 @@ const AngebotePage: React.FC = () => {
         namespace="translation"
       />
       <div className="min-h-screen bg-white">
-      <Header />
-      <LogoSection />
-      
-      {/* Hero Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-5xl font-bold text-black mb-6">
-            {t('pricing.title')}
-          </h1>
-          <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
-            {t('pricing.subtitle')}
-          </p>
-        </div>
-      </section>
-
-      {/* Packages Section */}
-      <section className="py-12 px-4">
-        <div className="max-w-6xl mx-auto">
-          {renderPackagesSection()}
-        </div>
-      </section>
-
-      {/* Trust Elements */}
-      <TrustElements />
-
-      {/* Process Overview */}
-      <ProcessOverview />
-
-      {/* Package Comparison */}
-      {packages && packages.length > 0 && (
-        <PackageComparison packages={packages} />
-      )}
-
-      {/* FAQ Section */}
-      <PackageFAQ />
-
-      {/* Final CTA */}
-      <section className="py-20 px-4 bg-black">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold text-white mb-6">
-            {t('pricing.cta.headline')}
-          </h2>
-          <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
-            {t('pricing.cta.description')}
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-white hover:bg-gray-100 text-black px-8 py-3">
-              {t('pricing.cta.consultation')}
-            </Button>
-            <Button variant="outline" size="lg" className="border-white hover:bg-white px-8 py-3 text-white hover:text-black">
-              {t('pricing.cta.whatsapp')}
-            </Button>
+        <Header />
+        
+        {/* Hero Section with Logo and Title */}
+        <section className="py-12 px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <HeroSection 
+              title={t('pricing.title')}
+              subtitle={t('pricing.subtitle')}
+              showButtons={false}
+            />
           </div>
-          
-          <div className="mt-8 text-sm text-gray-400">
-            <p>{t('pricing.cta.phone')}</p>
-            <p>{t('pricing.cta.email')}</p>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      <Footer />
+        {/* Packages Section */}
+        <section className="py-12 px-4">
+          <div className="max-w-6xl mx-auto">
+            {renderPackagesSection()}
+          </div>
+        </section>
+
+        {/* Trust Elements */}
+        <TrustElements />
+
+        {/* Process Overview */}
+        <ProcessOverview />
+
+        {/* Package Comparison */}
+        {packages && packages.length > 0 && (
+          <PackageComparison packages={packages} />
+        )}
+
+        {/* FAQ Section */}
+        <PackageFAQ />
+
+        {/* Final CTA */}
+        <section className="py-20 px-4 bg-black">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-4xl font-bold text-white mb-6">
+              {t('pricing.cta.headline')}
+            </h2>
+            <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
+              {t('pricing.cta.description')}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg" className="bg-white hover:bg-gray-100 text-black px-8 py-3">
+                {t('pricing.cta.consultation')}
+              </Button>
+              <Button variant="outline" size="lg" className="border-white hover:bg-white px-8 py-3 text-white hover:text-black">
+                {t('pricing.cta.whatsapp')}
+              </Button>
+            </div>
+            
+            <div className="mt-8 text-sm text-gray-400">
+              <p>{t('pricing.cta.phone')}</p>
+              <p>{t('pricing.cta.email')}</p>
+            </div>
+          </div>
+        </section>
+
+        <Footer />
       </div>
     </>
   );
