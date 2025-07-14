@@ -177,8 +177,8 @@ const AngebotePage: React.FC = () => {
   return (
     <>
       <SeoMeta 
-        title={t('pricing.title', 'Unsere Angebote')}
-        description={t('pricing.subtitle', 'Professionelle Google Business Verwaltung für Restaurants')}
+        title={t('pricing.title', 'Es ist gut, dass Sie mit Ihren Kunden digital sprechen, es ist besser, wenn Ihre Kunden Ihnen zuhören')}
+        description={t('pricing.subtitle', 'Professionelle Verwaltung der online Sichtbarkeit für Gastronomiebetriebe')}
         namespace="translation"
       />
       <div className="min-h-screen bg-white">
