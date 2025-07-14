@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 
 interface LogoProps {
   className?: string;
@@ -7,6 +7,8 @@ interface LogoProps {
 }
 
 const Logo: React.FC<LogoProps> = ({ className = '', size = 'md' }) => {
+  const [imgError, setImgError] = useState(false);
+
   const sizeClasses = {
     sm: 'h-8 w-auto',
     md: 'h-12 w-auto',
@@ -14,6 +16,17 @@ const Logo: React.FC<LogoProps> = ({ className = '', size = 'md' }) => {
     xl: 'h-20 w-auto',
     hero: 'h-48 w-auto md:h-60 lg:h-72'
   };
+
+  if (imgError) {
+    // Fallback-Text anzeigen wenn Logo nicht lädt
+    return (
+      <div className="flex items-center">
+        <span className={`font-bold text-black ${sizeClasses[size].includes('h-8') ? 'text-lg' : 'text-xl'} ${className}`}>
+          Matbakh
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center">
@@ -23,20 +36,13 @@ const Logo: React.FC<LogoProps> = ({ className = '', size = 'md' }) => {
         className={`${sizeClasses[size]} ${className}`}
         onError={(e) => {
           console.error('Logo failed to load:', e);
-          // Fallback to text if image fails
-          e.currentTarget.style.display = 'none';
-          e.currentTarget.nextSibling.style.display = 'block';
+          setImgError(true);
         }}
         onLoad={() => {
           console.log('Logo loaded successfully');
         }}
+        draggable={false}
       />
-      <span 
-        className={`font-bold text-black hidden ${sizeClasses[size].includes('h-8') ? 'text-lg' : 'text-xl'}`}
-        style={{ display: 'none' }}
-      >
-        Matbakh
-      </span>
     </div>
   );
 };
