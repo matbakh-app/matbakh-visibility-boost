@@ -26,15 +26,15 @@ import { SeoMeta } from '@/components/SeoMeta';
 import { Link } from 'react-router-dom';
 
 const BusinessLanding: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation('landing');
   const navigate = useNavigate();
 
   const getPackagesRoute = () => {
     return i18n.language === 'en' ? '/packages' : '/angebote';
   };
 
-  const getContactRoute = () => {
-    return i18n.language === 'en' ? '/contact' : '/kontakt';
+  const getLoginRoute = () => {
+    return '/business/partner/login';
   };
 
   const services = [
@@ -83,9 +83,9 @@ const BusinessLanding: React.FC = () => {
   return (
     <>
       <SeoMeta
-        title={t('landing.heroTitle')}
-        description={t('landing.heroSubtitle')}
-        namespace="translation"
+        title={t('heroTitle')}
+        description={t('heroSubtitle')}
+        namespace="landing"
       />
       
       {/* Enhanced SEO & Structured Data */}
@@ -133,10 +133,10 @@ const BusinessLanding: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-black mb-4">
-              {t('landing.servicesTitle')}
+              {t('servicesTitle')}
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              {t('landing.servicesSubtitle')}
+              {t('servicesSubtitle')}
             </p>
           </div>
           
@@ -169,26 +169,26 @@ const BusinessLanding: React.FC = () => {
       <section className="py-20 px-4 bg-black">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold text-white mb-6">
-            {t('landing.ctaFinalTitle')}
+            {t('ctaFinalTitle')}
           </h2>
           <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
-            {t('landing.ctaFinalSubtitle')}
+            {t('ctaFinalSubtitle')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
               size="lg" 
               className="bg-white hover:bg-gray-100 text-black px-8 py-3" 
-              onClick={() => navigate(getPackagesRoute())}
+              onClick={() => navigate(getLoginRoute())}
             >
-              {t('landing.ctaFinalButton1')}
+              {t('ctaFinalButton1')}
             </Button>
             <Button 
               variant="outline" 
               size="lg" 
-              onClick={() => navigate(getContactRoute())} 
-              className="border-white hover:bg-white px-8 py-3 text-neutral-950"
+              onClick={() => navigate(getPackagesRoute())} 
+              className="border-white hover:bg-white px-8 py-3 text-white hover:text-black"
             >
-              {t('landing.ctaFinalButton2')}
+              {t('ctaFinalButton2')}
             </Button>
           </div>
         </div>
