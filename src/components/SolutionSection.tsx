@@ -51,12 +51,12 @@ const SolutionSection: React.FC = () => {
             const IconComponent = solution.icon;
             return (
               <Card key={index} className="bg-white border-green-200 hover:shadow-lg transition-shadow">
-                <CardContent className="p-8">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <IconComponent className="h-6 w-6 text-green-600" />
-                    </div>
-                    <div className="flex-1">
+                  <CardContent className="p-8">
+                    <div className="text-center flex flex-col items-center">
+                      <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                        <IconComponent className="h-6 w-6 text-green-600" />
+                      </div>
+                      <div className="text-left w-full">
                       <h3 className="text-xl font-bold text-black mb-3">
                         {solution.title}
                       </h3>

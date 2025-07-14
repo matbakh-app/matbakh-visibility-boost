@@ -110,7 +110,7 @@ const BusinessLanding: React.FC = () => {
       <LogoSection />
       
       {/* Hero Section */}
-      <section className="py-20 px-4">
+      <section className="py-12 px-4">
         <div className="max-w-4xl mx-auto text-center">
           {/* Privacy Policy Link - Prominent for Google */}
           <div className="mb-6">
