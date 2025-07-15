@@ -4,7 +4,7 @@
  * Jede Änderung ohne CTO-Genehmigung führt zum Rollback!
  */
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -19,7 +19,7 @@ type LegalLayoutProps = {
   pageType: LegalPageType;
 };
 
-const LegalLayout: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType }) => {
+const LegalContent: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType }) => {
   const { t, i18n } = useTranslation(['nav']);
   const [isNamespaceLoaded, setIsNamespaceLoaded] = useState(false);
 
@@ -27,7 +27,7 @@ const LegalLayout: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType 
   const namespace = getNamespaceForLegalPage(i18n.language, pageType);
   const { t: tLegal } = useTranslation(namespace);
 
-  // Dynamisches Laden des Legal-Namespace
+  // Dynamisches Laden des Legal-Namespace mit React 18 Unterstützung
   useEffect(() => {
     const loadNamespace = async () => {
       setIsNamespaceLoaded(false);
@@ -48,15 +48,11 @@ const LegalLayout: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType 
   // Loading state während Namespace geladen wird
   if (!isNamespaceLoaded) {
     return (
-      <div className="min-h-screen bg-white flex flex-col">
-        <Header />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading legal information...</p>
-          </div>
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading legal information...</p>
         </div>
-        <Footer />
       </div>
     );
   }
@@ -105,7 +101,7 @@ const LegalLayout: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType 
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <>
       <Helmet>
         <title>{title} | matbakh.app</title>
         <meta name="description" content={description} />
@@ -115,8 +111,6 @@ const LegalLayout: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType 
           {JSON.stringify(structuredData)}
         </script>
       </Helmet>
-      
-      <Header />
       
       {/* Legal Page Banner mit Language Switcher */}
       <section className="py-8 bg-background border-b border-border">
@@ -149,6 +143,25 @@ const LegalLayout: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType 
           </div>
         </div>
       </main>
+    </>
+  );
+};
+
+const LegalLayout: React.FC<LegalLayoutProps> = (props) => {
+  return (
+    <div className="min-h-screen bg-white flex flex-col">
+      <Header />
+      
+      <Suspense fallback={
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading...</p>
+          </div>
+        </div>
+      }>
+        <LegalContent {...props} />
+      </Suspense>
       
       <Footer />
     </div>
