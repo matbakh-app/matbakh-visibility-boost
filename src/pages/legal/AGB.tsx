@@ -7,12 +7,12 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import LegalLayout from '@/layouts/LegalLayout';
+import { getNamespaceForLegalPage } from '@/utils/getLegalNamespace';
 
 const AGB: React.FC = () => {
-  // CRITICAL FIX: Use correct namespace mapping instead of hardcoded 'legal-agb'
+  // CRITICAL FIX: Verwende dynamisches Namespace-Mapping
   const { i18n } = useTranslation();
-  const currentLang = i18n.language?.startsWith('en') ? 'en' : 'de';
-  const namespace = currentLang === 'en' ? 'legal-terms' : 'legal-agb';
+  const namespace = getNamespaceForLegalPage(i18n.language, 'terms');
   const { t } = useTranslation(namespace);
 
   // Clean mapping of existing translation keys from legal-agb.json

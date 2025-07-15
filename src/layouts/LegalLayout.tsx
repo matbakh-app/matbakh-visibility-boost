@@ -4,51 +4,62 @@
  * Jede Änderung ohne CTO-Genehmigung führt zum Rollback!
  */
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import LanguageToggle from "@/components/header/LanguageToggle";
 import { Helmet } from "react-helmet-async";
 import { Globe } from "lucide-react";
+import { getNamespaceForLegalPage, loadLegalNamespace, type LegalPageType } from "@/utils/getLegalNamespace";
 
 type LegalLayoutProps = {
   titleKey: string; // z.B. "title" (wird vom jeweiligen Namespace geholt)
   children: React.ReactNode;
-  pageType: 'privacy' | 'imprint' | 'terms' | 'usage' | 'contact';
+  pageType: LegalPageType;
 };
 
 const LegalLayout: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType }) => {
   const { t, i18n } = useTranslation(['nav']);
+  const [isNamespaceLoaded, setIsNamespaceLoaded] = useState(false);
 
-  // CRITICAL FIX: Korrekte Namespace-Zuordnung für DE/EN
-  const getNamespace = () => {
-    // Bestimme aktuelle Sprache robust
-    const currentLang = i18n.language?.startsWith('en') ? 'en' : 'de';
-    
-    // Sprachspezifisches Namespace-Mapping
-    const namespaceMap = {
-      de: {
-        privacy: 'legal-datenschutz',
-        imprint: 'legal-impressum', 
-        terms: 'legal-agb',
-        usage: 'legal-nutzung',
-        contact: 'legal-kontakt'
-      },
-      en: {
-        privacy: 'legal-privacy',
-        imprint: 'legal-imprint',
-        terms: 'legal-terms', 
-        usage: 'legal-usage',
-        contact: 'legal-contact'
+  // CRITICAL FIX: Dynamisches Namespace-Loading basierend auf Sprache
+  const namespace = getNamespaceForLegalPage(i18n.language, pageType);
+  const { t: tLegal } = useTranslation(namespace);
+
+  // Dynamisches Laden des Legal-Namespace
+  useEffect(() => {
+    const loadNamespace = async () => {
+      setIsNamespaceLoaded(false);
+      
+      try {
+        await loadLegalNamespace(i18n, namespace);
+        setIsNamespaceLoaded(true);
+      } catch (error) {
+        console.error('Failed to load legal namespace:', error);
+        // Fallback: Setze trotzdem auf "loaded" um die Seite anzuzeigen
+        setIsNamespaceLoaded(true);
       }
     };
-    
-    return namespaceMap[currentLang]?.[pageType] || namespaceMap.de[pageType];
-  };
 
-  const namespace = getNamespace();
-  const { t: tLegal } = useTranslation(namespace);
+    loadNamespace();
+  }, [i18n.language, namespace, i18n]);
+
+  // Loading state während Namespace geladen wird
+  if (!isNamespaceLoaded) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading legal information...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
   
   // Meta für SEO - dynamisch basierend auf pageType
   const title = tLegal(titleKey, "Legal");
