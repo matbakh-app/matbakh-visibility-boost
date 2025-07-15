@@ -21,16 +21,30 @@ type LegalLayoutProps = {
 const LegalLayout: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType }) => {
   const { t, i18n } = useTranslation(['nav']);
 
-  // FIXED: Bestimme den korrekten Namespace basierend auf Sprache und pageType
+  // CRITICAL FIX: Korrekte Namespace-Zuordnung für DE/EN
   const getNamespace = () => {
+    // Bestimme aktuelle Sprache robust
+    const currentLang = i18n.language?.startsWith('en') ? 'en' : 'de';
+    
+    // Sprachspezifisches Namespace-Mapping
     const namespaceMap = {
-      privacy: i18n.language === 'de' ? 'legal-datenschutz' : 'legal-privacy',
-      imprint: i18n.language === 'de' ? 'legal-impressum' : 'legal-imprint',
-      terms: i18n.language === 'de' ? 'legal-agb' : 'legal-terms',
-      usage: i18n.language === 'de' ? 'legal-nutzung' : 'legal-usage',
-      contact: i18n.language === 'de' ? 'legal-kontakt' : 'legal-contact'
+      de: {
+        privacy: 'legal-datenschutz',
+        imprint: 'legal-impressum', 
+        terms: 'legal-agb',
+        usage: 'legal-nutzung',
+        contact: 'legal-kontakt'
+      },
+      en: {
+        privacy: 'legal-privacy',
+        imprint: 'legal-imprint',
+        terms: 'legal-terms', 
+        usage: 'legal-usage',
+        contact: 'legal-contact'
+      }
     };
-    return namespaceMap[pageType] || 'legal-impressum';
+    
+    return namespaceMap[currentLang]?.[pageType] || namespaceMap.de[pageType];
   };
 
   const namespace = getNamespace();
@@ -44,14 +58,26 @@ const LegalLayout: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType 
   // Canonical URL basierend auf Sprache und Seitentyp
   const getCanonicalUrl = () => {
     const baseUrl = "https://matbakh.app";
+    const currentLang = i18n.language?.startsWith('en') ? 'en' : 'de';
+    
     const routeMap = {
-      privacy: i18n.language === "en" ? "/privacy" : "/datenschutz",
-      imprint: i18n.language === "en" ? "/imprint" : "/impressum", 
-      terms: i18n.language === "en" ? "/terms" : "/agb",
-      usage: i18n.language === "en" ? "/usage" : "/nutzung",
-      contact: i18n.language === "en" ? "/contact" : "/kontakt"
+      de: {
+        privacy: '/datenschutz',
+        imprint: '/impressum',
+        terms: '/agb', 
+        usage: '/nutzung',
+        contact: '/kontakt'
+      },
+      en: {
+        privacy: '/privacy',
+        imprint: '/imprint',
+        terms: '/terms',
+        usage: '/usage', 
+        contact: '/contact'
+      }
     };
-    return `${baseUrl}${routeMap[pageType]}`;
+    
+    return `${baseUrl}${routeMap[currentLang]?.[pageType] || routeMap.de[pageType]}`;
   };
 
   // Structured Data für Organization
