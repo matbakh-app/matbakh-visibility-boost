@@ -5,7 +5,11 @@ import LegalLayout from '@/layouts/LegalLayout';
 import ContactForm from '@/components/ContactForm';
 
 const Kontakt: React.FC = () => {
-  const { t } = useTranslation('legal-kontakt');
+  // CRITICAL FIX: Use correct namespace mapping instead of hardcoded 'legal-kontakt'
+  const { i18n } = useTranslation();
+  const currentLang = i18n.language?.startsWith('en') ? 'en' : 'de';
+  const namespace = currentLang === 'en' ? 'legal-contact' : 'legal-kontakt';
+  const { t } = useTranslation(namespace);
   
   // Clean mapping of existing translation keys from legal-kontakt.json
   const LEGAL_SECTIONS = [
