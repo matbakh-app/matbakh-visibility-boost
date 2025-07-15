@@ -91,13 +91,13 @@ i18n
     lng: 'de',
     fallbackLng: 'de',
     supportedLngs: ['de', 'en'],
-    // ERWEITERT: Alle neuen Legal-Namespaces hinzugefügt!
+    // COMPLETE: Alle Legal-Namespaces hinzugefügt für beide Sprachen!
     ns: [
       'common', 'translation', 'adminPanel', 'auth', 'nav', 'footer', 'hero', 'features', 'dashboard', 'cookieConsent',
       'landing',
       // Service-Namespaces
       'packages', 'services', 'admin', 'pricing',
-      // Legal-Namespaces - KRITISCHER FIX: Alle legal-* Namespaces
+      // Legal-Namespaces - ALLE für DE und EN
       'legal-impressum', 'legal-datenschutz', 'legal-agb', 'legal-nutzung', 'legal-kontakt',
       'legal-imprint', 'legal-privacy', 'legal-terms', 'legal-usage', 'legal-contact'
     ],

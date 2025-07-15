@@ -21,7 +21,7 @@ type LegalLayoutProps = {
 const LegalLayout: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType }) => {
   const { t, i18n } = useTranslation(['nav']);
 
-  // Bestimme den korrekten Namespace basierend auf Sprache und pageType
+  // FIXED: Bestimme den korrekten Namespace basierend auf Sprache und pageType
   const getNamespace = () => {
     const namespaceMap = {
       privacy: i18n.language === 'de' ? 'legal-datenschutz' : 'legal-privacy',
