@@ -7,14 +7,18 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import LegalLayout from '@/layouts/LegalLayout';
+import { getNamespaceForLegalPage } from '@/utils/getLegalNamespace';
 
 const Privacy: React.FC = () => {
-  const { t } = useTranslation('legal-privacy');
+  // CRITICAL FIX: Verwende dynamisches Namespace-Mapping wie in anderen Legal-Seiten
+  const { i18n } = useTranslation();
+  const namespace = getNamespaceForLegalPage(i18n.language, 'privacy');
+  const { t } = useTranslation(namespace);
 
   // Clean mapping of existing translation keys from legal-privacy.json
   const LEGAL_SECTIONS = [
     ['introTitle', 'introText'],
-    ['dataCollectionTitle', 'dataCollectionText'], 
+    ['dataCollectionTitle', 'dataCollectionText'],
     ['rightsTitle', 'rightsText'],
     ['contactTitle', 'contactText'],
     ['googleTitle', 'googleText'],
