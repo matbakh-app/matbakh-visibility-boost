@@ -9,7 +9,11 @@ import { useTranslation } from 'react-i18next';
 import LegalLayout from '@/layouts/LegalLayout';
 
 const Datenschutz: React.FC = () => {
-  const { t } = useTranslation('legal-datenschutz');
+  // CRITICAL FIX: Use correct namespace mapping instead of hardcoded 'legal-datenschutz'
+  const { i18n } = useTranslation();
+  const currentLang = i18n.language?.startsWith('en') ? 'en' : 'de';
+  const namespace = currentLang === 'en' ? 'legal-privacy' : 'legal-datenschutz';
+  const { t } = useTranslation(namespace);
 
   // Clean mapping of existing translation keys from legal-datenschutz.json
   const LEGAL_SECTIONS = [
