@@ -51,6 +51,11 @@ const CookieConsentBanner: React.FC = () => {
     }
   };
 
+  const closeBanner = () => {
+    setIsVisible(false);
+    setShowDetails(false); // Reset details state when closing
+  };
+
   const handleAccept = () => {
     // Update consent BEFORE localStorage to prevent race conditions
     updateGoogleConsent('granted');
@@ -60,7 +65,7 @@ const CookieConsentBanner: React.FC = () => {
     localStorage.setItem('cookieConsentDate', new Date().toISOString());
     
     console.log('✅ Google Consent Mode v2: All consent types GRANTED');
-    setIsVisible(false);
+    closeBanner();
   };
 
   const handleDecline = () => {
@@ -72,22 +77,23 @@ const CookieConsentBanner: React.FC = () => {
     localStorage.setItem('cookieConsentDate', new Date().toISOString());
     
     console.log('❌ Google Consent Mode v2: All consent types DENIED');
-    setIsVisible(false);
+    closeBanner();
   };
 
   const handleSettings = () => {
     setShowDetails(!showDetails);
   };
 
+  // Only render if visible - no backdrop when hidden
   if (!isVisible) return null;
 
   return (
     <>
-      {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/20 z-40" />
+      {/* Backdrop - only when banner is visible - Z-INDEX: 60 */}
+      <div className="fixed inset-0 bg-black/20 z-[60]" />
       
-      {/* Cookie Banner */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50 p-4 md:p-6">
+      {/* Cookie Banner - Z-INDEX: 61 (above backdrop) */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-[61] p-4 md:p-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-start gap-4">
             <Cookie className="w-6 h-6 text-gray-600 mt-1 flex-shrink-0" />
