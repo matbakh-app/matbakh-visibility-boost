@@ -1,4 +1,6 @@
 
+import { startTransition } from 'react';
+
 /**
  * Utility für sprachspezifisches Legal-Namespace-Mapping
  * Verhindert 404-Fehler durch korrekte Zuordnung der Namespace-Namen
@@ -50,7 +52,7 @@ export const isNamespaceLoaded = (i18n: any, language: string, namespace: string
 };
 
 /**
- * Lädt einen Legal-Namespace dynamisch und wartet auf das Laden
+ * Lädt einen Legal-Namespace dynamisch mit React 18 startTransition
  * @param i18n - i18next Instanz
  * @param namespace - Namespace der geladen werden soll
  * @returns Promise das resolves wenn der Namespace geladen ist
@@ -62,7 +64,14 @@ export const loadLegalNamespace = async (i18n: any, namespace: string): Promise<
     }
     
     try {
-      await i18n.loadNamespaces(namespace);
+      // Wrappen in startTransition um React 18 Concurrent Features zu respektieren
+      await new Promise<void>((resolve, reject) => {
+        startTransition(() => {
+          i18n.loadNamespaces(namespace)
+            .then(() => resolve())
+            .catch((error: any) => reject(error));
+        });
+      });
     } catch (error) {
       console.error(`[loadLegalNamespace] Failed to load namespace ${namespace}:`, error);
     }
