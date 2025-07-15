@@ -11,11 +11,15 @@ const Header: React.FC = () => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const handleMobileMenuToggle = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
   return (
     <header className="bg-white border-b border-gray-200 w-full sticky top-0 z-50 shadow-sm min-h-[64px]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo Section - Enhanced visibility */}
+          {/* Logo Section - Enhanced visibility and better error handling */}
           <div className="flex items-center min-w-0 flex-shrink-0">
             <button 
               onClick={() => navigate('/')}
@@ -39,7 +43,7 @@ const Header: React.FC = () => {
             <LanguageToggle />
             <MobileMenu 
               isOpen={isMobileMenuOpen} 
-              onToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
+              onToggle={handleMobileMenuToggle} 
             />
           </div>
         </div>
