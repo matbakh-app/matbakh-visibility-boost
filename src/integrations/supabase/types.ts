@@ -136,6 +136,47 @@ export type Database = {
           },
         ]
       }
+      alerts: {
+        Row: {
+          category: string | null
+          id: string
+          message: string | null
+          partner_id: string | null
+          sent_at: string | null
+          status: string | null
+          type: string | null
+          user_id: string | null
+        }
+        Insert: {
+          category?: string | null
+          id?: string
+          message?: string | null
+          partner_id?: string | null
+          sent_at?: string | null
+          status?: string | null
+          type?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          category?: string | null
+          id?: string
+          message?: string | null
+          partner_id?: string | null
+          sent_at?: string | null
+          status?: string | null
+          type?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alerts_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "business_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       billing_events: {
         Row: {
           created_at: string | null
@@ -158,17 +199,22 @@ export type Database = {
         Row: {
           address: string | null
           billing_address: Json | null
+          categories: string[] | null
+          category_ids: string[] | null
           company_name: string
           contact_email: string | null
           contact_phone: string | null
           created_at: string | null
+          description: string | null
           document_uploaded: boolean | null
           google_account_id: string | null
           id: string
+          location: unknown | null
           notes: string | null
           onboarding_completed: boolean | null
           profile_verified: boolean | null
           services_selected: string[] | null
+          special_features: Json | null
           status: string | null
           tax_id: string | null
           updated_at: string | null
@@ -178,17 +224,22 @@ export type Database = {
         Insert: {
           address?: string | null
           billing_address?: Json | null
+          categories?: string[] | null
+          category_ids?: string[] | null
           company_name: string
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string | null
+          description?: string | null
           document_uploaded?: boolean | null
           google_account_id?: string | null
           id?: string
+          location?: unknown | null
           notes?: string | null
           onboarding_completed?: boolean | null
           profile_verified?: boolean | null
           services_selected?: string[] | null
+          special_features?: Json | null
           status?: string | null
           tax_id?: string | null
           updated_at?: string | null
@@ -198,17 +249,22 @@ export type Database = {
         Update: {
           address?: string | null
           billing_address?: Json | null
+          categories?: string[] | null
+          category_ids?: string[] | null
           company_name?: string
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string | null
+          description?: string | null
           document_uploaded?: boolean | null
           google_account_id?: string | null
           id?: string
+          location?: unknown | null
           notes?: string | null
           onboarding_completed?: boolean | null
           profile_verified?: boolean | null
           services_selected?: string[] | null
+          special_features?: Json | null
           status?: string | null
           tax_id?: string | null
           updated_at?: string | null
@@ -222,17 +278,28 @@ export type Database = {
           address: string
           business_name: string
           created_at: string | null
+          facebook_page_id: string | null
+          gmb_connected: boolean | null
           go_live: boolean | null
           google_connected: boolean | null
           google_place_id: string | null
           id: string
+          instagram_business_id: string | null
+          kpi_metrics: Json | null
           last_updated: string | null
+          meta_categories: string[] | null
+          meta_connected: boolean | null
+          meta_data: Json | null
+          meta_metrics: Json | null
           opening_hours: Json | null
           partner_id: string
           phone: string | null
           photos: string[] | null
+          platform: string | null
           rating: number | null
           review_count: number | null
+          social_handles: Json | null
+          ugc_ready: boolean | null
           updated_at: string | null
           website: string | null
         }
@@ -240,17 +307,28 @@ export type Database = {
           address: string
           business_name: string
           created_at?: string | null
+          facebook_page_id?: string | null
+          gmb_connected?: boolean | null
           go_live?: boolean | null
           google_connected?: boolean | null
           google_place_id?: string | null
           id?: string
+          instagram_business_id?: string | null
+          kpi_metrics?: Json | null
           last_updated?: string | null
+          meta_categories?: string[] | null
+          meta_connected?: boolean | null
+          meta_data?: Json | null
+          meta_metrics?: Json | null
           opening_hours?: Json | null
           partner_id: string
           phone?: string | null
           photos?: string[] | null
+          platform?: string | null
           rating?: number | null
           review_count?: number | null
+          social_handles?: Json | null
+          ugc_ready?: boolean | null
           updated_at?: string | null
           website?: string | null
         }
@@ -258,17 +336,28 @@ export type Database = {
           address?: string
           business_name?: string
           created_at?: string | null
+          facebook_page_id?: string | null
+          gmb_connected?: boolean | null
           go_live?: boolean | null
           google_connected?: boolean | null
           google_place_id?: string | null
           id?: string
+          instagram_business_id?: string | null
+          kpi_metrics?: Json | null
           last_updated?: string | null
+          meta_categories?: string[] | null
+          meta_connected?: boolean | null
+          meta_data?: Json | null
+          meta_metrics?: Json | null
           opening_hours?: Json | null
           partner_id?: string
           phone?: string | null
           photos?: string[] | null
+          platform?: string | null
           rating?: number | null
           review_count?: number | null
+          social_handles?: Json | null
+          ugc_ready?: boolean | null
           updated_at?: string | null
           website?: string | null
         }
@@ -277,6 +366,48 @@ export type Database = {
             foreignKeyName: "business_profiles_partner_id_fkey"
             columns: ["partner_id"]
             isOneToOne: true
+            referencedRelation: "business_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      category_specifics: {
+        Row: {
+          category_id: string | null
+          created_at: string | null
+          id: string
+          key: string
+          partner_id: string | null
+          value: string | null
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string | null
+          id?: string
+          key: string
+          partner_id?: string | null
+          value?: string | null
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string | null
+          id?: string
+          key?: string
+          partner_id?: string | null
+          value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_specifics_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "gmb_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_specifics_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
             referencedRelation: "business_partners"
             referencedColumns: ["id"]
           },
@@ -567,35 +698,56 @@ export type Database = {
       gmb_categories: {
         Row: {
           category_id: string
+          category_path: string | null
+          country_availability: string[] | null
           created_at: string
+          description: string | null
           id: string
           is_popular: boolean
+          is_primary: boolean | null
+          keywords: string[] | null
           name_de: string
           name_en: string
           parent_category_id: string | null
+          parent_id: string | null
           sort_order: number
+          synonyms: string[] | null
           updated_at: string
         }
         Insert: {
           category_id: string
+          category_path?: string | null
+          country_availability?: string[] | null
           created_at?: string
+          description?: string | null
           id?: string
           is_popular?: boolean
+          is_primary?: boolean | null
+          keywords?: string[] | null
           name_de: string
           name_en: string
           parent_category_id?: string | null
+          parent_id?: string | null
           sort_order?: number
+          synonyms?: string[] | null
           updated_at?: string
         }
         Update: {
           category_id?: string
+          category_path?: string | null
+          country_availability?: string[] | null
           created_at?: string
+          description?: string | null
           id?: string
           is_popular?: boolean
+          is_primary?: boolean | null
+          keywords?: string[] | null
           name_de?: string
           name_en?: string
           parent_category_id?: string | null
+          parent_id?: string | null
           sort_order?: number
+          synonyms?: string[] | null
           updated_at?: string
         }
         Relationships: []
@@ -1098,6 +1250,44 @@ export type Database = {
         }
         Relationships: []
       }
+      onboarding_steps: {
+        Row: {
+          completed: boolean | null
+          completed_at: string | null
+          created_at: string | null
+          data: Json | null
+          id: string
+          partner_id: string | null
+          step_name: string
+        }
+        Insert: {
+          completed?: boolean | null
+          completed_at?: string | null
+          created_at?: string | null
+          data?: Json | null
+          id?: string
+          partner_id?: string | null
+          step_name: string
+        }
+        Update: {
+          completed?: boolean | null
+          completed_at?: string | null
+          created_at?: string | null
+          data?: Json | null
+          id?: string
+          partner_id?: string | null
+          step_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_steps_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "business_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       partner_bookings: {
         Row: {
           activated_at: string | null
@@ -1177,6 +1367,7 @@ export type Database = {
           additional_kpis: Json | null
           annual_revenue: number | null
           created_at: string
+          custom_features: Json | null
           employee_count: number | null
           food_cost_ratio: number | null
           id: string
@@ -1184,12 +1375,16 @@ export type Database = {
           opening_hours: Json | null
           partner_id: string
           seating_capacity: number | null
+          social_handles: Json | null
+          suppliers: string[] | null
+          ugc_consent: boolean | null
           updated_at: string
         }
         Insert: {
           additional_kpis?: Json | null
           annual_revenue?: number | null
           created_at?: string
+          custom_features?: Json | null
           employee_count?: number | null
           food_cost_ratio?: number | null
           id?: string
@@ -1197,12 +1392,16 @@ export type Database = {
           opening_hours?: Json | null
           partner_id: string
           seating_capacity?: number | null
+          social_handles?: Json | null
+          suppliers?: string[] | null
+          ugc_consent?: boolean | null
           updated_at?: string
         }
         Update: {
           additional_kpis?: Json | null
           annual_revenue?: number | null
           created_at?: string
+          custom_features?: Json | null
           employee_count?: number | null
           food_cost_ratio?: number | null
           id?: string
@@ -1210,6 +1409,9 @@ export type Database = {
           opening_hours?: Json | null
           partner_id?: string
           seating_capacity?: number | null
+          social_handles?: Json | null
+          suppliers?: string[] | null
+          ugc_consent?: boolean | null
           updated_at?: string
         }
         Relationships: [
@@ -1229,6 +1431,7 @@ export type Database = {
           created_at: string | null
           data: Json | null
           id: string
+          metadata: Json | null
           partner_id: string | null
           step_name: string
           updated_at: string | null
@@ -1239,6 +1442,7 @@ export type Database = {
           created_at?: string | null
           data?: Json | null
           id?: string
+          metadata?: Json | null
           partner_id?: string | null
           step_name: string
           updated_at?: string | null
@@ -1249,6 +1453,7 @@ export type Database = {
           created_at?: string | null
           data?: Json | null
           id?: string
+          metadata?: Json | null
           partner_id?: string | null
           step_name?: string
           updated_at?: string | null
@@ -2226,6 +2431,57 @@ export type Database = {
         }
         Relationships: []
       }
+      gmb_categories_backup: {
+        Row: {
+          category_id: string | null
+          category_path: string | null
+          country_availability: string[] | null
+          created_at: string | null
+          description: string | null
+          is_popular: boolean | null
+          is_primary: boolean | null
+          keywords: string[] | null
+          name_de: string | null
+          name_en: string | null
+          parent_category_id: string | null
+          sort_order: number | null
+          synonyms: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          category_id?: string | null
+          category_path?: string | null
+          country_availability?: string[] | null
+          created_at?: string | null
+          description?: string | null
+          is_popular?: boolean | null
+          is_primary?: boolean | null
+          keywords?: string[] | null
+          name_de?: string | null
+          name_en?: string | null
+          parent_category_id?: string | null
+          sort_order?: number | null
+          synonyms?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          category_id?: string | null
+          category_path?: string | null
+          country_availability?: string[] | null
+          created_at?: string | null
+          description?: string | null
+          is_popular?: boolean | null
+          is_primary?: boolean | null
+          keywords?: string[] | null
+          name_de?: string | null
+          name_en?: string | null
+          parent_category_id?: string | null
+          sort_order?: number | null
+          synonyms?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       restaurant_match_scores: {
         Row: {
           address: string | null
@@ -2307,17 +2563,28 @@ export type Database = {
           address: string
           business_name: string
           created_at: string | null
+          facebook_page_id: string | null
+          gmb_connected: boolean | null
           go_live: boolean | null
           google_connected: boolean | null
           google_place_id: string | null
           id: string
+          instagram_business_id: string | null
+          kpi_metrics: Json | null
           last_updated: string | null
+          meta_categories: string[] | null
+          meta_connected: boolean | null
+          meta_data: Json | null
+          meta_metrics: Json | null
           opening_hours: Json | null
           partner_id: string
           phone: string | null
           photos: string[] | null
+          platform: string | null
           rating: number | null
           review_count: number | null
+          social_handles: Json | null
+          ugc_ready: boolean | null
           updated_at: string | null
           website: string | null
         }[]
