@@ -30,6 +30,10 @@ interface OnboardingData {
   kpiData: Record<string, any>;
 }
 
+interface SmartOnboardingWizardProps {
+  onComplete: (answers: Record<string, any>) => void;
+}
+
 const ONBOARDING_STEPS = [
   { id: 'google', key: 'googleConnection' },
   { id: 'basics', key: 'businessBasics' },
@@ -37,7 +41,7 @@ const ONBOARDING_STEPS = [
   { id: 'kpis', key: 'kpiInput' }
 ];
 
-export const SmartOnboardingWizard: React.FC = () => {
+export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ onComplete }) => {
   const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(0);
   const [data, setData] = useState<OnboardingData>({
@@ -52,26 +56,21 @@ export const SmartOnboardingWizard: React.FC = () => {
     kpiData: {}
   });
 
-  const { saveOnboardingData, loadOnboardingData } = useOnboardingPersistence();
+  const { saveData, loadData } = useOnboardingPersistence();
 
   useEffect(() => {
     // Load existing data on component mount
-    const savedData = loadOnboardingData();
+    const savedData = loadData();
     if (savedData) {
-      setData(savedData);
-      // Resume from appropriate step
-      if (savedData.googleConnected && savedData.companyName) {
-        setCurrentStep(2);
-      } else if (savedData.googleConnected) {
-        setCurrentStep(1);
-      }
+      setData(savedData.answers);
+      setCurrentStep(savedData.step);
     }
-  }, []);
+  }, [loadData]);
 
   const handleDataChange = (newData: Partial<OnboardingData>) => {
     const updatedData = { ...data, ...newData };
     setData(updatedData);
-    saveOnboardingData(updatedData);
+    saveData(currentStep, updatedData);
   };
 
   const handleNext = () => {
@@ -93,14 +92,28 @@ export const SmartOnboardingWizard: React.FC = () => {
     }
   };
 
+  const handleGoogleConnection = (connectionData: any) => {
+    const updatedData = { ...data, ...connectionData };
+    setData(updatedData);
+    saveData(currentStep, updatedData);
+    handleNext();
+  };
+
+  const handleKpiComplete = (kpiData: any) => {
+    const finalData = { ...data, kpiData };
+    setData(finalData);
+    saveData(currentStep, finalData);
+    onComplete(finalData);
+  };
+
   const renderCurrentStep = () => {
     switch (currentStep) {
       case 0:
         return (
           <GoogleConnectionStep
-            data={data}
-            onDataChange={handleDataChange}
-            onNext={handleNext}
+            gmailAddress={data.companyName}
+            hasGmail={true}
+            onConnectionComplete={handleGoogleConnection}
           />
         );
       case 1:
@@ -115,8 +128,8 @@ export const SmartOnboardingWizard: React.FC = () => {
       case 2:
         return (
           <ServiceSelectionStep
-            data={data}
-            onDataChange={handleDataChange}
+            selectedServices={data.selectedServices}
+            onSelectionChange={(services) => handleDataChange({ selectedServices: services })}
             onNext={handleNext}
             onPrevious={handlePrevious}
           />
@@ -124,9 +137,8 @@ export const SmartOnboardingWizard: React.FC = () => {
       case 3:
         return (
           <KpiInputStep
-            data={data}
-            onDataChange={handleDataChange}
-            onPrevious={handlePrevious}
+            onComplete={handleKpiComplete}
+            onBack={handlePrevious}
           />
         );
       default:
@@ -147,9 +159,8 @@ export const SmartOnboardingWizard: React.FC = () => {
             <div className="space-y-4">
               <Progress value={progressPercentage} className="w-full" />
               <OnboardingStepIndicator
-                steps={ONBOARDING_STEPS}
-                currentStep={currentStep}
-                onStepClick={handleStepClick}
+                currentStep={currentStep + 1}
+                totalSteps={ONBOARDING_STEPS.length}
               />
             </div>
           </CardHeader>

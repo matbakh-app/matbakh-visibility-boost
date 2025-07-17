@@ -23,7 +23,7 @@ export const OnboardingStepIndicator: React.FC<OnboardingStepIndicatorProps> = (
 
   return (
     <div className="flex items-center justify-between">
-      {steps.map((step, index) => (
+      {steps.slice(0, totalSteps).map((step, index) => (
         <div key={step.number} className="flex items-center">
           <div className="flex flex-col items-center">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors duration-200 ${
@@ -49,7 +49,7 @@ export const OnboardingStepIndicator: React.FC<OnboardingStepIndicatorProps> = (
             </div>
           </div>
           
-          {index < steps.length - 1 && (
+          {index < steps.slice(0, totalSteps).length - 1 && (
             <div className={`flex-1 h-0.5 mx-4 ${
               step.number < currentStep ? 'bg-green-500' : 'bg-gray-200'
             }`} />

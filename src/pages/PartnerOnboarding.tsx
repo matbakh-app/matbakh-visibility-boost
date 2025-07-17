@@ -30,13 +30,14 @@ const PartnerOnboarding: React.FC = () => {
         .from('business_partners')
         .upsert({
           user_id: user.id,
-          company_name: answers.business_name,
-          contact_email: answers.gmail_account || user.email,
-          contact_phone: answers.business_phone,
-          website: answers.business_website,
-          services_selected: answers.selected_services || [],
+          company_name: answers.companyName,
+          contact_email: user.email,
+          contact_phone: answers.phone,
+          website: answers.website,
+          services_selected: answers.selectedServices || [],
           onboarding_completed: true,
-          status: 'active'
+          status: 'active',
+          category_ids: answers.categories || []
         }, {
           onConflict: 'user_id'
         })
@@ -50,27 +51,24 @@ const PartnerOnboarding: React.FC = () => {
         .from('business_profiles')
         .upsert({
           partner_id: partner.id,
-          business_name: answers.business_name,
-          address: answers.business_address,
-          phone: answers.business_phone,
-          website: answers.business_website,
-          business_description: answers.business_description,
-          gmb_category_id: answers.business_category,
-          google_connected: answers.google_connected || false,
-          gmb_setup_completed: false
+          business_name: answers.companyName,
+          address: answers.address,
+          phone: answers.phone,
+          website: answers.website,
+          google_connected: answers.googleConnected || false
         }, {
           onConflict: 'partner_id'
         });
 
       if (profileError) throw profileError;
 
-      // Save KPI data if provided (KPI bypass flow)
-      if (answers.kpi_data) {
+      // Save KPI data if provided
+      if (answers.kpiData && Object.keys(answers.kpiData).length > 0) {
         const { error: kpiError } = await supabase
           .from('partner_kpis')
           .upsert({
             partner_id: partner.id,
-            ...answers.kpi_data
+            ...answers.kpiData
           }, {
             onConflict: 'partner_id'
           });
@@ -80,10 +78,10 @@ const PartnerOnboarding: React.FC = () => {
 
       // Save onboarding steps
       const onboardingSteps = [
-        { step_name: 'business_data', data: answers, completed: true },
-        { step_name: 'service_selection', data: { services: answers.selected_services }, completed: true },
-        { step_name: 'qualification', data: { has_gmail: answers.has_gmail }, completed: true },
-        { step_name: 'google_connection', data: { connected: answers.google_connected }, completed: !!answers.google_connected }
+        { step_name: 'google_connection', data: { connected: answers.googleConnected }, completed: !!answers.googleConnected },
+        { step_name: 'business_basics', data: answers, completed: true },
+        { step_name: 'service_selection', data: { services: answers.selectedServices }, completed: true },
+        { step_name: 'kpi_input', data: answers.kpiData, completed: !!answers.kpiData }
       ];
 
       for (const step of onboardingSteps) {
@@ -99,11 +97,11 @@ const PartnerOnboarding: React.FC = () => {
       }
 
       toast({
-        title: t('onboarding:messages.success'),
-        description: t('onboarding:messages.successDescription'),
+        title: t('messages.success'),
+        description: t('messages.successDescription'),
       });
 
-      // Redirect to dashboard - use unified dashboard
+      // Redirect to dashboard
       setTimeout(() => {
         navigate('/dashboard');
       }, 2000);
@@ -111,8 +109,8 @@ const PartnerOnboarding: React.FC = () => {
     } catch (error) {
       console.error('Onboarding error:', error);
       toast({
-        title: t('onboarding:messages.errorTitle'),
-        description: t('onboarding:messages.errorDescription'),
+        title: t('messages.errorTitle'),
+        description: t('messages.errorDescription'),
         variant: 'destructive'
       });
     }
