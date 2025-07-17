@@ -16,14 +16,15 @@ const PackageComparison: React.FC<PackageComparisonProps> = ({ packages = [], la
   const isMobile = useIsMobile();
 
   const hasFeature = (pkg: ServicePackage, featureKey: string): boolean => {
+    // Map features to actual package codes from database
     const featureMap: Record<string, string[]> = {
-      'google_setup': ['google-business-setup', 'premium-business-paket'],
-      'profile_maintenance': ['profilpflege-basis', 'profilpflege-classic', 'premium-business-paket'],
-      'social_media': ['social-media-management', 'premium-business-paket'],
-      'monthly_reports': ['profilpflege-basis', 'profilpflege-classic', 'premium-business-paket'],
-      'priority_support': ['profilpflege-classic', 'premium-business-paket'],
-      'strategy_calls': ['premium-business-paket'],
-      'analytics': ['profilpflege-classic', 'premium-business-paket']
+      'google_setup': ['google_profile_setup', 'starter_kit'],
+      'profile_maintenance': ['profile_management_classic', 'profile_management_premium', 'starter_kit'],
+      'social_media': ['meta_business_suite_setup', 'starter_kit'],
+      'monthly_reports': ['profile_dashboard_basic', 'profile_management_classic', 'profile_management_premium', 'starter_kit'],
+      'priority_support': ['profile_management_premium', 'starter_kit'],
+      'strategy_calls': ['profile_management_premium', 'starter_kit'],
+      'analytics': ['profile_management_classic', 'profile_management_premium', 'starter_kit']
     };
     
     return featureMap[featureKey]?.includes(pkg.slug) || false;
