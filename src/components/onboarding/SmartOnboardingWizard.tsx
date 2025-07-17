@@ -125,12 +125,14 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
       case 1:
         return (
           <BusinessBasicsStep
-            companyName={data.companyName}
-            address={data.address}
-            phone={data.phone}
-            website={data.website}
-            description={data.description}
-            categories={data.categories}
+            data={{
+              companyName: data.companyName,
+              address: data.address,
+              phone: data.phone,
+              website: data.website,
+              description: data.description,
+              categories: data.categories
+            }}
             onDataChange={handleDataChange}
             onNext={handleNext}
             onPrevious={handlePrevious}
