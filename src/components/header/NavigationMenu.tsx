@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getVisibleNavItems, getNavLink, validateNavigationConfig } from '../navigation/NavigationConfig';
@@ -15,7 +15,21 @@ const NavigationMenu: React.FC = () => {
   const { t, i18n } = useTranslation('nav');
   const { isAdmin } = useAuth();
   const location = useLocation();
-  const lng = (i18n.language || 'de') as 'de' | 'en';
+  const [currentLanguage, setCurrentLanguage] = useState(i18n.language);
+  const lng = (currentLanguage || 'de') as 'de' | 'en';
+
+  // Listen for language changes
+  useEffect(() => {
+    const handleLanguageChange = (lng: string) => {
+      setCurrentLanguage(lng);
+    };
+
+    i18n.on('languageChanged', handleLanguageChange);
+    
+    return () => {
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [i18n]);
 
   // Validate navigation configuration in development
   if (process.env.NODE_ENV === 'development') {

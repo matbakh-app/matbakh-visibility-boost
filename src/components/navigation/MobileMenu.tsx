@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Menu, X, User, LogOut } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -24,7 +24,21 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onToggle }) => {
   const { user, signOut, isAdmin } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const lng = (i18n.language || 'de') as 'de' | 'en';
+  const [currentLanguage, setCurrentLanguage] = useState(i18n.language);
+  const lng = (currentLanguage || 'de') as 'de' | 'en';
+
+  // Listen for language changes
+  useEffect(() => {
+    const handleLanguageChange = (lng: string) => {
+      setCurrentLanguage(lng);
+    };
+
+    i18n.on('languageChanged', handleLanguageChange);
+    
+    return () => {
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [i18n]);
 
   const visibleItems = getVisibleNavItems(isAdmin, lng);
 
