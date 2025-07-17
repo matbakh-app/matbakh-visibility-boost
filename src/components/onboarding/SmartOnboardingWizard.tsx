@@ -41,20 +41,22 @@ const ONBOARDING_STEPS = [
   { id: 'kpis', key: 'kpiInput' }
 ];
 
+const DEFAULT_ONBOARDING_DATA: OnboardingData = {
+  googleConnected: false,
+  companyName: '',
+  address: '',
+  phone: '',
+  website: '',
+  description: '',
+  categories: [],
+  selectedServices: [],
+  kpiData: {}
+};
+
 export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ onComplete }) => {
   const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(0);
-  const [data, setData] = useState<OnboardingData>({
-    googleConnected: false,
-    companyName: '',
-    address: '',
-    phone: '',
-    website: '',
-    description: '',
-    categories: [],
-    selectedServices: [],
-    kpiData: {}
-  });
+  const [data, setData] = useState<OnboardingData>(DEFAULT_ONBOARDING_DATA);
 
   const { saveData, loadData } = useOnboardingPersistence();
 
@@ -62,7 +64,11 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
     // Load existing data on component mount
     const savedData = loadData();
     if (savedData) {
-      setData(savedData.answers);
+      // Merge saved data with defaults to ensure all fields are present
+      setData(prev => ({
+        ...prev,
+        ...savedData.answers
+      }));
       setCurrentStep(savedData.step);
     }
   }, [loadData]);
@@ -119,7 +125,12 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
       case 1:
         return (
           <BusinessBasicsStep
-            data={data}
+            companyName={data.companyName}
+            address={data.address}
+            phone={data.phone}
+            website={data.website}
+            description={data.description}
+            categories={data.categories}
             onDataChange={handleDataChange}
             onNext={handleNext}
             onPrevious={handlePrevious}
