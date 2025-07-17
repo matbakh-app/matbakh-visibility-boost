@@ -24,11 +24,11 @@ export const ServiceSelectionStep: React.FC<ServiceSelectionStepProps> = ({
   const { data: servicePackages, isLoading } = useServicePackages();
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleServiceToggle = (serviceSlug: string) => {
-    if (selectedServices.includes(serviceSlug)) {
-      onSelectionChange(selectedServices.filter(s => s !== serviceSlug));
+  const handleServiceToggle = (serviceId: string) => {
+    if (selectedServices.includes(serviceId)) {
+      onSelectionChange(selectedServices.filter(s => s !== serviceId));
     } else {
-      onSelectionChange([...selectedServices, serviceSlug]);
+      onSelectionChange([...selectedServices, serviceId]);
     }
     
     // Clear validation error
@@ -78,25 +78,28 @@ export const ServiceSelectionStep: React.FC<ServiceSelectionStepProps> = ({
             <div
               key={service.id}
               className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                selectedServices.includes(service.code)
+                selectedServices.includes(service.id)
                   ? 'border-blue-500 bg-blue-50'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
-              onClick={() => handleServiceToggle(service.code)}
+              onClick={() => handleServiceToggle(service.id)}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h3 className="font-medium text-lg">{service.default_name}</h3>
+                  <h3 className="font-medium text-lg">{service.name}</h3>
                   <div className="flex items-center gap-2 mt-2">
-                    <Badge variant="outline">{service.code}</Badge>
-                    {service.is_recurring && (
+                    <Badge variant="outline">{service.slug}</Badge>
+                    {service.period === 'monthly' && (
                       <Badge variant="secondary">
                         {t('services.recurring')}
                       </Badge>
                     )}
                   </div>
+                  {service.description && (
+                    <p className="text-sm text-gray-600 mt-2">{service.description}</p>
+                  )}
                 </div>
-                {selectedServices.includes(service.code) && (
+                {selectedServices.includes(service.id) && (
                   <CheckCircle className="w-6 h-6 text-blue-500" />
                 )}
               </div>
