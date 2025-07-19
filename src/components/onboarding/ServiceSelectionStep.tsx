@@ -67,13 +67,13 @@ export const ServiceSelectionStep: React.FC<ServiceSelectionStepProps> = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t('onboarding.serviceSelection')}</CardTitle>
-        <p className="text-gray-600">
+        <CardTitle className="break-words hyphens-auto">{t('onboarding.serviceSelection')}</CardTitle>
+        <p className="text-gray-600 break-words hyphens-auto">
           {t('onboarding.serviceSelectionDescription')}
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           {servicePackages?.map((service) => (
             <div
               key={service.id}
@@ -84,40 +84,48 @@ export const ServiceSelectionStep: React.FC<ServiceSelectionStepProps> = ({
               }`}
               onClick={() => handleServiceToggle(service.id)}
             >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="font-medium text-lg">{service.name}</h3>
-                  <div className="flex items-center gap-2 mt-2">
-                    <Badge variant="outline">{service.slug}</Badge>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-medium text-base sm:text-lg break-words hyphens-auto overflow-wrap-anywhere mb-2">
+                    {service.name}
+                  </h3>
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <Badge variant="outline" className="text-xs break-all">
+                      {service.slug}
+                    </Badge>
                     {service.period === 'monthly' && (
-                      <Badge variant="secondary">
+                      <Badge variant="secondary" className="text-xs">
                         {t('services.recurring')}
                       </Badge>
                     )}
                   </div>
                   {service.description && (
-                    <p className="text-sm text-gray-600 mt-2">{service.description}</p>
+                    <p className="text-xs sm:text-sm text-gray-600 break-words hyphens-auto overflow-wrap-anywhere leading-relaxed">
+                      {service.description}
+                    </p>
                   )}
                 </div>
-                {selectedServices.includes(service.id) && (
-                  <CheckCircle className="w-6 h-6 text-blue-500" />
-                )}
+                <div className="flex-shrink-0 mt-1">
+                  {selectedServices.includes(service.id) && (
+                    <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" />
+                  )}
+                </div>
               </div>
             </div>
           ))}
         </div>
 
         {errors.services && (
-          <p className="text-sm text-red-500">{errors.services}</p>
+          <p className="text-sm text-red-500 break-words">{errors.services}</p>
         )}
 
-        <div className="flex justify-between pt-6 border-t">
-          <Button variant="outline" onClick={onPrevious} className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row justify-between gap-3 pt-6 border-t">
+          <Button variant="outline" onClick={onPrevious} className="flex items-center gap-2 order-2 sm:order-1">
             <ArrowLeft className="w-4 h-4" />
-            {t('navigation.back')}
+            <span className="break-words">{t('navigation.back')}</span>
           </Button>
-          <Button onClick={handleNext} className="flex items-center gap-2">
-            {t('navigation.next')}
+          <Button onClick={handleNext} className="flex items-center gap-2 order-1 sm:order-2">
+            <span className="break-words">{t('navigation.next')}</span>
             <ArrowRight className="w-4 h-4" />
           </Button>
         </div>

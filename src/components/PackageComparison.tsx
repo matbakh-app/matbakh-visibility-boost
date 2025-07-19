@@ -51,40 +51,44 @@ const PackageComparison: React.FC<PackageComparisonProps> = ({ packages = [], la
       <section className="py-16 bg-gray-50">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-black mb-4">
+            <h2 className="text-2xl sm:text-3xl font-bold text-black mb-4 break-words">
               {t('comparison.title')}
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto break-words">
               {t('comparison.subtitle')}
             </p>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4">
             {packages.map((pkg) => (
               <Card key={pkg.id} className="overflow-hidden">
-                <CardHeader className="bg-gray-100">
+                <CardHeader className="bg-gray-100 pb-3">
                   <CardTitle className="text-center">
                     <div className="space-y-2">
-                      <div className="text-lg font-medium">{pkg.name}</div>
-                      <div className="text-2xl font-bold text-black">
+                      <div className="text-base sm:text-lg font-medium break-words hyphens-auto overflow-wrap-anywhere">
+                        {pkg.name}
+                      </div>
+                      <div className="text-xl sm:text-2xl font-bold text-black">
                         €{pkg.base_price}
-                        {pkg.period === 'monthly' && `/${t('comparison.monthLabel')}`}
+                        {pkg.period === 'monthly' && <span className="text-sm">/{t('comparison.monthLabel')}</span>}
                       </div>
                     </div>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-4">
-                  <div className="space-y-3">
+                <CardContent className="p-3">
+                  <div className="space-y-2">
                     {features.map((featureKey) => (
-                      <div key={featureKey} className="flex items-center justify-between">
-                        <span className="text-sm font-medium">
+                      <div key={featureKey} className="flex items-center justify-between gap-2 min-h-[2rem]">
+                        <span className="text-xs sm:text-sm font-medium flex-1 break-words hyphens-auto overflow-wrap-anywhere leading-tight">
                           {t(`comparison.features.${featureKey}`)}
                         </span>
-                        {hasFeature(pkg, featureKey) ? (
-                          <Check className="h-5 w-5 text-green-600" />
-                        ) : (
-                          <X className="h-5 w-5 text-gray-300" />
-                        )}
+                        <div className="flex-shrink-0">
+                          {hasFeature(pkg, featureKey) ? (
+                            <Check className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <X className="h-4 w-4 text-gray-300" />
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
