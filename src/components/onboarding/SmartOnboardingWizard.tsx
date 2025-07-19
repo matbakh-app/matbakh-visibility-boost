@@ -80,13 +80,17 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
 
   const handleNext = () => {
     if (currentStep < ONBOARDING_STEPS.length - 1) {
-      setCurrentStep(currentStep + 1);
+      const nextStep = currentStep + 1;
+      setCurrentStep(nextStep);
+      saveData(nextStep, data);
     }
   };
 
   const handlePrevious = () => {
     if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
+      const prevStep = currentStep - 1;
+      setCurrentStep(prevStep);
+      saveData(prevStep, data);
     }
   };
 
@@ -119,7 +123,7 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
             gmailAddress={data.companyName}
             hasGmail={true}
             onConnectionComplete={handleGoogleConnection}
-            onBack={handlePrevious}
+            onBack={currentStep > 0 ? handlePrevious : undefined}
           />
         );
       case 1:
