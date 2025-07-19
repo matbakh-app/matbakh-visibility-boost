@@ -104,6 +104,18 @@ export const GoogleConnectionStep: React.FC<GoogleConnectionStepProps> = ({
           </CardContent>
         </Card>
 
+        {/* Zurück Button für No Gmail Case */}
+        <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
+          <Button
+            variant="outline"
+            onClick={onBack}
+            className="w-full sm:w-auto"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            {t('navigation.back', 'Zurück')}
+          </Button>
+        </div>
+
         <div className="bg-gray-50 p-4 rounded-lg">
           <h4 className="font-medium text-gray-900 mb-2">{t('step4.setupLater.title', 'You can setup Google integration later')}</h4>
           <ul className="text-sm text-gray-600 space-y-1">
@@ -189,28 +201,6 @@ export const GoogleConnectionStep: React.FC<GoogleConnectionStepProps> = ({
                     <li>• {t('step4.permissions.editPermissions')}</li>
                   </ul>
                 </div>
-
-                {/* New navigation buttons */}
-                <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
-                  {onBack && (
-                    <Button
-                      variant="outline"
-                      onClick={onBack}
-                      className="w-full sm:w-auto"
-                    >
-                      <ArrowLeft className="w-4 h-4 mr-2" />
-                      {t('navigation.back', 'Zurück')}
-                    </Button>
-                  )}
-                  
-                  <Button
-                    variant="outline"
-                    onClick={handleSkipGoogle}
-                    className="w-full sm:flex-1"
-                  >
-                    {t('step4.continueWithoutGoogle', 'Ohne Google fortsetzen')}
-                  </Button>
-                </div>
               </div>
             )}
 
@@ -226,6 +216,28 @@ export const GoogleConnectionStep: React.FC<GoogleConnectionStepProps> = ({
           </div>
         </CardContent>
       </Card>
+
+      {/* Navigation Buttons - Immer anzeigen */}
+      <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
+        <Button
+          variant="outline"
+          onClick={onBack}
+          className="w-full sm:w-auto"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          {t('navigation.back', 'Zurück')}
+        </Button>
+        
+        {!isConnected && (
+          <Button
+            variant="outline"
+            onClick={handleSkipGoogle}
+            className="w-full sm:flex-1"
+          >
+            {t('step4.continueWithoutGoogle', 'Ohne Google fortsetzen')}
+          </Button>
+        )}
+      </div>
 
       <div className="bg-blue-50 p-4 rounded-lg">
         <h4 className="font-medium text-blue-900 mb-2">{t('step4.nextSteps.title')}</h4>
