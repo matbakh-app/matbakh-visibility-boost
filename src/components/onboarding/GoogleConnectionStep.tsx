@@ -4,12 +4,13 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useGoogleConnection } from '@/hooks/useGoogleConnection';
-import { Shield, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Shield, CheckCircle, AlertCircle, Loader2, ArrowLeft } from 'lucide-react';
 
 interface GoogleConnectionStepProps {
   gmailAddress?: string;
   hasGmail?: boolean;
   onConnectionComplete: (data: any) => void;
+  onBack?: () => void;
   language?: 'de' | 'en';
 }
 
@@ -17,6 +18,7 @@ export const GoogleConnectionStep: React.FC<GoogleConnectionStepProps> = ({
   gmailAddress,
   hasGmail = true,
   onConnectionComplete,
+  onBack,
   language = 'de'
 }) => {
   const { t } = useTranslation('onboarding');
@@ -50,6 +52,13 @@ export const GoogleConnectionStep: React.FC<GoogleConnectionStepProps> = ({
       setError(t('messages.connectionError'));
       setConnecting(false);
     }
+  };
+
+  const handleSkipGoogle = () => {
+    onConnectionComplete({ 
+      googleConnected: false, 
+      skipGoogle: true 
+    });
   };
 
   const isConnected = connectionData?.isGoogleConnected;
@@ -179,6 +188,28 @@ export const GoogleConnectionStep: React.FC<GoogleConnectionStepProps> = ({
                     <li>• {t('step4.permissions.basicInfo')}</li>
                     <li>• {t('step4.permissions.editPermissions')}</li>
                   </ul>
+                </div>
+
+                {/* New navigation buttons */}
+                <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
+                  {onBack && (
+                    <Button
+                      variant="outline"
+                      onClick={onBack}
+                      className="w-full sm:w-auto"
+                    >
+                      <ArrowLeft className="w-4 h-4 mr-2" />
+                      {t('navigation.back', 'Zurück')}
+                    </Button>
+                  )}
+                  
+                  <Button
+                    variant="outline"
+                    onClick={handleSkipGoogle}
+                    className="w-full sm:flex-1"
+                  >
+                    {t('step4.continueWithoutGoogle', 'Ohne Google fortsetzen')}
+                  </Button>
                 </div>
               </div>
             )}
