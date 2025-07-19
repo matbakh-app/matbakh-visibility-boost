@@ -91,6 +91,9 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
       const prevStep = currentStep - 1;
       setCurrentStep(prevStep);
       saveData(prevStep, data);
+    } else {
+      // Bei Step 0 - zurück zur vorherigen Seite (z.B. Login/Registration)
+      window.history.back();
     }
   };
 
@@ -123,7 +126,7 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
             gmailAddress={data.companyName}
             hasGmail={true}
             onConnectionComplete={handleGoogleConnection}
-            onBack={currentStep > 0 ? handlePrevious : undefined}
+            onBack={handlePrevious}
           />
         );
       case 1:
