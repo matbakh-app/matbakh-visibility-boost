@@ -10,10 +10,10 @@ import LegalLayout from '@/layouts/LegalLayout';
 import { getNamespaceForLegalPage } from '@/utils/getLegalNamespace';
 
 const Usage: React.FC = () => {
-  // CRITICAL FIX: Verwende dynamisches Namespace-Mapping wie in anderen Legal-Seiten
-  const { i18n } = useTranslation();
+  // CRITICAL FIX: Prevent suspension by using safe translation access
+  const { i18n } = useTranslation(['nav']);
   const namespace = getNamespaceForLegalPage(i18n.language, 'usage');
-  const { t } = useTranslation(namespace);
+  const { t } = useTranslation(namespace, { useSuspense: false });
 
   // Clean mapping of existing translation keys from legal-usage.json
   const LEGAL_SECTIONS = [
