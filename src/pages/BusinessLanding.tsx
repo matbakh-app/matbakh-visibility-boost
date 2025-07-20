@@ -22,6 +22,10 @@ import HeroSection from '@/components/HeroSection';
 import ProblemSection from '@/components/ProblemSection';
 import SolutionSection from '@/components/SolutionSection';
 import WhyMatbakhBanner from '@/components/WhyMatbakhBanner';
+import TestimonialSection from '@/components/TestimonialSection';
+import TrustSection from '@/components/TrustSection';
+import HowItWorksSection from '@/components/HowItWorksSection';
+import VisibilityCheckSection from '@/components/VisibilityCheckSection';
 import { SeoMeta } from '@/components/SeoMeta';
 import { Link } from 'react-router-dom';
 
@@ -35,6 +39,11 @@ const BusinessLanding: React.FC = () => {
   
   const getLoginRoute = () => {
     return '/business/partner/login';
+  };
+
+  const getWhatsAppLink = () => {
+    const message = encodeURIComponent('Hallo! Ich interessiere mich für matbakh.app und möchte gerne mehr erfahren.');
+    return `https://wa.me/4915123456789?text=${message}`;
   };
 
   const services = [
@@ -124,6 +133,18 @@ const BusinessLanding: React.FC = () => {
 
         <ProblemSection />
         <SolutionSection />
+        
+        {/* Trust Elements */}
+        <TrustSection />
+        
+        {/* How It Works */}
+        <HowItWorksSection />
+        
+        {/* Testimonials */}
+        <TestimonialSection />
+        
+        {/* Visibility Check CTA */}
+        <VisibilityCheckSection />
 
         {/* Services Section */}
         <section id="services" className="py-20 bg-gray-50">
@@ -172,10 +193,13 @@ const BusinessLanding: React.FC = () => {
               {t('ctaFinalSubtitle')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-white hover:bg-gray-100 text-black px-8 py-3" onClick={() => navigate(getLoginRoute())}>
+              <Button size="lg" className="bg-white hover:bg-gray-100 text-black px-8 py-3" onClick={() => {
+                const element = document.querySelector('.visibility-check-section');
+                element?.scrollIntoView({ behavior: 'smooth' });
+              }}>
                 {t('ctaFinalButton1')}
               </Button>
-              <Button variant="outline" size="lg" onClick={() => navigate(getPackagesRoute())} className="border-white hover:bg-white px-8 py-3 text-stone-950">
+              <Button variant="outline" size="lg" onClick={() => window.open(getWhatsAppLink(), '_blank')} className="border-white hover:bg-white px-8 py-3 text-white hover:text-black">
                 {t('ctaFinalButton2')}
               </Button>
             </div>

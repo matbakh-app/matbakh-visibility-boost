@@ -2,7 +2,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { ArrowRight, CheckCircle } from 'lucide-react';
+import { ArrowRight, CheckCircle, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/components/layout/AppLayout';
@@ -13,28 +13,54 @@ const ServicesPage: React.FC = () => {
 
   const packagesRoute = i18n.language === 'en' ? '/packages' : '/angebote';
 
+  const getWhatsAppLink = () => {
+    const message = encodeURIComponent('Hallo! Ich interessiere mich für Ihre Services und möchte gerne mehr erfahren.');
+    return `https://wa.me/4915123456789?text=${message}`;
+  };
+
   const coreServices = [
     {
       icon: '🎯',
       titleKey: 'services.setup.coreTitle',
       descriptionKey: 'services.setup.coreDescription',
-      features: t('services.setup.features', { returnObjects: true }) as string[]
+      highlights: t('services.setup.highlights', { returnObjects: true }) as string[] || []
     },
     {
-      icon: '📱',
-      titleKey: 'services.management.title',
-      descriptionKey: 'services.management.coreDescription',
-      features: t('services.management.features', { returnObjects: true }) as string[]
+      icon: '📘',
+      titleKey: 'services.meta.title',
+      descriptionKey: 'services.meta.description',
+      highlights: t('services.meta.highlights', { returnObjects: true }) as string[] || []
     },
     {
       icon: '🤖',
-      titleKey: 'services.analytics.coreTitle',
-      descriptionKey: 'services.analytics.coreDescription',
-      features: t('services.analytics.features', { returnObjects: true }) as string[]
+      titleKey: 'services.management.title',
+      descriptionKey: 'services.management.coreDescription',
+      highlights: t('services.management.highlights', { returnObjects: true }) as string[] || []
     }
   ];
 
   const additionalServices = [
+    {
+      icon: '📊',
+      titleKey: 'services.analytics.coreTitle',
+      descriptionKey: 'services.analytics.coreDescription',
+      highlights: t('services.analytics.highlights', { returnObjects: true }) as string[] || []
+    },
+    {
+      icon: '📱',
+      titleKey: 'services.social.title',
+      descriptionKey: 'services.social.description',
+      highlights: t('services.social.highlights', { returnObjects: true }) as string[] || []
+    },
+    {
+      icon: '🌐',
+      titleKey: 'services.googleTools.title',
+      descriptionKey: 'services.googleTools.description',
+      highlights: t('services.googleTools.highlights', { returnObjects: true }) as string[] || []
+    }
+  ];
+
+  const extraServices = [
     {
       icon: '⭐',
       titleKey: 'services.additional.reviews.title',
@@ -52,36 +78,48 @@ const ServicesPage: React.FC = () => {
     }
   ];
 
-  const servicesJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    name: "Matbakh",
-    url: "https://matbakh.app",
-    description: "Professional services for restaurant digital presence and management",
-    offers: [
-      {
-        "@type": "Service",
-        name: "Google Business Setup",
-        description: "Complete Google Business profile setup and optimization"
-      },
-      {
-        "@type": "Service",
-        name: "Profile Management", 
-        description: "Ongoing Google Business profile management and updates"
-      },
-      {
-        "@type": "Service",
-        name: "Analytics & Automation",
-        description: "Automated analytics and business intelligence solutions"
-      }
-    ]
-  };
+  const ServiceCard = ({ service, showButton = false }: { service: any, showButton?: boolean }) => (
+    <Card className="bg-white border-2 hover:border-primary/30 transition-colors h-full">
+      <CardHeader className="text-center">
+        <div className="text-4xl mb-4 flex justify-center">{service.icon}</div>
+        <CardTitle className="text-xl font-bold text-black">
+          {t(service.titleKey)}
+        </CardTitle>
+        <CardDescription className="text-gray-600">
+          {t(service.descriptionKey)}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {service.highlights && (
+          <ul className="space-y-2 mb-4">
+            {service.highlights.map((highlight: string, index: number) => (
+              <li key={index} className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
+                <span className="text-sm text-gray-700">{highlight}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+        {showButton && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={() => window.open(getWhatsAppLink(), '_blank')}
+          >
+            <ExternalLink className="h-4 w-4 mr-2" />
+            Jetzt kostenlos starten
+          </Button>
+        )}
+      </CardContent>
+    </Card>
+  );
 
   return (
     <>
       <SeoMeta
-        title={t('services.pageTitle', 'Unsere Leistungen')}
-        description={t('services.pageSubtitle', 'Professionelle digitale Lösungen für Restaurants')}
+        title={t('services.pageTitle', 'Kernleistungen')}
+        description={t('services.pageSubtitle', 'matbakh.app übernimmt für Sie')}
         namespace="translation"
       />
       <AppLayout>
@@ -96,68 +134,41 @@ const ServicesPage: React.FC = () => {
             </p>
           </div>
 
-          {/* Core Services */}
+          {/* Core Services - 3 Cards in Row */}
           <div className="mb-16">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-black mb-4">
-                {t('services.coreTitle')}
-              </h2>
-              <p className="text-lg text-gray-600">
-                {t('services.coreSubtitle')}
-              </p>
-            </div>
-
             <div className="grid md:grid-cols-3 gap-8 mb-12">
               {coreServices.map((service, index) => (
-                 <Card key={index} className="bg-white border-2 hover:border-gray-300 transition-colors">
-                   <CardHeader className="text-center">
-                     <div className="text-4xl mb-4 flex justify-center">{service.icon}</div>
-                    <CardTitle className="text-xl font-bold text-black">
-                      {t(service.titleKey)}
-                    </CardTitle>
-                    <CardDescription className="text-gray-600">
-                      {t(service.descriptionKey)}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="space-y-2">
-                      {service.features.map((feature, featureIndex) => (
-                        <li key={featureIndex} className="flex items-center gap-2">
-                          <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
-                          <span className="text-sm text-gray-700">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
+                <ServiceCard key={index} service={service} />
               ))}
             </div>
           </div>
 
-          {/* Additional Services */}
+          {/* Additional Services - 3 Cards in Second Row */}
           <div className="mb-16">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-black mb-4">
                 {t('services.additionalTitle')}
               </h2>
-              <p className="text-lg text-gray-600">
-                {t('services.additionalSubtitle')}
-              </p>
             </div>
 
             <div className="grid md:grid-cols-3 gap-8">
               {additionalServices.map((service, index) => (
-                <Card key={index} className="bg-white border hover:border-gray-300 transition-colors">
-                  <CardHeader className="text-center">
-                    <div className="text-3xl mb-4 flex justify-center">{service.icon}</div>
-                    <CardTitle className="text-lg font-bold text-black">
-                      {t(service.titleKey)}
-                    </CardTitle>
-                    <CardDescription className="text-gray-600">
-                      {t(service.descriptionKey)}
-                    </CardDescription>
-                  </CardHeader>
-                </Card>
+                <ServiceCard key={index} service={service} showButton={true} />
+              ))}
+            </div>
+          </div>
+
+          {/* Extra Services */}
+          <div className="mb-16">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-black mb-4">
+                Zusätzliche Services
+              </h2>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {extraServices.map((service, index) => (
+                <ServiceCard key={index} service={service} showButton={true} />
               ))}
             </div>
           </div>
@@ -171,11 +182,9 @@ const ServicesPage: React.FC = () => {
               {t('services.ctaSubtitle')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild size="lg">
-                <Link to="/kontakt" className="flex items-center gap-2">
-                  {t('services.ctaButton1')}
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
+              <Button size="lg" onClick={() => window.open(getWhatsAppLink(), '_blank')}>
+                {t('services.ctaButton1')}
+                <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
               <Button asChild variant="outline" size="lg">
                 <Link to={packagesRoute} className="flex items-center gap-2">
