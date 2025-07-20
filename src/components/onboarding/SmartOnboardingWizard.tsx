@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -92,12 +93,12 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
       setCurrentStep(prevStep);
       saveData(prevStep, data);
     } else {
-      // Bei Step 0 - zurück zum Onboarding-Formular (Business Login/Register Seite)
+      // Bei Step 0 - zurück zum Business Onboarding-Formular/Landing Page
       const currentLanguage = localStorage.getItem('i18nextLng') || 'de';
       if (currentLanguage === 'en') {
-        window.location.href = '/business/login';
+        window.location.href = '/business';
       } else {
-        window.location.href = '/business/partner/login';
+        window.location.href = '/business/partner';
       }
     }
   };
