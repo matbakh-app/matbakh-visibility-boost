@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -89,18 +88,12 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
 
   const handlePrevious = () => {
     if (currentStep > 0) {
+      // Gehe zum vorherigen Schritt im Onboarding-Prozess
       const prevStep = currentStep - 1;
       setCurrentStep(prevStep);
       saveData(prevStep, data);
-    } else {
-      // Bei Step 0 - zurück zum Business Onboarding-Formular/Landing Page
-      const currentLanguage = localStorage.getItem('i18nextLng') || 'de';
-      if (currentLanguage === 'en') {
-        window.location.href = '/business';
-      } else {
-        window.location.href = '/business/partner';
-      }
     }
+    // Wenn wir bei Schritt 0 sind, bleiben wir hier - kein Zurück zur Paketauswahl
   };
 
   const handleStepClick = (stepIndex: number) => {
@@ -132,7 +125,7 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
             gmailAddress={data.companyName}
             hasGmail={true}
             onConnectionComplete={handleGoogleConnection}
-            onBack={handlePrevious}
+            onBack={currentStep > 0 ? handlePrevious : undefined}
           />
         );
       case 1:
