@@ -76,14 +76,51 @@ serve(async (req) => {
 
     console.log(`Checking visibility for: ${businessName} in ${location}`)
 
-    // 1. Place Search - Find the business
-    const searchQuery = encodeURIComponent(`${businessName} ${location}`)
-    const findPlaceUrl = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${searchQuery}&inputtype=textquery&fields=place_id,name,formatted_address,geometry,types&key=${GOOGLE_PLACES_API_KEY}`
+    // 1. Try multiple search strategies for better results
+    const searchQueries = [
+      `${businessName} ${location}`,  // Original query
+      `${businessName} restaurant ${location}`, // With "restaurant" added
+      `${businessName}, ${location}`, // With comma separator
+      businessName // Just the business name
+    ]
 
-    const placeResponse = await fetch(findPlaceUrl)
-    const placeData = await placeResponse.json()
+    let placeData = null
+    let searchQuery = ''
 
-    if (!placeData.candidates || placeData.candidates.length === 0) {
+    // Try each search query until we find results
+    for (const query of searchQueries) {
+      searchQuery = encodeURIComponent(query)
+      console.log(`Trying search query: ${query}`)
+      
+      const findPlaceUrl = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${searchQuery}&inputtype=textquery&fields=place_id,name,formatted_address,geometry,types&key=${GOOGLE_PLACES_API_KEY}`
+
+      const placeResponse = await fetch(findPlaceUrl)
+      const tempPlaceData = await placeResponse.json()
+      
+      console.log(`Search result for "${query}":`, JSON.stringify(tempPlaceData, null, 2))
+
+      if (tempPlaceData.candidates && tempPlaceData.candidates.length > 0) {
+        // Filter for restaurants/food establishments
+        const restaurantCandidate = tempPlaceData.candidates.find((candidate: any) => 
+          candidate.types && candidate.types.some((type: string) => 
+            ['restaurant', 'food', 'meal_takeaway', 'cafe', 'bar', 'establishment'].includes(type)
+          )
+        )
+        
+        if (restaurantCandidate) {
+          placeData = { candidates: [restaurantCandidate] }
+          console.log(`Found restaurant match with query: ${query}`)
+          break
+        } else if (tempPlaceData.candidates.length > 0) {
+          // Fallback to first result if no restaurant type found
+          placeData = tempPlaceData
+          console.log(`Using first result from query: ${query}`)
+          break
+        }
+      }
+    }
+
+    if (!placeData || !placeData.candidates || placeData.candidates.length === 0) {
       return new Response(
         JSON.stringify({
           found: false,
