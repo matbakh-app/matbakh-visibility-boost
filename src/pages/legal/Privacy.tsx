@@ -2,6 +2,7 @@
 /*
  * ⚠️  Diese Datei ist FINAL und darf NUR durch den CTO geändert werden. 
  * Jede Änderung ohne CTO-Genehmigung führt zum Rollback!
+ * ⚠️  KEINE ÄNDERUNGEN OHNE EXPLIZITE ZUSTIMMUNG ERLAUBT!
  */
 
 import React from 'react';
