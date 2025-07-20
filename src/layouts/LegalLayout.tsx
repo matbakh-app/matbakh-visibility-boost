@@ -26,8 +26,9 @@ const LegalContent: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType
   // CRITICAL FIX: Dynamisches Namespace-Loading basierend auf Sprache
   const namespace = getNamespaceForLegalPage(i18n.language, pageType);
   
-  // Only access translation after namespace is loaded to prevent suspension
-  const { t: tLegal } = useTranslation(isNamespaceLoaded ? namespace : 'nav');
+  // Conditional translation hook - nur verwenden wenn Namespace geladen ist
+  const legalTranslation = useTranslation(namespace, { useSuspense: false });
+  const { t: tLegal } = legalTranslation;
 
   // Dynamisches Laden des Legal-Namespace mit React 18 Unterstützung
   useEffect(() => {
