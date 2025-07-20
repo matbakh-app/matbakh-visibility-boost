@@ -12,6 +12,19 @@ interface VisibilityCheckRequest {
   website?: string
 }
 
+interface FacebookPageData {
+  id?: string
+  name?: string
+  fan_count?: number
+  verification_status?: string
+  overall_star_rating?: number
+  location?: any
+  about?: string
+  link?: string
+  posts?: any
+  engagement?: any
+}
+
 interface VisibilityCheckResponse {
   found: boolean
   businessName: string
@@ -32,7 +45,77 @@ interface VisibilityCheckResponse {
     hasPhotos: boolean
     googleUrl: string
   }
+  facebookData?: {
+    name: string
+    fanCount: number
+    rating: number
+    isVerified: boolean
+    hasAbout: boolean
+    hasLocation: boolean
+    facebookUrl: string
+    recentActivity: boolean
+  }
   error?: string
+}
+
+// Facebook Graph API helper
+async function searchFacebookPage(businessName: string, location: string): Promise<FacebookPageData | null> {
+  const FACEBOOK_APP_ID = Deno.env.get('FACEBOOK_APP_ID')
+  const FACEBOOK_APP_SECRET = Deno.env.get('FACEBOOK_APP_SECRET')
+  
+  if (!FACEBOOK_APP_ID || !FACEBOOK_APP_SECRET) {
+    console.error('Facebook API credentials not found')
+    return null
+  }
+
+  try {
+    // Generate App Access Token
+    const tokenResponse = await fetch(
+      `https://graph.facebook.com/oauth/access_token?client_id=${FACEBOOK_APP_ID}&client_secret=${FACEBOOK_APP_SECRET}&grant_type=client_credentials`
+    )
+    const tokenData = await tokenResponse.json()
+    
+    if (!tokenData.access_token) {
+      console.error('Failed to get Facebook access token:', tokenData)
+      return null
+    }
+
+    const accessToken = tokenData.access_token
+
+    // Search for pages
+    const searchQueries = [
+      `${businessName} ${location}`,
+      `${businessName} restaurant ${location}`,
+      businessName
+    ]
+
+    for (const query of searchQueries) {
+      console.log(`Searching Facebook for: ${query}`)
+      
+      const searchUrl = `https://graph.facebook.com/v18.0/search?type=page&q=${encodeURIComponent(query)}&fields=id,name,fan_count,verification_status,overall_star_rating,location,about,link,posts.limit(1){created_time},engagement&access_token=${accessToken}`
+      
+      const searchResponse = await fetch(searchUrl)
+      const searchData = await searchResponse.json()
+      
+      console.log(`Facebook search result for "${query}":`, JSON.stringify(searchData, null, 2))
+
+      if (searchData.data && searchData.data.length > 0) {
+        // Find the best match based on name similarity and location
+        const bestMatch = searchData.data.find((page: any) => {
+          const nameSimilarity = page.name.toLowerCase().includes(businessName.toLowerCase()) ||
+                                businessName.toLowerCase().includes(page.name.toLowerCase())
+          return nameSimilarity
+        }) || searchData.data[0]
+
+        return bestMatch
+      }
+    }
+
+    return null
+  } catch (error) {
+    console.error('Facebook API error:', error)
+    return null
+  }
 }
 
 serve(async (req) => {
@@ -42,7 +125,7 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Places visibility check started')
+    console.log('Places visibility check started with Meta integration')
     
     const GOOGLE_PLACES_API_KEY = Deno.env.get('GOOGLE_PLACES_API_KEY')
     
@@ -81,191 +164,139 @@ serve(async (req) => {
 
     console.log(`Checking visibility for: ${businessName} in ${location}`)
 
-    // 1. Try multiple search strategies for better results
-    const searchQueries = [
-      `${businessName} ${location}`,  // Original query
-      `${businessName} restaurant ${location}`, // With "restaurant" added
-      `${businessName}, ${location}`, // With comma separator
-      businessName // Just the business name
-    ]
+    // Parallel execution of Google and Facebook searches
+    const [googleResult, facebookResult] = await Promise.allSettled([
+      searchGooglePlaces(businessName, location, GOOGLE_PLACES_API_KEY),
+      searchFacebookPage(businessName, location)
+    ])
 
-    let placeData = null
-    let searchQuery = ''
+    // Process Google results
+    let googleData = null
+    let googleFound = false
+    if (googleResult.status === 'fulfilled' && googleResult.value) {
+      googleData = googleResult.value
+      googleFound = true
+    }
 
-    // Try each search query until we find results
-    for (const query of searchQueries) {
-      searchQuery = encodeURIComponent(query)
-      console.log(`Trying search query: ${query}`)
-      
-      const findPlaceUrl = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${searchQuery}&inputtype=textquery&fields=place_id,name,formatted_address,geometry,types&key=${GOOGLE_PLACES_API_KEY}`
-
-      const placeResponse = await fetch(findPlaceUrl)
-      const tempPlaceData = await placeResponse.json()
-      
-      console.log(`Search result for "${query}":`, JSON.stringify(tempPlaceData, null, 2))
-
-      if (tempPlaceData.candidates && tempPlaceData.candidates.length > 0) {
-        // Filter for restaurants/food establishments
-        const restaurantCandidate = tempPlaceData.candidates.find((candidate: any) => 
-          candidate.types && candidate.types.some((type: string) => 
-            ['restaurant', 'food', 'meal_takeaway', 'cafe', 'bar', 'establishment'].includes(type)
-          )
-        )
-        
-        if (restaurantCandidate) {
-          placeData = { candidates: [restaurantCandidate] }
-          console.log(`Found restaurant match with query: ${query}`)
-          break
-        } else if (tempPlaceData.candidates.length > 0) {
-          // Fallback to first result if no restaurant type found
-          placeData = tempPlaceData
-          console.log(`Using first result from query: ${query}`)
-          break
-        }
+    // Process Facebook results
+    let facebookData = null
+    let facebookFound = false
+    if (facebookResult.status === 'fulfilled' && facebookResult.value) {
+      const fbPage = facebookResult.value
+      facebookData = {
+        name: fbPage.name || '',
+        fanCount: fbPage.fan_count || 0,
+        rating: fbPage.overall_star_rating || 0,
+        isVerified: fbPage.verification_status === 'blue_verified' || fbPage.verification_status === 'gray_verified',
+        hasAbout: !!fbPage.about,
+        hasLocation: !!fbPage.location,
+        facebookUrl: fbPage.link || `https://facebook.com/${fbPage.id}`,
+        recentActivity: fbPage.posts?.data?.length > 0
       }
+      facebookFound = true
     }
 
-    if (!placeData || !placeData.candidates || placeData.candidates.length === 0) {
-      return new Response(
-        JSON.stringify({
-          found: false,
-          businessName,
-          location,
-          analysis: {
-            issues: [
-              'Kein Google Business Profil gefunden',
-              'Restaurant ist nicht in Google Maps sichtbar',
-              'Potentielle Kunden können Sie nicht finden'
-            ],
-            opportunities: [
-              'Google Business Profil erstellen = +200% Sichtbarkeit',
-              'Sofortige Auffindbarkeit in Google und Maps',
-              'Kostenlose Präsenz für lokale Suchanfragen'
-            ],
-            completenessScore: 0,
-            overallScore: 10
-          }
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      )
-    }
-
-    const place = placeData.candidates[0]
-    const placeId = place.place_id
-
-    // 2. Get detailed information
-    const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,formatted_address,website,opening_hours,photos,rating,user_ratings_total,reviews,international_phone_number,url,types&key=${GOOGLE_PLACES_API_KEY}`
-
-    const detailsResponse = await fetch(detailsUrl)
-    const detailsData = await detailsResponse.json()
-    const details = detailsData.result
-
-    // 3. Analyze the data
+    // Combined analysis
     const issues: string[] = []
     const opportunities: string[] = []
     let completenessScore = 0
-    const maxScore = 8
+    const maxScore = 12 // Increased for both platforms
 
-    // Check website
-    if (details.website) {
-      completenessScore++
-    } else {
-      issues.push('Keine Website im Google Profil hinterlegt')
-      opportunities.push('Website hinzufügen für +25% mehr Klicks')
-    }
-
-    // Check opening hours
-    if (details.opening_hours) {
-      completenessScore++
-    } else {
-      issues.push('Öffnungszeiten fehlen')
-      opportunities.push('Öffnungszeiten hinzufügen = bessere Auffindbarkeit')
-    }
-
-    // Check photos
-    if (details.photos && details.photos.length > 0) {
-      completenessScore++
-      if (details.photos.length < 5) {
-        opportunities.push('Mehr Fotos = +30% Interesse von Gästen')
-      }
-    } else {
-      issues.push('Keine Fotos vorhanden')
-      opportunities.push('Fotos hinzufügen = +50% mehr Interesse')
-    }
-
-    // Check reviews
-    const reviewCount = details.user_ratings_total || 0
-    if (reviewCount > 10) {
-      completenessScore++
-    } else if (reviewCount > 0) {
-      issues.push(`Nur ${reviewCount} Bewertungen - zu wenig für Vertrauen`)
-      opportunities.push('Mehr Bewertungen sammeln = höhere Glaubwürdigkeit')
-    } else {
-      issues.push('Keine Bewertungen vorhanden')
-      opportunities.push('Erste Bewertungen = sofort mehr Vertrauen')
-    }
-
-    // Check rating
-    const rating = details.rating || 0
-    if (rating >= 4.5) {
-      completenessScore++
-    } else if (rating >= 4.0) {
-      opportunities.push('Bewertung auf 4.5+ steigern für Top-Rankings')
-    } else if (rating > 0) {
-      issues.push(`Bewertung von ${rating} ist verbesserungswürdig`)
-      opportunities.push('Bewertung verbessern = bessere Sichtbarkeit')
-    }
-
-    // Check phone number
-    if (details.international_phone_number) {
-      completenessScore++
-    } else {
-      issues.push('Telefonnummer fehlt')
-      opportunities.push('Telefonnummer = direkte Buchungen möglich')
-    }
-
-    // Check business type
-    const isRestaurant = details.types && details.types.some((type: string) => 
-      ['restaurant', 'food', 'meal_takeaway', 'cafe', 'bar'].includes(type)
-    )
-    if (isRestaurant) {
-      completenessScore++
-    }
-
-    // Check recent activity (reviews)
-    if (details.reviews && details.reviews.length > 0) {
-      const recentReview = details.reviews[0]
-      const reviewAge = Date.now() - (recentReview.time * 1000)
-      const daysSinceReview = reviewAge / (1000 * 60 * 60 * 24)
-      
-      if (daysSinceReview < 30) {
+    // Google analysis (existing logic)
+    if (googleFound && googleData) {
+      if (googleData.website) {
         completenessScore++
       } else {
-        opportunities.push('Aktuelle Bewertungen sammeln = bessere Rankings')
+        issues.push('Keine Website im Google Profil hinterlegt')
+        opportunities.push('Website hinzufügen für +25% mehr Klicks')
       }
+
+      if (googleData.hasOpeningHours) {
+        completenessScore++
+      } else {
+        issues.push('Öffnungszeiten fehlen im Google Profil')
+        opportunities.push('Öffnungszeiten hinzufügen = bessere Auffindbarkeit')
+      }
+
+      if (googleData.hasPhotos) {
+        completenessScore++
+      } else {
+        issues.push('Keine Fotos im Google Profil')
+        opportunities.push('Fotos hinzufügen = +50% mehr Interesse')
+      }
+
+      if (googleData.reviewCount > 10) {
+        completenessScore++
+      } else if (googleData.reviewCount > 0) {
+        issues.push(`Nur ${googleData.reviewCount} Google-Bewertungen`)
+        opportunities.push('Mehr Google-Bewertungen sammeln')
+      } else {
+        issues.push('Keine Google-Bewertungen vorhanden')
+      }
+
+      if (googleData.rating >= 4.5) {
+        completenessScore++
+      } else if (googleData.rating > 0) {
+        issues.push(`Google-Bewertung von ${googleData.rating} verbesserungswürdig`)
+      }
+    } else {
+      issues.push('Kein Google Business Profil gefunden')
+      opportunities.push('Google Business Profil erstellen = +200% Sichtbarkeit')
+    }
+
+    // Facebook analysis
+    if (facebookFound && facebookData) {
+      if (facebookData.fanCount > 50) completenessScore++
+      else {
+        issues.push(`Nur ${facebookData.fanCount} Facebook-Fans`)
+        opportunities.push('Facebook-Community aufbauen = mehr Reichweite')
+      }
+
+      if (facebookData.isVerified) completenessScore++
+      else {
+        opportunities.push('Facebook-Verifizierung beantragen = mehr Vertrauen')
+      }
+
+      if (facebookData.hasAbout) completenessScore++
+      else {
+        issues.push('Facebook-Beschreibung fehlt')
+        opportunities.push('Vollständiges Facebook-Profil = bessere Auffindbarkeit')
+      }
+
+      if (facebookData.hasLocation) completenessScore++
+      else {
+        issues.push('Facebook-Standort nicht hinterlegt')
+      }
+
+      if (facebookData.rating >= 4.0) completenessScore++
+      else if (facebookData.rating > 0) {
+        issues.push(`Facebook-Bewertung von ${facebookData.rating} ausbaufähig`)
+      }
+
+      if (facebookData.recentActivity) completenessScore++
+      else {
+        issues.push('Keine aktuellen Facebook-Posts')
+        opportunities.push('Regelmäßige Posts = +40% mehr Engagement')
+      }
+    } else {
+      issues.push('Keine Facebook-Seite gefunden')
+      opportunities.push('Facebook Business-Seite erstellen = zusätzliche Reichweite')
     }
 
     // Calculate overall score
     const completenessPercentage = (completenessScore / maxScore) * 100
     let overallScore = completenessPercentage
 
-    // Boost score based on rating and review count
-    if (rating >= 4.0 && reviewCount >= 10) {
-      overallScore += 10
+    // Boost for having both platforms
+    if (googleFound && facebookFound) {
+      overallScore += 15
+      opportunities.push('Multi-Platform-Präsenz bereits aktiv!')
     }
 
-    // Cap at 100
     overallScore = Math.min(overallScore, 100)
 
-    // Add generic opportunities if profile is decent
-    if (completenessScore >= 5) {
-      opportunities.push('Profil ist gut - regelmäßige Pflege für Top-Ergebnisse')
-    }
-
     const response: VisibilityCheckResponse = {
-      found: true,
+      found: googleFound || facebookFound,
       businessName,
       location,
       analysis: {
@@ -274,19 +305,11 @@ serve(async (req) => {
         completenessScore: Math.round(completenessPercentage),
         overallScore: Math.round(overallScore)
       },
-      googleData: {
-        name: details.name,
-        address: details.formatted_address,
-        rating: rating,
-        reviewCount: reviewCount,
-        hasWebsite: !!details.website,
-        hasOpeningHours: !!details.opening_hours,
-        hasPhotos: details.photos && details.photos.length > 0,
-        googleUrl: details.url || `https://www.google.com/maps/place/?q=place_id:${placeId}`
-      }
+      googleData: googleData || undefined,
+      facebookData: facebookData || undefined
     }
 
-    console.log(`Analysis complete for ${businessName}: ${overallScore}% overall score`)
+    console.log(`Analysis complete for ${businessName}: ${Math.round(overallScore)}% overall score`)
 
     return new Response(
       JSON.stringify(response),
@@ -309,3 +332,56 @@ serve(async (req) => {
     )
   }
 })
+
+// Extract Google search logic to separate function
+async function searchGooglePlaces(businessName: string, location: string, apiKey: string) {
+  const searchQueries = [
+    `${businessName} ${location}`,
+    `${businessName} restaurant ${location}`,
+    `${businessName}, ${location}`,
+    businessName
+  ]
+
+  for (const query of searchQueries) {
+    const searchQuery = encodeURIComponent(query)
+    console.log(`Trying Google search query: ${query}`)
+    
+    const findPlaceUrl = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${searchQuery}&inputtype=textquery&fields=place_id,name,formatted_address,geometry,types&key=${apiKey}`
+
+    const placeResponse = await fetch(findPlaceUrl)
+    const placeData = await placeResponse.json()
+    
+    if (placeData.candidates && placeData.candidates.length > 0) {
+      const restaurantCandidate = placeData.candidates.find((candidate: any) => 
+        candidate.types && candidate.types.some((type: string) => 
+          ['restaurant', 'food', 'meal_takeaway', 'cafe', 'bar', 'establishment'].includes(type)
+        )
+      )
+      
+      if (restaurantCandidate) {
+        const placeId = restaurantCandidate.place_id
+        
+        // Get detailed information
+        const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,formatted_address,website,opening_hours,photos,rating,user_ratings_total,reviews,international_phone_number,url,types&key=${apiKey}`
+
+        const detailsResponse = await fetch(detailsUrl)
+        const detailsData = await detailsResponse.json()
+        const details = detailsData.result
+
+        return {
+          name: details.name,
+          address: details.formatted_address,
+          rating: details.rating || 0,
+          reviewCount: details.user_ratings_total || 0,
+          hasWebsite: !!details.website,
+          hasOpeningHours: !!details.opening_hours,
+          hasPhotos: details.photos && details.photos.length > 0,
+          googleUrl: details.url || `https://www.google.com/maps/place/?q=place_id:${placeId}`,
+          website: details.website
+        }
+      }
+    }
+  }
+  
+  return null
+}
