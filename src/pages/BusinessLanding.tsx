@@ -21,6 +21,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import HeroSection from '@/components/HeroSection';
 import ProblemSection from '@/components/ProblemSection';
 import SolutionSection from '@/components/SolutionSection';
+import WhyMatbakhBanner from '@/components/WhyMatbakhBanner';
 import { SeoMeta } from '@/components/SeoMeta';
 import { Link } from 'react-router-dom';
 
@@ -104,6 +105,9 @@ const BusinessLanding: React.FC = () => {
       </script>
 
       <AppLayout>
+        {/* Why matbakh.app Banner - Empathic positioning */}
+        <WhyMatbakhBanner />
+        
         {/* Privacy Policy Link - Prominent for Google */}
         <div className="text-center mb-6">
           <Link to={i18n.language === 'de' ? '/datenschutz' : '/privacy'} className="inline-block text-sm font-bold text-primary hover:underline">
