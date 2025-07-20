@@ -9,17 +9,19 @@ const VisibilityCheckSection: React.FC = () => {
   const { t } = useTranslation('landing');
   const [businessName, setBusinessName] = useState('');
   const [location, setLocation] = useState('');
+  const [email, setEmail] = useState('');
+  const [website, setWebsite] = useState('');
   const [showResult, setShowResult] = useState(false);
 
   const handleCheck = () => {
-    if (businessName && location) {
+    if (businessName && location && email) {
       setShowResult(true);
     }
   };
 
   const handleWhatsAppContact = () => {
     const message = encodeURIComponent(
-      `Hallo! Ich möchte eine kostenlose Sichtbarkeits-Analyse für mein Restaurant "${businessName}" in ${location}. Können Sie mir dabei helfen?`
+      `Hallo! Ich möchte eine kostenlose Sichtbarkeits-Analyse für mein Restaurant "${businessName}" in ${location}. Meine E-Mail: ${email}${website ? ', Website: ' + website : ''}. Können Sie mir dabei helfen?`
     );
     window.open(`https://wa.me/4915123456789?text=${message}`, '_blank');
   };
@@ -73,11 +75,36 @@ const VisibilityCheckSection: React.FC = () => {
                       className="w-full"
                     />
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t('visibilityCheck.emailLabel')}
+                    </label>
+                    <Input
+                      type="email"
+                      placeholder={t('visibilityCheck.emailPlaceholder')}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t('visibilityCheck.websiteLabel')}
+                    </label>
+                    <Input
+                      type="url"
+                      placeholder={t('visibilityCheck.websitePlaceholder')}
+                      value={website}
+                      onChange={(e) => setWebsite(e.target.value)}
+                      className="w-full"
+                    />
+                  </div>
                 </div>
                 
                 <Button 
                   onClick={handleCheck}
-                  disabled={!businessName || !location}
+                  disabled={!businessName || !location || !email}
                   className="w-full bg-primary hover:bg-primary/90 text-white"
                   size="lg"
                 >
