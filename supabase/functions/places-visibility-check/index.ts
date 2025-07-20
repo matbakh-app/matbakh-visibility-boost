@@ -42,10 +42,12 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Places visibility check started')
+    
     const GOOGLE_PLACES_API_KEY = Deno.env.get('GOOGLE_PLACES_API_KEY')
     
     if (!GOOGLE_PLACES_API_KEY) {
-      console.error('Google Places API key not found')
+      console.error('Google Places API key not found in environment')
       return new Response(
         JSON.stringify({ 
           found: false, 
@@ -59,9 +61,12 @@ serve(async (req) => {
     }
 
     const body: VisibilityCheckRequest = await req.json()
+    console.log('Request body:', JSON.stringify(body, null, 2))
+    
     const { businessName, location, email, website } = body
 
     if (!businessName || !location || !email) {
+      console.error('Missing required fields:', { businessName: !!businessName, location: !!location, email: !!email })
       return new Response(
         JSON.stringify({ 
           found: false, 
