@@ -2,6 +2,7 @@
 /*
  * ⚠️  Diese Datei ist FINAL und darf NUR durch den CTO geändert werden. 
  * Jede Änderung ohne CTO-Genehmigung führt zum Rollback!
+ * ⚠️  KEINE ÄNDERUNGEN OHNE EXPLIZITE ZUSTIMMUNG ERLAUBT!
  */
 
 import React from 'react';
@@ -19,11 +20,12 @@ const Usage: React.FC = () => {
   const LEGAL_SECTIONS = [
     ['scopeTitle', 'scopeText'],
     ['servicesTitle', 'servicesText'],
-    ['userRightsTitle', 'userRightsText'],
     ['userObligationsTitle', 'userObligationsText'],
+    ['contentResponsibilityTitle', 'contentResponsibilityText'],
     ['liabilityTitle', 'liabilityText'],
-    ['terminationTitle', 'terminationText'],
-    ['lawTitle', 'lawText'],
+    ['dataProtectionTitle', 'dataProtectionText'],
+    ['changesTitle', 'changesText'],
+    ['jurisdictionTitle', 'jurisdictionText'],
   ];
 
   return (
