@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, MapPin, Phone, ExternalLink } from 'lucide-react';
+import { Search, MapPin, Phone, ExternalLink, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const VisibilityCheckSection: React.FC = () => {
   const { t } = useTranslation('landing');
@@ -13,9 +14,42 @@ const VisibilityCheckSection: React.FC = () => {
   const [website, setWebsite] = useState('');
   const [showResult, setShowResult] = useState(false);
 
-  const handleCheck = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [analysisData, setAnalysisData] = useState(null);
+
+  const handleCheck = async () => {
     if (businessName && location && email) {
-      setShowResult(true);
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('places-visibility-check', {
+          body: {
+            businessName,
+            location,
+            email,
+            website: website || undefined
+          }
+        });
+
+        if (error) {
+          console.error('Error calling visibility check:', error);
+          setAnalysisData({
+            found: false,
+            error: 'Fehler bei der Analyse. Bitte versuchen Sie es später erneut.'
+          });
+        } else {
+          setAnalysisData(data);
+        }
+        setShowResult(true);
+      } catch (error) {
+        console.error('Network error:', error);
+        setAnalysisData({
+          found: false,
+          error: 'Verbindungsfehler. Bitte prüfen Sie Ihre Internetverbindung.'
+        });
+        setShowResult(true);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -104,51 +138,119 @@ const VisibilityCheckSection: React.FC = () => {
                 
                 <Button 
                   onClick={handleCheck}
-                  disabled={!businessName || !location || !email}
+                  disabled={!businessName || !location || !email || isLoading}
                   className="w-full bg-primary hover:bg-primary/90 text-white"
                   size="lg"
                 >
-                  <Search className="h-5 w-5 mr-2" />
-                  {t('visibilityCheck.checkButton')}
+                  {isLoading ? (
+                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                  ) : (
+                    <Search className="h-5 w-5 mr-2" />
+                  )}
+                  {isLoading ? 'Analyse läuft...' : t('visibilityCheck.checkButton')}
                 </Button>
               </>
             ) : (
               <div className="space-y-6">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Search className="h-8 w-8 text-yellow-600" />
+                {/* Error handling */}
+                {analysisData?.error && (
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Search className="h-8 w-8 text-red-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-black mb-2">
+                      Fehler bei der Analyse
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      {analysisData.error}
+                    </p>
                   </div>
-                  <h3 className="text-lg font-semibold text-black mb-2">
-                    {t('visibilityCheck.result.title')}
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    {t('visibilityCheck.result.description', { businessName, location })}
-                  </p>
-                </div>
+                )}
 
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <h4 className="font-semibold text-red-800 mb-2">
-                      {t('visibilityCheck.result.issues.title')}
-                    </h4>
-                    <ul className="text-sm text-red-700 space-y-1">
-                      <li>• {t('visibilityCheck.result.issues.item1')}</li>
-                      <li>• {t('visibilityCheck.result.issues.item2')}</li>
-                      <li>• {t('visibilityCheck.result.issues.item3')}</li>
-                    </ul>
-                  </div>
+                {/* Success results */}
+                {analysisData && !analysisData.error && (
+                  <>
+                    <div className="text-center">
+                      <div className={`w-16 h-16 ${analysisData.found ? 'bg-green-100' : 'bg-red-100'} rounded-full flex items-center justify-center mx-auto mb-4`}>
+                        <Search className={`h-8 w-8 ${analysisData.found ? 'text-green-600' : 'text-red-600'}`} />
+                      </div>
+                      <h3 className="text-lg font-semibold text-black mb-2">
+                        {analysisData.found ? 'Analyse abgeschlossen!' : 'Profil nicht gefunden'}
+                      </h3>
+                      <p className="text-gray-600 mb-4">
+                        {analysisData.found 
+                          ? `Ergebnisse für "${businessName}" in ${location}`
+                          : `Kein Google Business Profil für "${businessName}" gefunden`
+                        }
+                      </p>
+                      {analysisData.found && analysisData.analysis && (
+                        <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                          <div className="text-2xl font-bold text-primary mb-2">
+                            {analysisData.analysis.overallScore}%
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            Sichtbarkeits-Score
+                          </div>
+                        </div>
+                      )}
+                    </div>
 
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <h4 className="font-semibold text-green-800 mb-2">
-                      {t('visibilityCheck.result.potential.title')}
-                    </h4>
-                    <ul className="text-sm text-green-700 space-y-1">
-                      <li>• {t('visibilityCheck.result.potential.item1')}</li>
-                      <li>• {t('visibilityCheck.result.potential.item2')}</li>
-                      <li>• {t('visibilityCheck.result.potential.item3')}</li>
-                    </ul>
-                  </div>
-                </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <h4 className="font-semibold text-red-800 mb-2">
+                          Problembereiche
+                        </h4>
+                        <ul className="text-sm text-red-700 space-y-1">
+                          {analysisData.analysis?.issues?.length > 0 ? (
+                            analysisData.analysis.issues.map((issue: string, index: number) => (
+                              <li key={index}>• {issue}</li>
+                            ))
+                          ) : (
+                            <li>• Keine größeren Probleme gefunden</li>
+                          )}
+                        </ul>
+                      </div>
+
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <h4 className="font-semibold text-green-800 mb-2">
+                          Verbesserungsmöglichkeiten
+                        </h4>
+                        <ul className="text-sm text-green-700 space-y-1">
+                          {analysisData.analysis?.opportunities?.length > 0 ? (
+                            analysisData.analysis.opportunities.map((opportunity: string, index: number) => (
+                              <li key={index}>• {opportunity}</li>
+                            ))
+                          ) : (
+                            <li>• Profil gut optimiert!</li>
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+
+                    {/* Google Data Details */}
+                    {analysisData.googleData && (
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <h4 className="font-semibold text-blue-800 mb-2">
+                          Aktuelle Google-Daten
+                        </h4>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="font-medium">Bewertung:</span> {analysisData.googleData.rating || 'Keine'} ⭐
+                          </div>
+                          <div>
+                            <span className="font-medium">Reviews:</span> {analysisData.googleData.reviewCount || 0}
+                          </div>
+                          <div>
+                            <span className="font-medium">Website:</span> {analysisData.googleData.hasWebsite ? '✅' : '❌'}
+                          </div>
+                          <div>
+                            <span className="font-medium">Öffnungszeiten:</span> {analysisData.googleData.hasOpeningHours ? '✅' : '❌'}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
 
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Button 
