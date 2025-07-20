@@ -15,13 +15,18 @@ const Datenschutz: React.FC = () => {
   const namespace = getNamespaceForLegalPage(i18n.language, 'privacy');
   const { t } = useTranslation(namespace, { useSuspense: false });
 
-  // Clean mapping of existing translation keys from legal-datenschutz.json
+  // Updated mapping of existing translation keys from legal-datenschutz.json
   const LEGAL_SECTIONS = [
     ['introTitle', 'introText'],
+    ['controllerTitle', 'controllerText'],
     ['dataCollectionTitle', 'dataCollectionText'],
-    ['rightsTitle', 'rightsText'],
-    ['contactTitle', 'contactText'],
+    ['purposeTitle', 'purposeText'],
     ['googleTitle', 'googleText'],
+    ['metaTitle', 'metaText'],
+    ['disclosureTitle', 'disclosureText'],
+    ['rightsTitle', 'rightsText'],
+    ['storageTitle', 'storageText'],
+    ['changesTitle', 'changesText'],
   ];
 
   return (
