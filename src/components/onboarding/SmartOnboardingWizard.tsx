@@ -92,8 +92,13 @@ export const SmartOnboardingWizard: React.FC<SmartOnboardingWizardProps> = ({ on
       setCurrentStep(prevStep);
       saveData(prevStep, data);
     } else {
-      // Bei Step 0 - zurück zur vorherigen Seite (z.B. Login/Registration)
-      window.history.back();
+      // Bei Step 0 - zurück zum Onboarding-Formular (Business Login/Register Seite)
+      const currentLanguage = localStorage.getItem('i18nextLng') || 'de';
+      if (currentLanguage === 'en') {
+        window.location.href = '/business/login';
+      } else {
+        window.location.href = '/business/partner/login';
+      }
     }
   };
 
