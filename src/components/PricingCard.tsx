@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +16,7 @@ interface PricingCardProps {
 
 const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = false, language = 'de' }) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   // Package name mapping for new package structure
   const packageNameMap: Record<string, Record<'de' | 'en', string>> = {
@@ -87,7 +89,32 @@ const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = fals
       hasPromo: !!pkg.original_price,
       period: pkg.period
     });
-    // TODO: Implement actual package selection logic
+
+    // Save selected package to localStorage for onboarding
+    const packageSelection = {
+      id: pkg.id,
+      slug: pkg.slug,
+      name: getPackageName(pkg.slug),
+      price: pkg.base_price,
+      originalPrice: pkg.original_price,
+      features: safeFeatures,
+      period: pkg.period,
+      minDurationMonths: pkg.min_duration_months,
+      selectedAt: new Date().toISOString()
+    };
+    
+    try {
+      localStorage.setItem('selectedPackage', JSON.stringify(packageSelection));
+    } catch (error) {
+      console.error('Failed to save package selection:', error);
+    }
+
+    // Navigate to onboarding with package info
+    const currentLanguage = localStorage.getItem('i18nextLng') || 'de';
+    const onboardingPath = currentLanguage === 'en' ? '/partner/onboarding' : '/partner/onboarding';
+    
+    // Add package slug as URL parameter for additional context
+    navigate(`${onboardingPath}?package=${pkg.slug}`);
   };
 
   const packageFeatures = getFeaturesBySlug(pkg.slug);
