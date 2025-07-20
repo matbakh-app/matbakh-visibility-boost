@@ -35,6 +35,11 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   const heroTitle = title || t('heroTitle');
   const heroSubtitle = subtitle || t('heroSubtitle');
 
+  const getWhatsAppLink = () => {
+    const message = encodeURIComponent('Hallo! Ich interessiere mich für matbakh.app und möchte gerne mehr erfahren.');
+    return `https://wa.me/4915123456789?text=${message}`;
+  };
+
   return (
     <section className={`w-full text-center ${className}`}>
       <Logo size="lg" className="mx-auto mb-2" />
@@ -50,7 +55,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({
           <Button 
             size="lg" 
             className="bg-black hover:bg-gray-800 text-white px-8 py-3" 
-            onClick={() => navigate(getPackagesRoute())}
+            onClick={() => {
+              const element = document.querySelector('.visibility-check-section');
+              element?.scrollIntoView({ behavior: 'smooth' });
+            }}
           >
             {t('cta1')}
           </Button>
@@ -58,7 +66,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
             variant="outline" 
             size="lg" 
             className="border-black text-black hover:bg-gray-50 px-8 py-3" 
-            onClick={() => navigate(getLoginRoute())}
+            onClick={() => window.open(getWhatsAppLink(), '_blank')}
           >
             {t('cta2')}
           </Button>
