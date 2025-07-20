@@ -61,14 +61,14 @@ const VisibilityCheckSection: React.FC = () => {
   };
 
   return (
-    <section className="py-20 bg-primary/5 visibility-check-section">{/* Added class for scroll targeting */}
+    <section className="py-20 bg-primary/5 visibility-check-section">
       <div className="max-w-4xl mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-black mb-4">
             {t('visibilityCheck.title')}
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            {t('visibilityCheck.subtitle')}
+            Jetzt mit Google & Facebook Analyse
           </p>
         </div>
 
@@ -78,7 +78,7 @@ const VisibilityCheckSection: React.FC = () => {
               {t('visibilityCheck.formTitle')}
             </CardTitle>
             <p className="text-gray-600">
-              {t('visibilityCheck.formSubtitle')}
+              Google Business Profile & Facebook Seite werden geprüft
             </p>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -147,7 +147,7 @@ const VisibilityCheckSection: React.FC = () => {
                   ) : (
                     <Search className="h-5 w-5 mr-2" />
                   )}
-                  {isLoading ? 'Analyse läuft...' : t('visibilityCheck.checkButton')}
+                  {isLoading ? 'Analyse läuft...' : 'Google & Facebook prüfen'}
                 </Button>
               </>
             ) : (
@@ -175,21 +175,21 @@ const VisibilityCheckSection: React.FC = () => {
                         <Search className={`h-8 w-8 ${analysisData.found ? 'text-green-600' : 'text-red-600'}`} />
                       </div>
                       <h3 className="text-lg font-semibold text-black mb-2">
-                        {analysisData.found ? 'Analyse abgeschlossen!' : 'Profil nicht gefunden'}
+                        {analysisData.found ? 'Multi-Platform Analyse abgeschlossen!' : 'Profile nicht gefunden'}
                       </h3>
                       <p className="text-gray-600 mb-4">
                         {analysisData.found 
-                          ? `Ergebnisse für "${businessName}" in ${location}`
-                          : `Kein Google Business Profil für "${businessName}" gefunden`
+                          ? `Google & Facebook Ergebnisse für "${businessName}" in ${location}`
+                          : `Keine Profile für "${businessName}" gefunden`
                         }
                       </p>
                       {analysisData.found && analysisData.analysis && (
-                        <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                          <div className="text-2xl font-bold text-primary mb-2">
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 mb-4">
+                          <div className="text-3xl font-bold text-primary mb-2">
                             {analysisData.analysis.overallScore}%
                           </div>
                           <div className="text-sm text-gray-600">
-                            Sichtbarkeits-Score
+                            Multi-Platform Sichtbarkeits-Score
                           </div>
                         </div>
                       )}
@@ -198,7 +198,7 @@ const VisibilityCheckSection: React.FC = () => {
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                         <h4 className="font-semibold text-red-800 mb-2">
-                          Problembereiche
+                          🚨 Problembereiche
                         </h4>
                         <ul className="text-sm text-red-700 space-y-1">
                           {analysisData.analysis?.issues?.length > 0 ? (
@@ -213,7 +213,7 @@ const VisibilityCheckSection: React.FC = () => {
 
                       <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                         <h4 className="font-semibold text-green-800 mb-2">
-                          Verbesserungsmöglichkeiten
+                          🚀 Verbesserungschancen
                         </h4>
                         <ul className="text-sm text-green-700 space-y-1">
                           {analysisData.analysis?.opportunities?.length > 0 ? (
@@ -221,32 +221,92 @@ const VisibilityCheckSection: React.FC = () => {
                               <li key={index}>• {opportunity}</li>
                             ))
                           ) : (
-                            <li>• Profil gut optimiert!</li>
+                            <li>• Profile bereits gut optimiert!</li>
                           )}
                         </ul>
                       </div>
                     </div>
 
-                    {/* Google Data Details */}
-                    {analysisData.googleData && (
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <h4 className="font-semibold text-blue-800 mb-2">
-                          Aktuelle Google-Daten
-                        </h4>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <span className="font-medium">Bewertung:</span> {analysisData.googleData.rating || 'Keine'} ⭐
-                          </div>
-                          <div>
-                            <span className="font-medium">Reviews:</span> {analysisData.googleData.reviewCount || 0}
-                          </div>
-                          <div>
-                            <span className="font-medium">Website:</span> {analysisData.googleData.hasWebsite ? '✅' : '❌'}
-                          </div>
-                          <div>
-                            <span className="font-medium">Öffnungszeiten:</span> {analysisData.googleData.hasOpeningHours ? '✅' : '❌'}
+                    {/* Platform-specific details */}
+                    <div className="grid md:grid-cols-2 gap-4">
+                      {/* Google Data */}
+                      {analysisData.googleData && (
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                          <h4 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
+                            🔍 Google Business Profil
+                          </h4>
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            <div>
+                              <span className="font-medium">Bewertung:</span> {analysisData.googleData.rating || 'Keine'} ⭐
+                            </div>
+                            <div>
+                              <span className="font-medium">Reviews:</span> {analysisData.googleData.reviewCount || 0}
+                            </div>
+                            <div>
+                              <span className="font-medium">Website:</span> {analysisData.googleData.hasWebsite ? '✅' : '❌'}
+                            </div>
+                            <div>
+                              <span className="font-medium">Öffnungszeiten:</span> {analysisData.googleData.hasOpeningHours ? '✅' : '❌'}
+                            </div>
                           </div>
                         </div>
+                      )}
+
+                      {/* Facebook Data */}
+                      {analysisData.facebookData && (
+                        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                          <h4 className="font-semibold text-indigo-800 mb-2 flex items-center gap-2">
+                            📘 Facebook Seite
+                          </h4>
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            <div>
+                              <span className="font-medium">Fans:</span> {analysisData.facebookData.fanCount || 0} 👥
+                            </div>
+                            <div>
+                              <span className="font-medium">Bewertung:</span> {analysisData.facebookData.rating || 'Keine'} ⭐
+                            </div>
+                            <div>
+                              <span className="font-medium">Verifiziert:</span> {analysisData.facebookData.isVerified ? '✅' : '❌'}
+                            </div>
+                            <div>
+                              <span className="font-medium">Aktuelle Posts:</span> {analysisData.facebookData.recentActivity ? '✅' : '❌'}
+                            </div>
+                          </div>
+                          {analysisData.facebookData.facebookUrl && (
+                            <a 
+                              href={analysisData.facebookData.facebookUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 mt-2"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                              Facebook Seite ansehen
+                            </a>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Missing platform alerts */}
+                    {!analysisData.googleData && (
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <div className="flex items-center gap-2 text-yellow-800 font-medium mb-2">
+                          ⚠️ Google Business Profil fehlt
+                        </div>
+                        <p className="text-sm text-yellow-700">
+                          Ohne Google Profil verpassen Sie bis zu 80% der lokalen Suchanfragen.
+                        </p>
+                      </div>
+                    )}
+
+                    {!analysisData.facebookData && (
+                      <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                        <div className="flex items-center gap-2 text-purple-800 font-medium mb-2">
+                          ℹ️ Facebook Seite nicht gefunden
+                        </div>
+                        <p className="text-sm text-purple-700">
+                          Eine Facebook Business-Seite erweitert Ihre Reichweite erheblich.
+                        </p>
                       </div>
                     )}
                   </>
@@ -277,7 +337,7 @@ const VisibilityCheckSection: React.FC = () => {
 
         <div className="mt-8 text-center">
           <p className="text-sm text-gray-600">
-            {t('visibilityCheck.disclaimer')}
+            {t('visibilityCheck.disclaimer')} • Jetzt mit Facebook-Integration
           </p>
         </div>
       </div>
