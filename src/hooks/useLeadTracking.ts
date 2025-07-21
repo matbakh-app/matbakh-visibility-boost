@@ -47,6 +47,8 @@ export const useLeadTracking = () => {
         success: params.success || false
       };
 
+      // TODO [TypeSafety]: Replace `as any` with generated Supabase types after next type generation
+      // Command: npx supabase gen types typescript --project-id uheksobnyedarrpgxhju --schema public > src/integrations/supabase/types.ts
       const { data, error } = await supabase
         .from('lead_events' as any)
         .insert(insertData)
@@ -55,7 +57,7 @@ export const useLeadTracking = () => {
 
       if (error) throw error;
       
-      // TODO: Replace with proper Supabase types after generation
+      // TODO [TypeSafety]: Remove explicit any casting after type generation
       const safeData: any = data;
       
       const leadEvent: LeadEvent = {
@@ -100,6 +102,7 @@ export const useLeadTracking = () => {
         utm_campaign: params.utm_campaign
       };
 
+      // TODO [TypeSafety]: Replace `as any` with generated Supabase types after next type generation
       const { data, error } = await supabase
         .from('lead_sources' as any)
         .insert(insertData)
@@ -108,7 +111,7 @@ export const useLeadTracking = () => {
 
       if (error) throw error;
       
-      // TODO: Replace with proper Supabase types after generation
+      // TODO [TypeSafety]: Remove explicit any casting after type generation
       const safeData: any = data;
       
       const leadSource: LeadSource = {
@@ -144,6 +147,7 @@ export const useLeadTracking = () => {
         estimated_impact
       };
 
+      // TODO [TypeSafety]: Replace `as any` with generated Supabase types after next type generation
       const { data, error } = await supabase
         .from('lead_todos' as any)
         .insert(insertData)
@@ -152,7 +156,7 @@ export const useLeadTracking = () => {
 
       if (error) throw error;
       
-      // TODO: Replace with proper Supabase types after generation
+      // TODO [TypeSafety]: Remove explicit any casting after type generation
       const safeData: any = data;
       
       const leadTodo: LeadTodo = {
@@ -175,6 +179,7 @@ export const useLeadTracking = () => {
 
   const updateLeadProcessed = useCallback(async (lead_id: string, processed: boolean = true): Promise<boolean> => {
     try {
+      // TODO [TypeSafety]: Replace `as any` with generated Supabase types after next type generation
       const { error } = await supabase
         .from('lead_events' as any)
         .update({ processed })
@@ -195,6 +200,7 @@ export const useLeadTracking = () => {
     date_to?: string;
   }): Promise<LeadEvent[]> => {
     try {
+      // TODO [TypeSafety]: Replace `as any` with generated Supabase types after next type generation
       let query = supabase
         .from('lead_events' as any)
         .select('*')
@@ -218,7 +224,7 @@ export const useLeadTracking = () => {
 
       if (error) throw error;
       
-      // TODO: Replace with proper Supabase types after generation
+      // TODO [TypeSafety]: Remove explicit any casting after type generation
       const safeData: any[] = data || [];
       
       const leadEvents: LeadEvent[] = safeData.map((item: any) => ({

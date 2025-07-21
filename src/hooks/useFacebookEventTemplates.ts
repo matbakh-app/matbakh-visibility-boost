@@ -12,6 +12,8 @@ export const useFacebookEventTemplates = () => {
     try {
       setLoading(true);
       
+      // TODO [TypeSafety]: Replace `as any` with generated Supabase types after next type generation
+      // Command: npx supabase gen types typescript --project-id uheksobnyedarrpgxhju --schema public > src/integrations/supabase/types.ts
       const { data, error } = await supabase
         .from('facebook_event_templates' as any)
         .select('*')
@@ -20,7 +22,7 @@ export const useFacebookEventTemplates = () => {
 
       if (error) throw error;
       
-      // TODO: Replace with proper Supabase types after generation
+      // TODO [TypeSafety]: Remove explicit any casting after type generation
       const safeData: any[] = data || [];
       
       const transformedTemplates: FacebookEventTemplate[] = safeData.map((item: any) => ({
