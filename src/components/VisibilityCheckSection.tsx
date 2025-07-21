@@ -97,7 +97,7 @@ const VisibilityCheckSection: React.FC = () => {
             found: false,
             businessName,
             location,
-            error: 'Fehler bei der Analyse. Bitte versuchen Sie es später erneut.'
+            error: t('visibilityCheck.errors.analysisError', { defaultValue: 'Fehler bei der Analyse. Bitte versuchen Sie es später erneut.' })
           });
         } else {
           setAnalysisData(data);
@@ -109,7 +109,7 @@ const VisibilityCheckSection: React.FC = () => {
           found: false,
           businessName,
           location,
-          error: 'Verbindungsfehler. Bitte prüfen Sie Ihre Internetverbindung.'
+          error: t('visibilityCheck.errors.networkError', { defaultValue: 'Verbindungsfehler. Bitte prüfen Sie Ihre Internetverbindung.' })
         });
         setShowResult(true);
       } finally {
@@ -120,7 +120,12 @@ const VisibilityCheckSection: React.FC = () => {
 
   const handleWhatsAppContact = () => {
     const message = encodeURIComponent(
-      `Hallo! Ich habe eine kostenlose Sichtbarkeits-Analyse für mein Restaurant "${businessName}" in ${location} durchgeführt. ${analysisData?.analysis ? `Mein Score: ${analysisData.analysis.overallScore}%. ` : ''}Können Sie mir bei der Optimierung helfen?`
+      t('visibilityCheck.whatsappMessage', {
+        businessName,
+        location,
+        score: analysisData?.analysis?.overallScore || '',
+        defaultValue: `Hallo! Ich habe eine kostenlose Sichtbarkeits-Analyse für mein Restaurant "${businessName}" in ${location} durchgeführt. ${analysisData?.analysis ? `Mein Score: ${analysisData.analysis.overallScore}%. ` : ''}Können Sie mir bei der Optimierung helfen?`
+      })
     );
     window.open(`https://wa.me/4915123456789?text=${message}`, '_blank');
   };
@@ -146,6 +151,19 @@ const VisibilityCheckSection: React.FC = () => {
     return 'bg-red-50 border-red-200';
   };
 
+  const getLeadPotentialText = (potential: string) => {
+    switch (potential) {
+      case 'high':
+        return t('visibilityCheck.potential.high', { defaultValue: '🚀 Hohes Potenzial' });
+      case 'medium':
+        return t('visibilityCheck.potential.medium', { defaultValue: '⚡ Mittleres Potenzial' });
+      case 'low':
+        return t('visibilityCheck.potential.low', { defaultValue: '✅ Gut optimiert' });
+      default:
+        return potential;
+    }
+  };
+
   return (
     <section className="py-20 bg-primary/5 visibility-check-section">
       <div className="max-w-4xl mx-auto px-4">
@@ -154,7 +172,7 @@ const VisibilityCheckSection: React.FC = () => {
             {t('visibilityCheck.title')}
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            KI-gestützte Multi-Platform Analyse • Google • Facebook • Instagram
+            {t('visibilityCheck.subtitle')}
           </p>
         </div>
 
@@ -164,7 +182,7 @@ const VisibilityCheckSection: React.FC = () => {
               {t('visibilityCheck.formTitle')}
             </CardTitle>
             <p className="text-gray-600">
-              Vollständige Sichtbarkeits-Analyse mit personalisierten Empfehlungen
+              {t('visibilityCheck.formSubtitle')}
             </p>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -219,7 +237,7 @@ const VisibilityCheckSection: React.FC = () => {
                         className="rounded"
                       />
                       <label htmlFor="request-report" className="text-sm font-medium text-gray-700">
-                        📧 Detaillierten PDF-Bericht per E-Mail erhalten
+                        {t('visibilityCheck.reportRequest', { defaultValue: '📧 Detaillierten PDF-Bericht per E-Mail erhalten' })}
                       </label>
                     </div>
                     {requestReport && (
@@ -236,7 +254,7 @@ const VisibilityCheckSection: React.FC = () => {
                           required={requestReport}
                         />
                         <p className="text-xs text-gray-500 mt-1">
-                          DSGVO-konform • Keine Weitergabe • Jederzeit widerrufbar
+                          {t('visibilityCheck.privacy', { defaultValue: 'DSGVO-konform • Keine Weitergabe • Jederzeit widerrufbar' })}
                         </p>
                       </div>
                     )}
@@ -254,7 +272,7 @@ const VisibilityCheckSection: React.FC = () => {
                   ) : (
                     <BarChart3 className="h-5 w-5 mr-2" />
                   )}
-                  {isLoading ? 'KI-Analyse läuft...' : 'Multi-Platform Analyse starten'}
+                  {isLoading ? t('visibilityCheck.analyzing', { defaultValue: 'KI-Analyse läuft...' }) : t('visibilityCheck.checkButton')}
                 </Button>
               </>
             ) : (
@@ -266,7 +284,7 @@ const VisibilityCheckSection: React.FC = () => {
                       <Search className="h-8 w-8 text-red-600" />
                     </div>
                     <h3 className="text-lg font-semibold text-black mb-2">
-                      Fehler bei der Analyse
+                      {t('visibilityCheck.errorTitle', { defaultValue: 'Fehler bei der Analyse' })}
                     </h3>
                     <p className="text-gray-600 mb-4">
                       {analysisData.error}
@@ -282,12 +300,15 @@ const VisibilityCheckSection: React.FC = () => {
                         <BarChart3 className={`h-8 w-8 ${analysisData.found ? 'text-green-600' : 'text-red-600'}`} />
                       </div>
                       <h3 className="text-lg font-semibold text-black mb-2">
-                        {analysisData.found ? 'Multi-Platform Analyse abgeschlossen!' : 'Profile nicht gefunden'}
+                        {analysisData.found 
+                          ? t('visibilityCheck.analysisComplete', { defaultValue: 'Multi-Platform Analyse abgeschlossen!' })
+                          : t('visibilityCheck.profilesNotFound', { defaultValue: 'Profile nicht gefunden' })
+                        }
                       </h3>
                       <p className="text-gray-600 mb-4">
                         {analysisData.found 
-                          ? `Komplette Sichtbarkeits-Analyse für "${businessName}" in ${location}`
-                          : `Keine Profile für "${businessName}" gefunden`
+                          ? t('visibilityCheck.result.description', { businessName, location })
+                          : t('visibilityCheck.noProfilesFound', { businessName, defaultValue: `Keine Profile für "${businessName}" gefunden` })
                         }
                       </p>
                       
@@ -298,15 +319,14 @@ const VisibilityCheckSection: React.FC = () => {
                             {analysisData.analysis.overallScore}%
                           </div>
                           <div className="text-sm text-gray-600 mb-2">
-                            Gesamter Sichtbarkeits-Score
+                            {t('visibilityCheck.overallScore', { defaultValue: 'Gesamter Sichtbarkeits-Score' })}
                           </div>
                           <div className="flex items-center justify-center space-x-2 text-sm">
                             <span className={`px-2 py-1 rounded-full text-white ${
                               analysisData.analysis.leadPotential === 'high' ? 'bg-red-500' :
                               analysisData.analysis.leadPotential === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
                             }`}>
-                              {analysisData.analysis.leadPotential === 'high' ? '🚀 Hohes Potenzial' :
-                               analysisData.analysis.leadPotential === 'medium' ? '⚡ Mittleres Potenzial' : '✅ Gut optimiert'}
+                              {getLeadPotentialText(analysisData.analysis.leadPotential)}
                             </span>
                           </div>
                         </div>
@@ -327,10 +347,10 @@ const VisibilityCheckSection: React.FC = () => {
                             </div>
                             <h4 className="font-semibold text-gray-800 mb-1">Google Business</h4>
                             <div className="text-xs text-gray-600 space-y-1">
-                              <div>⭐ {analysisData.googleData.rating || 'Keine'} ({analysisData.googleData.reviewCount} Bewertungen)</div>
+                              <div>⭐ {analysisData.googleData.rating || t('visibilityCheck.none', { defaultValue: 'Keine' })} ({analysisData.googleData.reviewCount} {t('visibilityCheck.reviews', { defaultValue: 'Bewertungen' })})</div>
                               <div>{analysisData.googleData.hasWebsite ? '✅' : '❌'} Website</div>
-                              <div>{analysisData.googleData.hasOpeningHours ? '✅' : '❌'} Öffnungszeiten</div>
-                              <div>{analysisData.googleData.hasPhotos ? '✅' : '❌'} Fotos</div>
+                              <div>{analysisData.googleData.hasOpeningHours ? '✅' : '❌'} {t('visibilityCheck.openingHours', { defaultValue: 'Öffnungszeiten' })}</div>
+                              <div>{analysisData.googleData.hasPhotos ? '✅' : '❌'} {t('visibilityCheck.photos', { defaultValue: 'Fotos' })}</div>
                             </div>
                           </div>
                         )}
@@ -346,10 +366,10 @@ const VisibilityCheckSection: React.FC = () => {
                             </div>
                             <h4 className="font-semibold text-gray-800 mb-1">Facebook</h4>
                             <div className="text-xs text-gray-600 space-y-1">
-                              <div>👥 {analysisData.facebookData.fanCount} Fans</div>
-                              <div>{analysisData.facebookData.isVerified ? '✅' : '❌'} Verifiziert</div>
-                              <div>{analysisData.facebookData.hasAbout ? '✅' : '❌'} Beschreibung</div>
-                              <div>{analysisData.facebookData.recentActivity ? '✅' : '❌'} Aktuelle Posts</div>
+                              <div>👥 {analysisData.facebookData.fanCount} {t('visibilityCheck.fans', { defaultValue: 'Fans' })}</div>
+                              <div>{analysisData.facebookData.isVerified ? '✅' : '❌'} {t('visibilityCheck.verified', { defaultValue: 'Verifiziert' })}</div>
+                              <div>{analysisData.facebookData.hasAbout ? '✅' : '❌'} {t('visibilityCheck.description', { defaultValue: 'Beschreibung' })}</div>
+                              <div>{analysisData.facebookData.recentActivity ? '✅' : '❌'} {t('visibilityCheck.recentPosts', { defaultValue: 'Aktuelle Posts' })}</div>
                             </div>
                           </div>
                         )}
@@ -365,10 +385,10 @@ const VisibilityCheckSection: React.FC = () => {
                             </div>
                             <h4 className="font-semibold text-gray-800 mb-1">Instagram</h4>
                             <div className="text-xs text-gray-600 space-y-1">
-                              <div>👥 {analysisData.instagramData.followers} Follower</div>
-                              <div>{analysisData.instagramData.isBusinessAccount ? '✅' : '❌'} Business Account</div>
-                              <div>{analysisData.instagramData.hasContactInfo ? '✅' : '❌'} Kontaktinfo</div>
-                              <div>{analysisData.instagramData.hasStoryHighlights ? '✅' : '❌'} Story Highlights</div>
+                              <div>👥 {analysisData.instagramData.followers} {t('visibilityCheck.followers', { defaultValue: 'Follower' })}</div>
+                              <div>{analysisData.instagramData.isBusinessAccount ? '✅' : '❌'} {t('visibilityCheck.businessAccount', { defaultValue: 'Business Account' })}</div>
+                              <div>{analysisData.instagramData.hasContactInfo ? '✅' : '❌'} {t('visibilityCheck.contactInfo', { defaultValue: 'Kontaktinfo' })}</div>
+                              <div>{analysisData.instagramData.hasStoryHighlights ? '✅' : '❌'} {t('visibilityCheck.storyHighlights', { defaultValue: 'Story Highlights' })}</div>
                             </div>
                           </div>
                         )}
@@ -381,7 +401,7 @@ const VisibilityCheckSection: React.FC = () => {
                         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                           <h4 className="font-semibold text-red-800 mb-3 flex items-center">
                             <AlertCircle className="h-4 w-4 mr-2" />
-                            Kritische Bereiche
+                            {t('visibilityCheck.result.issues.title')}
                           </h4>
                           <ul className="text-sm text-red-700 space-y-2">
                             {analysisData.analysis.criticalIssues.length > 0 ? (
@@ -392,7 +412,7 @@ const VisibilityCheckSection: React.FC = () => {
                                 </li>
                               ))
                             ) : (
-                              <li className="text-green-700">✅ Keine kritischen Probleme gefunden</li>
+                              <li className="text-green-700">✅ {t('visibilityCheck.noCriticalIssues', { defaultValue: 'Keine kritischen Probleme gefunden' })}</li>
                             )}
                           </ul>
                         </div>
@@ -400,7 +420,7 @@ const VisibilityCheckSection: React.FC = () => {
                         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                           <h4 className="font-semibold text-green-800 mb-3 flex items-center">
                             <TrendingUp className="h-4 w-4 mr-2" />
-                            Quick Wins
+                            {t('visibilityCheck.result.potential.title')}
                           </h4>
                           <ul className="text-sm text-green-700 space-y-2">
                             {analysisData.analysis.quickWins.length > 0 ? (
@@ -411,7 +431,7 @@ const VisibilityCheckSection: React.FC = () => {
                                 </li>
                               ))
                             ) : (
-                              <li>🎯 Profile bereits gut optimiert!</li>
+                              <li>🎯 {t('visibilityCheck.wellOptimized', { defaultValue: 'Profile bereits gut optimiert!' })}</li>
                             )}
                           </ul>
                         </div>
@@ -423,7 +443,7 @@ const VisibilityCheckSection: React.FC = () => {
                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                         <h4 className="font-semibold text-blue-800 mb-3 flex items-center">
                           <CheckCircle className="h-4 w-4 mr-2" />
-                          Top Empfehlungen
+                          {t('visibilityCheck.topRecommendations', { defaultValue: 'Top Empfehlungen' })}
                         </h4>
                         <div className="space-y-3">
                           {analysisData.todos.slice(0, 3).map((todo: TodoAction, index: number) => (
@@ -436,7 +456,7 @@ const VisibilityCheckSection: React.FC = () => {
                                   <h5 className="font-medium text-gray-900">{todo.todoText}</h5>
                                   {todo.isCritical && (
                                     <span className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">
-                                      Kritisch
+                                      {t('visibilityCheck.critical', { defaultValue: 'Kritisch' })}
                                     </span>
                                   )}
                                 </div>
@@ -457,10 +477,10 @@ const VisibilityCheckSection: React.FC = () => {
                     {!analysisData.googleData && (
                       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                         <div className="flex items-center gap-2 text-yellow-800 font-medium mb-2">
-                          ⚠️ Google Business Profil fehlt
+                          ⚠️ {t('visibilityCheck.missingGoogle', { defaultValue: 'Google Business Profil fehlt' })}
                         </div>
                         <p className="text-sm text-yellow-700">
-                          Ohne Google Profil verpassen Sie bis zu 80% der lokalen Suchanfragen.
+                          {t('visibilityCheck.missingGoogleDescription', { defaultValue: 'Ohne Google Profil verpassen Sie bis zu 80% der lokalen Suchanfragen.' })}
                         </p>
                       </div>
                     )}
@@ -468,10 +488,10 @@ const VisibilityCheckSection: React.FC = () => {
                     {!analysisData.facebookData && analysisData.googleData && (
                       <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
                         <div className="flex items-center gap-2 text-purple-800 font-medium mb-2">
-                          ℹ️ Facebook Seite nicht gefunden
+                          ℹ️ {t('visibilityCheck.missingFacebook', { defaultValue: 'Facebook Seite nicht gefunden' })}
                         </div>
                         <p className="text-sm text-purple-700">
-                          Eine Facebook Business-Seite erweitert Ihre Reichweite erheblich.
+                          {t('visibilityCheck.missingFacebookDescription', { defaultValue: 'Eine Facebook Business-Seite erweitert Ihre Reichweite erheblich.' })}
                         </p>
                       </div>
                     )}
@@ -480,10 +500,10 @@ const VisibilityCheckSection: React.FC = () => {
                     {requestReport && email && analysisData.leadId && (
                       <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                         <div className="flex items-center gap-2 text-green-800 font-medium mb-2">
-                          📧 PDF-Bericht wird versendet
+                          📧 {t('visibilityCheck.reportSending', { defaultValue: 'PDF-Bericht wird versendet' })}
                         </div>
                         <p className="text-sm text-green-700">
-                          Ihr detaillierter Sichtbarkeits-Bericht wird in Kürze an {email} gesendet.
+                          {t('visibilityCheck.reportSendingDescription', { email, defaultValue: `Ihr detaillierter Sichtbarkeits-Bericht wird in Kürze an ${email} gesendet.` })}
                         </p>
                       </div>
                     )}
@@ -515,7 +535,7 @@ const VisibilityCheckSection: React.FC = () => {
 
         <div className="mt-8 text-center">
           <p className="text-sm text-gray-600">
-            {t('visibilityCheck.disclaimer')} • KI-gestützte Multi-Platform Analyse • DSGVO-konform
+            {t('visibilityCheck.disclaimer')}
           </p>
         </div>
       </div>
