@@ -12,7 +12,6 @@ export const useFacebookEventTemplates = () => {
     try {
       setLoading(true);
       
-      // Direct table query with type casting until types are generated
       const { data, error } = await supabase
         .from('facebook_event_templates' as any)
         .select('*')
@@ -21,8 +20,10 @@ export const useFacebookEventTemplates = () => {
 
       if (error) throw error;
       
-      // Transform the data to match our interface
-      const transformedTemplates: FacebookEventTemplate[] = (data || []).map((item: any) => ({
+      // TODO: Replace with proper Supabase types after generation
+      const safeData: any[] = data || [];
+      
+      const transformedTemplates: FacebookEventTemplate[] = safeData.map((item: any) => ({
         id: item.id,
         event_name: item.event_name,
         template_payload: item.template_payload,
