@@ -32,8 +32,8 @@ export function loadFacebookPixel(options: FacebookPixelOptions): Promise<void> 
     }
 
     try {
-      // Facebook Pixel Script dynamisch laden
-      (function(f: any, b: Document, e: string, v: string, n: any, t: HTMLScriptElement, s: HTMLScriptElement) {
+      // Facebook Pixel Script dynamisch laden (IIFE mit 7 Argumenten - die letzten 3 auf undefined)
+      (function(f: any, b: Document, e: string, v: string, n?: any, t?: HTMLScriptElement, s?: HTMLScriptElement) {
         if (f.fbq) return;
         n = f.fbq = function() {
           n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
@@ -59,7 +59,7 @@ export function loadFacebookPixel(options: FacebookPixelOptions): Promise<void> 
           console.error('❌ Facebook Pixel Script Ladefehler');
           reject(new Error('Facebook Pixel script failed to load'));
         };
-      })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+      })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js', undefined, undefined, undefined);
 
       // Pixel initialisieren
       window.fbq('init', pixelId);
