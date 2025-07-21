@@ -166,6 +166,84 @@ export const buildPurchaseEvent = (
   event_id: crypto.randomUUID()
 });
 
+export const buildAddToCartEvent = (
+  userData: FacebookUserData,
+  customData?: { currency?: string; value?: number; content_ids?: string[] }
+): FacebookEventPayload => ({
+  event_name: 'AddToCart',
+  event_time: Math.floor(Date.now() / 1000),
+  action_source: 'website',
+  event_source_url: window.location.href,
+  user_data: userData,
+  custom_data: customData,
+  event_id: crypto.randomUUID()
+});
+
+export const buildStartTrialEvent = (
+  userData: FacebookUserData,
+  customData?: { predicted_ltv?: number; value?: number }
+): FacebookEventPayload => ({
+  event_name: 'StartTrial',
+  event_time: Math.floor(Date.now() / 1000),
+  action_source: 'website',
+  event_source_url: window.location.href,
+  user_data: userData,
+  custom_data: customData,
+  event_id: crypto.randomUUID()
+});
+
+export const buildCustomizeProductEvent = (
+  userData: FacebookUserData,
+  customData?: { content_name?: string }
+): FacebookEventPayload => ({
+  event_name: 'CustomizeProduct',
+  event_time: Math.floor(Date.now() / 1000),
+  action_source: 'website',
+  event_source_url: window.location.href,
+  user_data: userData,
+  custom_data: customData,
+  event_id: crypto.randomUUID()
+});
+
+export const buildFindLocationEvent = (
+  userData: FacebookUserData,
+  customData?: { content_name?: string }
+): FacebookEventPayload => ({
+  event_name: 'FindLocation',
+  event_time: Math.floor(Date.now() / 1000),
+  action_source: 'website',
+  event_source_url: window.location.href,
+  user_data: userData,
+  custom_data: customData,
+  event_id: crypto.randomUUID()
+});
+
+export const buildSubscribeEvent = (
+  userData: FacebookUserData,
+  customData?: { predicted_ltv?: number; value?: number }
+): FacebookEventPayload => ({
+  event_name: 'Subscribe',
+  event_time: Math.floor(Date.now() / 1000),
+  action_source: 'website',
+  event_source_url: window.location.href,
+  user_data: userData,
+  custom_data: customData,
+  event_id: crypto.randomUUID()
+});
+
+export const buildInitiateCheckoutEvent = (
+  userData: FacebookUserData,
+  customData?: { currency?: string; value?: number; num_items?: number }
+): FacebookEventPayload => ({
+  event_name: 'InitiateCheckout',
+  event_time: Math.floor(Date.now() / 1000),
+  action_source: 'website',
+  event_source_url: window.location.href,
+  user_data: userData,
+  custom_data: customData,
+  event_id: crypto.randomUUID()
+});
+
 // Helper für Event ID Generation
 export const generateEventId = (): string => {
   return crypto.randomUUID();
@@ -176,4 +254,30 @@ export const createDeduplicationKey = (eventName: string, userId?: string): stri
   const timestamp = Math.floor(Date.now() / 1000);
   const baseKey = `${eventName}_${timestamp}`;
   return userId ? `${baseKey}_${userId}` : baseKey;
+};
+
+// Helper für Event-Validierung
+export const validateEventPayload = (payload: FacebookEventPayload): { isValid: boolean; errors: string[] } => {
+  const errors: string[] = [];
+
+  if (!payload.event_name) {
+    errors.push('event_name is required');
+  }
+
+  if (!payload.event_time) {
+    errors.push('event_time is required');
+  }
+
+  if (!payload.action_source) {
+    errors.push('action_source is required');
+  }
+
+  if (!payload.user_data) {
+    errors.push('user_data is required');
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
 };
