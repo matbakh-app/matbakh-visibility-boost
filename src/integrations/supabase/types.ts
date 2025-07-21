@@ -630,6 +630,94 @@ export type Database = {
           },
         ]
       }
+      fb_conversion_logs: {
+        Row: {
+          error_message: string | null
+          event_name: string
+          event_payload: Json
+          id: string
+          partner_id: string | null
+          pixel_id: string
+          response_body: Json | null
+          response_status: number | null
+          sent_at: string | null
+          success: boolean | null
+          user_id: string | null
+        }
+        Insert: {
+          error_message?: string | null
+          event_name: string
+          event_payload: Json
+          id?: string
+          partner_id?: string | null
+          pixel_id: string
+          response_body?: Json | null
+          response_status?: number | null
+          sent_at?: string | null
+          success?: boolean | null
+          user_id?: string | null
+        }
+        Update: {
+          error_message?: string | null
+          event_name?: string
+          event_payload?: Json
+          id?: string
+          partner_id?: string | null
+          pixel_id?: string
+          response_body?: Json | null
+          response_status?: number | null
+          sent_at?: string | null
+          success?: boolean | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fb_conversion_logs_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "business_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fb_conversions_config: {
+        Row: {
+          access_token: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          partner_id: string | null
+          pixel_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          access_token: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          partner_id?: string | null
+          pixel_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          access_token?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          partner_id?: string | null
+          pixel_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fb_conversions_config_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "business_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ga4_daily: {
         Row: {
           avg_session_duration: number | null
@@ -2149,6 +2237,53 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      user_consent_tracking: {
+        Row: {
+          consent_given: boolean
+          consent_method: string | null
+          consent_timestamp: string | null
+          consent_type: string
+          created_at: string | null
+          id: string
+          ip_address: unknown | null
+          partner_id: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          consent_given: boolean
+          consent_method?: string | null
+          consent_timestamp?: string | null
+          consent_type: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          partner_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          consent_given?: boolean
+          consent_method?: string | null
+          consent_timestamp?: string | null
+          consent_type?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          partner_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_consent_tracking_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "business_partners"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_dietary_profiles: {
         Row: {
