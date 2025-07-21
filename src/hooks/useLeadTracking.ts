@@ -55,21 +55,23 @@ export const useLeadTracking = () => {
 
       if (error) throw error;
       
-      // Transform to our interface
+      // TODO: Replace with proper Supabase types after generation
+      const safeData: any = data;
+      
       const leadEvent: LeadEvent = {
-        id: data.id,
-        email: data.email,
-        business_name: data.business_name,
-        event_type: data.event_type,
-        event_time: data.event_time,
-        event_payload: data.event_payload,
-        processed: data.processed || false,
-        created_at: data.created_at,
-        user_id: data.user_id,
-        partner_id: data.partner_id,
-        facebook_event_id: data.facebook_event_id,
-        response_status: data.response_status,
-        success: data.success || false
+        id: safeData.id,
+        email: safeData.email,
+        business_name: safeData.business_name,
+        event_type: safeData.event_type,
+        event_time: safeData.event_time,
+        event_payload: safeData.event_payload,
+        processed: safeData.processed || false,
+        created_at: safeData.created_at,
+        user_id: safeData.user_id,
+        partner_id: safeData.partner_id,
+        facebook_event_id: safeData.facebook_event_id,
+        response_status: safeData.response_status,
+        success: safeData.success || false
       };
       
       return leadEvent;
@@ -106,16 +108,19 @@ export const useLeadTracking = () => {
 
       if (error) throw error;
       
+      // TODO: Replace with proper Supabase types after generation
+      const safeData: any = data;
+      
       const leadSource: LeadSource = {
-        id: data.id,
-        lead_id: data.lead_id,
-        source_system: data.source_system,
-        ref_id: data.ref_id,
-        source_url: data.source_url,
-        utm_source: data.utm_source,
-        utm_medium: data.utm_medium,
-        utm_campaign: data.utm_campaign,
-        created_at: data.created_at
+        id: safeData.id,
+        lead_id: safeData.lead_id,
+        source_system: safeData.source_system,
+        ref_id: safeData.ref_id,
+        source_url: safeData.source_url,
+        utm_source: safeData.utm_source,
+        utm_medium: safeData.utm_medium,
+        utm_campaign: safeData.utm_campaign,
+        created_at: safeData.created_at
       };
       
       return leadSource;
@@ -147,15 +152,18 @@ export const useLeadTracking = () => {
 
       if (error) throw error;
       
+      // TODO: Replace with proper Supabase types after generation
+      const safeData: any = data;
+      
       const leadTodo: LeadTodo = {
-        id: data.id,
-        lead_id: data.lead_id,
-        todo_text: data.todo_text,
-        status: data.status || 'offen',
-        priority: data.priority,
-        estimated_impact: data.estimated_impact,
-        created_at: data.created_at,
-        completed_at: data.completed_at
+        id: safeData.id,
+        lead_id: safeData.lead_id,
+        todo_text: safeData.todo_text,
+        status: safeData.status || 'offen',
+        priority: safeData.priority,
+        estimated_impact: safeData.estimated_impact,
+        created_at: safeData.created_at,
+        completed_at: safeData.completed_at
       };
       
       return leadTodo;
@@ -210,8 +218,10 @@ export const useLeadTracking = () => {
 
       if (error) throw error;
       
-      // Transform to our interface
-      const leadEvents: LeadEvent[] = (data || []).map((item: any) => ({
+      // TODO: Replace with proper Supabase types after generation
+      const safeData: any[] = data || [];
+      
+      const leadEvents: LeadEvent[] = safeData.map((item: any) => ({
         id: item.id,
         email: item.email,
         business_name: item.business_name,
