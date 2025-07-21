@@ -71,29 +71,16 @@ const supabase = createClient(supabaseUrl, supabaseKey)
 
 // Enhanced Facebook Graph API helper with better search logic
 async function searchFacebookPage(businessName: string, location: string): Promise<any> {
-  const FACEBOOK_APP_ID = Deno.env.get('FACEBOOK_APP_ID')
-  const FACEBOOK_APP_SECRET = Deno.env.get('FACEBOOK_APP_SECRET')
+  const FACEBOOK_CONVERSIONS_ACCESS_TOKEN = Deno.env.get('FACEBOOK_CONVERSIONS_ACCESS_TOKEN')
   
-  if (!FACEBOOK_APP_ID || !FACEBOOK_APP_SECRET) {
-    console.error('❌ Facebook API Credentials fehlen in Environment-Variablen')
+  if (!FACEBOOK_CONVERSIONS_ACCESS_TOKEN) {
+    console.error('❌ Facebook Conversions Access Token fehlt in Environment-Variablen')
     return null
   }
 
   try {
-    // Generate App Access Token
-    console.log('🔑 Facebook App Access Token wird generiert...')
-    const tokenResponse = await fetch(
-      `https://graph.facebook.com/oauth/access_token?client_id=${FACEBOOK_APP_ID}&client_secret=${FACEBOOK_APP_SECRET}&grant_type=client_credentials`
-    )
-    const tokenData = await tokenResponse.json()
-    
-    if (!tokenData.access_token) {
-      console.error('❌ Facebook Access Token Generation fehlgeschlagen:', tokenData)
-      return null
-    }
-
-    const accessToken = tokenData.access_token
-    console.log('✅ Facebook Access Token erhalten')
+    const accessToken = FACEBOOK_CONVERSIONS_ACCESS_TOKEN
+    console.log('✅ Facebook Conversions Access Token wird verwendet')
 
     // Enhanced search queries with better matching logic
     const searchQueries = [
@@ -584,7 +571,7 @@ serve(async (req) => {
         instagramSearchAttempted: true,
         apiKeysPresent: {
           google: !!GOOGLE_PLACES_API_KEY,
-          facebook: !!(Deno.env.get('FACEBOOK_APP_ID') && Deno.env.get('FACEBOOK_APP_SECRET'))
+          facebook: !!(Deno.env.get('FACEBOOK_CONVERSIONS_ACCESS_TOKEN'))
         }
       }
     }
