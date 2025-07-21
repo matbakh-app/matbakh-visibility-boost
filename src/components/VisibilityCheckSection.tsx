@@ -1,10 +1,69 @@
+
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, MapPin, Phone, ExternalLink, Loader2 } from 'lucide-react';
+import { Search, MapPin, Phone, ExternalLink, Loader2, CheckCircle, AlertCircle, TrendingUp, Users, Star, Clock, Camera, MessageSquare, Heart, BarChart3 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+
+interface TodoAction {
+  todoType: string;
+  todoText: string;
+  todoWhy: string;
+  isCritical: boolean;
+  platform: 'google' | 'facebook' | 'instagram' | 'general';
+}
+
+interface EnhancedAnalysisData {
+  found: boolean;
+  businessName: string;
+  location: string;
+  leadId?: string;
+  todos?: TodoAction[];
+  analysis?: {
+    overallScore: number;
+    criticalIssues: string[];
+    quickWins: string[];
+    todoSummary: string;
+    leadPotential: 'high' | 'medium' | 'low';
+  };
+  googleData?: {
+    name: string;
+    address: string;
+    rating: number;
+    reviewCount: number;
+    hasWebsite: boolean;
+    hasOpeningHours: boolean;
+    hasPhotos: boolean;
+    googleUrl: string;
+    completenessScore: number;
+    missingFeatures: string[];
+  };
+  facebookData?: {
+    name: string;
+    fanCount: number;
+    rating: number;
+    isVerified: boolean;
+    hasAbout: boolean;
+    hasLocation: boolean;
+    facebookUrl: string;
+    recentActivity: boolean;
+    completenessScore: number;
+    missingFeatures: string[];
+  };
+  instagramData?: {
+    name: string;
+    followers: number;
+    isBusinessAccount: boolean;
+    hasContactInfo: boolean;
+    hasStoryHighlights: boolean;
+    recentPosts: number;
+    completenessScore: number;
+    missingFeatures: string[];
+  };
+  error?: string;
+}
 
 const VisibilityCheckSection: React.FC = () => {
   const { t } = useTranslation('landing');
@@ -13,27 +72,31 @@ const VisibilityCheckSection: React.FC = () => {
   const [email, setEmail] = useState('');
   const [website, setWebsite] = useState('');
   const [showResult, setShowResult] = useState(false);
+  const [requestReport, setRequestReport] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
-  const [analysisData, setAnalysisData] = useState(null);
+  const [analysisData, setAnalysisData] = useState<EnhancedAnalysisData | null>(null);
 
   const handleCheck = async () => {
-    if (businessName && location && email) {
+    if (businessName && location) {
       setIsLoading(true);
       try {
         const { data, error } = await supabase.functions.invoke('places-visibility-check', {
           body: {
             businessName,
             location,
-            email,
-            website: website || undefined
+            email: requestReport ? email : undefined,
+            website: website || undefined,
+            checkType: requestReport ? 'with_email' : 'anon'
           }
         });
 
         if (error) {
-          console.error('Error calling visibility check:', error);
+          console.error('Error calling enhanced visibility check:', error);
           setAnalysisData({
             found: false,
+            businessName,
+            location,
             error: 'Fehler bei der Analyse. Bitte versuchen Sie es später erneut.'
           });
         } else {
@@ -44,6 +107,8 @@ const VisibilityCheckSection: React.FC = () => {
         console.error('Network error:', error);
         setAnalysisData({
           found: false,
+          businessName,
+          location,
           error: 'Verbindungsfehler. Bitte prüfen Sie Ihre Internetverbindung.'
         });
         setShowResult(true);
@@ -55,9 +120,30 @@ const VisibilityCheckSection: React.FC = () => {
 
   const handleWhatsAppContact = () => {
     const message = encodeURIComponent(
-      `Hallo! Ich möchte eine kostenlose Sichtbarkeits-Analyse für mein Restaurant "${businessName}" in ${location}. Meine E-Mail: ${email}${website ? ', Website: ' + website : ''}. Können Sie mir dabei helfen?`
+      `Hallo! Ich habe eine kostenlose Sichtbarkeits-Analyse für mein Restaurant "${businessName}" in ${location} durchgeführt. ${analysisData?.analysis ? `Mein Score: ${analysisData.analysis.overallScore}%. ` : ''}Können Sie mir bei der Optimierung helfen?`
     );
     window.open(`https://wa.me/4915123456789?text=${message}`, '_blank');
+  };
+
+  const getPlatformIcon = (platform: string) => {
+    switch (platform) {
+      case 'google': return <Search className="h-4 w-4 text-blue-600" />;
+      case 'facebook': return <Users className="h-4 w-4 text-blue-800" />;
+      case 'instagram': return <Camera className="h-4 w-4 text-pink-600" />;
+      default: return <TrendingUp className="h-4 w-4 text-gray-600" />;
+    }
+  };
+
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'text-green-600';
+    if (score >= 60) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
+  const getScoreBgColor = (score: number) => {
+    if (score >= 80) return 'bg-green-50 border-green-200';
+    if (score >= 60) return 'bg-yellow-50 border-yellow-200';
+    return 'bg-red-50 border-red-200';
   };
 
   return (
@@ -68,7 +154,7 @@ const VisibilityCheckSection: React.FC = () => {
             {t('visibilityCheck.title')}
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Jetzt mit Google & Facebook Analyse
+            KI-gestützte Multi-Platform Analyse • Google • Facebook • Instagram
           </p>
         </div>
 
@@ -78,7 +164,7 @@ const VisibilityCheckSection: React.FC = () => {
               {t('visibilityCheck.formTitle')}
             </CardTitle>
             <p className="text-gray-600">
-              Google Business Profile & Facebook Seite werden geprüft
+              Vollständige Sichtbarkeits-Analyse mit personalisierten Empfehlungen
             </p>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -111,19 +197,6 @@ const VisibilityCheckSection: React.FC = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {t('visibilityCheck.emailLabel')}
-                    </label>
-                    <Input
-                      type="email"
-                      placeholder={t('visibilityCheck.emailPlaceholder')}
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       {t('visibilityCheck.websiteLabel')}
                     </label>
                     <Input
@@ -134,20 +207,54 @@ const VisibilityCheckSection: React.FC = () => {
                       className="w-full"
                     />
                   </div>
+
+                  {/* Optional Report Request */}
+                  <div className="border-t pt-4">
+                    <div className="flex items-center space-x-2 mb-3">
+                      <input
+                        type="checkbox"
+                        id="request-report"
+                        checked={requestReport}
+                        onChange={(e) => setRequestReport(e.target.checked)}
+                        className="rounded"
+                      />
+                      <label htmlFor="request-report" className="text-sm font-medium text-gray-700">
+                        📧 Detaillierten PDF-Bericht per E-Mail erhalten
+                      </label>
+                    </div>
+                    {requestReport && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          {t('visibilityCheck.emailLabel')}
+                        </label>
+                        <Input
+                          type="email"
+                          placeholder={t('visibilityCheck.emailPlaceholder')}
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="w-full"
+                          required={requestReport}
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          DSGVO-konform • Keine Weitergabe • Jederzeit widerrufbar
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 
                 <Button 
                   onClick={handleCheck}
-                  disabled={!businessName || !location || !email || isLoading}
+                  disabled={!businessName || !location || (requestReport && !email) || isLoading}
                   className="w-full bg-primary hover:bg-primary/90 text-white"
                   size="lg"
                 >
                   {isLoading ? (
                     <Loader2 className="h-5 w-5 mr-2 animate-spin" />
                   ) : (
-                    <Search className="h-5 w-5 mr-2" />
+                    <BarChart3 className="h-5 w-5 mr-2" />
                   )}
-                  {isLoading ? 'Analyse läuft...' : 'Google & Facebook prüfen'}
+                  {isLoading ? 'KI-Analyse läuft...' : 'Multi-Platform Analyse starten'}
                 </Button>
               </>
             ) : (
@@ -172,122 +279,181 @@ const VisibilityCheckSection: React.FC = () => {
                   <>
                     <div className="text-center">
                       <div className={`w-16 h-16 ${analysisData.found ? 'bg-green-100' : 'bg-red-100'} rounded-full flex items-center justify-center mx-auto mb-4`}>
-                        <Search className={`h-8 w-8 ${analysisData.found ? 'text-green-600' : 'text-red-600'}`} />
+                        <BarChart3 className={`h-8 w-8 ${analysisData.found ? 'text-green-600' : 'text-red-600'}`} />
                       </div>
                       <h3 className="text-lg font-semibold text-black mb-2">
                         {analysisData.found ? 'Multi-Platform Analyse abgeschlossen!' : 'Profile nicht gefunden'}
                       </h3>
                       <p className="text-gray-600 mb-4">
                         {analysisData.found 
-                          ? `Google & Facebook Ergebnisse für "${businessName}" in ${location}`
+                          ? `Komplette Sichtbarkeits-Analyse für "${businessName}" in ${location}`
                           : `Keine Profile für "${businessName}" gefunden`
                         }
                       </p>
+                      
+                      {/* Overall Score */}
                       {analysisData.found && analysisData.analysis && (
-                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 mb-4">
-                          <div className="text-3xl font-bold text-primary mb-2">
+                        <div className={`rounded-lg p-6 mb-6 border-2 ${getScoreBgColor(analysisData.analysis.overallScore)}`}>
+                          <div className={`text-4xl font-bold mb-2 ${getScoreColor(analysisData.analysis.overallScore)}`}>
                             {analysisData.analysis.overallScore}%
                           </div>
-                          <div className="text-sm text-gray-600">
-                            Multi-Platform Sichtbarkeits-Score
+                          <div className="text-sm text-gray-600 mb-2">
+                            Gesamter Sichtbarkeits-Score
+                          </div>
+                          <div className="flex items-center justify-center space-x-2 text-sm">
+                            <span className={`px-2 py-1 rounded-full text-white ${
+                              analysisData.analysis.leadPotential === 'high' ? 'bg-red-500' :
+                              analysisData.analysis.leadPotential === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
+                            }`}>
+                              {analysisData.analysis.leadPotential === 'high' ? '🚀 Hohes Potenzial' :
+                               analysisData.analysis.leadPotential === 'medium' ? '⚡ Mittleres Potenzial' : '✅ Gut optimiert'}
+                            </span>
                           </div>
                         </div>
                       )}
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                        <h4 className="font-semibold text-red-800 mb-2">
-                          🚨 Problembereiche
-                        </h4>
-                        <ul className="text-sm text-red-700 space-y-1">
-                          {analysisData.analysis?.issues?.length > 0 ? (
-                            analysisData.analysis.issues.map((issue: string, index: number) => (
-                              <li key={index}>• {issue}</li>
-                            ))
-                          ) : (
-                            <li>• Keine größeren Probleme gefunden</li>
-                          )}
-                        </ul>
+                    {/* Platform Scores */}
+                    {analysisData.found && (
+                      <div className="grid md:grid-cols-3 gap-4 mb-6">
+                        {/* Google Score */}
+                        {analysisData.googleData && (
+                          <div className={`rounded-lg p-4 border-2 ${getScoreBgColor(analysisData.googleData.completenessScore)}`}>
+                            <div className="flex items-center justify-between mb-2">
+                              <Search className="h-5 w-5 text-blue-600" />
+                              <span className={`text-xl font-bold ${getScoreColor(analysisData.googleData.completenessScore)}`}>
+                                {analysisData.googleData.completenessScore}%
+                              </span>
+                            </div>
+                            <h4 className="font-semibold text-gray-800 mb-1">Google Business</h4>
+                            <div className="text-xs text-gray-600 space-y-1">
+                              <div>⭐ {analysisData.googleData.rating || 'Keine'} ({analysisData.googleData.reviewCount} Bewertungen)</div>
+                              <div>{analysisData.googleData.hasWebsite ? '✅' : '❌'} Website</div>
+                              <div>{analysisData.googleData.hasOpeningHours ? '✅' : '❌'} Öffnungszeiten</div>
+                              <div>{analysisData.googleData.hasPhotos ? '✅' : '❌'} Fotos</div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Facebook Score */}
+                        {analysisData.facebookData && (
+                          <div className={`rounded-lg p-4 border-2 ${getScoreBgColor(analysisData.facebookData.completenessScore)}`}>
+                            <div className="flex items-center justify-between mb-2">
+                              <Users className="h-5 w-5 text-blue-800" />
+                              <span className={`text-xl font-bold ${getScoreColor(analysisData.facebookData.completenessScore)}`}>
+                                {analysisData.facebookData.completenessScore}%
+                              </span>
+                            </div>
+                            <h4 className="font-semibold text-gray-800 mb-1">Facebook</h4>
+                            <div className="text-xs text-gray-600 space-y-1">
+                              <div>👥 {analysisData.facebookData.fanCount} Fans</div>
+                              <div>{analysisData.facebookData.isVerified ? '✅' : '❌'} Verifiziert</div>
+                              <div>{analysisData.facebookData.hasAbout ? '✅' : '❌'} Beschreibung</div>
+                              <div>{analysisData.facebookData.recentActivity ? '✅' : '❌'} Aktuelle Posts</div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Instagram Score */}
+                        {analysisData.instagramData && (
+                          <div className={`rounded-lg p-4 border-2 ${getScoreBgColor(analysisData.instagramData.completenessScore)}`}>
+                            <div className="flex items-center justify-between mb-2">
+                              <Camera className="h-5 w-5 text-pink-600" />
+                              <span className={`text-xl font-bold ${getScoreColor(analysisData.instagramData.completenessScore)}`}>
+                                {analysisData.instagramData.completenessScore}%
+                              </span>
+                            </div>
+                            <h4 className="font-semibold text-gray-800 mb-1">Instagram</h4>
+                            <div className="text-xs text-gray-600 space-y-1">
+                              <div>👥 {analysisData.instagramData.followers} Follower</div>
+                              <div>{analysisData.instagramData.isBusinessAccount ? '✅' : '❌'} Business Account</div>
+                              <div>{analysisData.instagramData.hasContactInfo ? '✅' : '❌'} Kontaktinfo</div>
+                              <div>{analysisData.instagramData.hasStoryHighlights ? '✅' : '❌'} Story Highlights</div>
+                            </div>
+                          </div>
+                        )}
                       </div>
+                    )}
 
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                        <h4 className="font-semibold text-green-800 mb-2">
-                          🚀 Verbesserungschancen
-                        </h4>
-                        <ul className="text-sm text-green-700 space-y-1">
-                          {analysisData.analysis?.opportunities?.length > 0 ? (
-                            analysisData.analysis.opportunities.map((opportunity: string, index: number) => (
-                              <li key={index}>• {opportunity}</li>
-                            ))
-                          ) : (
-                            <li>• Profile bereits gut optimiert!</li>
-                          )}
-                        </ul>
+                    {/* Critical Issues & Quick Wins */}
+                    {analysisData.analysis && (
+                      <div className="grid md:grid-cols-2 gap-4 mb-6">
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                          <h4 className="font-semibold text-red-800 mb-3 flex items-center">
+                            <AlertCircle className="h-4 w-4 mr-2" />
+                            Kritische Bereiche
+                          </h4>
+                          <ul className="text-sm text-red-700 space-y-2">
+                            {analysisData.analysis.criticalIssues.length > 0 ? (
+                              analysisData.analysis.criticalIssues.map((issue: string, index: number) => (
+                                <li key={index} className="flex items-start">
+                                  <span className="text-red-500 mr-2">⚠️</span>
+                                  {issue}
+                                </li>
+                              ))
+                            ) : (
+                              <li className="text-green-700">✅ Keine kritischen Probleme gefunden</li>
+                            )}
+                          </ul>
+                        </div>
+
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                          <h4 className="font-semibold text-green-800 mb-3 flex items-center">
+                            <TrendingUp className="h-4 w-4 mr-2" />
+                            Quick Wins
+                          </h4>
+                          <ul className="text-sm text-green-700 space-y-2">
+                            {analysisData.analysis.quickWins.length > 0 ? (
+                              analysisData.analysis.quickWins.map((win: string, index: number) => (
+                                <li key={index} className="flex items-start">
+                                  <span className="text-green-500 mr-2">🚀</span>
+                                  {win}
+                                </li>
+                              ))
+                            ) : (
+                              <li>🎯 Profile bereits gut optimiert!</li>
+                            )}
+                          </ul>
+                        </div>
                       </div>
-                    </div>
+                    )}
 
-                    {/* Platform-specific details */}
-                    <div className="grid md:grid-cols-2 gap-4">
-                      {/* Google Data */}
-                      {analysisData.googleData && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                          <h4 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
-                            🔍 Google Business Profil
-                          </h4>
-                          <div className="grid grid-cols-2 gap-2 text-sm">
-                            <div>
-                              <span className="font-medium">Bewertung:</span> {analysisData.googleData.rating || 'Keine'} ⭐
+                    {/* Top Todo Actions */}
+                    {analysisData.todos && analysisData.todos.length > 0 && (
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                        <h4 className="font-semibold text-blue-800 mb-3 flex items-center">
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          Top Empfehlungen
+                        </h4>
+                        <div className="space-y-3">
+                          {analysisData.todos.slice(0, 3).map((todo: TodoAction, index: number) => (
+                            <div key={index} className="flex items-start space-x-3 p-3 bg-white rounded-lg border">
+                              <div className="flex-shrink-0">
+                                {getPlatformIcon(todo.platform)}
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-2 mb-1">
+                                  <h5 className="font-medium text-gray-900">{todo.todoText}</h5>
+                                  {todo.isCritical && (
+                                    <span className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">
+                                      Kritisch
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-sm text-gray-600">{todo.todoWhy}</p>
+                              </div>
                             </div>
-                            <div>
-                              <span className="font-medium">Reviews:</span> {analysisData.googleData.reviewCount || 0}
-                            </div>
-                            <div>
-                              <span className="font-medium">Website:</span> {analysisData.googleData.hasWebsite ? '✅' : '❌'}
-                            </div>
-                            <div>
-                              <span className="font-medium">Öffnungszeiten:</span> {analysisData.googleData.hasOpeningHours ? '✅' : '❌'}
-                            </div>
-                          </div>
+                          ))}
                         </div>
-                      )}
+                        {analysisData.analysis && (
+                          <p className="text-sm text-blue-700 mt-3 text-center">
+                            {analysisData.analysis.todoSummary}
+                          </p>
+                        )}
+                      </div>
+                    )}
 
-                      {/* Facebook Data */}
-                      {analysisData.facebookData && (
-                        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-                          <h4 className="font-semibold text-indigo-800 mb-2 flex items-center gap-2">
-                            📘 Facebook Seite
-                          </h4>
-                          <div className="grid grid-cols-2 gap-2 text-sm">
-                            <div>
-                              <span className="font-medium">Fans:</span> {analysisData.facebookData.fanCount || 0} 👥
-                            </div>
-                            <div>
-                              <span className="font-medium">Bewertung:</span> {analysisData.facebookData.rating || 'Keine'} ⭐
-                            </div>
-                            <div>
-                              <span className="font-medium">Verifiziert:</span> {analysisData.facebookData.isVerified ? '✅' : '❌'}
-                            </div>
-                            <div>
-                              <span className="font-medium">Aktuelle Posts:</span> {analysisData.facebookData.recentActivity ? '✅' : '❌'}
-                            </div>
-                          </div>
-                          {analysisData.facebookData.facebookUrl && (
-                            <a 
-                              href={analysisData.facebookData.facebookUrl} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 mt-2"
-                            >
-                              <ExternalLink className="h-3 w-3" />
-                              Facebook Seite ansehen
-                            </a>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Missing platform alerts */}
+                    {/* Missing platforms alerts */}
                     {!analysisData.googleData && (
                       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                         <div className="flex items-center gap-2 text-yellow-800 font-medium mb-2">
@@ -299,13 +465,25 @@ const VisibilityCheckSection: React.FC = () => {
                       </div>
                     )}
 
-                    {!analysisData.facebookData && (
+                    {!analysisData.facebookData && analysisData.googleData && (
                       <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
                         <div className="flex items-center gap-2 text-purple-800 font-medium mb-2">
                           ℹ️ Facebook Seite nicht gefunden
                         </div>
                         <p className="text-sm text-purple-700">
                           Eine Facebook Business-Seite erweitert Ihre Reichweite erheblich.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Lead Success Message */}
+                    {requestReport && email && analysisData.leadId && (
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <div className="flex items-center gap-2 text-green-800 font-medium mb-2">
+                          📧 PDF-Bericht wird versendet
+                        </div>
+                        <p className="text-sm text-green-700">
+                          Ihr detaillierter Sichtbarkeits-Bericht wird in Kürze an {email} gesendet.
                         </p>
                       </div>
                     )}
@@ -337,7 +515,7 @@ const VisibilityCheckSection: React.FC = () => {
 
         <div className="mt-8 text-center">
           <p className="text-sm text-gray-600">
-            {t('visibilityCheck.disclaimer')} • Jetzt mit Facebook-Integration
+            {t('visibilityCheck.disclaimer')} • KI-gestützte Multi-Platform Analyse • DSGVO-konform
           </p>
         </div>
       </div>
