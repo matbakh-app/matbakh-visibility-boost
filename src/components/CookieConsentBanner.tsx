@@ -3,11 +3,16 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X, Cookie, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { loadFacebookPixel, removeFacebookPixel } from '@/utils/facebookPixel';
 
 const CookieConsentBanner: React.FC = () => {
   const { t } = useTranslation('common');
   const [isVisible, setIsVisible] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+
+  // Facebook Pixel Konfiguration aus Environment-Variablen
+  const facebookPixelId = import.meta.env.VITE_FACEBOOK_PIXEL_ID;
+  const isDebugMode = import.meta.env.DEV;
 
   useEffect(() => {
     // Check if consent has already been given
@@ -18,8 +23,29 @@ const CookieConsentBanner: React.FC = () => {
         setIsVisible(true);
       }, 1500);
       return () => clearTimeout(timer);
+    } else if (consent === 'accepted') {
+      // Consent bereits erteilt - Facebook Pixel laden
+      initializeFacebookPixel();
     }
   }, []);
+
+  const initializeFacebookPixel = async () => {
+    if (!facebookPixelId) {
+      console.warn('Facebook Pixel ID fehlt in Environment-Variablen');
+      return;
+    }
+
+    try {
+      await loadFacebookPixel({
+        pixelId: facebookPixelId,
+        autoPageView: true,
+        debug: isDebugMode
+      });
+      console.log('✅ Facebook Pixel erfolgreich initialisiert');
+    } catch (error) {
+      console.error('❌ Facebook Pixel Initialisierung fehlgeschlagen:', error);
+    }
+  };
 
   const updateGoogleConsent = (consentType: 'granted' | 'denied') => {
     if (typeof window !== 'undefined' && window.gtag) {
@@ -51,32 +77,44 @@ const CookieConsentBanner: React.FC = () => {
     }
   };
 
-  const closeBanner = () => {
-    setIsVisible(false);
-    setShowDetails(false); // Reset details state when closing
+  const handleFacebookConsent = async (consentGiven: boolean) => {
+    if (consentGiven) {
+      // Consent erteilt - Facebook Pixel laden
+      await initializeFacebookPixel();
+    } else {
+      // Consent verweigert - Facebook Pixel entfernen
+      removeFacebookPixel();
+    }
   };
 
-  const handleAccept = () => {
+  const closeBanner = () => {
+    setIsVisible(false);
+    setShowDetails(false);
+  };
+
+  const handleAccept = async () => {
     // Update consent BEFORE localStorage to prevent race conditions
     updateGoogleConsent('granted');
+    await handleFacebookConsent(true);
     
     // Store consent decision
     localStorage.setItem('cookieConsent', 'accepted');
     localStorage.setItem('cookieConsentDate', new Date().toISOString());
     
-    console.log('✅ Google Consent Mode v2: All consent types GRANTED');
+    console.log('✅ Consent erteilt - Google & Facebook Tracking aktiviert');
     closeBanner();
   };
 
-  const handleDecline = () => {
+  const handleDecline = async () => {
     // Update consent BEFORE localStorage to prevent race conditions
     updateGoogleConsent('denied');
+    await handleFacebookConsent(false);
     
     // Store consent decision
     localStorage.setItem('cookieConsent', 'declined');
     localStorage.setItem('cookieConsentDate', new Date().toISOString());
     
-    console.log('❌ Google Consent Mode v2: All consent types DENIED');
+    console.log('❌ Consent verweigert - Tracking deaktiviert');
     closeBanner();
   };
 
@@ -122,8 +160,12 @@ const CookieConsentBanner: React.FC = () => {
                       <strong>{t('cookieConsent.analytics', 'Analytics-Cookies')}:</strong>{' '}
                       {t('cookieConsent.analyticsDesc', 'Google Analytics hilft uns zu verstehen, wie Besucher unsere Website nutzen (anonymisiert).')}
                     </div>
+                    <div>
+                      <strong>Facebook Pixel:</strong>{' '}
+                      Meta/Facebook Pixel für Conversion-Tracking und Werbeanzeigen-Optimierung (nur mit Zustimmung).
+                    </div>
                     <div className="mt-2 p-2 bg-blue-50 rounded text-xs">
-                      <strong>Google Consent Mode v2:</strong> Unsere Website verwendet Google's neueste Consent-Technologie für maximalen Datenschutz und Compliance.
+                      <strong>Consent-First-Approach:</strong> Kein Tracking ohne explizite Zustimmung. Vollständige DSGVO-Compliance.
                     </div>
                   </div>
                 </div>

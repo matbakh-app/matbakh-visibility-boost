@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { FacebookEventPayload, FacebookEventType } from '@/types/facebook-events';
 import { useLeadTracking } from './useLeadTracking';
+import { trackFacebookEvent, FacebookEvents } from '@/utils/facebookPixel';
 
 interface FacebookEventData {
   event_name: string;
@@ -40,6 +41,10 @@ interface CustomData {
 
 export const useFacebookConversions = () => {
   const { createLeadEvent, createLeadSource } = useLeadTracking();
+  
+  // Environment-Variablen für Facebook-Integration
+  const facebookPixelId = import.meta.env.VITE_FACEBOOK_PIXEL_ID;
+  const isDebugMode = import.meta.env.DEV;
 
   const sendEvent = useCallback(async (
     partnerId: string,
@@ -49,6 +54,13 @@ export const useFacebookConversions = () => {
     testEventCode?: string
   ) => {
     try {
+      // Check if consent is given
+      const consent = localStorage.getItem('cookieConsent');
+      if (consent !== 'accepted') {
+        console.log('Facebook Tracking: Consent nicht erteilt - Event wird nicht gesendet');
+        return;
+      }
+
       // Add current page URL if not provided
       if (!eventData.event_source_url) {
         eventData.event_source_url = window.location.href;
@@ -79,6 +91,14 @@ export const useFacebookConversions = () => {
         }
       }
 
+      // DUAL TRACKING: Frontend Pixel + Backend Conversions API
+      
+      // 1. Frontend Pixel Event (für sofortiges Tracking)
+      if (facebookPixelId && typeof window !== 'undefined') {
+        trackFacebookEvent(eventData.event_name, customData);
+      }
+
+      // 2. Backend Conversions API (für Server-to-Server Tracking)
       const { data, error } = await supabase.functions.invoke('facebook-conversions', {
         body: {
           partner_id: partnerId,
@@ -90,7 +110,7 @@ export const useFacebookConversions = () => {
       });
 
       if (error) {
-        console.error('Facebook Conversions Error:', error);
+        console.error('Facebook Conversions API Error:', error);
         throw error;
       }
 
@@ -102,7 +122,8 @@ export const useFacebookConversions = () => {
           event_payload: {
             event_data: eventData,
             user_data: userData,
-            custom_data: customData
+            custom_data: customData,
+            tracking_method: 'dual_pixel_and_api'
           },
           partner_id: partnerId,
           facebook_event_id: data.event_id,
@@ -118,7 +139,7 @@ export const useFacebookConversions = () => {
 
         if (utm_source || utm_medium || utm_campaign) {
           await createLeadSource({
-            lead_id: data.lead_id, // Assuming the API returns this
+            lead_id: data.lead_id,
             source_system: 'meta',
             source_url: window.location.href,
             utm_source: utm_source || undefined,
@@ -126,6 +147,14 @@ export const useFacebookConversions = () => {
             utm_campaign: utm_campaign || undefined
           });
         }
+      }
+
+      if (isDebugMode) {
+        console.log('✅ Facebook Dual Tracking erfolgreich:', {
+          frontend_pixel: !!facebookPixelId,
+          backend_api: !!data?.success,
+          event_name: eventData.event_name
+        });
       }
 
       return data;
@@ -148,9 +177,9 @@ export const useFacebookConversions = () => {
       
       throw error;
     }
-  }, [createLeadEvent, createLeadSource]);
+  }, [createLeadEvent, createLeadSource, facebookPixelId, isDebugMode]);
 
-  // Enhanced event helpers with lead tracking
+  // Enhanced event helpers with dual tracking
   const trackPageView = useCallback((partnerId: string, userData?: UserData) => {
     return sendEvent(partnerId, { event_name: 'ViewContent' }, userData);
   }, [sendEvent]);
@@ -236,7 +265,18 @@ export const useFacebookConversions = () => {
     );
   }, [sendEvent]);
 
+  // Direct Frontend Pixel Helpers (ohne Backend API)
+  const pixelOnly = {
+    lead: (leadData?: any) => FacebookEvents.lead(leadData),
+    purchase: (value: number, currency?: string) => FacebookEvents.purchase(value, currency),
+    contact: () => FacebookEvents.contact(),
+    registration: (method?: string) => FacebookEvents.registration(method),
+    search: (searchTerm: string) => FacebookEvents.search(searchTerm),
+    viewContent: (contentName?: string) => FacebookEvents.viewContent(contentName)
+  };
+
   return {
+    // Dual Tracking (Frontend + Backend)
     sendEvent,
     trackPageView,
     trackViewContent,
@@ -244,6 +284,13 @@ export const useFacebookConversions = () => {
     trackPurchase,
     trackContact,
     trackCompleteRegistration,
-    trackSearch
+    trackSearch,
+    
+    // Frontend Pixel Only
+    pixelOnly,
+    
+    // Status
+    isPixelEnabled: !!facebookPixelId,
+    isConsentGiven: localStorage.getItem('cookieConsent') === 'accepted'
   };
 };
