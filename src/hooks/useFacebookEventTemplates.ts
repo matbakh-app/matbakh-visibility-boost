@@ -11,22 +11,13 @@ export const useFacebookEventTemplates = () => {
   const loadTemplates = async () => {
     try {
       setLoading(true);
-      // Using raw SQL query to avoid TypeScript issues with new tables
+      
+      // Direct table query with type casting until types are generated
       const { data, error } = await supabase
-        .rpc('get_facebook_event_templates') // We'll create this function
-        .then(result => {
-          if (result.error) throw result.error;
-          return { data: result.data, error: null };
-        })
-        .catch(async () => {
-          // Fallback: Direct query if function doesn't exist yet
-          const { data, error } = await supabase
-            .from('facebook_event_templates' as any)
-            .select('*')
-            .eq('is_active', true)
-            .order('event_name');
-          return { data, error };
-        });
+        .from('facebook_event_templates' as any)
+        .select('*')
+        .eq('is_active', true)
+        .order('event_name');
 
       if (error) throw error;
       

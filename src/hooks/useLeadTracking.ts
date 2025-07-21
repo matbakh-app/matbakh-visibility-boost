@@ -34,46 +34,24 @@ export const useLeadTracking = () => {
     try {
       setLoading(true);
       
-      // Use raw SQL to insert data to avoid TypeScript issues
+      const insertData = {
+        email: params.email,
+        business_name: params.business_name,
+        event_type: params.event_type,
+        event_time: new Date().toISOString(),
+        event_payload: params.event_payload,
+        user_id: params.user_id,
+        partner_id: params.partner_id,
+        facebook_event_id: params.facebook_event_id,
+        response_status: params.response_status,
+        success: params.success || false
+      };
+
       const { data, error } = await supabase
-        .rpc('create_lead_event', {
-          p_email: params.email,
-          p_business_name: params.business_name,
-          p_event_type: params.event_type,
-          p_event_payload: params.event_payload,
-          p_user_id: params.user_id,
-          p_partner_id: params.partner_id,
-          p_facebook_event_id: params.facebook_event_id,
-          p_response_status: params.response_status,
-          p_success: params.success || false
-        })
-        .then(result => {
-          if (result.error) throw result.error;
-          return { data: result.data, error: null };
-        })
-        .catch(async () => {
-          // Fallback: Direct insert if function doesn't exist
-          const insertData = {
-            email: params.email,
-            business_name: params.business_name,
-            event_type: params.event_type,
-            event_time: new Date().toISOString(),
-            event_payload: params.event_payload,
-            user_id: params.user_id,
-            partner_id: params.partner_id,
-            facebook_event_id: params.facebook_event_id,
-            response_status: params.response_status,
-            success: params.success || false
-          };
-
-          const { data, error } = await supabase
-            .from('lead_events' as any)
-            .insert(insertData)
-            .select()
-            .single();
-
-          return { data, error };
-        });
+        .from('lead_events' as any)
+        .insert(insertData)
+        .select()
+        .single();
 
       if (error) throw error;
       
@@ -124,12 +102,7 @@ export const useLeadTracking = () => {
         .from('lead_sources' as any)
         .insert(insertData)
         .select()
-        .single()
-        .catch(async () => {
-          // Fallback: Store in a temporary way if table doesn't exist
-          console.warn('Lead sources table not available, storing in session');
-          return { data: { ...insertData, id: crypto.randomUUID(), created_at: new Date().toISOString() }, error: null };
-        });
+        .single();
 
       if (error) throw error;
       
@@ -170,20 +143,7 @@ export const useLeadTracking = () => {
         .from('lead_todos' as any)
         .insert(insertData)
         .select()
-        .single()
-        .catch(async () => {
-          // Fallback: Store in a temporary way if table doesn't exist
-          console.warn('Lead todos table not available, storing in session');
-          return { 
-            data: { 
-              ...insertData, 
-              id: crypto.randomUUID(), 
-              status: 'offen' as const,
-              created_at: new Date().toISOString() 
-            }, 
-            error: null 
-          };
-        });
+        .single();
 
       if (error) throw error;
       
@@ -210,12 +170,7 @@ export const useLeadTracking = () => {
       const { error } = await supabase
         .from('lead_events' as any)
         .update({ processed })
-        .eq('id', lead_id)
-        .catch(() => {
-          // Fallback: Log the update attempt
-          console.warn('Lead processed update not available, logging attempt');
-          return { error: null };
-        });
+        .eq('id', lead_id);
 
       if (error) throw error;
       return true;
@@ -232,19 +187,26 @@ export const useLeadTracking = () => {
     date_to?: string;
   }): Promise<LeadEvent[]> => {
     try {
-      // Try to get from database, fallback to empty array
-      const { data, error } = await supabase
+      let query = supabase
         .from('lead_events' as any)
         .select('*')
-        .order('created_at', { ascending: false })
-        .then(result => {
-          if (result.error) throw result.error;
-          return result;
-        })
-        .catch(() => {
-          console.warn('Lead events table not available');
-          return { data: [], error: null };
-        });
+        .order('created_at', { ascending: false });
+
+      // Apply filters if provided
+      if (filters?.event_type) {
+        query = query.eq('event_type', filters.event_type);
+      }
+      if (filters?.processed !== undefined) {
+        query = query.eq('processed', filters.processed);
+      }
+      if (filters?.date_from) {
+        query = query.gte('created_at', filters.date_from);
+      }
+      if (filters?.date_to) {
+        query = query.lte('created_at', filters.date_to);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       
