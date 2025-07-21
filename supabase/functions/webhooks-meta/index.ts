@@ -70,7 +70,7 @@ serve(async (req) => {
                 // - feed (new posts)
                 // - ratings (new reviews)
                 // - conversations (messages)
-                // - etc.
+                // etc.
                 
                 // For now, just log the changes
                 // Later you can implement specific handlers
