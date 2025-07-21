@@ -5,6 +5,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import { SeoMeta } from '@/components/SeoMeta';
 import HeroSection from '@/components/HeroSection';
 import ProblemSection from '@/components/ProblemSection';
+import VisibilityCheckSection from '@/components/VisibilityCheckSection';
 import SolutionSection from '@/components/SolutionSection';
 import ProcessOverview from '@/components/ProcessOverview';
 import PackageComparison from '@/components/PackageComparison';
@@ -27,6 +28,7 @@ const BusinessLanding: React.FC = () => {
       <AppLayout>
         <HeroSection />
         <ProblemSection />
+        <VisibilityCheckSection />
         <SolutionSection />
         <ProcessOverview />
         <PackageComparison />

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -81,6 +80,8 @@ const VisibilityCheckSection: React.FC = () => {
     if (businessName && location) {
       setIsLoading(true);
       try {
+        console.log('🔍 Starte Sichtbarkeits-Check für:', businessName, location);
+        
         const { data, error } = await supabase.functions.invoke('places-visibility-check', {
           body: {
             businessName,
@@ -92,7 +93,7 @@ const VisibilityCheckSection: React.FC = () => {
         });
 
         if (error) {
-          console.error('Error calling enhanced visibility check:', error);
+          console.error('❌ Fehler beim Sichtbarkeits-Check:', error);
           setAnalysisData({
             found: false,
             businessName,
@@ -100,11 +101,12 @@ const VisibilityCheckSection: React.FC = () => {
             error: t('visibilityCheck.errors.analysisError', { defaultValue: 'Fehler bei der Analyse. Bitte versuchen Sie es später erneut.' })
           });
         } else {
+          console.log('✅ Sichtbarkeits-Check erfolgreich:', data);
           setAnalysisData(data);
         }
         setShowResult(true);
       } catch (error) {
-        console.error('Network error:', error);
+        console.error('❌ Netzwerk-Fehler:', error);
         setAnalysisData({
           found: false,
           businessName,
@@ -115,6 +117,8 @@ const VisibilityCheckSection: React.FC = () => {
       } finally {
         setIsLoading(false);
       }
+    } else {
+      console.warn('⚠️ Fehlende Pflichtfelder:', { businessName: !!businessName, location: !!location });
     }
   };
 
@@ -165,7 +169,7 @@ const VisibilityCheckSection: React.FC = () => {
   };
 
   return (
-    <section className="py-20 bg-primary/5 visibility-check-section">
+    <section id="visibility-check" className="py-20 bg-primary/5 visibility-check-section">
       <div className="max-w-4xl mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-black mb-4">
@@ -292,7 +296,6 @@ const VisibilityCheckSection: React.FC = () => {
                   </div>
                 )}
 
-                {/* Success results */}
                 {analysisData && !analysisData.error && (
                   <>
                     <div className="text-center">
@@ -523,7 +526,15 @@ const VisibilityCheckSection: React.FC = () => {
                     variant="outline"
                     className="flex-1"
                     size="lg"
-                    onClick={() => setShowResult(false)}
+                    onClick={() => {
+                      setShowResult(false);
+                      setAnalysisData(null);
+                      setBusinessName('');
+                      setLocation('');
+                      setEmail('');
+                      setWebsite('');
+                      setRequestReport(false);
+                    }}
                   >
                     {t('visibilityCheck.newCheckButton')}
                   </Button>

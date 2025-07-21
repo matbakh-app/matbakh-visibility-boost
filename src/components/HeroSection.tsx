@@ -1,84 +1,64 @@
 
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import Logo from './Logo';
+import { Phone, BarChart3 } from 'lucide-react';
+import WhyMatbakhBanner from './WhyMatbakhBanner';
 
-interface HeroSectionProps {
-  title?: string;
-  subtitle?: string;
-  showButtons?: boolean;
-  customButtons?: React.ReactNode;
-  className?: string;
-}
+const HeroSection: React.FC = () => {
+  const { t } = useTranslation('landing');
 
-const HeroSection: React.FC<HeroSectionProps> = ({ 
-  title, 
-  subtitle, 
-  showButtons = true,
-  customButtons,
-  className = "" 
-}) => {
-  const { t, i18n } = useTranslation('landing');
-  const navigate = useNavigate();
-
-  const getPackagesRoute = () => {
-    return i18n.language === 'en' ? '/packages' : '/angebote';
+  const scrollToVisibilityCheck = () => {
+    const visibilitySection = document.querySelector('.visibility-check-section');
+    if (visibilitySection) {
+      visibilitySection.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
   };
 
-  const getLoginRoute = () => {
-    return '/business/partner/login';
-  };
-
-  // Use custom props or fallback to translation keys
-  const heroTitle = title || t('heroTitle');
-  const heroSubtitle = subtitle || t('heroSubtitle');
-
-  const getWhatsAppLink = () => {
-    const message = encodeURIComponent('Hallo! Ich interessiere mich für matbakh.app und möchte gerne mehr erfahren.');
-    return `https://wa.me/4915123456789?text=${message}`;
+  const handleWhatsAppContact = () => {
+    const message = encodeURIComponent(
+      'Hallo! Ich interessiere mich für die Verbesserung meiner Online-Sichtbarkeit. Können Sie mir dabei helfen?'
+    );
+    window.open(`https://wa.me/4915123456789?text=${message}`, '_blank');
   };
 
   return (
-    <section className={`w-full text-center ${className}`}>
-      <Logo size="lg" className="mx-auto mb-2" />
-      <h1 className="mt-2 text-5xl font-bold mb-6 text-sky-500">
-        {heroTitle}
-      </h1>
-      <p className="text-xl mb-8 max-w-3xl mx-auto leading-relaxed text-center text-sky-800">
-        {heroSubtitle}
-      </p>
-      
-      {showButtons && !customButtons && (
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button 
-            size="lg" 
-            className="bg-black hover:bg-gray-800 text-white px-8 py-3" 
-            onClick={() => {
-              const element = document.querySelector('.visibility-check-section');
-              element?.scrollIntoView({ behavior: 'smooth' });
-            }}
-          >
-            {t('cta1')}
-          </Button>
-          <Button 
-            variant="outline" 
-            size="lg" 
-            className="border-black text-black hover:bg-gray-50 px-8 py-3" 
-            onClick={() => window.open(getWhatsAppLink(), '_blank')}
-          >
-            {t('cta2')}
-          </Button>
+    <>
+      <WhyMatbakhBanner />
+      <section className="pt-20 pb-16 bg-white">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold text-black mb-6 leading-tight">
+            {t('heroTitle')}
+          </h1>
+          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            {t('heroSubtitle')}
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-lg mx-auto">
+            <Button 
+              onClick={scrollToVisibilityCheck}
+              size="lg" 
+              className="bg-primary hover:bg-primary/90 text-white flex-1"
+            >
+              <BarChart3 className="h-5 w-5 mr-2" />
+              {t('cta1')}
+            </Button>
+            <Button 
+              onClick={handleWhatsAppContact}
+              variant="outline" 
+              size="lg"
+              className="flex-1"
+            >
+              <Phone className="h-5 w-5 mr-2" />
+              {t('cta2')}
+            </Button>
+          </div>
         </div>
-      )}
-      
-      {customButtons && (
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          {customButtons}
-        </div>
-      )}
-    </section>
+      </section>
+    </>
   );
 };
 
