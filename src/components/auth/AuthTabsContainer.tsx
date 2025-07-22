@@ -27,7 +27,7 @@ const AuthTabsContainer: React.FC = () => {
       tabsLogin: t('tabs.login'),
       tabsRegister: t('tabs.register'),
       ctaNotice: t('google.ctaNotice'),
-      availableKeys: i18n.getResourceBundle(i18n.language, 'auth')
+      testKey: t('businessLogin')
     });
   }, [ready, i18n, t]);
 
