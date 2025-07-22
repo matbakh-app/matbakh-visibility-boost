@@ -1,5 +1,3 @@
-// pages/api/facebook-webhook.ts
-
 import type { NextApiRequest, NextApiResponse } from 'next';
 import crypto from 'crypto';
 
@@ -64,4 +62,21 @@ export const config = {
   },
 };
 
-export default as
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const buffers: Uint8Array[] = [];
+  req.on('data', (chunk) => buffers.push(chunk));
+  req.on('end', async () => {
+    const rawBody = Buffer.concat(buffers);
+
+    if (req.method === 'GET') {
+      return verifyWebhook(req, res);
+    }
+
+    if (req.method === 'POST') {
+      return await handleEvent(req, res, rawBody);
+    }
+
+    res.setHeader('Allow', ['GET', 'POST']);
+    return res.status(405).end(`Method ${req.method} Not Allowed`);
+  });
+}
