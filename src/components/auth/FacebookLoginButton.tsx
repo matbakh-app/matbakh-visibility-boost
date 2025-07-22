@@ -10,10 +10,15 @@ interface FacebookLoginButtonProps {
 }
 
 const FacebookLoginButton: React.FC<FacebookLoginButtonProps> = ({ onFacebookAuth, loading }) => {
-  const { t } = useTranslation('auth');
+  const { t, ready } = useTranslation('auth');
+
+  // Warten bis i18n geladen ist
+  if (!ready) {
+    return <div>Loading...</div>;
+  }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Facebook Login Button */}
       <Button
         onClick={onFacebookAuth}
@@ -27,17 +32,17 @@ const FacebookLoginButton: React.FC<FacebookLoginButtonProps> = ({ onFacebookAut
         {loading ? t('facebook.loading') : t('facebook.loginButton')}
       </Button>
 
-      {/* DSGVO-konformer rechtlicher Hinweis */}
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs">
-        <p className="text-gray-700 leading-relaxed">
+      {/* DSGVO-konformer rechtlicher Hinweis - Explizit sichtbar machen */}
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+        <p className="text-xs text-gray-700 leading-relaxed">
           {t('facebook.legalNotice')}
         </p>
       </div>
 
-      {/* Security Note */}
-      <div className="flex items-center justify-center space-x-1 text-xs text-gray-500">
-        <Shield className="w-3 h-3" />
-        <span>{t('facebook.securityNote')}</span>
+      {/* Security Note - Explizit sichtbar machen */}
+      <div className="flex items-center justify-center space-x-2 mt-2">
+        <Shield className="w-3 h-3 text-gray-500" />
+        <p className="text-xs text-gray-500">{t('facebook.securityNote')}</p>
       </div>
     </div>
   );
