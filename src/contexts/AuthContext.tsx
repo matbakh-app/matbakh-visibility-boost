@@ -24,6 +24,7 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   signInWithGoogle: () => Promise<void>;
+  signInWithFacebook: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   oauthError: string | null;
@@ -90,6 +91,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Facebook Token Speicherung
+  const storeFacebookTokens = async (session: Session) => {
+    try {
+      if (session.provider_token) {
+        const { error } = await supabase
+          .from('facebook_oauth_tokens')
+          .upsert({
+            user_id: session.user.id,
+            facebook_user_id: session.user.user_metadata?.sub || session.user.id,
+            access_token: session.provider_token,
+            email: session.user.email,
+            scopes: ['public_profile', 'email', 'pages_read_engagement'], // Facebook Scopes
+            consent_given: true,
+            consent_timestamp: new Date().toISOString(),
+            expires_at: new Date(Date.now() + 86400000).toISOString() // 24 Stunden
+          });
+
+        if (error) {
+          console.error('Error storing Facebook tokens:', error);
+          await logOAuthEvent('token_storage_failed', 'facebook', false, error.message);
+        } else {
+          console.log('Facebook tokens stored successfully');
+          await logOAuthEvent('token_storage_success', 'facebook', true);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to store Facebook tokens:', error);
+      await logOAuthEvent('token_storage_error', 'facebook', false, error instanceof Error ? error.message : 'Unknown error');
+    }
+  };
+
   useEffect(() => {
     console.log('AuthProvider: Initializing auth state');
     
@@ -104,9 +136,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (session?.user && event === 'SIGNED_IN') {
           console.log('AuthProvider: User signed in, checking profile and provider');
           
-          // Store Google tokens if this is a Google OAuth login
+          // Store provider tokens based on login method
           if (session.user.app_metadata?.provider === 'google') {
             await storeGoogleTokens(session);
+          } else if (session.user.app_metadata?.provider === 'facebook') {
+            await storeFacebookTokens(session);
           }
           
           // Defer data fetching to prevent deadlocks
@@ -231,6 +265,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const signInWithFacebook = async () => {
+    console.log('AuthProvider: Starting Facebook OAuth sign in');
+    setOauthError(null);
+    
+    try {
+      // Log OAuth attempt
+      await logOAuthEvent('oauth_attempt', 'facebook', true, undefined, {
+        redirect_url: OAUTH_REDIRECTS.BUSINESS_LOGIN,
+        scopes: ['public_profile', 'email', 'pages_read_engagement'],
+        domain: OAUTH_DOMAINS.MAIN
+      });
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'facebook',
+        options: {
+          // Facebook Scopes für Business-Profile
+          scopes: 'public_profile,email,pages_read_engagement',
+          // Hardcoded Redirect URL
+          redirectTo: OAUTH_REDIRECTS.BUSINESS_LOGIN,
+          // Query parameters für debugging
+          queryParams: {
+            display: 'popup'
+          }
+        }
+      });
+      
+      if (error) {
+        console.error('AuthProvider: Facebook OAuth error:', error);
+        setOauthError(`Facebook Login fehlgeschlagen: ${error.message}`);
+        await logOAuthEvent('oauth_error', 'facebook', false, error.message);
+        throw error;
+      }
+
+      console.log('AuthProvider: Facebook OAuth initiated successfully');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown OAuth error';
+      console.error('AuthProvider: OAuth exception:', errorMessage);
+      setOauthError(`OAuth Fehler: ${errorMessage}`);
+      await logOAuthEvent('oauth_exception', 'facebook', false, errorMessage);
+      throw error;
+    }
+  };
+
   const signIn = async (email: string, password: string) => {
     console.log('AuthProvider: Starting email sign in');
     const { error } = await supabase.auth.signInWithPassword({
@@ -259,6 +336,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loading,
     isAdmin,
     signInWithGoogle,
+    signInWithFacebook,
     signIn,
     signOut,
     oauthError

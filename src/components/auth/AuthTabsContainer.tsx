@@ -7,10 +7,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import EmailLoginForm from './EmailLoginForm';
 import EmailRegisterForm from './EmailRegisterForm';
 import GoogleLoginButton from './GoogleLoginButton';
+import FacebookLoginButton from './FacebookLoginButton';
 
 const AuthTabsContainer: React.FC = () => {
   const { t } = useTranslation('auth');
-  const { signInWithGoogle } = useAuth();
+  const { signInWithGoogle, signInWithFacebook } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,6 +23,18 @@ const AuthTabsContainer: React.FC = () => {
       await signInWithGoogle();
     } catch (err: any) {
       setError(t('messages.googleAuthError'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFacebookAuth = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      await signInWithFacebook();
+    } catch (err: any) {
+      setError(t('messages.facebookAuthError'));
     } finally {
       setLoading(false);
     }
@@ -58,6 +71,8 @@ const AuthTabsContainer: React.FC = () => {
           </div>
 
           <GoogleLoginButton onGoogleAuth={handleGoogleAuth} loading={loading} />
+          
+          <FacebookLoginButton onFacebookAuth={handleFacebookAuth} loading={loading} />
 
           <div className="text-center">
             <button
@@ -83,6 +98,8 @@ const AuthTabsContainer: React.FC = () => {
           </div>
 
           <GoogleLoginButton onGoogleAuth={handleGoogleAuth} loading={loading} />
+          
+          <FacebookLoginButton onFacebookAuth={handleFacebookAuth} loading={loading} />
         </TabsContent>
       </Tabs>
 
