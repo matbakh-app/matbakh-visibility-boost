@@ -20,20 +20,22 @@ const AuthTabsContainer: React.FC = () => {
 
   // Debug i18n
   React.useEffect(() => {
-    console.log('AuthTabsContainer i18n:', {
+    console.log('AuthTabsContainer i18n Debug:', {
       ready,
       language: i18n.language,
+      authNamespaceLoaded: i18n.hasLoadedNamespace('auth'),
       tabsLogin: t('tabs.login'),
       tabsRegister: t('tabs.register'),
-      ctaNotice: t('google.ctaNotice')
+      ctaNotice: t('google.ctaNotice'),
+      availableKeys: i18n.getResourceBundle(i18n.language, 'auth')
     });
   }, [ready, i18n, t]);
 
-  // Warten bis i18n vollständig geladen ist
-  if (!ready || !i18n.isInitialized) {
+  // KRITISCH: Warten bis i18n UND auth-Namespace vollständig geladen sind
+  if (!ready || !i18n.isInitialized || !i18n.hasLoadedNamespace('auth')) {
     return (
       <div className="flex items-center justify-center p-4">
-        <div className="text-sm text-gray-500">Loading...</div>
+        <div className="text-sm text-gray-500">Loading translations...</div>
       </div>
     );
   }
@@ -66,15 +68,6 @@ const AuthTabsContainer: React.FC = () => {
     navigate('/password-reset');
   };
 
-  // Fallback-Texte
-  const fallbackTexts = {
-    login: 'Anmelden',
-    register: 'Registrieren',
-    ctaNotice: 'Oder melden Sie sich an mit:',
-    or: 'oder',
-    forgotPassword: 'Passwort vergessen?'
-  };
-
   return (
     <div className="w-full max-w-md space-y-6">
       {error && (
@@ -86,10 +79,10 @@ const AuthTabsContainer: React.FC = () => {
       <Tabs defaultValue="login" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="login">
-            {t('tabs.login') !== 'tabs.login' ? t('tabs.login') : fallbackTexts.login}
+            {t('tabs.login')}
           </TabsTrigger>
           <TabsTrigger value="register">
-            {t('tabs.register') !== 'tabs.register' ? t('tabs.register') : fallbackTexts.register}
+            {t('tabs.register')}
           </TabsTrigger>
         </TabsList>
 
@@ -102,7 +95,7 @@ const AuthTabsContainer: React.FC = () => {
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-white px-2 text-muted-foreground">
-                {t('separators.or') !== 'separators.or' ? t('separators.or') : fallbackTexts.or}
+                {t('separators.or')}
               </span>
             </div>
           </div>
@@ -110,7 +103,7 @@ const AuthTabsContainer: React.FC = () => {
           {/* CTA Notice */}
           <div className="text-center mb-4">
             <p className="text-sm text-gray-600">
-              {t('google.ctaNotice') !== 'google.ctaNotice' ? t('google.ctaNotice') : fallbackTexts.ctaNotice}
+              {t('google.ctaNotice')}
             </p>
           </div>
 
@@ -124,7 +117,7 @@ const AuthTabsContainer: React.FC = () => {
               onClick={handlePasswordReset}
               className="text-sm text-muted-foreground hover:text-primary underline"
             >
-              {t('form.forgotPassword') !== 'form.forgotPassword' ? t('form.forgotPassword') : fallbackTexts.forgotPassword}
+              {t('form.forgotPassword')}
             </button>
           </div>
         </TabsContent>
@@ -138,7 +131,7 @@ const AuthTabsContainer: React.FC = () => {
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-white px-2 text-muted-foreground">
-                {t('separators.or') !== 'separators.or' ? t('separators.or') : fallbackTexts.or}
+                {t('separators.or')}
               </span>
             </div>
           </div>
@@ -146,7 +139,7 @@ const AuthTabsContainer: React.FC = () => {
           {/* CTA Notice */}
           <div className="text-center mb-4">
             <p className="text-sm text-gray-600">
-              {t('google.ctaNotice') !== 'google.ctaNotice' ? t('google.ctaNotice') : fallbackTexts.ctaNotice}
+              {t('google.ctaNotice')}
             </p>
           </div>
 

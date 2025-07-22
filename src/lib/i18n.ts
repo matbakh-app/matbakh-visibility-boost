@@ -91,12 +91,10 @@ i18n
     lng: 'de',
     fallbackLng: 'de',
     supportedLngs: ['de', 'en'],
-    // CRITICAL FIX: Entferne ALLE Legal-Namespaces aus der globalen Liste!
-    // Legal-Namespaces werden dynamisch geladen, um 404-Fehler zu vermeiden
+    // KRITISCHER FIX: Auth-Namespace hinzufügen!
     ns: [
       'common', 'translation', 'adminPanel', 'auth', 'nav', 'footer', 'hero', 
       'features', 'dashboard', 'cookieConsent', 'landing', 'packages', 'services', 'admin', 'pricing'
-      // KEINE Legal-Namespaces mehr hier! Diese werden on-demand geladen.
     ],
     defaultNS: 'common',
     fallbackNS: ['common', 'translation'],

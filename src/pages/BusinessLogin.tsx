@@ -19,13 +19,15 @@ const BusinessLogin: React.FC = () => {
 
   // Debug i18n status
   useEffect(() => {
-    console.log('i18n Debug:', {
+    console.log('BusinessLogin i18n Debug:', {
       ready,
       language: i18n.language,
       isInitialized: i18n.isInitialized,
-      hasResources: i18n.hasResourceBundle(i18n.language, 'auth'),
+      hasAuthResources: i18n.hasResourceBundle(i18n.language, 'auth'),
+      authNamespaceLoaded: i18n.hasLoadedNamespace('auth'),
       businessLogin: t('businessLogin'),
-      connectGoogleProfile: t('connectGoogleProfile')
+      connectGoogleProfile: t('connectGoogleProfile'),
+      availableKeys: i18n.getResourceBundle(i18n.language, 'auth')
     });
   }, [ready, i18n, t]);
 
@@ -69,16 +71,10 @@ const BusinessLogin: React.FC = () => {
     }
   }, [user, loading, navigate, location.state]);
 
-  // KRITISCH: Warten bis i18n vollständig geladen ist
-  if (loading || !ready || !i18n.isInitialized) {
+  // KRITISCH: Warten bis i18n UND auth-Namespace vollständig geladen sind
+  if (loading || !ready || !i18n.isInitialized || !i18n.hasLoadedNamespace('auth')) {
     return <AuthLoadingState />;
   }
-
-  // Fallback-Texte falls i18n nicht funktioniert
-  const fallbackTexts = {
-    businessLogin: 'Business Partner Portal',
-    connectGoogleProfile: 'Verbinden Sie Ihr Unternehmensprofil mit Google oder Facebook'
-  };
 
   return (
     <Suspense fallback={<AuthLoadingState />}>
@@ -89,18 +85,18 @@ const BusinessLogin: React.FC = () => {
           <div className="w-full max-w-md space-y-6 p-6 border rounded-2xl shadow-sm bg-white">
             <div className="text-center space-y-2">
               <h1 className="text-2xl font-bold">
-                {t('businessLogin') !== 'businessLogin' ? t('businessLogin') : fallbackTexts.businessLogin}
+                {t('businessLogin')}
               </h1>
               <p className="text-sm text-gray-600">
-                {t('connectGoogleProfile') !== 'connectGoogleProfile' ? t('connectGoogleProfile') : fallbackTexts.connectGoogleProfile}
+                {t('connectGoogleProfile')}
               </p>
             </div>
 
             {/* Debug Info - nur im Development */}
             {process.env.NODE_ENV === 'development' && (
               <div className="text-xs text-red-500 bg-red-50 p-2 rounded">
-                Debug: ready={ready.toString()}, lang={i18n.language}, 
-                businessLogin="{t('businessLogin')}"
+                Debug: ready={ready.toString()}, authLoaded={i18n.hasLoadedNamespace('auth').toString()}, 
+                lang={i18n.language}, businessLogin="{t('businessLogin')}"
               </div>
             )}
 
