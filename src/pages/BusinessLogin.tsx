@@ -17,23 +17,16 @@ const BusinessLogin: React.FC = () => {
   const { t, ready } = useTranslation('auth');
   const [callbackStatus, setCallbackStatus] = useState<'success' | 'error' | null>(null);
 
-    // OAuth Callback Hash (Access Token im Hash-Fragment)
+  // OAuth Callback Hash (Access Token im Hash-Fragment)
   useEffect(() => {
     if (window.location.hash && window.location.hash.includes("access_token")) {
       const hash = window.location.hash.substring(1); // Entfernt das '#'
       const params = new URLSearchParams(hash);
 
       const accessToken = params.get("access_token");
-      // Optional: RefreshToken usw.
       if (accessToken) {
         setCallbackStatus("success");
-
-        // Hash aus der URL entfernen für eine schöne URL
         window.history.replaceState(null, '', window.location.pathname);
-
-        // Optional: Token im Kontext speichern
-
-        // Nach kurzer Zeit weiterleiten (du kannst auch sofort redirecten)
         setTimeout(() => {
           navigate("/dashboard", { replace: true });
         }, 1200);
@@ -48,7 +41,6 @@ const BusinessLogin: React.FC = () => {
     const hasCode = urlParams.get('code');
     const hasAccessToken = urlParams.get('access_token');
     
-    // Debug OAuth Callback
     if (hasError) {
       console.error('OAuth Callback Error:', hasError, urlParams.get('error_description'));
       setCallbackStatus('error');
@@ -93,7 +85,7 @@ const BusinessLogin: React.FC = () => {
               <Alert>
                 <CheckCircle className="h-4 w-4" />
                 <AlertDescription>
-                  Google Login erfolgreich - Sie werden weitergeleitet...
+                  {t('messages.googleAuthSuccess', 'Google Login erfolgreich - Sie werden weitergeleitet...')}
                 </AlertDescription>
               </Alert>
             )}
@@ -102,7 +94,7 @@ const BusinessLogin: React.FC = () => {
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  Google Login fehlgeschlagen. Bitte versuchen Sie es erneut.
+                  {t('messages.googleAuthError')}
                 </AlertDescription>
               </Alert>
             )}

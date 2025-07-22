@@ -1,6 +1,8 @@
+
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { Trans } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
@@ -70,6 +72,11 @@ const AuthTabsContainer: React.FC = () => {
             </div>
           </div>
 
+          {/* CTA Notice */}
+          <div className="text-center">
+            <p className="text-sm text-gray-600 mb-4">{t('google.ctaNotice')}</p>
+          </div>
+
           <GoogleLoginButton onGoogleAuth={handleGoogleAuth} loading={loading} />
           
           <FacebookLoginButton onFacebookAuth={handleFacebookAuth} loading={loading} />
@@ -97,17 +104,28 @@ const AuthTabsContainer: React.FC = () => {
             </div>
           </div>
 
+          {/* CTA Notice */}
+          <div className="text-center">
+            <p className="text-sm text-gray-600 mb-4">{t('google.ctaNotice')}</p>
+          </div>
+
           <GoogleLoginButton onGoogleAuth={handleGoogleAuth} loading={loading} />
           
           <FacebookLoginButton onFacebookAuth={handleFacebookAuth} loading={loading} />
         </TabsContent>
       </Tabs>
 
-      <p className="text-xs text-gray-500 mt-4 text-center">
-        {t('terms.acceptTerms')}{' '}
-        <a href="/legal/terms" className="underline">{t('terms.termsOfService')}</a> {t('terms.and')}{' '}
-        <a href="/legal/privacy" className="underline">{t('terms.privacyPolicy')}</a> {t('terms.to')}
-      </p>
+      {/* Legal Notice with Trans component for clickable links */}
+      <div className="text-xs text-gray-500 mt-4 text-center">
+        <Trans
+          i18nKey="terms.acceptTerms"
+          ns="auth"
+          components={[
+            <a href="/legal/terms" className="underline hover:text-primary" />,
+            <a href="/legal/privacy" className="underline hover:text-primary" />
+          ]}
+        />
+      </div>
     </div>
   );
 };

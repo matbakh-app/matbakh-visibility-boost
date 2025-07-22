@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -13,20 +14,6 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({ onGoogleAuth, loa
 
   return (
     <div className="space-y-3">
-      {/* Google CTA Notice */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
-        <p className="text-blue-800 leading-relaxed">
-          {t('google.ctaNotice')}
-        </p>
-      </div>
-
-      {/* Permission Notice */}
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs">
-        <p className="text-gray-700 leading-relaxed">
-          {t('google.permissionNotice')}
-        </p>
-      </div>
-
       {/* Google Login Button */}
       <Button
         onClick={onGoogleAuth}
@@ -42,6 +29,13 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({ onGoogleAuth, loa
         </svg>
         {loading ? t('google.loading') : t('google.loginButton')}
       </Button>
+
+      {/* Permission Notice */}
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs">
+        <p className="text-gray-700 leading-relaxed">
+          {t('google.permissionNotice')}
+        </p>
+      </div>
 
       {/* Security Note */}
       <div className="flex items-center justify-center space-x-1 text-xs text-gray-500">
