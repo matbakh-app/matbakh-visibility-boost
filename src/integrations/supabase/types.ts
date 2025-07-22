@@ -630,6 +630,48 @@ export type Database = {
           },
         ]
       }
+      facebook_oauth_tokens: {
+        Row: {
+          access_token: string
+          consent_given: boolean
+          consent_timestamp: string
+          created_at: string
+          email: string | null
+          expires_at: string | null
+          facebook_user_id: string
+          id: string
+          scopes: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          consent_given?: boolean
+          consent_timestamp?: string
+          created_at?: string
+          email?: string | null
+          expires_at?: string | null
+          facebook_user_id: string
+          id?: string
+          scopes?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          consent_given?: boolean
+          consent_timestamp?: string
+          created_at?: string
+          email?: string | null
+          expires_at?: string | null
+          facebook_user_id?: string
+          id?: string
+          scopes?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       fb_conversion_logs: {
         Row: {
           error_message: string | null
@@ -2470,6 +2512,119 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      visibility_check_actions: {
+        Row: {
+          created_at: string
+          detected_at: string
+          id: string
+          is_critical: boolean
+          is_done: boolean
+          lead_id: string
+          platform: string
+          todo_text: string
+          todo_type: string
+          todo_why: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          detected_at?: string
+          id?: string
+          is_critical?: boolean
+          is_done?: boolean
+          lead_id: string
+          platform?: string
+          todo_text: string
+          todo_type: string
+          todo_why: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          detected_at?: string
+          id?: string
+          is_critical?: boolean
+          is_done?: boolean
+          lead_id?: string
+          platform?: string
+          todo_text?: string
+          todo_type?: string
+          todo_why?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visibility_check_actions_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "visibility_check_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      visibility_check_leads: {
+        Row: {
+          analysis_data: Json | null
+          business_name: string
+          check_type: string
+          created_at: string
+          email: string | null
+          facebook_score: number | null
+          found_business: boolean | null
+          full_report_url: string | null
+          google_score: number | null
+          id: string
+          instagram_score: number | null
+          location_text: string | null
+          migrated_to_profile: boolean | null
+          overall_score: number | null
+          result_status: string
+          updated_at: string
+          user_id: string | null
+          website: string | null
+        }
+        Insert: {
+          analysis_data?: Json | null
+          business_name: string
+          check_type?: string
+          created_at?: string
+          email?: string | null
+          facebook_score?: number | null
+          found_business?: boolean | null
+          full_report_url?: string | null
+          google_score?: number | null
+          id?: string
+          instagram_score?: number | null
+          location_text?: string | null
+          migrated_to_profile?: boolean | null
+          overall_score?: number | null
+          result_status?: string
+          updated_at?: string
+          user_id?: string | null
+          website?: string | null
+        }
+        Update: {
+          analysis_data?: Json | null
+          business_name?: string
+          check_type?: string
+          created_at?: string
+          email?: string | null
+          facebook_score?: number | null
+          found_business?: boolean | null
+          full_report_url?: string | null
+          google_score?: number | null
+          id?: string
+          instagram_score?: number | null
+          location_text?: string | null
+          migrated_to_profile?: boolean | null
+          overall_score?: number | null
+          result_status?: string
+          updated_at?: string
+          user_id?: string | null
+          website?: string | null
+        }
+        Relationships: []
       }
       waitlist: {
         Row: {
