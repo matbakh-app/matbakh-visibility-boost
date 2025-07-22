@@ -77,8 +77,8 @@ const BusinessLogin: React.FC = () => {
         <main className="flex items-center justify-center min-h-[80vh] px-4">
           <div className="w-full max-w-md space-y-6 p-6 border rounded-2xl shadow-sm bg-white">
             <div className="text-center space-y-2">
-              <h1 className="text-2xl font-bold">Business Partner Portal</h1>
-              <p className="text-sm text-gray-600">Melden Sie sich an oder registrieren Sie Ihr Unternehmen</p>
+              <h1 className="text-2xl font-bold">{t('businessLogin')}</h1>
+              <p className="text-sm text-gray-600">{t('connectGoogleProfile')}</p>
             </div>
 
             {/* OAuth Error/Success Status */}
