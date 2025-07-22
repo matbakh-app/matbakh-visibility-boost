@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -30,7 +29,7 @@ export const BusinessBasicsStep: React.FC<BusinessBasicsStepProps> = ({
   onNext,
   onPrevious
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('onboarding'); // ✅ expliziter Namespace
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleInputChange = (field: string, value: string) => {
@@ -38,8 +37,6 @@ export const BusinessBasicsStep: React.FC<BusinessBasicsStepProps> = ({
       ...data,
       [field]: value
     });
-    
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
@@ -56,25 +53,25 @@ export const BusinessBasicsStep: React.FC<BusinessBasicsStepProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!data.companyName?.trim()) {
-      newErrors.companyName = t('onboarding.validation.companyNameRequired');
+      newErrors.companyName = t('validation.companyNameRequired');
     }
 
     if (!data.address?.trim()) {
-      newErrors.address = t('onboarding.validation.addressRequired');
+      newErrors.address = t('validation.addressRequired');
     }
 
     if (!data.phone?.trim()) {
-      newErrors.phone = t('onboarding.validation.phoneRequired');
+      newErrors.phone = t('validation.phoneRequired');
     } else if (!/^[\+]?[\d\s\-\(\)]{8,}$/.test(data.phone.trim())) {
-      newErrors.phone = t('onboarding.validation.phoneInvalid');
+      newErrors.phone = t('validation.phoneInvalid');
     }
 
     if (data.website && !/^https?:\/\/.+/.test(data.website.trim())) {
-      newErrors.website = t('onboarding.validation.websiteInvalid');
+      newErrors.website = t('validation.websiteInvalid');
     }
 
     if (data.categories.length === 0) {
-      newErrors.categories = t('onboarding.validation.categoriesRequired');
+      newErrors.categories = t('validation.categoriesRequired');
     }
 
     setErrors(newErrors);
@@ -93,18 +90,18 @@ export const BusinessBasicsStep: React.FC<BusinessBasicsStepProps> = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Info className="h-5 w-5" />
-            {t('onboarding.businessBasics')}
+            {t('businessBasics')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="companyName">
-                {t('onboarding.companyName')} *
+                {t('companyName')} *
               </Label>
               <Input
                 id="companyName"
-                placeholder={t('onboarding.companyNamePlaceholder')}
+                placeholder={t('companyNamePlaceholder')}
                 value={data.companyName || ''}
                 onChange={(e) => handleInputChange('companyName', e.target.value)}
                 className={errors.companyName ? 'border-red-500' : ''}
@@ -117,11 +114,11 @@ export const BusinessBasicsStep: React.FC<BusinessBasicsStepProps> = ({
             <div className="space-y-2">
               <Label htmlFor="phone">
                 <Phone className="inline h-4 w-4 mr-1" />
-                {t('onboarding.phone')} *
+                {t('phone')} *
               </Label>
               <Input
                 id="phone"
-                placeholder={t('onboarding.phonePlaceholder')}
+                placeholder={t('phonePlaceholder')}
                 value={data.phone || ''}
                 onChange={(e) => handleInputChange('phone', e.target.value)}
                 className={errors.phone ? 'border-red-500' : ''}
@@ -135,11 +132,11 @@ export const BusinessBasicsStep: React.FC<BusinessBasicsStepProps> = ({
           <div className="space-y-2">
             <Label htmlFor="address">
               <MapPin className="inline h-4 w-4 mr-1" />
-              {t('onboarding.address')} *
+              {t('address')} *
             </Label>
             <Textarea
               id="address"
-              placeholder={t('onboarding.addressPlaceholder')}
+              placeholder={t('addressPlaceholder')}
               value={data.address || ''}
               onChange={(e) => handleInputChange('address', e.target.value)}
               className={errors.address ? 'border-red-500' : ''}
@@ -153,11 +150,11 @@ export const BusinessBasicsStep: React.FC<BusinessBasicsStepProps> = ({
           <div className="space-y-2">
             <Label htmlFor="website">
               <Globe className="inline h-4 w-4 mr-1" />
-              {t('onboarding.website')}
+              {t('website')}
             </Label>
             <Input
               id="website"
-              placeholder={t('onboarding.websitePlaceholder')}
+              placeholder={t('websitePlaceholder')}
               value={data.website || ''}
               onChange={(e) => handleInputChange('website', e.target.value)}
               className={errors.website ? 'border-red-500' : ''}
@@ -169,11 +166,11 @@ export const BusinessBasicsStep: React.FC<BusinessBasicsStepProps> = ({
 
           <div className="space-y-2">
             <Label htmlFor="description">
-              {t('onboarding.description')}
+              {t('description')}
             </Label>
             <Textarea
               id="description"
-              placeholder={t('onboarding.descriptionPlaceholder')}
+              placeholder={t('descriptionPlaceholder')}
               value={data.description || ''}
               onChange={(e) => handleInputChange('description', e.target.value)}
               rows={4}
@@ -186,7 +183,7 @@ export const BusinessBasicsStep: React.FC<BusinessBasicsStepProps> = ({
 
       <Card>
         <CardHeader>
-          <CardTitle>{t('onboarding.businessCategories')}</CardTitle>
+          <CardTitle>{t('businessCategories')}</CardTitle>
         </CardHeader>
         <CardContent>
           <CategorySelector
