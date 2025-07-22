@@ -10,10 +10,15 @@ interface GoogleLoginButtonProps {
 }
 
 const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({ onGoogleAuth, loading }) => {
-  const { t } = useTranslation('auth');
+  const { t, ready } = useTranslation('auth');
+
+  // Warten bis i18n geladen ist
+  if (!ready) {
+    return <div>Loading...</div>;
+  }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Google Login Button */}
       <Button
         onClick={onGoogleAuth}
@@ -30,17 +35,17 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({ onGoogleAuth, loa
         {loading ? t('google.loading') : t('google.loginButton')}
       </Button>
 
-      {/* Permission Notice */}
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs">
-        <p className="text-gray-700 leading-relaxed">
+      {/* Permission Notice - Explizit sichtbar machen */}
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+        <p className="text-xs text-gray-700 leading-relaxed">
           {t('google.permissionNotice')}
         </p>
       </div>
 
-      {/* Security Note */}
-      <div className="flex items-center justify-center space-x-1 text-xs text-gray-500">
-        <Shield className="w-3 h-3" />
-        <span>{t('google.securityNote')}</span>
+      {/* Security Note - Explizit sichtbar machen */}
+      <div className="flex items-center justify-center space-x-2 mt-2">
+        <Shield className="w-3 h-3 text-gray-500" />
+        <p className="text-xs text-gray-500">{t('google.securityNote')}</p>
       </div>
     </div>
   );

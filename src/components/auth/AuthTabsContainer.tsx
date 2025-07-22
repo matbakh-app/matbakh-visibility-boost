@@ -12,11 +12,16 @@ import GoogleLoginButton from './GoogleLoginButton';
 import FacebookLoginButton from './FacebookLoginButton';
 
 const AuthTabsContainer: React.FC = () => {
-  const { t } = useTranslation('auth');
+  const { t, ready } = useTranslation('auth');
   const { signInWithGoogle, signInWithFacebook } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Warten bis i18n geladen ist
+  if (!ready) {
+    return <div>Loading...</div>;
+  }
 
   const handleGoogleAuth = async () => {
     setLoading(true);
@@ -72,9 +77,9 @@ const AuthTabsContainer: React.FC = () => {
             </div>
           </div>
 
-          {/* CTA Notice */}
-          <div className="text-center">
-            <p className="text-sm text-gray-600 mb-4">{t('google.ctaNotice')}</p>
+          {/* CTA Notice - Sichtbar machen */}
+          <div className="text-center mb-4">
+            <p className="text-sm text-gray-600">{t('google.ctaNotice')}</p>
           </div>
 
           <GoogleLoginButton onGoogleAuth={handleGoogleAuth} loading={loading} />
@@ -104,9 +109,9 @@ const AuthTabsContainer: React.FC = () => {
             </div>
           </div>
 
-          {/* CTA Notice */}
-          <div className="text-center">
-            <p className="text-sm text-gray-600 mb-4">{t('google.ctaNotice')}</p>
+          {/* CTA Notice - Sichtbar machen */}
+          <div className="text-center mb-4">
+            <p className="text-sm text-gray-600">{t('google.ctaNotice')}</p>
           </div>
 
           <GoogleLoginButton onGoogleAuth={handleGoogleAuth} loading={loading} />
@@ -115,14 +120,16 @@ const AuthTabsContainer: React.FC = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Legal Notice with Trans component for clickable links */}
-      <div className="text-xs text-gray-500 mt-4 text-center">
+      {/* Legal Notice mit Trans component für klickbare Links - Sichtbar machen */}
+      <div className="text-xs text-gray-500 mt-6 text-center leading-relaxed">
         <Trans
           i18nKey="terms.acceptTerms"
           ns="auth"
           components={[
-            <a href="/legal/terms" className="underline hover:text-primary" />,
-            <a href="/legal/privacy" className="underline hover:text-primary" />
+            <span key="0" />,
+            <a key="1" href="/legal/terms" className="underline hover:text-primary" />,
+            <span key="2" />,
+            <a key="3" href="/legal/privacy" className="underline hover:text-primary" />
           ]}
         />
       </div>

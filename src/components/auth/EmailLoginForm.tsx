@@ -1,10 +1,10 @@
+
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface EmailLoginFormProps {
@@ -12,7 +12,7 @@ interface EmailLoginFormProps {
 }
 
 const EmailLoginForm: React.FC<EmailLoginFormProps> = ({ onBack }) => {
-  const { t } = useTranslation('auth');
+  const { t, ready } = useTranslation('auth');
   const { signIn } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
@@ -20,6 +20,11 @@ const EmailLoginForm: React.FC<EmailLoginFormProps> = ({ onBack }) => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Warten bis i18n geladen ist
+  if (!ready) {
+    return <div>Loading...</div>;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

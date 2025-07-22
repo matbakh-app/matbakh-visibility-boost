@@ -57,6 +57,7 @@ const BusinessLogin: React.FC = () => {
     }
   }, [user, loading, navigate, location.state]);
 
+  // Wichtig: Warten bis i18n geladen ist
   if (loading || !ready) {
     return <AuthLoadingState />;
   }
@@ -85,7 +86,7 @@ const BusinessLogin: React.FC = () => {
               <Alert>
                 <CheckCircle className="h-4 w-4" />
                 <AlertDescription>
-                  {t('messages.googleAuthSuccess', 'Google Login erfolgreich - Sie werden weitergeleitet...')}
+                  {t('messages.googleAuthSuccess')}
                 </AlertDescription>
               </Alert>
             )}
