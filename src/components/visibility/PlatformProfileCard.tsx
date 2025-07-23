@@ -198,7 +198,7 @@ const PlatformProfileCard: React.FC<{ platform: PlatformData }> = ({ platform })
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between mb-1">
               <p className="text-lg font-bold">{platform.score}/100</p>
-              {platform.followerCount !== undefined && (
+              {platform.followerCount !== undefined && platform.followerCount !== null && (
                 <div className="flex items-center gap-1 text-sm text-gray-600">
                   <Users className="w-4 h-4" />
                   <span>{platform.followerCount.toLocaleString()}</span>
