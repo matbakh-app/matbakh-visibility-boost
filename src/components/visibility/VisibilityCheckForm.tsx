@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -5,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Search, MapPin, Building2, Tag, TrendingUp, Globe, Facebook, Instagram } from 'lucide-react';
+import { Loader2, Search, MapPin, Building2, Tag, TrendingUp, Globe, Facebook, Instagram, Mail } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { MATBAKH_CATEGORIES, getCategoriesForGmbType, type MatbakhCategory } from './MatbakhCategories';
 import VisibilityResults from './VisibilityResults';
@@ -452,6 +453,7 @@ const VisibilityCheckForm: React.FC = () => {
           <CardContent className="space-y-6">
             <div>
               <label className="block text-sm font-medium mb-2">
+                <Mail className="w-4 h-4 inline mr-1" />
                 E-Mail für detaillierten Bericht (optional)
               </label>
               <Input
