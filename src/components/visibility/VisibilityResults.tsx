@@ -1,50 +1,10 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Download, Star, Users, Camera, Clock, TrendingUp, CheckCircle2, AlertCircle, ExternalLink, MapPin, Phone } from 'lucide-react';
-
-interface AnalysisResult {
-  overallScore: number;
-  platformAnalyses: Array<{
-    platform: 'google' | 'facebook' | 'instagram';
-    score: number;
-    maxScore: number;
-    completedFeatures: string[];
-    missingFeatures: string[];
-    profileUrl?: string;
-    profilePicture?: string;
-    profileFound: boolean;
-    autoDetected?: boolean;
-    recommendations: string[];
-    followerCount?: number;
-    reservationAvailable?: boolean;
-    hasHolidayHours?: boolean;
-    askSectionVisible?: boolean;
-    isListingComplete?: boolean;
-    category?: string;
-  }>;
-  benchmarks: Array<{
-    name: string;
-    scores: {
-      google: number;
-      facebook: number;
-      instagram: number;
-      overall: number;
-    };
-    profileUrls: {
-      google?: string;
-      facebook?: string;
-      instagram?: string;
-    };
-  }>;
-  categoryInsights: string[];
-  quickWins: string[];
-  leadPotential: 'high' | 'medium' | 'low';
-  reportData: any;
-}
+import type { AnalysisResult } from '@/types/visibility';
 
 interface VisibilityResultsProps {
   businessName: string;
