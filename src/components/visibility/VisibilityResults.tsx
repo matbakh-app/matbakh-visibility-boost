@@ -13,7 +13,9 @@ import {
   CheckCircle,
   ExternalLink,
   Mail,
-  Download
+  Lightbulb,
+  Target,
+  BarChart3
 } from 'lucide-react';
 
 interface PlatformAnalysis {
@@ -41,38 +43,44 @@ interface BenchmarkComparison {
   };
 }
 
-interface VisibilityResultsProps {
-  businessName: string;
+interface AnalysisResult {
   overallScore: number;
   platformAnalyses: PlatformAnalysis[];
   benchmarks: BenchmarkComparison[];
-  reportRequested: boolean;
-  email?: string;
+  categoryInsights: string[];
+  quickWins: string[];
+  leadPotential: 'high' | 'medium' | 'low';
+  reportData: any;
+}
+
+interface VisibilityResultsProps {
+  businessName: string;
+  analysisResult: AnalysisResult;
   onRequestDetailedReport: () => void;
   onNewAnalysis: () => void;
+  reportRequested?: boolean;
+  email?: string;
 }
 
 const VisibilityResults: React.FC<VisibilityResultsProps> = ({
   businessName,
-  overallScore,
-  platformAnalyses,
-  benchmarks,
-  reportRequested,
-  email,
+  analysisResult,
   onRequestDetailedReport,
-  onNewAnalysis
+  onNewAnalysis,
+  reportRequested = false,
+  email
 }) => {
-  const getScoreColor = (score: number, maxScore: number) => {
-    const percentage = (score / maxScore) * 100;
-    if (percentage >= 80) return 'text-green-600';
-    if (percentage >= 60) return 'text-yellow-600';
+  const { overallScore, platformAnalyses, benchmarks, categoryInsights, quickWins, leadPotential } = analysisResult;
+
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'text-green-600';
+    if (score >= 60) return 'text-yellow-600';
     return 'text-red-600';
   };
 
-  const getScoreBackground = (score: number, maxScore: number) => {
-    const percentage = (score / maxScore) * 100;
-    if (percentage >= 80) return 'bg-green-50 border-green-200';
-    if (percentage >= 60) return 'bg-yellow-50 border-yellow-200';
+  const getScoreBackground = (score: number) => {
+    if (score >= 80) return 'bg-green-50 border-green-200';
+    if (score >= 60) return 'bg-yellow-50 border-yellow-200';
     return 'bg-red-50 border-red-200';
   };
 
@@ -94,6 +102,15 @@ const VisibilityResults: React.FC<VisibilityResultsProps> = ({
     }
   };
 
+  const getLeadPotentialColor = (potential: string) => {
+    switch (potential) {
+      case 'high': return 'bg-red-100 text-red-800 border-red-200';
+      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'low': return 'bg-green-100 text-green-800 border-green-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-8">
       {/* Header with Overall Score */}
@@ -102,11 +119,18 @@ const VisibilityResults: React.FC<VisibilityResultsProps> = ({
           <CardTitle className="text-2xl">
             Sichtbarkeits-Analyse für {businessName}
           </CardTitle>
+          <div className="flex justify-center">
+            <Badge className={`px-3 py-1 text-sm font-medium border ${getLeadPotentialColor(leadPotential)}`}>
+              {leadPotential === 'high' && '🎯 Hohes Verbesserungspotenzial'}
+              {leadPotential === 'medium' && '📈 Mittleres Verbesserungspotenzial'}
+              {leadPotential === 'low' && '✨ Starke Online-Präsenz'}
+            </Badge>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center space-x-8">
             <div className="text-center">
-              <div className={`text-6xl font-bold mb-2 ${getScoreColor(overallScore, 100)}`}>
+              <div className={`text-6xl font-bold mb-2 ${getScoreColor(overallScore)}`}>
                 {overallScore}%
               </div>
               <p className="text-gray-600">Gesamtbewertung</p>
@@ -133,7 +157,7 @@ const VisibilityResults: React.FC<VisibilityResultsProps> = ({
       {/* Platform Analysis */}
       <div className="grid md:grid-cols-3 gap-6">
         {platformAnalyses.map((analysis) => (
-          <Card key={analysis.platform} className={`${getScoreBackground(analysis.score, analysis.maxScore)} border-2`}>
+          <Card key={analysis.platform} className={`${getScoreBackground(analysis.score)} border-2`}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <div className="flex items-center space-x-2">
                 {getPlatformIcon(analysis.platform)}
@@ -141,13 +165,13 @@ const VisibilityResults: React.FC<VisibilityResultsProps> = ({
                   {getPlatformName(analysis.platform)}
                 </CardTitle>
               </div>
-              <div className={`text-2xl font-bold ${getScoreColor(analysis.score, analysis.maxScore)}`}>
-                {Math.round((analysis.score / analysis.maxScore) * 100)}%
+              <div className={`text-2xl font-bold ${getScoreColor(analysis.score)}`}>
+                {Math.round(analysis.score)}%
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <Progress 
-                value={(analysis.score / analysis.maxScore) * 100} 
+                value={analysis.score} 
                 className="h-2"
               />
               
@@ -202,6 +226,50 @@ const VisibilityResults: React.FC<VisibilityResultsProps> = ({
         ))}
       </div>
 
+      {/* Quick Wins Section */}
+      {quickWins.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Lightbulb className="w-5 h-5 text-yellow-600" />
+              Sofort umsetzbare Verbesserungen
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              {quickWins.map((win, index) => (
+                <li key={index} className="flex items-start gap-2">
+                  <Target className="w-4 h-4 text-green-600 mt-1 flex-shrink-0" />
+                  <span className="text-sm">{win}</span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Category Insights */}
+      {categoryInsights.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-blue-600" />
+              Branchenspezifische Erkenntnisse
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              {categoryInsights.map((insight, index) => (
+                <li key={index} className="flex items-start gap-2">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
+                  <span className="text-sm text-gray-700">{insight}</span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Benchmark Comparison */}
       {benchmarks.length > 0 && (
         <Card>
@@ -227,22 +295,22 @@ const VisibilityResults: React.FC<VisibilityResultsProps> = ({
                   <tr className="border-b bg-blue-50">
                     <td className="py-3 font-medium">{businessName} (Sie)</td>
                     <td className="text-center">
-                      <span className={`font-bold ${getScoreColor(platformAnalyses.find(p => p.platform === 'google')?.score || 0, 100)}`}>
-                        {Math.round((platformAnalyses.find(p => p.platform === 'google')?.score || 0) / (platformAnalyses.find(p => p.platform === 'google')?.maxScore || 100) * 100)}%
+                      <span className={`font-bold ${getScoreColor(platformAnalyses.find(p => p.platform === 'google')?.score || 0)}`}>
+                        {Math.round(platformAnalyses.find(p => p.platform === 'google')?.score || 0)}%
                       </span>
                     </td>
                     <td className="text-center">
-                      <span className={`font-bold ${getScoreColor(platformAnalyses.find(p => p.platform === 'facebook')?.score || 0, 100)}`}>
-                        {Math.round((platformAnalyses.find(p => p.platform === 'facebook')?.score || 0) / (platformAnalyses.find(p => p.platform === 'facebook')?.maxScore || 100) * 100)}%
+                      <span className={`font-bold ${getScoreColor(platformAnalyses.find(p => p.platform === 'facebook')?.score || 0)}`}>
+                        {Math.round(platformAnalyses.find(p => p.platform === 'facebook')?.score || 0)}%
                       </span>
                     </td>
                     <td className="text-center">
-                      <span className={`font-bold ${getScoreColor(platformAnalyses.find(p => p.platform === 'instagram')?.score || 0, 100)}`}>
-                        {Math.round((platformAnalyses.find(p => p.platform === 'instagram')?.score || 0) / (platformAnalyses.find(p => p.platform === 'instagram')?.maxScore || 100) * 100)}%
+                      <span className={`font-bold ${getScoreColor(platformAnalyses.find(p => p.platform === 'instagram')?.score || 0)}`}>
+                        {Math.round(platformAnalyses.find(p => p.platform === 'instagram')?.score || 0)}%
                       </span>
                     </td>
                     <td className="text-center">
-                      <span className={`font-bold text-lg ${getScoreColor(overallScore, 100)}`}>
+                      <span className={`font-bold text-lg ${getScoreColor(overallScore)}`}>
                         {overallScore}%
                       </span>
                     </td>
@@ -250,9 +318,9 @@ const VisibilityResults: React.FC<VisibilityResultsProps> = ({
                   {benchmarks.map((benchmark, index) => (
                     <tr key={index} className="border-b">
                       <td className="py-3">{benchmark.name}</td>
-                      <td className="text-center">{benchmark.scores.google}%</td>
-                      <td className="text-center">{benchmark.scores.facebook}%</td>
-                      <td className="text-center">{benchmark.scores.instagram}%</td>
+                      <td className="text-center">{Math.round(benchmark.scores.google)}%</td>
+                      <td className="text-center">{Math.round(benchmark.scores.facebook)}%</td>
+                      <td className="text-center">{Math.round(benchmark.scores.instagram)}%</td>
                       <td className="text-center font-medium">{benchmark.scores.overall}%</td>
                     </tr>
                   ))}
@@ -296,9 +364,14 @@ const VisibilityResults: React.FC<VisibilityResultsProps> = ({
             Basierend auf Ihrer Analyse können wir Ihnen maßgeschneiderte Lösungen anbieten, 
             um Ihre Online-Präsenz zu optimieren und mehr Kunden zu gewinnen.
           </p>
-          <Button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-            Kostenlose Beratung vereinbaren
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-2 justify-center">
+            <Button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+              Kostenlose Beratung vereinbaren
+            </Button>
+            <Button variant="outline">
+              Mehr über unsere Services erfahren
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

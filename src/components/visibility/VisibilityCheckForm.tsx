@@ -8,17 +8,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Search, MapPin, Building2, Tag, TrendingUp, Globe, Facebook, Instagram } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { MATBAKH_CATEGORIES, getCategoriesForGmbType, type MatbakhCategory } from './MatbakhCategories';
+import VisibilityResults from './VisibilityResults';
 
 interface CategoryOption {
   id: string;
   name: string;
   subcategories?: CategoryOption[];
-}
-
-interface MatbakhTag {
-  id: string;
-  name: string;
-  description: string;
 }
 
 interface VisibilityCheckData {
@@ -32,6 +28,37 @@ interface VisibilityCheckData {
   instagramName?: string;
   benchmarks: string[];
   email?: string;
+}
+
+interface AnalysisResult {
+  overallScore: number;
+  platformAnalyses: Array<{
+    platform: 'google' | 'facebook' | 'instagram';
+    score: number;
+    maxScore: number;
+    completedFeatures: string[];
+    missingFeatures: string[];
+    profileUrl?: string;
+    recommendations: string[];
+  }>;
+  benchmarks: Array<{
+    name: string;
+    scores: {
+      google: number;
+      facebook: number;
+      instagram: number;
+      overall: number;
+    };
+    profileUrls: {
+      google?: string;
+      facebook?: string;
+      instagram?: string;
+    };
+  }>;
+  categoryInsights: string[];
+  quickWins: string[];
+  leadPotential: 'high' | 'medium' | 'low';
+  reportData: any;
 }
 
 const VisibilityCheckForm: React.FC = () => {
@@ -56,7 +83,9 @@ const VisibilityCheckForm: React.FC = () => {
   const [step, setStep] = useState(1);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [subcategories, setSubcategories] = useState<CategoryOption[]>([]);
-  const [matbakhTags, setMatbakhTags] = useState<MatbakhTag[]>([]);
+  const [availableMatbakhTags, setAvailableMatbakhTags] = useState<MatbakhCategory[]>([]);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [reportRequested, setReportRequested] = useState(false);
 
   // Load categories from GMB database
   useEffect(() => {
@@ -105,23 +134,19 @@ const VisibilityCheckForm: React.FC = () => {
     }
   };
 
-  const loadMatbakhTags = async (categoryId: string) => {
-    // Load Matbakh-specific tags based on category
-    const mockTags: MatbakhTag[] = [
-      { id: 'outdoor_seating', name: 'Außenbereich', description: 'Terrasse oder Biergarten' },
-      { id: 'delivery', name: 'Lieferservice', description: 'Lieferung nach Hause' },
-      { id: 'vegan_options', name: 'Vegane Optionen', description: 'Vegane Gerichte verfügbar' },
-      { id: 'live_music', name: 'Live Musik', description: 'Regelmäßige Live-Auftritte' },
-      { id: 'parking', name: 'Parkplätze', description: 'Eigene Parkplätze vorhanden' },
-      { id: 'wheelchair_accessible', name: 'Barrierefrei', description: 'Rollstuhlgerecht' }
-    ];
-    setMatbakhTags(mockTags);
-  };
-
   const handleCategoryChange = async (categoryId: string) => {
-    setFormData(prev => ({ ...prev, mainCategory: categoryId, subCategory: '', matbakhTags: [] }));
+    setFormData(prev => ({ 
+      ...prev, 
+      mainCategory: categoryId, 
+      subCategory: '', 
+      matbakhTags: [] 
+    }));
+    
     await loadSubcategories(categoryId);
-    await loadMatbakhTags(categoryId);
+    
+    // Load Matbakh tags for this category
+    const applicableTags = getCategoriesForGmbType(categoryId);
+    setAvailableMatbakhTags(applicableTags);
   };
 
   const handleTagToggle = (tagId: string) => {
@@ -145,20 +170,50 @@ const VisibilityCheckForm: React.FC = () => {
     setLoading(true);
     
     try {
+      console.log('🚀 Starting visibility check with data:', formData);
+      
       const { data, error } = await supabase.functions.invoke('enhanced-visibility-check', {
         body: formData
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Analysis error:', error);
+        throw error;
+      }
 
-      // Handle successful analysis
-      console.log('Analysis complete:', data);
+      console.log('✅ Analysis complete:', data);
+      setAnalysisResult(data);
       
     } catch (error) {
       console.error('Error during analysis:', error);
+      // Show error to user
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRequestDetailedReport = () => {
+    setReportRequested(true);
+    // TODO: Implement PDF report generation
+    console.log('📧 Detailed report requested for:', formData.email);
+  };
+
+  const handleNewAnalysis = () => {
+    setAnalysisResult(null);
+    setReportRequested(false);
+    setStep(1);
+    setFormData({
+      businessName: '',
+      location: '',
+      mainCategory: '',
+      subCategory: '',
+      matbakhTags: [],
+      website: '',
+      facebookName: '',
+      instagramName: '',
+      benchmarks: ['', '', ''],
+      email: ''
+    });
   };
 
   const canProceed = () => {
@@ -167,6 +222,20 @@ const VisibilityCheckForm: React.FC = () => {
            formData.mainCategory && 
            formData.subCategory;
   };
+
+  // Show results if analysis is complete
+  if (analysisResult) {
+    return (
+      <VisibilityResults
+        businessName={formData.businessName}
+        analysisResult={analysisResult}
+        onRequestDetailedReport={handleRequestDetailedReport}
+        onNewAnalysis={handleNewAnalysis}
+        reportRequested={reportRequested}
+        email={formData.email}
+      />
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8">
@@ -258,20 +327,20 @@ const VisibilityCheckForm: React.FC = () => {
             </div>
 
             {/* Matbakh Tags */}
-            {matbakhTags.length > 0 && (
+            {availableMatbakhTags.length > 0 && (
               <div>
                 <label className="block text-sm font-medium mb-2">
                   Spezielle Eigenschaften (max. 6)
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {matbakhTags.map((tag) => (
+                  {availableMatbakhTags.map((tag) => (
                     <Badge
                       key={tag.id}
                       variant={formData.matbakhTags.includes(tag.id) ? "default" : "outline"}
-                      className="cursor-pointer hover:bg-primary/10"
+                      className="cursor-pointer hover:bg-primary/10 transition-colors"
                       onClick={() => handleTagToggle(tag.id)}
                     >
-                      <Tag className="w-3 h-3 mr-1" />
+                      <span className="mr-1">{tag.icon}</span>
                       {tag.name}
                     </Badge>
                   ))}
@@ -405,6 +474,7 @@ const VisibilityCheckForm: React.FC = () => {
                 <li>✓ Instagram Business-Features</li>
                 <li>✓ Benchmark-Vergleich mit Wettbewerbern</li>
                 <li>✓ Gesamtrating & Verbesserungspotential</li>
+                <li>✓ Branchenspezifische Empfehlungen</li>
               </ul>
             </div>
 
