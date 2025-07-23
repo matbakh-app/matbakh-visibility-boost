@@ -5,6 +5,7 @@ import VisibilityStepTwo from './VisibilityStepTwo';
 import VisibilityStepThree from './VisibilityStepThree';
 import VisibilityResults from './VisibilityResults';
 import { supabase } from '@/integrations/supabase/client';
+import type { AnalysisResult } from '@/types/visibility';
 
 export interface VisibilityFormData {
   companyName: string;
@@ -26,7 +27,7 @@ const VisibilityWizard: React.FC = () => {
   const [stepOneData, setStepOneData] = useState<any>(null);
   const [stepTwoData, setStepTwoData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [reportRequested, setReportRequested] = useState(false);
 
   const handleStepOne = (data: any) => {

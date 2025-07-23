@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -10,55 +9,12 @@ import { Loader2, Search, MapPin, Building2, Tag, TrendingUp, Globe, Facebook, I
 import { supabase } from '@/integrations/supabase/client';
 import { MATBAKH_CATEGORIES, getCategoriesForGmbType, type MatbakhCategory } from './MatbakhCategories';
 import VisibilityResults from './VisibilityResults';
+import type { AnalysisResult, VisibilityCheckData } from '@/types/visibility';
 
 interface CategoryOption {
   id: string;
   name: string;
   subcategories?: CategoryOption[];
-}
-
-interface VisibilityCheckData {
-  businessName: string;
-  location: string;
-  mainCategory: string;
-  subCategory: string;
-  matbakhTags: string[];
-  website?: string;
-  facebookName?: string;
-  instagramName?: string;
-  benchmarks: string[];
-  email?: string;
-}
-
-interface AnalysisResult {
-  overallScore: number;
-  platformAnalyses: Array<{
-    platform: 'google' | 'facebook' | 'instagram';
-    score: number;
-    maxScore: number;
-    completedFeatures: string[];
-    missingFeatures: string[];
-    profileUrl?: string;
-    recommendations: string[];
-  }>;
-  benchmarks: Array<{
-    name: string;
-    scores: {
-      google: number;
-      facebook: number;
-      instagram: number;
-      overall: number;
-    };
-    profileUrls: {
-      google?: string;
-      facebook?: string;
-      instagram?: string;
-    };
-  }>;
-  categoryInsights: string[];
-  quickWins: string[];
-  leadPotential: 'high' | 'medium' | 'low';
-  reportData: any;
 }
 
 const VisibilityCheckForm: React.FC = () => {
