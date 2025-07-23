@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
@@ -11,7 +10,7 @@ const OAUTH_DOMAINS = {
   SUPABASE_CALLBACK: 'https://uheksobnyedarrpgxhju.supabase.co/auth/v1/callback'
 } as const;
 
-// Hardcoded Redirect-URLs für OAuth
+// Hardcoded Redirect-URLs für OAuth - KORRIGIERTE URLS
 const OAUTH_REDIRECTS = {
   BUSINESS_LOGIN: `${OAUTH_DOMAINS.MAIN}/business/partner/login`,
   PARTNER_ONBOARDING: `${OAUTH_DOMAINS.MAIN}/partner/onboarding`,
@@ -280,9 +279,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'facebook',
         options: {
-          // Facebook Scopes für Business-Profile
-          scopes: 'public_profile,email,pages_read_engagement',
-          // Hardcoded Redirect URL
+          // Facebook Scopes für Business-Profile - REDUZIERTE SCOPES
+          scopes: 'public_profile,email',
+          // Hardcoded Redirect URL - KORRIGIERT
           redirectTo: OAUTH_REDIRECTS.BUSINESS_LOGIN,
           // Query parameters für debugging
           queryParams: {
