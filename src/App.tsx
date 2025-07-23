@@ -30,12 +30,12 @@ import NotFound from '@/pages/NotFound';
 import NotesPage from '@/pages/NotesPage';
 import CheckoutSuccess from '@/pages/CheckoutSuccess';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
-import { AppLayout } from '@/components/layout/AppLayout';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { AdminLayout } from '@/components/layout/AdminLayout';
+import AppLayout from '@/components/layout/AppLayout';
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import AdminLayout from '@/components/layout/AdminLayout';
 import VisibilityCheckPage from '@/components/visibility/VisibilityCheckPage';
 import CookieConsentBanner from '@/components/CookieConsentBanner';
-import DashboardRedirect from '@/components/DashboardRedirect';
+import { DashboardRedirect } from '@/components/DashboardRedirect';
 
 // Legal pages
 import Impressum from '@/pages/legal/Impressum';
@@ -96,7 +96,11 @@ function App() {
               </Route>
 
               {/* Partner/Business routes */}
-              <Route path="/partner" element={<ProtectedRoute />}>
+              <Route path="/partner" element={
+                <ProtectedRoute>
+                  <div />
+                </ProtectedRoute>
+              }>
                 <Route path="onboarding" element={<PartnerOnboarding />} />
                 <Route path="dashboard" element={<PartnerDashboard />} />
                 <Route path="profile" element={<PartnerProfile />} />
@@ -104,7 +108,11 @@ function App() {
               </Route>
 
               {/* Dashboard routes */}
-              <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }>
                 <Route index element={<DashboardRedirect />} />
                 <Route path="overview" element={<DashboardOverview />} />
                 <Route path="profile" element={<DashboardProfile />} />
@@ -115,7 +123,11 @@ function App() {
               </Route>
 
               {/* Admin routes */}
-              <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminLayout /></ProtectedRoute>}>
+              <Route path="/admin" element={
+                <ProtectedRoute>
+                  <AdminLayout />
+                </ProtectedRoute>
+              }>
                 <Route path="panel" element={<AdminPanel />} />
               </Route>
 
