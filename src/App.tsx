@@ -1,6 +1,6 @@
 
 import { Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Outlet } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/toaster';
@@ -66,7 +66,7 @@ function App() {
           <Suspense fallback={<div>Loading...</div>}>
             <Routes>
               {/* Main routes */}
-              <Route path="/" element={<AppLayout />}>
+              <Route path="/" element={<AppLayout><Outlet /></AppLayout>}>
                 <Route index element={<Index />} />
                 <Route path="business" element={<BusinessLanding />} />
                 <Route path="b2c" element={<B2CLanding />} />
@@ -110,7 +110,9 @@ function App() {
               {/* Dashboard routes */}
               <Route path="/dashboard" element={
                 <ProtectedRoute>
-                  <DashboardLayout />
+                  <DashboardLayout>
+                    <Outlet />
+                  </DashboardLayout>
                 </ProtectedRoute>
               }>
                 <Route index element={<DashboardRedirect />} />
@@ -125,7 +127,9 @@ function App() {
               {/* Admin routes */}
               <Route path="/admin" element={
                 <ProtectedRoute>
-                  <AdminLayout />
+                  <AdminLayout>
+                    <Outlet />
+                  </AdminLayout>
                 </ProtectedRoute>
               }>
                 <Route path="panel" element={<AdminPanel />} />
