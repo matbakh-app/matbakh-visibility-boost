@@ -1,137 +1,135 @@
-/*  ⚠️ KRITISCHE ROUTING-DATEI – NICHT OHNE GENEHMIGUNG ÄNDERN! ⚠️
- *
- *  Diese Datei definiert alle URL-Routen der Website.
- *  Eine falsche Änderung bricht:
- *    – Benutzer-Navigation komplett
- *    – SEO-URLs (/angebote, /packages)
- *    – Mehrsprachige Weiterleitung
- *
- *  VOR JEDEM COMMIT:
- *    1) Änderung mit Product-Owner abklären
- *    2) Routing-Tests durchführen
- *    3) Sitemap.xml auf Konsistenz prüfen
- */
 
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Suspense } from 'react';
+import { Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ThemeProvider } from 'next-themes';
+import { Toaster } from '@/components/ui/toaster';
+import { Toaster as SonnerToaster } from '@/components/ui/sonner';
+import Index from '@/pages/Index';
+import BusinessLanding from '@/pages/BusinessLanding';
+import B2CLanding from '@/pages/B2CLanding';
+import ServicesPage from '@/pages/ServicesPage';
+import AngebotePage from '@/pages/AngebotePage';
+import AngeboteDE from '@/pages/AngeboteDE';
+import PackagesEN from '@/pages/PackagesEN';
+import BusinessLogin from '@/pages/BusinessLogin';
+import PartnerOnboarding from '@/pages/PartnerOnboarding';
+import PartnerDashboard from '@/pages/PartnerDashboard';
+import PartnerProfile from '@/pages/PartnerProfile';
+import PartnerCalendar from '@/pages/PartnerCalendar';
+import Dashboard from '@/pages/Dashboard';
+import DashboardOverview from '@/pages/DashboardOverview';
+import DashboardProfile from '@/pages/DashboardProfile';
+import DashboardGmb from '@/pages/DashboardGmb';
+import DashboardGa4 from '@/pages/DashboardGa4';
+import DashboardSocial from '@/pages/DashboardSocial';
+import DashboardReports from '@/pages/DashboardReports';
+import AdminPanel from '@/pages/AdminPanel';
+import PasswordReset from '@/pages/PasswordReset';
+import NotFound from '@/pages/NotFound';
+import NotesPage from '@/pages/NotesPage';
+import CheckoutSuccess from '@/pages/CheckoutSuccess';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import { AppLayout } from '@/components/layout/AppLayout';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { AdminLayout } from '@/components/layout/AdminLayout';
+import VisibilityCheckPage from '@/components/visibility/VisibilityCheckPage';
 import CookieConsentBanner from '@/components/CookieConsentBanner';
-import './App.css';
-import './lib/i18n'; // Initialize i18n with validation
+import DashboardRedirect from '@/components/DashboardRedirect';
 
-if (process.env.NODE_ENV === 'development') {
-  console.warn('🚨 App.tsx Routing geladen – Änderungen nur nach Approval!');
-}
+// Legal pages
+import Impressum from '@/pages/legal/Impressum';
+import Datenschutz from '@/pages/legal/Datenschutz';
+import AGB from '@/pages/legal/AGB';
+import Nutzung from '@/pages/legal/Nutzung';
+import Kontakt from '@/pages/legal/Kontakt';
+import Imprint from '@/pages/legal/Imprint';
+import Privacy from '@/pages/legal/Privacy';
+import Terms from '@/pages/legal/Terms';
+import Usage from '@/pages/legal/Usage';
+import Contact from '@/pages/legal/Contact';
 
-import AngebotePage from './pages/AngebotePage';
-import AngeboteDE from './pages/AngeboteDE';
-import PackagesEN from './pages/PackagesEN';
-import Datenschutz from './pages/legal/Datenschutz';
-import Privacy from './pages/legal/Privacy';
-import Impressum from './pages/legal/Impressum';
-import Imprint from './pages/legal/Imprint';
-import AGB from './pages/legal/AGB';
-import Terms from './pages/legal/Terms';
-import Dashboard from './pages/Dashboard';
-import Nutzung from './pages/legal/Nutzung';
-import Usage from './pages/legal/Usage';
-import ServicesPage from './pages/ServicesPage';
-import B2CLanding from './pages/B2CLanding';
-import BusinessLanding from './pages/BusinessLanding';
-import Kontakt from './pages/legal/Kontakt';
-import Contact from './pages/legal/Contact';
-import NotFound from './pages/NotFound';
-import { Toaster } from '@/components/ui/sonner';
-import CheckoutSuccess from './pages/CheckoutSuccess';
-import AdminPanel from './pages/AdminPanel';
-import BusinessLogin from './pages/BusinessLogin';
-import PartnerDashboard from './pages/PartnerDashboard';
-import PartnerOnboarding from './pages/PartnerOnboarding';
-import PartnerProfile from './pages/PartnerProfile';
-import PartnerCalendar from './pages/PartnerCalendar';
-import ProtectedRoute from './components/auth/ProtectedRoute';
-import { useAuth } from '@/contexts/AuthContext';
-import { I18nDebugPanel } from '@/hooks/useI18nDebug';
-
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1,
+    },
+  },
+});
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AdminRouteWrapper />
-      <CookieConsentBanner />
-    </QueryClientProvider>
-  );
-}
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+        <div className="min-h-screen bg-background">
+          <Suspense fallback={<div>Loading...</div>}>
+            <Routes>
+              {/* Main routes */}
+              <Route path="/" element={<AppLayout />}>
+                <Route index element={<Index />} />
+                <Route path="business" element={<BusinessLanding />} />
+                <Route path="b2c" element={<B2CLanding />} />
+                <Route path="services" element={<ServicesPage />} />
+                <Route path="angebote" element={<AngebotePage />} />
+                <Route path="angebote-de" element={<AngeboteDE />} />
+                <Route path="packages" element={<PackagesEN />} />
+                <Route path="login" element={<BusinessLogin />} />
+                <Route path="password-reset" element={<PasswordReset />} />
+                <Route path="checkout-success" element={<CheckoutSuccess />} />
+                <Route path="visibility-check" element={<VisibilityCheckPage />} />
+                <Route path="notes" element={<NotesPage />} />
+                
+                {/* Legal pages - German */}
+                <Route path="impressum" element={<Impressum />} />
+                <Route path="datenschutz" element={<Datenschutz />} />
+                <Route path="agb" element={<AGB />} />
+                <Route path="nutzung" element={<Nutzung />} />
+                <Route path="kontakt" element={<Kontakt />} />
+                
+                {/* Legal pages - English */}
+                <Route path="imprint" element={<Imprint />} />
+                <Route path="privacy" element={<Privacy />} />
+                <Route path="terms" element={<Terms />} />
+                <Route path="usage" element={<Usage />} />
+                <Route path="contact" element={<Contact />} />
+              </Route>
 
-function AdminRouteWrapper() {
-  const { isAdmin } = useAuth();
-  
-  return (
-    <>
-      <Toaster />
-      <I18nDebugPanel />
-      <Routes>
-        <Route path="/" element={<BusinessLanding />} />
-        <Route path="/de" element={<AngeboteDE />} />
-        <Route path="/en" element={<PackagesEN />} />
-        <Route path="/services" element={<ServicesPage />} />
-        <Route path="/b2c" element={<B2CLanding />} />
-        <Route path="/b2c-en" element={<B2CLanding />} />
-        <Route path="/business/partner" element={<AngebotePage />} />
-        <Route path="/angebote" element={<AngeboteDE />} />
-        <Route path="/packages" element={<PackagesEN />} />
-        {/* Legal Routes - DE */}
-        <Route path="/kontakt" element={<Kontakt />} />
-        <Route path="/datenschutz" element={<Datenschutz />} />
-        <Route path="/impressum" element={<Impressum />} />
-        <Route path="/agb" element={<AGB />} />
-        <Route path="/nutzung" element={<Nutzung />} />
-        
-        {/* Legal Routes - EN */}
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="/imprint" element={<Imprint />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route path="/usage" element={<Usage />} />
-        <Route path="/dashboard/*" element={<Dashboard />} />
-        <Route path="/checkout-success" element={<CheckoutSuccess />} />
-        
-        {/* Auth Routes */}
-        <Route path="/business/partner/login" element={<BusinessLogin />} />
-        
-        {/* Protected Partner Routes */}
-        <Route path="/partner/dashboard" element={
-          <ProtectedRoute requirePartner={true}>
-            <Navigate to="/dashboard" replace />
-          </ProtectedRoute>
-        } />
-        <Route path="/partner/profile" element={
-          <ProtectedRoute requirePartner={true}>
-            <Navigate to="/dashboard/profile" replace />
-          </ProtectedRoute>
-        } />
-        <Route path="/partner/calendar" element={
-          <ProtectedRoute requirePartner={true}>
-            <Navigate to="/dashboard/calendar" replace />
-          </ProtectedRoute>
-        } />
-        <Route path="/partner/onboarding" element={
-          <ProtectedRoute requirePartner={true}>
-            <PartnerOnboarding />
-          </ProtectedRoute>
-        } />
-        
-        {/* Admin Routes */}
-        {isAdmin && (
-          <Route path="/admin" element={<AdminPanel />} />
-        )}
-        
-        {/* Legacy Redirects removed - now using proper dual-language routes */}
-        
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </>
+              {/* Partner/Business routes */}
+              <Route path="/partner" element={<ProtectedRoute />}>
+                <Route path="onboarding" element={<PartnerOnboarding />} />
+                <Route path="dashboard" element={<PartnerDashboard />} />
+                <Route path="profile" element={<PartnerProfile />} />
+                <Route path="calendar" element={<PartnerCalendar />} />
+              </Route>
+
+              {/* Dashboard routes */}
+              <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+                <Route index element={<DashboardRedirect />} />
+                <Route path="overview" element={<DashboardOverview />} />
+                <Route path="profile" element={<DashboardProfile />} />
+                <Route path="gmb" element={<DashboardGmb />} />
+                <Route path="ga4" element={<DashboardGa4 />} />
+                <Route path="social" element={<DashboardSocial />} />
+                <Route path="reports" element={<DashboardReports />} />
+              </Route>
+
+              {/* Admin routes */}
+              <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminLayout /></ProtectedRoute>}>
+                <Route path="panel" element={<AdminPanel />} />
+              </Route>
+
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+          
+          {/* Global components - properly nested within ThemeProvider */}
+          <CookieConsentBanner />
+          <Toaster />
+          <SonnerToaster />
+        </div>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
 
