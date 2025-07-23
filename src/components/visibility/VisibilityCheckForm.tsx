@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Search, MapPin, Building2, Tag, Benchmark, Globe, Facebook, Instagram } from 'lucide-react';
+import { Loader2, Search, MapPin, Building2, Tag, TrendingUp, Globe, Facebook, Instagram } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface CategoryOption {
@@ -342,7 +342,7 @@ const VisibilityCheckForm: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium mb-2">
-                <Benchmark className="w-4 h-4 inline mr-1" />
+                <TrendingUp className="w-4 h-4 inline mr-1" />
                 Vergleichbare Unternehmen (Benchmarks)
               </label>
               <div className="space-y-2">
