@@ -2,51 +2,35 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { 
-  Search, 
-  Facebook, 
-  Instagram, 
-  TrendingUp, 
-  AlertCircle, 
-  CheckCircle,
-  ExternalLink,
-  Mail,
-  Lightbulb,
-  Target,
-  BarChart3
-} from 'lucide-react';
-
-interface PlatformAnalysis {
-  platform: 'google' | 'facebook' | 'instagram';
-  score: number;
-  maxScore: number;
-  completedFeatures: string[];
-  missingFeatures: string[];
-  profileUrl?: string;
-  recommendations: string[];
-}
-
-interface BenchmarkComparison {
-  name: string;
-  scores: {
-    google: number;
-    facebook: number;
-    instagram: number;
-    overall: number;
-  };
-  profileUrls: {
-    google?: string;
-    facebook?: string;
-    instagram?: string;
-  };
-}
+import { Progress } from '@/components/ui/progress';
+import { Download, Star, Users, Camera, Clock, TrendingUp, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface AnalysisResult {
   overallScore: number;
-  platformAnalyses: PlatformAnalysis[];
-  benchmarks: BenchmarkComparison[];
+  platformAnalyses: Array<{
+    platform: 'google' | 'facebook' | 'instagram';
+    score: number;
+    maxScore: number;
+    completedFeatures: string[];
+    missingFeatures: string[];
+    profileUrl?: string;
+    recommendations: string[];
+  }>;
+  benchmarks: Array<{
+    name: string;
+    scores: {
+      google: number;
+      facebook: number;
+      instagram: number;
+      overall: number;
+    };
+    profileUrls: {
+      google?: string;
+      facebook?: string;
+      instagram?: string;
+    };
+  }>;
   categoryInsights: string[];
   quickWins: string[];
   leadPotential: 'high' | 'medium' | 'low';
@@ -58,270 +42,234 @@ interface VisibilityResultsProps {
   analysisResult: AnalysisResult;
   onRequestDetailedReport: () => void;
   onNewAnalysis: () => void;
-  reportRequested?: boolean;
+  reportRequested: boolean;
   email?: string;
 }
 
-const VisibilityResults: React.FC<VisibilityResultsProps> = ({
-  businessName,
-  analysisResult,
-  onRequestDetailedReport,
-  onNewAnalysis,
-  reportRequested = false,
-  email
-}) => {
-  const { overallScore, platformAnalyses, benchmarks, categoryInsights, quickWins, leadPotential } = analysisResult;
-
+const ScoreDonut: React.FC<{ score: number; size?: 'sm' | 'lg' }> = ({ score, size = 'lg' }) => {
+  const radius = size === 'lg' ? 40 : 30;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDasharray = circumference;
+  const strokeDashoffset = circumference - (score / 100) * circumference;
+  
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600';
     if (score >= 60) return 'text-yellow-600';
     return 'text-red-600';
   };
 
-  const getScoreBackground = (score: number) => {
-    if (score >= 80) return 'bg-green-50 border-green-200';
-    if (score >= 60) return 'bg-yellow-50 border-yellow-200';
-    return 'bg-red-50 border-red-200';
-  };
+  return (
+    <div className={`relative ${size === 'lg' ? 'w-24 h-24' : 'w-16 h-16'}`}>
+      <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+        <circle
+          cx="50"
+          cy="50"
+          r={radius}
+          stroke="currentColor"
+          strokeWidth="8"
+          fill="none"
+          className="text-gray-200"
+        />
+        <circle
+          cx="50"
+          cy="50"
+          r={radius}
+          stroke="currentColor"
+          strokeWidth="8"
+          fill="none"
+          strokeDasharray={strokeDasharray}
+          strokeDashoffset={strokeDashoffset}
+          className={getScoreColor(score)}
+          strokeLinecap="round"
+        />
+      </svg>
+      <div className={`absolute inset-0 flex items-center justify-center ${size === 'lg' ? 'text-xl' : 'text-sm'} font-bold ${getScoreColor(score)}`}>
+        {score}%
+      </div>
+    </div>
+  );
+};
 
-  const getPlatformIcon = (platform: string) => {
-    switch (platform) {
-      case 'google': return <Search className="w-5 h-5 text-blue-600" />;
-      case 'facebook': return <Facebook className="w-5 h-5 text-blue-800" />;
-      case 'instagram': return <Instagram className="w-5 h-5 text-pink-600" />;
-      default: return null;
-    }
-  };
+const getPlatformIcon = (platform: string) => {
+  switch (platform) {
+    case 'google': return '🔍';
+    case 'facebook': return '📘';
+    case 'instagram': return '📷';
+    default: return '📊';
+  }
+};
 
-  const getPlatformName = (platform: string) => {
-    switch (platform) {
-      case 'google': return 'Google My Business';
-      case 'facebook': return 'Facebook';
-      case 'instagram': return 'Instagram';
-      default: return platform;
-    }
-  };
+const getPlatformColor = (platform: string) => {
+  switch (platform) {
+    case 'google': return 'border-blue-500';
+    case 'facebook': return 'border-blue-600';
+    case 'instagram': return 'border-pink-500';
+    default: return 'border-gray-500';
+  }
+};
 
-  const getLeadPotentialColor = (potential: string) => {
-    switch (potential) {
-      case 'high': return 'bg-red-100 text-red-800 border-red-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low': return 'bg-green-100 text-green-800 border-green-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
+const getLeadPotentialBadge = (potential: string) => {
+  switch (potential) {
+    case 'high':
+      return <Badge variant="destructive" className="bg-red-100 text-red-800">Hoher Verbesserungsbedarf</Badge>;
+    case 'medium':
+      return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Mittleres Potential</Badge>;
+    case 'low':
+      return <Badge variant="outline" className="bg-green-100 text-green-800">Gute Basis</Badge>;
+    default:
+      return <Badge variant="outline">Unbekannt</Badge>;
+  }
+};
 
+const VisibilityResults: React.FC<VisibilityResultsProps> = ({ 
+  businessName, 
+  analysisResult, 
+  onRequestDetailedReport, 
+  onNewAnalysis,
+  reportRequested,
+  email 
+}) => {
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-8">
-      {/* Header with Overall Score */}
-      <Card className="text-center">
-        <CardHeader>
-          <CardTitle className="text-2xl">
-            Sichtbarkeits-Analyse für {businessName}
+      {/* Header */}
+      <div className="text-center space-y-4">
+        <h1 className="text-3xl font-bold">Sichtbarkeits-Analyse für {businessName}</h1>
+        <p className="text-gray-600">Umfassende Bewertung Ihrer Online-Präsenz</p>
+        {getLeadPotentialBadge(analysisResult.leadPotential)}
+      </div>
+
+      {/* Overall Score */}
+      <Card className="border-2 border-primary/20">
+        <CardHeader className="text-center">
+          <CardTitle className="flex items-center justify-center gap-2">
+            <TrendingUp className="w-6 h-6" />
+            Gesamt-Sichtbarkeit
           </CardTitle>
-          <div className="flex justify-center">
-            <Badge className={`px-3 py-1 text-sm font-medium border ${getLeadPotentialColor(leadPotential)}`}>
-              {leadPotential === 'high' && '🎯 Hohes Verbesserungspotenzial'}
-              {leadPotential === 'medium' && '📈 Mittleres Verbesserungspotenzial'}
-              {leadPotential === 'low' && '✨ Starke Online-Präsenz'}
-            </Badge>
-          </div>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center space-x-8">
-            <div className="text-center">
-              <div className={`text-6xl font-bold mb-2 ${getScoreColor(overallScore)}`}>
-                {overallScore}%
-              </div>
-              <p className="text-gray-600">Gesamtbewertung</p>
-            </div>
-            <div className="w-32 h-32 relative">
-              <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 120 120">
-                <circle cx="60" cy="60" r="50" fill="transparent" stroke="#e5e7eb" strokeWidth="8"/>
-                <circle 
-                  cx="60" 
-                  cy="60" 
-                  r="50" 
-                  fill="transparent" 
-                  stroke={overallScore >= 80 ? '#10b981' : overallScore >= 60 ? '#f59e0b' : '#ef4444'}
-                  strokeWidth="8"
-                  strokeDasharray={`${(overallScore / 100) * 314} 314`}
-                  strokeLinecap="round"
-                />
-              </svg>
-            </div>
+        <CardContent className="flex flex-col items-center space-y-4">
+          <ScoreDonut score={analysisResult.overallScore} size="lg" />
+          <div className="text-center">
+            <p className="text-2xl font-bold">{analysisResult.overallScore}/100 Punkte</p>
+            <p className="text-gray-600">
+              {analysisResult.overallScore >= 80 && "Sehr gute Online-Präsenz"}
+              {analysisResult.overallScore >= 60 && analysisResult.overallScore < 80 && "Solide Basis mit Verbesserungspotential"}
+              {analysisResult.overallScore < 60 && "Erhebliches Verbesserungspotential vorhanden"}
+            </p>
           </div>
         </CardContent>
       </Card>
 
       {/* Platform Analysis */}
       <div className="grid md:grid-cols-3 gap-6">
-        {platformAnalyses.map((analysis) => (
-          <Card key={analysis.platform} className={`${getScoreBackground(analysis.score)} border-2`}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <div className="flex items-center space-x-2">
-                {getPlatformIcon(analysis.platform)}
-                <CardTitle className="text-lg">
-                  {getPlatformName(analysis.platform)}
-                </CardTitle>
-              </div>
-              <div className={`text-2xl font-bold ${getScoreColor(analysis.score)}`}>
-                {Math.round(analysis.score)}%
-              </div>
+        {analysisResult.platformAnalyses.map((platform) => (
+          <Card key={platform.platform} className={`border-2 ${getPlatformColor(platform.platform)}`}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 capitalize">
+                <span className="text-xl">{getPlatformIcon(platform.platform)}</span>
+                {platform.platform}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Progress 
-                value={analysis.score} 
-                className="h-2"
-              />
+              <div className="flex items-center justify-between">
+                <ScoreDonut score={platform.score} size="sm" />
+                <div className="text-right">
+                  <p className="text-lg font-bold">{platform.score}/100</p>
+                  <p className="text-sm text-gray-600">Punkte</p>
+                </div>
+              </div>
               
-              <div>
-                <h4 className="font-medium text-green-800 mb-2 flex items-center">
-                  <CheckCircle className="w-4 h-4 mr-1" />
-                  Vorhandene Features ({analysis.completedFeatures.length})
-                </h4>
-                <div className="flex flex-wrap gap-1">
-                  {analysis.completedFeatures.slice(0, 3).map((feature, index) => (
-                    <Badge key={index} variant="secondary" className="text-xs">
-                      {feature}
-                    </Badge>
-                  ))}
-                  {analysis.completedFeatures.length > 3 && (
-                    <Badge variant="outline" className="text-xs">
-                      +{analysis.completedFeatures.length - 3} weitere
-                    </Badge>
-                  )}
+              {/* Completed Features */}
+              {platform.completedFeatures.length > 0 && (
+                <div>
+                  <h4 className="font-medium text-green-700 mb-2 flex items-center gap-1">
+                    <CheckCircle2 className="w-4 h-4" />
+                    Vorhanden
+                  </h4>
+                  <ul className="text-sm space-y-1">
+                    {platform.completedFeatures.slice(0, 3).map((feature, idx) => (
+                      <li key={idx} className="text-green-600">• {feature}</li>
+                    ))}
+                  </ul>
                 </div>
-              </div>
+              )}
 
-              <div>
-                <h4 className="font-medium text-red-800 mb-2 flex items-center">
-                  <AlertCircle className="w-4 h-4 mr-1" />
-                  Fehlende Features ({analysis.missingFeatures.length})
-                </h4>
-                <div className="flex flex-wrap gap-1">
-                  {analysis.missingFeatures.slice(0, 3).map((feature, index) => (
-                    <Badge key={index} variant="destructive" className="text-xs">
-                      {feature}
-                    </Badge>
-                  ))}
-                  {analysis.missingFeatures.length > 3 && (
-                    <Badge variant="outline" className="text-xs">
-                      +{analysis.missingFeatures.length - 3} weitere
-                    </Badge>
-                  )}
+              {/* Missing Features */}
+              {platform.missingFeatures.length > 0 && (
+                <div>
+                  <h4 className="font-medium text-red-700 mb-2 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
+                    Fehlt
+                  </h4>
+                  <ul className="text-sm space-y-1">
+                    {platform.missingFeatures.slice(0, 3).map((feature, idx) => (
+                      <li key={idx} className="text-red-600">• {feature}</li>
+                    ))}
+                  </ul>
                 </div>
-              </div>
-
-              {analysis.profileUrl && (
-                <Button variant="outline" size="sm" className="w-full" asChild>
-                  <a href={analysis.profileUrl} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="w-4 h-4 mr-1" />
-                    Profil ansehen
-                  </a>
-                </Button>
               )}
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Quick Wins Section */}
-      {quickWins.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Lightbulb className="w-5 h-5 text-yellow-600" />
-              Sofort umsetzbare Verbesserungen
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              {quickWins.map((win, index) => (
-                <li key={index} className="flex items-start gap-2">
-                  <Target className="w-4 h-4 text-green-600 mt-1 flex-shrink-0" />
-                  <span className="text-sm">{win}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
+      {/* Quick Wins */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Star className="w-5 h-5 text-yellow-500" />
+            Sofortige Verbesserungen (Quick Wins)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-2 gap-4">
+            {analysisResult.quickWins.map((win, idx) => (
+              <div key={idx} className="flex items-start gap-2 p-3 bg-yellow-50 rounded-lg">
+                <div className="w-6 h-6 bg-yellow-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                  {idx + 1}
+                </div>
+                <p className="text-sm">{win}</p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Category Insights */}
-      {categoryInsights.length > 0 && (
+      {/* Benchmarks */}
+      {analysisResult.benchmarks.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-blue-600" />
-              Branchenspezifische Erkenntnisse
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              {categoryInsights.map((insight, index) => (
-                <li key={index} className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
-                  <span className="text-sm text-gray-700">{insight}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Benchmark Comparison */}
-      {benchmarks.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5" />
+              <Users className="w-5 h-5" />
               Benchmark-Vergleich
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-2">Unternehmen</th>
-                    <th className="text-center py-2">Google</th>
-                    <th className="text-center py-2">Facebook</th>
-                    <th className="text-center py-2">Instagram</th>
-                    <th className="text-center py-2">Gesamt</th>
+                    <th className="text-left p-2">Unternehmen</th>
+                    <th className="text-center p-2">Google</th>
+                    <th className="text-center p-2">Facebook</th>
+                    <th className="text-center p-2">Instagram</th>
+                    <th className="text-center p-2">Gesamt</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className="border-b bg-blue-50">
-                    <td className="py-3 font-medium">{businessName} (Sie)</td>
-                    <td className="text-center">
-                      <span className={`font-bold ${getScoreColor(platformAnalyses.find(p => p.platform === 'google')?.score || 0)}`}>
-                        {Math.round(platformAnalyses.find(p => p.platform === 'google')?.score || 0)}%
-                      </span>
-                    </td>
-                    <td className="text-center">
-                      <span className={`font-bold ${getScoreColor(platformAnalyses.find(p => p.platform === 'facebook')?.score || 0)}`}>
-                        {Math.round(platformAnalyses.find(p => p.platform === 'facebook')?.score || 0)}%
-                      </span>
-                    </td>
-                    <td className="text-center">
-                      <span className={`font-bold ${getScoreColor(platformAnalyses.find(p => p.platform === 'instagram')?.score || 0)}`}>
-                        {Math.round(platformAnalyses.find(p => p.platform === 'instagram')?.score || 0)}%
-                      </span>
-                    </td>
-                    <td className="text-center">
-                      <span className={`font-bold text-lg ${getScoreColor(overallScore)}`}>
-                        {overallScore}%
-                      </span>
-                    </td>
+                  <tr className="bg-blue-50 font-medium">
+                    <td className="p-2">{businessName} (Sie)</td>
+                    <td className="text-center p-2">{analysisResult.platformAnalyses.find(p => p.platform === 'google')?.score || 0}%</td>
+                    <td className="text-center p-2">{analysisResult.platformAnalyses.find(p => p.platform === 'facebook')?.score || 0}%</td>
+                    <td className="text-center p-2">{analysisResult.platformAnalyses.find(p => p.platform === 'instagram')?.score || 0}%</td>
+                    <td className="text-center p-2 font-bold">{analysisResult.overallScore}%</td>
                   </tr>
-                  {benchmarks.map((benchmark, index) => (
-                    <tr key={index} className="border-b">
-                      <td className="py-3">{benchmark.name}</td>
-                      <td className="text-center">{Math.round(benchmark.scores.google)}%</td>
-                      <td className="text-center">{Math.round(benchmark.scores.facebook)}%</td>
-                      <td className="text-center">{Math.round(benchmark.scores.instagram)}%</td>
-                      <td className="text-center font-medium">{benchmark.scores.overall}%</td>
+                  {analysisResult.benchmarks.map((benchmark, idx) => (
+                    <tr key={idx} className="border-b">
+                      <td className="p-2">{benchmark.name}</td>
+                      <td className="text-center p-2">{Math.round(benchmark.scores.google)}%</td>
+                      <td className="text-center p-2">{Math.round(benchmark.scores.facebook)}%</td>
+                      <td className="text-center p-2">{Math.round(benchmark.scores.instagram)}%</td>
+                      <td className="text-center p-2 font-medium">{Math.round(benchmark.scores.overall)}%</td>
                     </tr>
                   ))}
                 </tbody>
@@ -331,49 +279,46 @@ const VisibilityResults: React.FC<VisibilityResultsProps> = ({
         </Card>
       )}
 
+      {/* Category Insights */}
+      {analysisResult.categoryInsights.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Branchenspezifische Erkenntnisse</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              {analysisResult.categoryInsights.map((insight, idx) => (
+                <li key={idx} className="flex items-start gap-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
+                  <p className="text-sm">{insight}</p>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
-        {!reportRequested && (
-          <Button onClick={onRequestDetailedReport} className="bg-primary hover:bg-primary/90">
-            <Mail className="w-4 h-4 mr-2" />
-            Detaillierten Bericht per E-Mail anfordern
+        {email && !reportRequested && (
+          <Button onClick={onRequestDetailedReport} className="flex items-center gap-2">
+            <Download className="w-4 h-4" />
+            Detaillierten PDF-Report anfordern
           </Button>
         )}
         
-        {reportRequested && email && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-            <CheckCircle className="w-6 h-6 text-green-600 mx-auto mb-2" />
-            <p className="text-green-800 font-medium">Detaillierter Bericht wird versendet</p>
-            <p className="text-green-700 text-sm">
-              Ihr PDF-Report mit SWOT-Analyse und Handlungsempfehlungen wird in Kürze an {email} gesendet.
+        {reportRequested && (
+          <div className="text-center p-4 bg-green-50 rounded-lg">
+            <p className="text-green-700 font-medium">
+              ✅ Detaillierter Report wurde an {email} gesendet!
             </p>
           </div>
         )}
-
+        
         <Button variant="outline" onClick={onNewAnalysis}>
-          <Search className="w-4 h-4 mr-2" />
           Neue Analyse starten
         </Button>
       </div>
-
-      {/* Next Steps Teaser */}
-      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
-        <CardContent className="p-6 text-center">
-          <h3 className="font-bold text-lg mb-2">🚀 Möchten Sie Ihre Sichtbarkeit verbessern?</h3>
-          <p className="text-gray-700 mb-4">
-            Basierend auf Ihrer Analyse können wir Ihnen maßgeschneiderte Lösungen anbieten, 
-            um Ihre Online-Präsenz zu optimieren und mehr Kunden zu gewinnen.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-2 justify-center">
-            <Button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-              Kostenlose Beratung vereinbaren
-            </Button>
-            <Button variant="outline">
-              Mehr über unsere Services erfahren
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };
