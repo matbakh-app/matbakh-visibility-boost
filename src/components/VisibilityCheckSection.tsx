@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import VisibilityCheckForm from './visibility/VisibilityCheckForm';
+import VisibilityWizard from './visibility/VisibilityWizard';
 
 const VisibilityCheckSection: React.FC = () => {
   const { t } = useTranslation('landing');
@@ -18,7 +18,7 @@ const VisibilityCheckSection: React.FC = () => {
           </p>
         </div>
 
-        <VisibilityCheckForm />
+        <VisibilityWizard />
 
         <div className="mt-8 text-center">
           <p className="text-sm text-gray-600">
