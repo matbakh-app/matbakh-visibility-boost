@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Download, Star, Users, Camera, Clock, TrendingUp, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Download, Star, Users, Camera, Clock, TrendingUp, CheckCircle2, AlertCircle, ExternalLink, MapPin, Phone } from 'lucide-react';
 
 interface AnalysisResult {
   overallScore: number;
@@ -15,7 +15,16 @@ interface AnalysisResult {
     completedFeatures: string[];
     missingFeatures: string[];
     profileUrl?: string;
+    profilePicture?: string;
+    profileFound: boolean;
+    autoDetected?: boolean;
     recommendations: string[];
+    followerCount?: number;
+    reservationAvailable?: boolean;
+    hasHolidayHours?: boolean;
+    askSectionVisible?: boolean;
+    isListingComplete?: boolean;
+    category?: string;
   }>;
   benchmarks: Array<{
     name: string;
@@ -121,6 +130,147 @@ const getLeadPotentialBadge = (potential: string) => {
   }
 };
 
+const PlatformProfileCard: React.FC<{ platform: any }> = ({ platform }) => {
+  return (
+    <Card className={`border-2 ${getPlatformColor(platform.platform)}`}>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-3 capitalize">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">{getPlatformIcon(platform.platform)}</span>
+            <span>{platform.platform}</span>
+            {platform.autoDetected && (
+              <Badge variant="secondary" className="text-xs">Auto-erkannt</Badge>
+            )}
+          </div>
+          {platform.profileUrl && (
+            <a 
+              href={platform.profileUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="ml-auto"
+            >
+              <ExternalLink className="w-4 h-4 text-blue-600 hover:text-blue-800" />
+            </a>
+          )}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Profile Picture and Basic Info */}
+        <div className="flex items-center gap-4">
+          <div className="flex-shrink-0">
+            <ScoreDonut score={platform.score} size="sm" />
+          </div>
+          
+          {platform.profilePicture && (
+            <div className="flex-shrink-0">
+              <img 
+                src={platform.profilePicture} 
+                alt={`${platform.platform} Profilbild`}
+                className="w-12 h-12 rounded-full object-cover border-2 border-gray-200"
+              />
+            </div>
+          )}
+          
+          <div className="flex-1">
+            <div className="flex items-center justify-between">
+              <p className="text-lg font-bold">{platform.score}/100</p>
+              {platform.followerCount && (
+                <div className="flex items-center gap-1 text-sm text-gray-600">
+                  <Users className="w-4 h-4" />
+                  <span>{platform.followerCount.toLocaleString()}</span>
+                </div>
+              )}
+            </div>
+            <p className="text-sm text-gray-600">
+              {platform.profileFound ? 'Profil gefunden' : 'Kein Profil gefunden'}
+            </p>
+          </div>
+        </div>
+
+        {/* Special Features for Google */}
+        {platform.platform === 'google' && platform.profileFound && (
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            {platform.reservationAvailable && (
+              <div className="flex items-center gap-1 text-green-600">
+                <CheckCircle2 className="w-3 h-3" />
+                <span>Reservierung</span>
+              </div>
+            )}
+            {platform.hasHolidayHours && (
+              <div className="flex items-center gap-1 text-green-600">
+                <Clock className="w-3 h-3" />
+                <span>Feiertagszeiten</span>
+              </div>
+            )}
+            {platform.askSectionVisible && (
+              <div className="flex items-center gap-1 text-green-600">
+                <CheckCircle2 className="w-3 h-3" />
+                <span>Fragen & Antworten</span>
+              </div>
+            )}
+            {platform.isListingComplete && (
+              <div className="flex items-center gap-1 text-green-600">
+                <CheckCircle2 className="w-3 h-3" />
+                <span>Vollständig</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Category Info */}
+        {platform.category && (
+          <div className="text-xs text-gray-600">
+            <span className="font-medium">Kategorie: </span>
+            {platform.category}
+          </div>
+        )}
+        
+        {/* Completed Features */}
+        {platform.completedFeatures.length > 0 && (
+          <div>
+            <h4 className="font-medium text-green-700 mb-2 flex items-center gap-1">
+              <CheckCircle2 className="w-4 h-4" />
+              Vorhanden
+            </h4>
+            <ul className="text-sm space-y-1">
+              {platform.completedFeatures.slice(0, 3).map((feature, idx) => (
+                <li key={idx} className="text-green-600">• {feature}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Missing Features */}
+        {platform.missingFeatures.length > 0 && (
+          <div>
+            <h4 className="font-medium text-red-700 mb-2 flex items-center gap-1">
+              <AlertCircle className="w-4 h-4" />
+              Fehlt
+            </h4>
+            <ul className="text-sm space-y-1">
+              {platform.missingFeatures.slice(0, 3).map((feature, idx) => (
+                <li key={idx} className="text-red-600">• {feature}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Top Recommendations */}
+        {platform.recommendations.length > 0 && (
+          <div>
+            <h4 className="font-medium text-blue-700 mb-2">Top Empfehlungen</h4>
+            <ul className="text-sm space-y-1">
+              {platform.recommendations.slice(0, 2).map((rec, idx) => (
+                <li key={idx} className="text-blue-600">• {rec}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
 const VisibilityResults: React.FC<VisibilityResultsProps> = ({ 
   businessName, 
   analysisResult, 
@@ -134,7 +284,7 @@ const VisibilityResults: React.FC<VisibilityResultsProps> = ({
       {/* Header */}
       <div className="text-center space-y-4">
         <h1 className="text-3xl font-bold">Sichtbarkeits-Analyse für {businessName}</h1>
-        <p className="text-gray-600">Umfassende Bewertung Ihrer Online-Präsenz</p>
+        <p className="text-gray-600">Umfassende Bewertung Ihrer Online-Präsenz mit Profildaten</p>
         {getLeadPotentialBadge(analysisResult.leadPotential)}
       </div>
 
@@ -159,57 +309,14 @@ const VisibilityResults: React.FC<VisibilityResultsProps> = ({
         </CardContent>
       </Card>
 
-      {/* Platform Analysis */}
-      <div className="grid md:grid-cols-3 gap-6">
-        {analysisResult.platformAnalyses.map((platform) => (
-          <Card key={platform.platform} className={`border-2 ${getPlatformColor(platform.platform)}`}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 capitalize">
-                <span className="text-xl">{getPlatformIcon(platform.platform)}</span>
-                {platform.platform}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <ScoreDonut score={platform.score} size="sm" />
-                <div className="text-right">
-                  <p className="text-lg font-bold">{platform.score}/100</p>
-                  <p className="text-sm text-gray-600">Punkte</p>
-                </div>
-              </div>
-              
-              {/* Completed Features */}
-              {platform.completedFeatures.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-green-700 mb-2 flex items-center gap-1">
-                    <CheckCircle2 className="w-4 h-4" />
-                    Vorhanden
-                  </h4>
-                  <ul className="text-sm space-y-1">
-                    {platform.completedFeatures.slice(0, 3).map((feature, idx) => (
-                      <li key={idx} className="text-green-600">• {feature}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Missing Features */}
-              {platform.missingFeatures.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-red-700 mb-2 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4" />
-                    Fehlt
-                  </h4>
-                  <ul className="text-sm space-y-1">
-                    {platform.missingFeatures.slice(0, 3).map((feature, idx) => (
-                      <li key={idx} className="text-red-600">• {feature}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
+      {/* Platform Analysis with Profile Data */}
+      <div className="space-y-6">
+        <h2 className="text-2xl font-bold text-center">Detaillierte Plattform-Analyse</h2>
+        <div className="grid md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {analysisResult.platformAnalyses.map((platform) => (
+            <PlatformProfileCard key={platform.platform} platform={platform} />
+          ))}
+        </div>
       </div>
 
       {/* Quick Wins */}
