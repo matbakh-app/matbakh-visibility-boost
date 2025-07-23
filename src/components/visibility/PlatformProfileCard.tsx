@@ -86,7 +86,61 @@ const ScoreDonut: React.FC<{ score: number; size?: 'sm' | 'lg' }> = ({ score, si
   );
 };
 
+// Helper function to ensure proper URL formatting
+const formatProfileUrl = (url: string | undefined, platform: string): string | undefined => {
+  if (!url) return undefined;
+  
+  // If URL already starts with http, return as is
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  
+  // Handle platform-specific URL formatting
+  switch (platform) {
+    case 'instagram':
+      // If it's just a username, format as Instagram URL
+      if (!url.includes('/')) {
+        return `https://www.instagram.com/${url.replace('@', '')}`;
+      }
+      // If it's a partial URL, add https://www.instagram.com
+      if (url.startsWith('/')) {
+        return `https://www.instagram.com${url}`;
+      }
+      return `https://www.instagram.com/${url}`;
+    
+    case 'facebook':
+      if (!url.includes('/')) {
+        return `https://www.facebook.com/${url}`;
+      }
+      if (url.startsWith('/')) {
+        return `https://www.facebook.com${url}`;
+      }
+      return `https://www.facebook.com/${url}`;
+    
+    case 'google':
+      if (url.startsWith('/')) {
+        return `https://www.google.com${url}`;
+      }
+      return url.includes('google.com') ? `https://${url}` : url;
+    
+    default:
+      return url.startsWith('//') ? `https:${url}` : `https://${url}`;
+  }
+};
+
 const PlatformProfileCard: React.FC<{ platform: PlatformData }> = ({ platform }) => {
+  const formattedUrl = formatProfileUrl(platform.profileUrl, platform.platform);
+  
+  const handleLinkClick = (e: React.MouseEvent) => {
+    if (!formattedUrl) {
+      e.preventDefault();
+      return;
+    }
+    
+    // Log for debugging
+    console.log(`Opening ${platform.platform} profile:`, formattedUrl);
+  };
+
   return (
     <Card className={`border-2 ${getPlatformColor(platform.platform)}`}>
       <CardHeader className="pb-3">
@@ -101,15 +155,16 @@ const PlatformProfileCard: React.FC<{ platform: PlatformData }> = ({ platform })
             )}
           </div>
           
-          {platform.profileUrl && (
+          {formattedUrl && (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <a 
-                    href={platform.profileUrl} 
+                    href={formattedUrl}
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="p-1 hover:bg-gray-100 rounded"
+                    onClick={handleLinkClick}
+                    className="p-1 hover:bg-gray-100 rounded transition-colors"
                   >
                     <ExternalLink className="w-5 h-5 text-muted-foreground hover:text-primary transition-colors" />
                   </a>
