@@ -1,14 +1,15 @@
-import { Navigate } from 'react-router-dom';
 
-// Redirect-Komponente für alte Dashboard-Pfade
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 export const DashboardRedirect = () => {
-  return <Navigate to="/dashboard" replace />;
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    navigate('/dashboard/overview', { replace: true });
+  }, [navigate]);
+
+  return null;
 };
 
-export const ProfileRedirect = () => {
-  return <Navigate to="/dashboard/profile" replace />;
-};
-
-export const CalendarRedirect = () => {
-  return <Navigate to="/dashboard/calendar" replace />;
-};
+export default DashboardRedirect;
