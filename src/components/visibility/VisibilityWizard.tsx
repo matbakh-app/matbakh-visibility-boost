@@ -29,9 +29,42 @@ const VisibilityWizard: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [reportRequested, setReportRequested] = useState(false);
+  const [instagramCandidates, setInstagramCandidates] = useState<any[]>([]);
 
-  const handleStepOne = (data: any) => {
+  const handleStepOne = async (data: any) => {
     setStepOneData(data);
+    
+    // Pre-run Instagram candidate search for Step 2
+    const preCheckData = {
+      businessName: data.companyName,
+      location: data.location,
+      mainCategory: data.mainCategory,
+      subCategory: data.subCategory,
+      matbakhTags: [data.matbakhCategory],
+      website: '',
+      facebookName: '',
+      instagramName: '',
+      benchmarks: [],
+      email: ''
+    };
+
+    try {
+      console.log('🔍 Pre-checking Instagram candidates...');
+      const { data: result, error } = await supabase.functions.invoke('enhanced-visibility-check', {
+        body: preCheckData
+      });
+
+      if (!error && result?.platformAnalyses) {
+        const instagramAnalysis = result.platformAnalyses.find((p: any) => p.platform === 'instagram');
+        if (instagramAnalysis?.candidates) {
+          console.log(`📸 Found ${instagramAnalysis.candidates.length} Instagram candidates`);
+          setInstagramCandidates(instagramAnalysis.candidates);
+        }
+      }
+    } catch (err) {
+      console.log('⚠️ Pre-check failed, continuing without candidates:', err);
+    }
+
     setStep(2);
   };
 
@@ -79,6 +112,7 @@ const VisibilityWizard: React.FC = () => {
     setStepOneData(null);
     setStepTwoData(null);
     setAnalysisResult(null);
+    setInstagramCandidates([]);
     setStep(1);
     setLoading(false);
   };
@@ -130,6 +164,7 @@ const VisibilityWizard: React.FC = () => {
           onNext={handleStepTwo}
           onBack={() => setStep(1)}
           defaultValues={stepTwoData}
+          instagramCandidates={instagramCandidates}
         />
       )}
       

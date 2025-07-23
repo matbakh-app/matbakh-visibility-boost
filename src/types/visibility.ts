@@ -1,4 +1,14 @@
 
+export interface InstagramCandidate {
+  handle: string;
+  score: number;
+  profilePicture?: string;
+  followerCount?: number;
+  bio?: string;
+  confidence: 'high' | 'medium' | 'low';
+  matchReason: string;
+}
+
 export interface AnalysisResult {
   overallScore: number;
   platformAnalyses: Array<{
@@ -18,6 +28,7 @@ export interface AnalysisResult {
     askSectionVisible?: boolean;
     isListingComplete?: boolean;
     category?: string;
+    candidates?: InstagramCandidate[];
   }>;
   benchmarks: Array<{
     name: string;
