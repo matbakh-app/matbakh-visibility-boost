@@ -1,9 +1,4 @@
 
-/*
- * Layout-Struktur zentralisiert – keine eigenen Layout-Komponenten mehr verwenden. 
- * Änderungen nur nach Rücksprache.
- */
-
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import TrustElements from '@/components/TrustElements';
@@ -14,6 +9,7 @@ import PainPointCards from '@/components/PainPointCards';
 import ProcessOverview from '@/components/ProcessOverview';
 import { useServicePackages } from '@/hooks/useServicePackages';
 import { SeoMeta } from '@/components/SeoMeta';
+import AppLayout from '@/components/layout/AppLayout';
 
 const PackagesEN: React.FC = () => {
   const { t } = useTranslation('packages');
@@ -21,51 +17,56 @@ const PackagesEN: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('loading')}</p>
+      <AppLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+            <p className="text-gray-600">{t('loading')}</p>
+          </div>
         </div>
-      </div>
+      </AppLayout>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-black mb-4">{t('errorTitle')}</h2>
-          <p className="text-gray-600 mb-4">{t('errorHint')}</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
-          >
-            {t('reloadPage')}
-          </button>
+      <AppLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-black mb-4">{t('errorTitle')}</h2>
+            <p className="text-gray-600 mb-4">{t('errorHint')}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
+            >
+              {t('reloadPage')}
+            </button>
+          </div>
         </div>
-      </div>
+      </AppLayout>
     );
   }
 
   if (!packages || packages.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-black mb-4">{t('noPackagesTitle')}</h2>
-          <p className="text-gray-600">{t('noPackagesText')}</p>
+      <AppLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-black mb-4">{t('noPackagesTitle')}</h2>
+            <p className="text-gray-600">{t('noPackagesText')}</p>
+          </div>
         </div>
-      </div>
+      </AppLayout>
     );
   }
 
   return (
-    <>
+    <AppLayout>
       <SeoMeta
         title={t('title')}
         description={t('subtitle')}
         namespace="packages"
       />
-      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="py-16">
           {/* Header */}
@@ -107,7 +108,7 @@ const PackagesEN: React.FC = () => {
           <PackageFAQ language="en" />
         </div>
       </div>
-    </>
+    </AppLayout>
   );
 };
 

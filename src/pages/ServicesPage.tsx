@@ -164,89 +164,87 @@ const ServicesPage: React.FC = () => {
   );
 
   return (
-    <>
+    <AppLayout>
       <SeoMeta
         title="Kernleistungen"
         description="matbakh.app übernimmt für Sie"
         namespace="services"
       />
-      <AppLayout>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-16">
-            {/* Header */}
-            <div className="text-center mb-16">
-              <h1 className="text-4xl font-bold text-black mb-4">
-                Kernleistungen
-              </h1>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                matbakh.app übernimmt für Sie
-              </p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="py-16">
+          {/* Header */}
+          <div className="text-center mb-16">
+            <h1 className="text-4xl font-bold text-black mb-4">
+              Kernleistungen
+            </h1>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              matbakh.app übernimmt für Sie
+            </p>
+          </div>
+
+          {/* Core Services - 3 Cards in Row */}
+          <div className="mb-16">
+            <div className="grid md:grid-cols-3 gap-8 mb-12">
+              {coreServices.map((service, index) => (
+                <ServiceCard key={index} service={service} />
+              ))}
             </div>
+          </div>
 
-            {/* Core Services - 3 Cards in Row */}
-            <div className="mb-16">
-              <div className="grid md:grid-cols-3 gap-8 mb-12">
-                {coreServices.map((service, index) => (
-                  <ServiceCard key={index} service={service} />
-                ))}
-              </div>
-            </div>
-
-            {/* Additional Services - 3 Cards in Second Row */}
-            <div className="mb-16">
-              <div className="text-center mb-12">
-                <h2 className="text-3xl font-bold text-black mb-4">
-                  Weitere Services
-                </h2>
-              </div>
-
-              <div className="grid md:grid-cols-3 gap-8">
-                {additionalServices.map((service, index) => (
-                  <ServiceCard key={index} service={service} showButton={true} />
-                ))}
-              </div>
-            </div>
-
-            {/* Extra Services */}
-            <div className="mb-16">
-              <div className="text-center mb-12">
-                <h2 className="text-3xl font-bold text-black mb-4">
-                  Zusätzliche Services
-                </h2>
-              </div>
-
-              <div className="grid md:grid-cols-3 gap-8">
-                {extraServices.map((service, index) => (
-                  <ServiceCard key={index} service={service} showButton={true} />
-                ))}
-              </div>
-            </div>
-
-            {/* CTA Section */}
-            <div className="bg-gray-50 rounded-lg p-8 text-center">
-              <h2 className="text-2xl font-bold text-black mb-4">
-                Bereit für mehr Sichtbarkeit?
+          {/* Additional Services - 3 Cards in Second Row */}
+          <div className="mb-16">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-black mb-4">
+                Weitere Services
               </h2>
-              <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-                Kontaktieren Sie uns für eine kostenlose Beratung und lassen Sie uns gemeinsam Ihre Online-Präsenz optimieren.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" onClick={() => window.open(getWhatsAppLink(), '_blank')}>
-                  Kostenlos beraten lassen
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-                <Button asChild variant="outline" size="lg">
-                  <Link to={packagesRoute} className="flex items-center gap-2">
-                    Angebote ansehen
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {additionalServices.map((service, index) => (
+                <ServiceCard key={index} service={service} showButton={true} />
+              ))}
+            </div>
+          </div>
+
+          {/* Extra Services */}
+          <div className="mb-16">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-black mb-4">
+                Zusätzliche Services
+              </h2>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {extraServices.map((service, index) => (
+                <ServiceCard key={index} service={service} showButton={true} />
+              ))}
+            </div>
+          </div>
+
+          {/* CTA Section */}
+          <div className="bg-gray-50 rounded-lg p-8 text-center">
+            <h2 className="text-2xl font-bold text-black mb-4">
+              Bereit für mehr Sichtbarkeit?
+            </h2>
+            <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+              Kontaktieren Sie uns für eine kostenlose Beratung und lassen Sie uns gemeinsam Ihre Online-Präsenz optimieren.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg" onClick={() => window.open(getWhatsAppLink(), '_blank')}>
+                Kostenlos beraten lassen
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+              <Button asChild variant="outline" size="lg">
+                <Link to={packagesRoute} className="flex items-center gap-2">
+                  Angebote ansehen
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
-      </AppLayout>
-    </>
+      </div>
+    </AppLayout>
   );
 };
 
