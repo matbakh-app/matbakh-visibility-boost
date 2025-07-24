@@ -2877,6 +2877,10 @@ export type Database = {
         Args: { p_event_type: string; p_user_id: string; p_severity: string }
         Returns: undefined
       }
+      cleanup_old_security_data: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       get_business_profile: {
         Args: { partner_id_param: string }
         Returns: {
@@ -2929,9 +2933,24 @@ export type Database = {
         }
         Returns: undefined
       }
+      process_pending_alerts: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          alert_id: string
+          alert_type: string
+          severity: string
+          title: string
+          description: string
+          created_at: string
+        }[]
+      }
       refresh_restaurant_match_scores: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      resolve_security_alert: {
+        Args: { p_alert_id: string; p_resolved_by?: string }
+        Returns: boolean
       }
       upsert_business_profile: {
         Args: {
