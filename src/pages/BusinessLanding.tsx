@@ -12,11 +12,9 @@ import PackageComparison from '@/components/PackageComparison';
 import TrustElements from '@/components/TrustElements';
 import PackageFAQ from '@/components/PackageFAQ';
 import CookieConsentBanner from '@/components/CookieConsentBanner';
-import FacebookTestComponent from '@/components/FacebookTestComponent';
 
 const BusinessLanding: React.FC = () => {
   const { t } = useTranslation('landing');
-  const isDebugMode = import.meta.env.DEV;
 
   return (
     <>
@@ -34,17 +32,6 @@ const BusinessLanding: React.FC = () => {
         <PackageComparison />
         <TrustElements />
         <PackageFAQ />
-        
-        {/* Facebook Test Component - nur im Development Mode */}
-        {isDebugMode && (
-          <section className="py-12">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex justify-center">
-                <FacebookTestComponent />
-              </div>
-            </div>
-          </section>
-        )}
       </AppLayout>
       <CookieConsentBanner />
     </>
