@@ -1,190 +1,108 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Menu, X, User, LogOut } from 'lucide-react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { getNavLink, getVisibleNavItems } from './NavigationConfig';
-import { isSafeTranslationKey } from '@/lib/i18n-validator';
-import { useAuth } from '@/contexts/AuthContext';
+import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { useAuth } from '@/contexts/AuthContext';
+import NavigationItemMobile from './NavigationItemMobile';
+import { getVisibleNavItems } from './NavigationConfig';
 
-interface MobileMenuProps {
-  isOpen: boolean;
-  onToggle: () => void;
-}
-
-const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onToggle }) => {
-  const { t, i18n } = useTranslation('nav');
-  const { t: tAuth } = useTranslation('auth');
-  const { user, signOut, isAdmin } = useAuth();
-  const location = useLocation();
+const MobileMenu: React.FC = () => {
+  const { t } = useTranslation('navigation');
   const navigate = useNavigate();
-  const [currentLanguage, setCurrentLanguage] = useState(i18n.language);
-  const lng = (currentLanguage || 'de') as 'de' | 'en';
-
-  // Listen for language changes
-  useEffect(() => {
-    const handleLanguageChange = (lng: string) => {
-      setCurrentLanguage(lng);
-    };
-
-    i18n.on('languageChanged', handleLanguageChange);
-    
-    return () => {
-      i18n.off('languageChanged', handleLanguageChange);
-    };
-  }, [i18n]);
-
-  const visibleItems = getVisibleNavItems(isAdmin, lng);
-
-  // Auto-close menu on route change
-  useEffect(() => {
-    if (isOpen) {
-      onToggle();
-    }
-  }, [location.pathname]);
-
-  // Close menu on ESC key
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onToggle();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen, onToggle]);
-
-  const handleLogin = () => {
-    navigate('/login');
-    onToggle();
-  };
+  const { user, logout } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleLogout = async () => {
-    try {
-      await signOut();
-      onToggle();
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
+    await logout();
+    setIsOpen(false);
+    navigate('/');
   };
 
-  const handleDashboard = () => {
-    navigate('/dashboard');
-    onToggle();
+  const handleLogin = () => {
+    navigate('/login'); // Fixed: was /business/partner/login
+    setIsOpen(false);
   };
 
-  const handleProfile = () => {
-    navigate('/dashboard/profile');
-    onToggle();
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    setIsOpen(false);
   };
 
-  const handleLinkClick = () => {
-    onToggle();
-  };
+  const visibleItems = getVisibleNavItems(user?.role);
 
   return (
-    <>
-      <div className="md:hidden">
-        <button
-          onClick={onToggle}
-          className="text-gray-700 hover:text-black focus:outline-none p-2 z-50 relative"
-          aria-label={isOpen ? 'Menu schließen' : 'Menu öffnen'}
-        >
-          {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
-      </div>
-
-      {isOpen && (
-        <>
-          <div 
-            className="md:hidden fixed inset-0 bg-black/20 z-[55]"
-            onClick={onToggle}
-            aria-hidden="true"
-          />
-          
-          <div className="md:hidden fixed top-16 left-0 right-0 bg-white shadow-lg z-[56] border-b border-gray-200 max-h-[calc(100vh-4rem)] overflow-y-auto">
-            <div className="px-4 py-4 space-y-4">
-              {visibleItems.map((item) => {
-                const href = getNavLink(item.key, lng);
-                const label = isSafeTranslationKey(item.labelKey)
-                  ? t(item.labelKey, item.labelKey)
-                  : item.labelKey;
-                const isActive = location.pathname === href;
-
-                return (
-                  <Link
-                    key={item.key}
-                    to={href}
-                    onClick={handleLinkClick}
-                    className={`block w-full text-left px-3 py-2 text-base font-medium transition-colors ${
-                      isActive
-                        ? 'text-black bg-gray-50'
-                        : 'text-gray-700 hover:text-black hover:bg-gray-50'
-                    }`}
-                  >
-                    {label}
-                  </Link>
-                );
-              })}
-
-              <div className="border-t border-gray-200 my-4"></div>
-
-              {!user ? (
-                <div className="space-y-2">
-                  <Button
-                    onClick={handleLogin}
-                    variant="outline"
-                    className="w-full justify-start"
-                  >
-                    {t('login', 'Login')}
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <div className="flex items-center px-3 py-2 text-sm text-gray-600">
-                    <User className="h-4 w-4 mr-2" />
-                    {user.email}
-                  </div>
-                  
-                  <button
-                    onClick={handleDashboard}
-                    className="w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-black hover:bg-gray-50 transition-colors"
-                  >
-                    {tAuth('dashboard', 'Dashboard')}
-                  </button>
-
-                  <button
-                    onClick={handleProfile}
-                    className="w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-black hover:bg-gray-50 transition-colors"
-                  >
-                    {tAuth('profile', 'Profil')}
-                  </button>
-
-                  <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center px-3 py-2 text-base font-medium text-gray-700 hover:text-black hover:bg-gray-50 transition-colors"
-                  >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    {tAuth('logout', 'Abmelden')}
-                  </button>
-                </div>
-              )}
-            </div>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+      <SheetTrigger asChild>
+        <Button variant="ghost" size="icon" className="md:hidden">
+          <Menu className="h-5 w-5" />
+          <span className="sr-only">{t('menu', 'Menü')}</span>
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="right" className="w-[280px] sm:w-[320px]">
+        <div className="flex flex-col h-full">
+          <div className="flex items-center justify-between py-4 border-b">
+            <h2 className="text-lg font-semibold">{t('navigation', 'Navigation')}</h2>
+            <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
+              <X className="h-5 w-5" />
+            </Button>
           </div>
-        </>
-      )}
-    </>
+          
+          <nav className="flex-1 py-4">
+            <ul className="space-y-2">
+              {visibleItems.map((item) => (
+                <NavigationItemMobile
+                  key={item.key}
+                  item={item}
+                  onNavigate={handleNavigation}
+                />
+              ))}
+            </ul>
+          </nav>
+
+          <div className="border-t pt-4">
+            {user ? (
+              <div className="space-y-2">
+                <div className="px-4 py-2 text-sm text-gray-600">
+                  {user.email}
+                </div>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                  onClick={() => handleNavigation('/dashboard')}
+                >
+                  {t('dashboard', 'Dashboard')}
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                  onClick={() => handleNavigation('/dashboard/profile')}
+                >
+                  {t('profile', 'Profil')}
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                  onClick={handleLogout}
+                >
+                  {t('logout', 'Abmelden')}
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="default"
+                className="w-full"
+                onClick={handleLogin}
+              >
+                {t('login', 'Anmelden')}
+              </Button>
+            )}
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 };
 
