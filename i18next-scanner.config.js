@@ -1,4 +1,3 @@
-
 module.exports = {
   input: [
     'src/**/*.{js,jsx,ts,tsx}',
@@ -67,9 +66,7 @@ module.exports = {
     nsSeparator: ':',
     pluralSeparator: '_',
     contextSeparator: '_',
-    // Preserve existing keys and values
     keepRemoved: false,
-    // Only add new keys, don't overwrite existing ones
     skipDefaultValues: true
   }
-}
+};
