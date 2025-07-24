@@ -47,7 +47,7 @@ i18n
     },
     
     // Updated namespace list to include hero
-    ns: ['common', 'navigation', 'services', 'packages', 'hero', 'landing', 'trust'],
+    ns: ['common', 'navigation', 'services', 'packages', 'hero', 'landing', 'trust', 'auth', 'adminPanel', 'onboarding', 'dashboard'],
     defaultNS: 'common'
   });
 
