@@ -46,8 +46,8 @@ i18n
         .replace(/^\w/, c => c.toUpperCase());
     },
     
-    // Namespace fallback chain
-    ns: ['common', 'navigation', 'services', 'packages', 'hero', 'landing'],
+    // Updated namespace list to include trust
+    ns: ['common', 'navigation', 'services', 'packages', 'hero', 'landing', 'trust'],
     defaultNS: 'common'
   });
 

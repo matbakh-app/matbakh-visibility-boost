@@ -149,7 +149,7 @@ export const useServicePackages = () =>
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
-// Helper function to get features by package code - FIXED: removed packages prefix
+// Helper function to get features by package code - REMOVED packages prefix
 const getFeaturesByCode = (code: string): string[] => {
   const featureMap: Record<string, string[]> = {
     'profile_dashboard_basic': [
