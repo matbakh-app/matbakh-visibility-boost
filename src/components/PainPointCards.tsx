@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Search, TrendingDown, Users, AlertTriangle } from 'lucide-react';
 
 const PainPointCards: React.FC = () => {
-  const { t } = useTranslation('packages');
+  const { t } = useTranslation('common');
 
   const painPoints = [
     {

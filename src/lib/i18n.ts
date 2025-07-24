@@ -11,7 +11,7 @@ i18n
   .init({
     lng: 'de', // Default language
     fallbackLng: 'de',
-    debug: true, // Enable debug mode to see what's happening
+    debug: false, // Disable debug mode for production
     
     interpolation: {
       escapeValue: false,

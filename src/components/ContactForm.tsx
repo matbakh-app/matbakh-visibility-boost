@@ -16,7 +16,7 @@ import { contactFormSchema } from '@/utils/validation';
 import { rateLimiter, logSecurityEvent } from '@/utils/security';
 
 const ContactForm: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('common');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Use enhanced validation schema
@@ -61,7 +61,7 @@ const ContactForm: React.FC = () => {
       }
 
       console.log('Email sent successfully:', data);
-      toast.success(t('contact.form.success'));
+      toast.success(t('contact.form.success', 'Nachricht erfolgreich gesendet'));
       form.reset();
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -78,7 +78,7 @@ const ContactForm: React.FC = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t('contact.form.title')}</CardTitle>
+        <CardTitle>{t('contact.form.title', 'Kontakt')}</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -88,10 +88,10 @@ const ContactForm: React.FC = () => {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('contact.form.name')}</FormLabel>
+                  <FormLabel>{t('contact.form.name', 'Name')}</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder={t('contact.form.name')} 
+                      placeholder={t('contact.form.name', 'Name')} 
                       disabled={isSubmitting}
                       {...field} 
                     />
@@ -106,10 +106,10 @@ const ContactForm: React.FC = () => {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('contact.form.email')}</FormLabel>
+                  <FormLabel>{t('contact.form.email', 'E-Mail')}</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder={t('contact.form.email')} 
+                      placeholder={t('contact.form.email', 'E-Mail')} 
                       type="email" 
                       disabled={isSubmitting}
                       {...field} 
@@ -125,10 +125,10 @@ const ContactForm: React.FC = () => {
               name="company_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('contact.form.company', 'Company (optional)')}</FormLabel>
+                  <FormLabel>{t('contact.form.company', 'Unternehmen (optional)')}</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder={t('contact.form.company', 'Your company')} 
+                      placeholder={t('contact.form.company', 'Ihr Unternehmen')} 
                       disabled={isSubmitting}
                       {...field} 
                     />
@@ -143,10 +143,10 @@ const ContactForm: React.FC = () => {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('contact.form.phone', 'Phone (optional)')}</FormLabel>
+                  <FormLabel>{t('contact.form.phone', 'Telefon (optional)')}</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder={t('contact.form.phone', 'Your phone number')} 
+                      placeholder={t('contact.form.phone', 'Ihre Telefonnummer')} 
                       disabled={isSubmitting}
                       {...field} 
                     />
@@ -161,10 +161,10 @@ const ContactForm: React.FC = () => {
               name="message"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('contact.form.message')}</FormLabel>
+                  <FormLabel>{t('contact.form.message', 'Nachricht')}</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder={t('contact.form.message')} 
+                      placeholder={t('contact.form.message', 'Ihre Nachricht')} 
                       className="min-h-[120px]" 
                       disabled={isSubmitting}
                       {...field} 
@@ -179,10 +179,10 @@ const ContactForm: React.FC = () => {
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Wird gesendet...
+                  {t('contact.form.sending', 'Wird gesendet...')}
                 </>
               ) : (
-                t('contact.form.send')
+                t('contact.form.send', 'Nachricht senden')
               )}
             </Button>
           </form>

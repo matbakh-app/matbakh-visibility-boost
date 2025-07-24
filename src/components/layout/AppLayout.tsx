@@ -1,8 +1,6 @@
 
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import BackHomeButtons from '@/components/navigation/BackHomeButtons';
 
 interface AppLayoutProps {
@@ -19,9 +17,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      {/* Header ist IMMER sichtbar */}
-      <Header />
-      
       {/* Main Content */}
       <main className="flex-1 w-full">
         {/* Back Navigation - nur auf bestimmten Seiten */}
@@ -40,9 +35,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           {children}
         </div>
       </main>
-      
-      {/* Footer ist IMMER sichtbar */}
-      <Footer />
     </div>
   );
 };
