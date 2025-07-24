@@ -10,19 +10,19 @@ import NavigationItemMobile from './NavigationItemMobile';
 import { getVisibleNavItems } from './NavigationConfig';
 
 const MobileMenu: React.FC = () => {
-  const { t } = useTranslation('navigation');
+  const { t, i18n } = useTranslation('navigation');
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
   const handleLogout = async () => {
-    await logout();
+    await signOut();
     setIsOpen(false);
     navigate('/');
   };
 
   const handleLogin = () => {
-    navigate('/login'); // Fixed: was /business/partner/login
+    navigate('/login');
     setIsOpen(false);
   };
 
@@ -31,7 +31,8 @@ const MobileMenu: React.FC = () => {
     setIsOpen(false);
   };
 
-  const visibleItems = getVisibleNavItems(user?.role);
+  const currentLanguage = (i18n.language || 'de') as 'de' | 'en';
+  const visibleItems = getVisibleNavItems(isAdmin, currentLanguage);
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -56,7 +57,8 @@ const MobileMenu: React.FC = () => {
                 <NavigationItemMobile
                   key={item.key}
                   item={item}
-                  onNavigate={handleNavigation}
+                  language={currentLanguage}
+                  onItemClick={() => handleNavigation(item.currentHref)}
                 />
               ))}
             </ul>

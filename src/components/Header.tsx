@@ -9,11 +9,6 @@ import Logo from './Logo';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const handleMobileMenuToggle = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
 
   return (
     <header className="bg-white border-b border-gray-200 w-full sticky top-0 z-50 shadow-sm min-h-[64px]">
@@ -41,10 +36,7 @@ const Header: React.FC = () => {
               <UserMenu />
             </div>
             <LanguageToggle />
-            <MobileMenu 
-              isOpen={isMobileMenuOpen} 
-              onToggle={handleMobileMenuToggle} 
-            />
+            <MobileMenu />
           </div>
         </div>
       </div>
