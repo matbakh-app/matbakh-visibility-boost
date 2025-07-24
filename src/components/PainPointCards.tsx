@@ -48,7 +48,7 @@ const PainPointCards: React.FC = () => {
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8 mb-12">
+      <div className="grid md:grid-cols-2 gap-8">
         {painPoints.map((point) => {
           const IconComponent = point.icon;
           return (
