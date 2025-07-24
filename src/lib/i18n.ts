@@ -11,7 +11,7 @@ i18n
   .init({
     lng: 'de', // Default language
     fallbackLng: 'de',
-    debug: false, // Disable debug mode for production
+    debug: false, // Keep debug disabled for production
     
     interpolation: {
       escapeValue: false,
@@ -46,7 +46,7 @@ i18n
         .replace(/^\w/, c => c.toUpperCase());
     },
     
-    // Updated namespace list to include trust
+    // Updated namespace list to include hero
     ns: ['common', 'navigation', 'services', 'packages', 'hero', 'landing', 'trust'],
     defaultNS: 'common'
   });
