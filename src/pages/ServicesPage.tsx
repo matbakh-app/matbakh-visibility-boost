@@ -156,7 +156,7 @@ const ServicesPage: React.FC = () => {
             onClick={() => window.open(getWhatsAppLink(), '_blank')}
           >
             <ExternalLink className="h-4 w-4 mr-2" />
-            Jetzt kostenlos starten
+            {t('cta.startFree')}
           </Button>
         )}
       </CardContent>
@@ -195,7 +195,7 @@ const ServicesPage: React.FC = () => {
           <div className="mb-16">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-black mb-4">
-                Weitere Services
+                {t('additionalServices.title')}
               </h2>
             </div>
 
@@ -210,7 +210,7 @@ const ServicesPage: React.FC = () => {
           <div className="mb-16">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-black mb-4">
-                Zusätzliche Services
+                {t('extraServices.title')}
               </h2>
             </div>
 
@@ -224,19 +224,19 @@ const ServicesPage: React.FC = () => {
           {/* CTA Section */}
           <div className="bg-gray-50 rounded-lg p-8 text-center">
             <h2 className="text-2xl font-bold text-black mb-4">
-              Bereit für mehr Sichtbarkeit?
+              {t('cta.ready')}
             </h2>
             <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-              Kontaktieren Sie uns für eine kostenlose Beratung und lassen Sie uns gemeinsam Ihre Online-Präsenz optimieren.
+              {t('cta.description')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" onClick={() => window.open(getWhatsAppLink(), '_blank')}>
-                Kostenlos beraten lassen
+                {t('cta.freeConsultation')}
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
               <Button asChild variant="outline" size="lg">
                 <Link to={packagesRoute} className="flex items-center gap-2">
-                  Angebote ansehen
+                  {t('cta.viewOffers')}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
