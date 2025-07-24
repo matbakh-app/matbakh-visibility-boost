@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { SeoMeta } from '@/components/SeoMeta';
@@ -8,8 +9,7 @@ import TrustElements from '@/components/TrustElements';
 import PackageFAQ from '@/components/PackageFAQ';
 import PainPointCards from '@/components/PainPointCards';
 import I18nDebugger from '@/components/I18nDebugger';
-
-// KEIN Header, Footer, AppLayout und BackHomeButtons hier importieren!
+import AppLayout from '@/components/layout/AppLayout';
 
 const AngebotePage: React.FC = () => {
   const { t } = useTranslation('packages');
@@ -17,34 +17,38 @@ const AngebotePage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('loading', 'Pakete werden geladen...')}</p>
+      <AppLayout>
+        <div className="min-h-screen bg-white flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+            <p className="text-gray-600">{t('loading', 'Pakete werden geladen...')}</p>
+          </div>
         </div>
-      </div>
+      </AppLayout>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-black mb-4">{t('errorTitle', 'Fehler beim Laden')}</h2>
-          <p className="text-gray-600 mb-4">{t('errorHint', 'Bitte versuchen Sie es später erneut')}</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
-          >
-            {t('reloadPage', 'Seite neu laden')}
-          </button>
+      <AppLayout>
+        <div className="min-h-screen bg-white flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-black mb-4">{t('errorTitle', 'Fehler beim Laden')}</h2>
+            <p className="text-gray-600 mb-4">{t('errorHint', 'Bitte versuchen Sie es später erneut')}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
+            >
+              {t('reloadPage', 'Seite neu laden')}
+            </button>
+          </div>
         </div>
-      </div>
+      </AppLayout>
     );
   }
 
   return (
-    <>
+    <AppLayout>
       <SeoMeta 
         title={t('title', 'Unsere Pakete')}
         description={t('subtitle', 'Wählen Sie das passende Angebot für Ihr Unternehmen')}
@@ -99,7 +103,7 @@ const AngebotePage: React.FC = () => {
         </div>
       </div>
       <I18nDebugger />
-    </>
+    </AppLayout>
   );
 };
 
