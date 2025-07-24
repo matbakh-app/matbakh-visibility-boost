@@ -21,108 +21,63 @@ const ServicesPage: React.FC = () => {
   const coreServices = [
     {
       icon: '🎯',
-      title: 'Google My Business Profil Setup',
-      description: 'Komplette Einrichtung und Optimierung Ihres Google Business Profils',
-      highlights: [
-        'Professionelle Profilgestaltung',
-        'Kategorie-Optimierung',
-        'Öffnungszeiten-Setup',
-        'Kontaktdaten-Verwaltung'
-      ]
+      titleKey: 'coreServices.googleSetup.title',
+      descriptionKey: 'coreServices.googleSetup.description',
+      highlightsKey: 'coreServices.googleSetup.highlights'
     },
     {
       icon: '📘',
-      title: 'Meta Business Profil Setup',
-      description: 'Einrichtung und Optimierung Ihrer Facebook und Instagram Business-Profile',
-      highlights: [
-        'Facebook Business Manager',
-        'Instagram Business Account',
-        'Verknüpfung der Plattformen',
-        'Grundlegende Optimierung'
-      ]
+      titleKey: 'coreServices.metaSetup.title',
+      descriptionKey: 'coreServices.metaSetup.description',
+      highlightsKey: 'coreServices.metaSetup.highlights'
     },
     {
       icon: '🤖',
-      title: 'Intelligente Profilverwaltung',
-      description: 'Automatisierte Verwaltung und Pflege Ihrer Online-Profile',
-      highlights: [
-        'Automatische Updates',
-        'Profil-Synchronisation',
-        'Content-Management',
-        'Performance-Monitoring'
-      ]
+      titleKey: 'coreServices.profileManagement.title',
+      descriptionKey: 'coreServices.profileManagement.description',
+      highlightsKey: 'coreServices.profileManagement.highlights'
     }
   ];
 
   const additionalServices = [
     {
       icon: '📊',
-      title: 'Analytics und Automatisierung',
-      description: 'Datenanalyse und automatisierte Prozesse für maximale Effizienz',
-      highlights: [
-        'Performance-Tracking',
-        'Automatisierte Berichte',
-        'KPI-Monitoring',
-        'Trend-Analyse'
-      ]
+      titleKey: 'additionalServices.analytics.title',
+      descriptionKey: 'additionalServices.analytics.description',
+      highlightsKey: 'additionalServices.analytics.highlights'
     },
     {
       icon: '📱',
-      title: 'Maßgeschneiderte Social Media Strategie',
-      description: 'Individuelle Social Media Strategie für Ihren Erfolg',
-      highlights: [
-        'Zielgruppen-Analyse',
-        'Content-Planung',
-        'Posting-Strategie',
-        'Engagement-Optimierung'
-      ]
+      titleKey: 'additionalServices.socialStrategy.title',
+      descriptionKey: 'additionalServices.socialStrategy.description',
+      highlightsKey: 'additionalServices.socialStrategy.highlights'
     },
     {
       icon: '🌐',
-      title: 'Nutzung aller Google Tools für maximale Reichweite',
-      description: 'Vollständige Integration aller Google-Services für optimale Sichtbarkeit',
-      highlights: [
-        'Google My Business',
-        'Google Analytics',
-        'Google Ads Integration',
-        'Google Maps Optimierung'
-      ]
+      titleKey: 'additionalServices.googleTools.title',
+      descriptionKey: 'additionalServices.googleTools.description',
+      highlightsKey: 'additionalServices.googleTools.highlights'
     }
   ];
 
   const extraServices = [
     {
       icon: '⭐',
-      title: 'Bewertungsmanagement',
-      description: 'Professionelles Management Ihrer Online-Bewertungen',
-      highlights: [
-        'Bewertungs-Monitoring',
-        'Antwort-Management',
-        'Reputation-Pflege',
-        'Feedback-Analyse'
-      ]
+      titleKey: 'extraServices.reviewManagement.title',
+      descriptionKey: 'extraServices.reviewManagement.description',
+      highlightsKey: 'extraServices.reviewManagement.highlights'
     },
     {
       icon: '🎯',
-      title: 'Zielgruppenanalyse',
-      description: 'Detaillierte Analyse Ihrer Zielgruppe für optimale Ansprache',
-      highlights: [
-        'Demografische Analyse',
-        'Verhalten-Tracking',
-        'Präferenz-Auswertung',
-        'Optimierungsvorschläge'
-      ]
+      titleKey: 'extraServices.targetAnalysis.title',
+      descriptionKey: 'extraServices.targetAnalysis.description',
+      highlightsKey: 'extraServices.targetAnalysis.highlights'
     },
     {
       icon: '⚙️',
-      title: 'Marketing Automatisierung',
-      description: 'Automatisierte Marketing-Prozesse für nachhaltigen Erfolg',
-      highlights: [
-        'E-Mail-Marketing',
-        'Lead-Generierung',
-        'Customer Journey',
-        'Conversion-Optimierung'
-      ]
+      titleKey: 'extraServices.automation.title',
+      descriptionKey: 'extraServices.automation.description',
+      highlightsKey: 'extraServices.automation.highlights'
     }
   ];
 
@@ -131,16 +86,16 @@ const ServicesPage: React.FC = () => {
       <CardHeader className="text-center">
         <div className="text-4xl mb-4 flex justify-center">{service.icon}</div>
         <CardTitle className="text-xl font-bold text-black">
-          {service.title}
+          {t(service.titleKey)}
         </CardTitle>
         <CardDescription className="text-gray-600">
-          {service.description}
+          {t(service.descriptionKey)}
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {service.highlights && Array.isArray(service.highlights) && service.highlights.length > 0 && (
+        {service.highlightsKey && (
           <ul className="space-y-2 mb-4">
-            {service.highlights.map((highlight: string, index: number) => (
+            {(t(service.highlightsKey, { returnObjects: true }) as string[]).map((highlight: string, index: number) => (
               <li key={index} className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
                 <span className="text-sm text-gray-700">{highlight}</span>
