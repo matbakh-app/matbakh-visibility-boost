@@ -34,10 +34,10 @@ const UserMenu: React.FC = () => {
     return (
       <Button
         variant="outline"
-        onClick={() => navigate('/business/partner/login')}
-        className="" // KRITISCHER FIX: Keine hidden/md:flex Klassen - immer sichtbar!
+        onClick={() => navigate('/login')}
+        className=""
       >
-        {tNav('login')}
+        {tNav('login', 'Login')}
       </Button>
     );
   }
@@ -45,26 +45,26 @@ const UserMenu: React.FC = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className=""> {/* KRITISCHER FIX: Immer sichtbar */}
-          {user.email || tAuth('profile')}
+        <Button variant="outline" className="">
+          {user.email || tAuth('profile', 'Profil')}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuItem onClick={() => navigate('/dashboard')}>
-          {tAuth('dashboard')}
+          {tAuth('dashboard', 'Dashboard')}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => navigate('/dashboard/profile')}>
-          {tAuth('profile')}
+          {tAuth('profile', 'Profil')}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => navigate('/dashboard/calendar')}>
-          {tAuth('calendar')}
+          {tAuth('calendar', 'Kalender')}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem 
           onClick={handleLogout}
           disabled={isLoggingOut}
         >
-          {isLoggingOut ? tAuth('redirecting') : tAuth('logout')}
+          {isLoggingOut ? tAuth('redirecting', 'Lädt...') : tAuth('logout', 'Abmelden')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

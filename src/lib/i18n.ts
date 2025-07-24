@@ -15,7 +15,7 @@ const debugI18n = (message: string, data?: any) => {
 // Collect missing keys for monitoring
 const missingKeys = new Set<string>();
 
-// Enhanced missing key handler with protection
+// Enhanced missing key handler with protection and fallbacks
 const handleMissingKey = (lng: string[], ns: string, key: string, fallbackValue: string) => {
   const keyPath = `${ns}:${key}`;
   
@@ -25,7 +25,6 @@ const handleMissingKey = (lng: string[], ns: string, key: string, fallbackValue:
     if (process.env.NODE_ENV === 'development') {
       console.warn(`🚨 [i18n] Missing translation key: ${keyPath} for language(s): ${lng.join(', ')}`);
       
-      // Sichere sessionStorage-Behandlung mit Error-Handling
       try {
         const existing = JSON.parse(sessionStorage.getItem('i18n-missing-keys') || '[]');
         existing.push({ 
@@ -41,26 +40,51 @@ const handleMissingKey = (lng: string[], ns: string, key: string, fallbackValue:
     }
   }
   
-  // Return a safe fallback that's visible but not breaking
-  return fallbackValue || key.split('.').pop() || key;
+  // Return intelligent fallback based on key
+  if (fallbackValue) return fallbackValue;
+  
+  // Generate fallback from key structure
+  const keyParts = key.split('.');
+  const lastPart = keyParts[keyParts.length - 1];
+  
+  // Common fallbacks for known patterns
+  const fallbacks: Record<string, string> = {
+    'title': 'Titel',
+    'subtitle': 'Untertitel', 
+    'description': 'Beschreibung',
+    'loading': 'Lädt...',
+    'error': 'Fehler',
+    'success': 'Erfolgreich',
+    'home': 'Start',
+    'services': 'Leistungen',
+    'offers': 'Angebote',
+    'contact': 'Kontakt',
+    'login': 'Login',
+    'logout': 'Abmelden',
+    'profile': 'Profil',
+    'dashboard': 'Dashboard',
+    'back': 'Zurück',
+    'next': 'Weiter',
+    'save': 'Speichern',
+    'cancel': 'Abbrechen'
+  };
+  
+  return fallbacks[lastPart] || lastPart || key;
 };
 
-// KRITISCHER FIX: localStorage säubern bei JSON-Parse-Fehlern
+// Cleanup corrupted localStorage
 const cleanupCorruptedLocalStorage = () => {
   try {
     const stored = localStorage.getItem('i18nextLng');
     if (stored) {
-      // Prüfe ob es valid JSON ist
       try {
         JSON.parse(stored);
-        // Wenn erfolgreich geparst, prüfe ob es ein gültiger Sprach-Code ist
         if (stored !== 'de' && stored !== 'en' && !stored.startsWith('"de"') && !stored.startsWith('"en"')) {
           console.warn('🔧 [i18n] Invalid language setting in localStorage, fixing...');
           localStorage.setItem('i18nextLng', 'de');
         }
       } catch (parseError) {
         console.warn('🔧 [i18n] Corrupted localStorage language setting detected, cleaning up...');
-        // Versuche zuerst zu reparieren
         if (stored === 'de' || stored === 'en') {
           localStorage.setItem('i18nextLng', `"${stored}"`);
         } else {
@@ -70,7 +94,6 @@ const cleanupCorruptedLocalStorage = () => {
     }
   } catch (error) {
     console.error('localStorage cleanup failed:', error);
-    // Fallback: localStorage komplett löschen für i18n
     try {
       localStorage.removeItem('i18nextLng');
     } catch (e) {
@@ -87,20 +110,20 @@ i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    // Enhanced configuration for maximum stability
     lng: 'de',
     fallbackLng: 'de',
     supportedLngs: ['de', 'en'],
-    // KRITISCHER FIX: Auth-Namespace hinzufügen!
     ns: [
       'common', 'translation', 'adminPanel', 'auth', 'nav', 'footer', 'hero', 
-      'features', 'dashboard', 'cookieConsent', 'landing', 'packages', 'services', 'admin', 'pricing'
+      'features', 'dashboard', 'cookieConsent', 'landing', 'packages', 'services', 
+      'admin', 'pricing', 'onboarding', 'legal-kontakt', 'legal-impressum',
+      'legal-datenschutz', 'legal-agb', 'legal-nutzung', 'legal-privacy',
+      'legal-imprint', 'legal-terms', 'legal-usage', 'legal-contact'
     ],
     defaultNS: 'common',
     fallbackNS: ['common', 'translation'],
     backend: {
       loadPath: '/locales/{{lng}}/{{ns}}.json',
-      // Add retry logic for failed loads
       requestOptions: {
         cache: 'no-cache'
       }
@@ -108,32 +131,25 @@ i18n
     interpolation: {
       escapeValue: false
     },
-    // Enhanced error handling
     debug: process.env.NODE_ENV === 'development',
     saveMissing: false,
     missingKeyHandler: handleMissingKey,
-    // Improved parsing and loading
     parseMissingKeyHandler: (key: string) => {
       return key.split('.').pop() || key;
     },
-    // Better error recovery
     load: 'languageOnly',
     preload: ['de', 'en'],
-    // KRITISCHER FIX: Sichere localStorage-Behandlung mit robuster Fehlerbehandlung
     detection: {
       order: ['localStorage', 'navigator', 'htmlTag'],
       caches: ['localStorage'],
-      // localStorage Error-Handling - robuster
       lookupLocalStorage: 'i18nextLng',
-      // Sichere Parser-Funktion hinzufügen
       convertDetectedLanguage: (lng: string) => {
-        // Sicherstellen dass nur gültige Sprachen zurückgegeben werden
         return ['de', 'en'].includes(lng) ? lng : 'de';
       }
     }
   });
 
-// Debug current language and loaded namespaces
+// Enhanced event handlers
 i18n.on('initialized', (options) => {
   debugI18n('i18n initialized', { 
     language: i18n.language, 
@@ -150,7 +166,6 @@ i18n.on('loaded', (loaded) => {
   debugI18n('Namespaces loaded:', loaded);
 });
 
-// Error-Handler für Backend-Loading-Fehler
 i18n.on('failedLoading', (lng, ns, msg) => {
   console.warn(`🚨 [i18n] Failed to load namespace "${ns}" for language "${lng}":`, msg);
 });
