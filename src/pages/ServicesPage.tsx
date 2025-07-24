@@ -5,11 +5,10 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import AppLayout from '@/components/layout/AppLayout';
 import { SeoMeta } from '@/components/SeoMeta';
 
 const ServicesPage: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation(['services', 'common']);
 
   const packagesRoute = i18n.language === 'en' ? '/packages' : '/angebote';
 
@@ -18,13 +17,20 @@ const ServicesPage: React.FC = () => {
     return `https://wa.me/4915123456789?text=${message}`;
   };
 
-  // Helper function to safely get array from translation
+  // Helper function to safely get array from translation with proper typing
   const getTranslationArray = (key: string): string[] => {
-    const result = t(key, { returnObjects: true });
-    if (Array.isArray(result)) {
-      return result;
+    try {
+      const result = t(key, { returnObjects: true });
+      // Ensure we always return a string array
+      if (Array.isArray(result)) {
+        return result.filter((item): item is string => typeof item === 'string');
+      }
+      // If translation fails, return empty array
+      return [];
+    } catch (error) {
+      console.warn(`Failed to load translation array for key: ${key}`, error);
+      return [];
     }
-    return [];
   };
 
   const coreServices = [
@@ -90,15 +96,22 @@ const ServicesPage: React.FC = () => {
     }
   ];
 
-  const ServiceCard = ({ service, showButton = false }: { service: any, showButton?: boolean }) => (
+  interface Service {
+    icon: string;
+    titleKey: string;
+    descriptionKey: string;
+    highlights: string[];
+  }
+
+  const ServiceCard = ({ service, showButton = false }: { service: Service, showButton?: boolean }) => (
     <Card className="bg-white border-2 hover:border-primary/30 transition-colors h-full">
       <CardHeader className="text-center">
         <div className="text-4xl mb-4 flex justify-center">{service.icon}</div>
         <CardTitle className="text-xl font-bold text-black">
-          {t(service.titleKey)}
+          {t(service.titleKey, service.titleKey)}
         </CardTitle>
         <CardDescription className="text-gray-600">
-          {t(service.descriptionKey)}
+          {t(service.descriptionKey, service.descriptionKey)}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -132,17 +145,17 @@ const ServicesPage: React.FC = () => {
       <SeoMeta
         title={t('services.pageTitle', 'Kernleistungen')}
         description={t('services.pageSubtitle', 'matbakh.app übernimmt für Sie')}
-        namespace="translation"
+        namespace="services"
       />
-      <AppLayout>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="py-16">
           {/* Header */}
           <div className="text-center mb-16">
             <h1 className="text-4xl font-bold text-black mb-4">
-              {t('services.pageTitle')}
+              {t('services.pageTitle', 'Kernleistungen')}
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              {t('services.pageSubtitle')}
+              {t('services.pageSubtitle', 'matbakh.app übernimmt für Sie')}
             </p>
           </div>
 
@@ -159,7 +172,7 @@ const ServicesPage: React.FC = () => {
           <div className="mb-16">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-black mb-4">
-                {t('services.additionalTitle')}
+                {t('services.additionalTitle', 'Zusätzliche Services')}
               </h2>
             </div>
 
@@ -188,26 +201,26 @@ const ServicesPage: React.FC = () => {
           {/* CTA Section */}
           <div className="bg-gray-50 rounded-lg p-8 text-center">
             <h2 className="text-2xl font-bold text-black mb-4">
-              {t('services.ctaTitle')}
+              {t('services.ctaTitle', 'Bereit für mehr Sichtbarkeit?')}
             </h2>
             <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-              {t('services.ctaSubtitle')}
+              {t('services.ctaSubtitle', 'Kontaktieren Sie uns für eine kostenlose Beratung')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" onClick={() => window.open(getWhatsAppLink(), '_blank')}>
-                {t('services.ctaButton1')}
+                {t('services.ctaButton1', 'Kostenlos beraten lassen')}
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
               <Button asChild variant="outline" size="lg">
                 <Link to={packagesRoute} className="flex items-center gap-2">
-                  {t('services.ctaButton2')}
+                  {t('services.ctaButton2', 'Angebote ansehen')}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
             </div>
           </div>
         </div>
-      </AppLayout>
+      </div>
     </>
   );
 };
