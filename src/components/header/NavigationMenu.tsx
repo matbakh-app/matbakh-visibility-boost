@@ -12,7 +12,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 const NavigationMenu: React.FC = () => {
-  const { t, i18n } = useTranslation('nav');
+  const { t, i18n } = useTranslation('navigation');
   const { isAdmin } = useAuth();
   const location = useLocation();
   const [currentLanguage, setCurrentLanguage] = useState(i18n.language);
@@ -41,8 +41,8 @@ const NavigationMenu: React.FC = () => {
   return (
     <nav className="hidden md:flex space-x-8">
       {visibleItems.map((item) => {
-        const labelKey = item.labelKey;
-        const label = isSafeTranslationKey(labelKey) ? t(labelKey) : labelKey;
+        const labelKey = item.labelKey.replace('nav.', '');
+        const label = isSafeTranslationKey(labelKey) ? t(labelKey, item.currentLabel) : item.currentLabel;
         const href = getNavLink(item.key, lng);
         const isActive = location.pathname === href;
 

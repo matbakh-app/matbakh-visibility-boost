@@ -2,17 +2,16 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LogOut, User, Settings, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { User, Settings, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const UserMenu: React.FC = () => {
@@ -31,46 +30,43 @@ const UserMenu: React.FC = () => {
 
   if (!user) {
     return (
-      <Button variant="outline" size="sm" onClick={handleLogin}>
+      <Button 
+        onClick={handleLogin}
+        variant="outline"
+        size="sm"
+        className="text-gray-700 hover:text-black"
+      >
         {t('login', 'Anmelden')}
       </Button>
     );
   }
 
-  const userInitials = user.email?.charAt(0).toUpperCase() || 'U';
+  const userInitials = user.email?.substring(0, 2).toUpperCase() || 'U';
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
+            <AvatarImage src={user.user_metadata?.avatar_url} alt={user.email} />
             <AvatarFallback>{userInitials}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">
-              {user.email}
-            </p>
-            <p className="text-xs leading-none text-muted-foreground">
-              {user.email}
-            </p>
+        <div className="flex items-center justify-start gap-2 p-2">
+          <div className="flex flex-col space-y-1 leading-none">
+            <p className="font-medium">{user.email}</p>
           </div>
-        </DropdownMenuLabel>
+        </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => navigate('/dashboard')}>
-          <BarChart3 className="mr-2 h-4 w-4" />
+          <User className="mr-2 h-4 w-4" />
           <span>{t('dashboard', 'Dashboard')}</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => navigate('/dashboard/profile')}>
-          <User className="mr-2 h-4 w-4" />
-          <span>{t('profile', 'Profil')}</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate('/dashboard/settings')}>
           <Settings className="mr-2 h-4 w-4" />
-          <span>{t('settings', 'Einstellungen')}</span>
+          <span>{t('profile', 'Profil')}</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout}>
