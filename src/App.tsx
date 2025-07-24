@@ -65,7 +65,7 @@ function App() {
         <div className="min-h-screen bg-background">
           <Suspense fallback={<div>Loading...</div>}>
             <Routes>
-              {/* Main routes */}
+              {/* Main routes with AppLayout wrapper */}
               <Route path="/" element={<AppLayout><Outlet /></AppLayout>}>
                 <Route index element={<Index />} />
                 <Route path="business" element={<BusinessLanding />} />
@@ -98,7 +98,7 @@ function App() {
               {/* Partner/Business routes */}
               <Route path="/partner" element={
                 <ProtectedRoute>
-                  <div />
+                  <Outlet />
                 </ProtectedRoute>
               }>
                 <Route path="onboarding" element={<PartnerOnboarding />} />
