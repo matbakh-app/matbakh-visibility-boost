@@ -18,15 +18,15 @@ import { useAuth } from '@/contexts/AuthContext';
 const UserMenu: React.FC = () => {
   const { t } = useTranslation('navigation');
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
 
   const handleLogout = async () => {
-    await logout();
+    await signOut();
     navigate('/');
   };
 
   const handleLogin = () => {
-    navigate('/login'); // Fixed: was /business/partner/login
+    navigate('/login');
   };
 
   if (!user) {
