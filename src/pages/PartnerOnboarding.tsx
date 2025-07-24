@@ -1,8 +1,12 @@
 
+/*
+ * Layout-Struktur zentralisiert – keine eigenen Layout-Komponenten mehr verwenden. 
+ * Änderungen nur nach Rücksprache.
+ */
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import Header from '@/components/Header';
 import { SmartOnboardingWizard } from '@/components/onboarding/SmartOnboardingWizard';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -117,10 +121,7 @@ const PartnerOnboarding: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
-      <SmartOnboardingWizard onComplete={handleOnboardingComplete} />
-    </div>
+    <SmartOnboardingWizard onComplete={handleOnboardingComplete} />
   );
 };
 

@@ -1,10 +1,13 @@
 
+/*
+ * Layout-Struktur zentralisiert – keine eigenen Layout-Komponenten mehr verwenden. 
+ * Änderungen nur nach Rücksprache.
+ */
+
 import React, { useEffect, Suspense, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import AuthTabsContainer from '@/components/auth/AuthTabsContainer';
 import AuthLoadingState from '@/components/auth/AuthLoadingState';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -78,60 +81,54 @@ const BusinessLogin: React.FC = () => {
 
   return (
     <Suspense fallback={<AuthLoadingState />}>
-      <div className="min-h-screen bg-white">
-        <Header />
-
-        <main className="flex items-center justify-center min-h-[80vh] px-4">
-          <div className="w-full max-w-md space-y-6 p-6 border rounded-2xl shadow-sm bg-white">
-            <div className="text-center space-y-2">
-              <h1 className="text-2xl font-bold">
-                {t('businessLogin')}
-              </h1>
-              <p className="text-sm text-gray-600">
-                {t('connectGoogleProfile')}
-              </p>
-            </div>
-
-            {/* Debug Info - nur im Development */}
-            {process.env.NODE_ENV === 'development' && (
-              <div className="text-xs text-red-500 bg-red-50 p-2 rounded">
-                Debug: ready={ready.toString()}, authLoaded={i18n.hasLoadedNamespace('auth').toString()}, 
-                lang={i18n.language}, businessLogin="{t('businessLogin')}"
-              </div>
-            )}
-
-            {/* OAuth Error/Success Status */}
-            {oauthError && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{oauthError}</AlertDescription>
-              </Alert>
-            )}
-
-            {callbackStatus === 'success' && (
-              <Alert>
-                <CheckCircle className="h-4 w-4" />
-                <AlertDescription>
-                  {t('messages.googleAuthSuccess')}
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {callbackStatus === 'error' && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  {t('messages.googleAuthError')}
-                </AlertDescription>
-              </Alert>
-            )}
-
-            <AuthTabsContainer />
+      <main className="flex items-center justify-center min-h-[80vh] px-4">
+        <div className="w-full max-w-md space-y-6 p-6 border rounded-2xl shadow-sm bg-white">
+          <div className="text-center space-y-2">
+            <h1 className="text-2xl font-bold">
+              {t('businessLogin')}
+            </h1>
+            <p className="text-sm text-gray-600">
+              {t('connectGoogleProfile')}
+            </p>
           </div>
-        </main>
 
-        <Footer />
-      </div>
+          {/* Debug Info - nur im Development */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="text-xs text-red-500 bg-red-50 p-2 rounded">
+              Debug: ready={ready.toString()}, authLoaded={i18n.hasLoadedNamespace('auth').toString()}, 
+              lang={i18n.language}, businessLogin="{t('businessLogin')}"
+            </div>
+          )}
+
+          {/* OAuth Error/Success Status */}
+          {oauthError && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{oauthError}</AlertDescription>
+            </Alert>
+          )}
+
+          {callbackStatus === 'success' && (
+            <Alert>
+              <CheckCircle className="h-4 w-4" />
+              <AlertDescription>
+                {t('messages.googleAuthSuccess')}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {callbackStatus === 'error' && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                {t('messages.googleAuthError')}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <AuthTabsContainer />
+        </div>
+      </main>
     </Suspense>
   );
 };
