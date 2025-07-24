@@ -1,137 +1,221 @@
 
-#!/usr/bin/env ts-node
+import { promises as fs } from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-import * as fs from 'fs';
-import * as path from 'path';
-import { glob } from 'glob';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-interface MissingKeyReport {
+interface MissingKeys {
   [namespace: string]: string[];
 }
 
-// Sammle alle t()-Aufrufe aus dem Code
-function extractTranslationKeys(content: string): string[] {
-  const patterns = [
-    /t\(['"`]([^'"`]+)['"`]/g,
-    /useTranslation\(['"`]([^'"`]+)['"`]\)/g,
-    /\{t\(['"`]([^'"`]+)['"`]/g
-  ];
+interface TranslationFiles {
+  [namespace: string]: {
+    de: any;
+    en: any;
+  };
+}
+
+async function scanForTKeys(filePath: string): Promise<{ namespace: string; key: string }[]> {
+  const content = await fs.readFile(filePath, 'utf8');
   
-  const keys: string[] = [];
+  // Regex für t('namespace.key') oder t('key', 'fallback')
+  const tKeyRegex = /t\(['"]([\w\.-]+)['"]/g;
+  const useTranslationRegex = /useTranslation\(['"]([\w-]+)['"]\)/g;
   
-  patterns.forEach(pattern => {
-    let match;
-    while ((match = pattern.exec(content)) !== null) {
-      keys.push(match[1]);
+  const keys: { namespace: string; key: string }[] = [];
+  let match;
+  
+  // Finde useTranslation() calls für Standard-Namespace
+  const namespaceMatches = [...content.matchAll(useTranslationRegex)];
+  const defaultNamespace = namespaceMatches[0]?.[1] || 'common';
+  
+  // Finde alle t() calls
+  while ((match = tKeyRegex.exec(content)) !== null) {
+    const fullKey = match[1];
+    
+    if (fullKey.includes('.')) {
+      // Namespace.key Format
+      const [namespace, ...keyParts] = fullKey.split('.');
+      keys.push({
+        namespace,
+        key: keyParts.join('.')
+      });
+    } else {
+      // Nur key, verwende Standard-Namespace
+      keys.push({
+        namespace: defaultNamespace,
+        key: fullKey
+      });
     }
-  });
+  }
   
   return keys;
 }
 
-// Lade vorhandene Übersetzungen
-function loadTranslations(lang: string): Record<string, any> {
-  const translations: Record<string, any> = {};
-  const localesDir = path.join('public', 'locales', lang);
+async function loadTranslationFiles(): Promise<TranslationFiles> {
+  const localesDir = path.join(__dirname, '..', 'public', 'locales');
+  const files: TranslationFiles = {};
   
-  if (fs.existsSync(localesDir)) {
-    const files = fs.readdirSync(localesDir);
-    files.forEach(file => {
+  const languages = ['de', 'en'];
+  
+  for (const lang of languages) {
+    const langDir = path.join(localesDir, lang);
+    const langFiles = await fs.readdir(langDir);
+    
+    for (const file of langFiles) {
       if (file.endsWith('.json')) {
         const namespace = file.replace('.json', '');
-        const content = fs.readFileSync(path.join(localesDir, file), 'utf8');
+        const content = await fs.readFile(path.join(langDir, file), 'utf8');
+        
+        if (!files[namespace]) {
+          files[namespace] = { de: {}, en: {} };
+        }
+        
         try {
-          translations[namespace] = JSON.parse(content);
+          files[namespace][lang as 'de' | 'en'] = JSON.parse(content);
         } catch (error) {
-          console.warn(`Failed to parse ${file}:`, error);
+          console.error(`Error parsing ${lang}/${file}:`, error);
+          files[namespace][lang as 'de' | 'en'] = {};
         }
       }
-    });
+    }
   }
   
-  return translations;
+  return files;
 }
 
-// Prüfe ob Key existiert
-function keyExists(key: string, translations: Record<string, any>): boolean {
-  const [namespace, ...keyParts] = key.split('.');
-  const keyPath = keyParts.join('.');
+function checkKeyExists(obj: any, key: string): boolean {
+  const keys = key.split('.');
+  let current = obj;
   
-  if (!translations[namespace]) return false;
+  for (const k of keys) {
+    if (current && typeof current === 'object' && k in current) {
+      current = current[k];
+    } else {
+      return false;
+    }
+  }
   
-  const value = keyPath.split('.').reduce((obj: any, part: string) => {
-    return obj && obj[part];
-  }, translations[namespace]);
-  
-  return value !== undefined;
+  return current !== undefined;
 }
 
-async function generateMissingI18nReport(): Promise<void> {
-  console.log('🔍 Analyzing i18n usage...');
+async function scanSourceFiles(): Promise<{ namespace: string; key: string; file: string }[]> {
+  const srcDir = path.join(__dirname, '..', 'src');
+  const allKeys: { namespace: string; key: string; file: string }[] = [];
   
-  // Sammle alle .tsx/.ts Dateien
-  const files = await glob('src/**/*.{tsx,ts}', { ignore: ['src/**/*.d.ts'] });
+  async function scanDirectory(dir: string): Promise<void> {
+    const entries = await fs.readdir(dir, { withFileTypes: true });
+    
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      
+      if (entry.isDirectory()) {
+        await scanDirectory(fullPath);
+      } else if (entry.name.endsWith('.tsx') || entry.name.endsWith('.ts')) {
+        const keys = await scanForTKeys(fullPath);
+        const relativePath = path.relative(srcDir, fullPath);
+        
+        for (const key of keys) {
+          allKeys.push({
+            ...key,
+            file: relativePath
+          });
+        }
+      }
+    }
+  }
   
-  const allKeys = new Set<string>();
+  await scanDirectory(srcDir);
+  return allKeys;
+}
+
+async function generateMissingKeysReport(): Promise<void> {
+  console.log('🔍 Scanning for missing translation keys...');
   
-  // Extrahiere alle Keys aus den Dateien
-  files.forEach(file => {
-    const content = fs.readFileSync(file, 'utf8');
-    const keys = extractTranslationKeys(content);
-    keys.forEach(key => allKeys.add(key));
-  });
-  
-  // Lade Übersetzungen
-  const deTranslations = loadTranslations('de');
-  const enTranslations = loadTranslations('en');
-  
-  // Identifiziere fehlende Keys
-  const missingDE: MissingKeyReport = {};
-  const missingEN: MissingKeyReport = {};
-  
-  allKeys.forEach(key => {
-    if (!keyExists(key, deTranslations)) {
-      const namespace = key.split('.')[0];
-      if (!missingDE[namespace]) missingDE[namespace] = [];
-      missingDE[namespace].push(key);
+  try {
+    const [sourceKeys, translationFiles] = await Promise.all([
+      scanSourceFiles(),
+      loadTranslationFiles()
+    ]);
+    
+    const missingKeys: MissingKeys = {};
+    const reportDetails: { [namespace: string]: { [key: string]: string[] } } = {};
+    
+    for (const { namespace, key, file } of sourceKeys) {
+      // Skip legal namespace - protected content
+      if (namespace.startsWith('legal')) {
+        continue;
+      }
+      
+      const translations = translationFiles[namespace];
+      
+      if (!translations) {
+        // Namespace doesn't exist
+        if (!missingKeys[namespace]) {
+          missingKeys[namespace] = [];
+          reportDetails[namespace] = {};
+        }
+        
+        if (!missingKeys[namespace].includes(key)) {
+          missingKeys[namespace].push(key);
+          reportDetails[namespace][key] = [file];
+        }
+      } else {
+        // Check if key exists in DE and EN
+        const missingInDe = !checkKeyExists(translations.de, key);
+        const missingInEn = !checkKeyExists(translations.en, key);
+        
+        if (missingInDe || missingInEn) {
+          if (!missingKeys[namespace]) {
+            missingKeys[namespace] = [];
+            reportDetails[namespace] = {};
+          }
+          
+          if (!missingKeys[namespace].includes(key)) {
+            missingKeys[namespace].push(key);
+            reportDetails[namespace][key] = reportDetails[namespace][key] || [];
+          }
+          
+          if (!reportDetails[namespace][key].includes(file)) {
+            reportDetails[namespace][key].push(file);
+          }
+        }
+      }
     }
     
-    if (!keyExists(key, enTranslations)) {
-      const namespace = key.split('.')[0];
-      if (!missingEN[namespace]) missingEN[namespace] = [];
-      missingEN[namespace].push(key);
+    // Generate report
+    const report = {
+      timestamp: new Date().toISOString(),
+      summary: {
+        totalMissingKeys: Object.values(missingKeys).reduce((sum, keys) => sum + keys.length, 0),
+        affectedNamespaces: Object.keys(missingKeys).length,
+        protectedNamespaces: ['legal-*']
+      },
+      missingKeys,
+      details: reportDetails
+    };
+    
+    const reportPath = path.join(__dirname, 'missing-i18n-keys-report.json');
+    await fs.writeFile(reportPath, JSON.stringify(report, null, 2));
+    
+    console.log('✅ Missing keys report generated:', reportPath);
+    console.log(`📊 Found ${report.summary.totalMissingKeys} missing keys in ${report.summary.affectedNamespaces} namespaces`);
+    
+    // Print summary
+    for (const [namespace, keys] of Object.entries(missingKeys)) {
+      console.log(`🔸 ${namespace}: ${keys.length} missing keys`);
     }
-  });
-  
-  // Erstelle Report
-  const report = {
-    timestamp: new Date().toISOString(),
-    totalKeysFound: allKeys.size,
-    missingDE: missingDE,
-    missingEN: missingEN,
-    allKeysUsed: Array.from(allKeys).sort()
-  };
-  
-  // Speichere Report
-  fs.writeFileSync('scripts/missing-i18n-keys-report.json', JSON.stringify(report, null, 2));
-  
-  console.log('📊 Report erstellt: scripts/missing-i18n-keys-report.json');
-  console.log(`📈 Gefundene Keys: ${allKeys.size}`);
-  console.log(`❌ Fehlende DE Keys: ${Object.values(missingDE).flat().length}`);
-  console.log(`❌ Fehlende EN Keys: ${Object.values(missingEN).flat().length}`);
-  
-  // Zeige kritische fehlende Keys
-  if (Object.keys(missingDE).length > 0) {
-    console.log('\n🚨 Kritische fehlende DE Keys:');
-    Object.entries(missingDE).forEach(([namespace, keys]) => {
-      console.log(`  ${namespace}: ${keys.length} Keys`);
-    });
+    
+  } catch (error) {
+    console.error('❌ Error generating missing keys report:', error);
   }
 }
 
-// Hauptfunktion
-if (require.main === module) {
-  generateMissingI18nReport().catch(console.error);
+// Run if called directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  generateMissingKeysReport();
 }
 
-export { generateMissingI18nReport };
+export { generateMissingKeysReport };
