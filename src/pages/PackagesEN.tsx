@@ -7,8 +7,10 @@ import PackageFAQ from '@/components/PackageFAQ';
 import PricingCard from '@/components/PricingCard';
 import ProcessOverview from '@/components/ProcessOverview';
 import { useServicePackages } from '@/hooks/useServicePackages';
-import AppLayout from '@/components/layout/AppLayout';
 import { SeoMeta } from '@/components/SeoMeta';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import BackHomeButtons from '@/components/navigation/BackHomeButtons';
 
 const PackagesEN: React.FC = () => {
   const { t } = useTranslation('packages');
@@ -54,46 +56,61 @@ const PackagesEN: React.FC = () => {
   }
 
   return (
-    <>
+    <div className="min-h-screen bg-white flex flex-col">
       <SeoMeta
         title={t('title')}
         description={t('subtitle')}
         namespace="packages"
       />
-      <AppLayout>
-        <div className="py-16">
-          {/* Header */}
-          <div className="text-center mb-16">
-            <h1 className="text-4xl font-bold text-black mb-4">
-              {t('title')}
-            </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              {t('subtitle')}
-            </p>
+      
+      <Header />
+      
+      <main className="flex-1 w-full">
+        <div className="w-full border-b border-gray-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="py-4">
+              <BackHomeButtons />
+            </div>
           </div>
-
-          {/* Limited Time Banner */}
-          <div className="bg-black text-white rounded-lg p-6 text-center mb-12">
-            <h2 className="text-xl font-bold mb-2">{t('banner.text')}</h2>
-            <p className="text-lg mb-2">{t('banner.discount')}</p>
-            <p className="text-sm opacity-90">{t('banner.description')}</p>
-          </div>
-
-          {/* Packages Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-            {packages.map((pkg) => (
-              <PricingCard key={pkg.id} package={pkg} language="en" />
-            ))}
-          </div>
-
-          {/* Components */}
-          <TrustElements language="en" />
-          <PackageComparison packages={packages} language="en" />
-          <ProcessOverview language="en" />
-          <PackageFAQ language="en" />
         </div>
-      </AppLayout>
-    </>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="py-16">
+            {/* Header */}
+            <div className="text-center mb-16">
+              <h1 className="text-4xl font-bold text-black mb-4">
+                {t('title')}
+              </h1>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                {t('subtitle')}
+              </p>
+            </div>
+
+            {/* Limited Time Banner */}
+            <div className="bg-black text-white rounded-lg p-6 text-center mb-12">
+              <h2 className="text-xl font-bold mb-2">{t('banner.text')}</h2>
+              <p className="text-lg mb-2">{t('banner.discount')}</p>
+              <p className="text-sm opacity-90">{t('banner.description')}</p>
+            </div>
+
+            {/* Packages Grid */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+              {packages.map((pkg) => (
+                <PricingCard key={pkg.id} package={pkg} language="en" />
+              ))}
+            </div>
+
+            {/* Components */}
+            <TrustElements language="en" />
+            <PackageComparison packages={packages} language="en" />
+            <ProcessOverview language="en" />
+            <PackageFAQ language="en" />
+          </div>
+        </div>
+      </main>
+      
+      <Footer />
+    </div>
   );
 };
 
