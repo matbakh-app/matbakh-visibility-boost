@@ -11,7 +11,7 @@ i18n
   .init({
     lng: 'de', // Default language
     fallbackLng: 'de',
-    debug: false,
+    debug: true, // Enable debug mode to see what's happening
     
     interpolation: {
       escapeValue: false,
@@ -33,6 +33,7 @@ i18n
     
     // Default fallback for missing keys
     parseMissingKeyHandler: (key: string) => {
+      console.warn('Missing i18n key:', key);
       // Extract last part of key as fallback
       const keyParts = key.split('.');
       const lastPart = keyParts[keyParts.length - 1];
