@@ -1,95 +1,50 @@
 
-import { secureStorage } from './security';
+const ONBOARDING_STORAGE_KEY = 'matbakh_onboarding_data';
 
-// Enhanced localStorage wrapper with better error handling
-const safeLocalStorage = {
-  setItem: (key: string, value: any, expirationHours?: number) => {
+export const onboardingStorage = {
+  save: (step: number, data: any) => {
     try {
-      return secureStorage.setItem(key, value, expirationHours);
+      const storageData = {
+        step,
+        data,
+        timestamp: new Date().toISOString()
+      };
+      localStorage.setItem(ONBOARDING_STORAGE_KEY, JSON.stringify(storageData));
     } catch (error) {
-      console.error(`Failed to set localStorage item "${key}":`, error);
-      return false;
+      console.error('Failed to save onboarding data:', error);
     }
   },
 
-  getItem: (key: string) => {
+  restore: (): { step: number; data: any; timestamp: string } | null => {
     try {
-      return secureStorage.getItem(key);
-    } catch (error) {
-      console.error(`Failed to get localStorage item "${key}":`, error);
-      // Try to clean up corrupted entry
-      try {
-        localStorage.removeItem(key);
-      } catch (cleanupError) {
-        console.error(`Failed to cleanup corrupted localStorage item "${key}":`, cleanupError);
+      const stored = localStorage.getItem(ONBOARDING_STORAGE_KEY);
+      if (!stored) return null;
+      
+      const parsed = JSON.parse(stored);
+      
+      // Check if data is not older than 24 hours
+      const timestamp = new Date(parsed.timestamp);
+      const now = new Date();
+      const hoursDiff = (now.getTime() - timestamp.getTime()) / (1000 * 60 * 60);
+      
+      if (hoursDiff > 24) {
+        localStorage.removeItem(ONBOARDING_STORAGE_KEY);
+        return null;
       }
+      
+      return parsed;
+    } catch (error) {
+      console.error('Failed to restore onboarding data:', error);
+      localStorage.removeItem(ONBOARDING_STORAGE_KEY);
       return null;
     }
   },
 
-  removeItem: (key: string) => {
+  clear: () => {
     try {
-      return secureStorage.removeItem(key);
+      localStorage.removeItem(ONBOARDING_STORAGE_KEY);
     } catch (error) {
-      console.error(`Failed to remove localStorage item "${key}":`, error);
-      return false;
+      console.error('Failed to clear onboarding data:', error);
     }
-  }
-};
-
-// Secure localStorage wrapper for onboarding data
-export const onboardingStorage = {
-  save: (step: number, data: any) => {
-    safeLocalStorage.setItem('onboarding_data', { step, data }, 24); // 24 hour expiration
-  },
-
-  restore: () => {
-    return safeLocalStorage.getItem('onboarding_data');
-  },
-
-  clear: () => {
-    safeLocalStorage.removeItem('onboarding_data');
-  }
-};
-
-// Secure localStorage wrapper for consent data
-export const consentStorage = {
-  save: (consent: any) => {
-    safeLocalStorage.setItem('cookie_consent', consent, 8760); // 1 year expiration
-  },
-
-  restore: () => {
-    return safeLocalStorage.getItem('cookie_consent');
-  },
-
-  clear: () => {
-    safeLocalStorage.removeItem('cookie_consent');
-  }
-};
-
-// Clear all expired data on app load - with enhanced error handling
-export const clearExpiredData = () => {
-  try {
-    secureStorage.clearExpired();
-  } catch (error) {
-    console.error('Failed to clear expired localStorage data:', error);
-    // Fallback: Try to clear known keys individually
-    const knownKeys = ['onboarding_data', 'cookie_consent', 'i18nextLng'];
-    knownKeys.forEach(key => {
-      try {
-        const item = localStorage.getItem(key);
-        if (item) {
-          // Try to parse and validate
-          JSON.parse(item);
-        }
-      } catch (parseError) {
-        console.warn(`Removing corrupted localStorage key: ${key}`);
-        try {
-          localStorage.removeItem(key);
-        } catch (removeError) {
-          console.error(`Failed to remove corrupted key ${key}:`, removeError);
-        }
-      }
-    });
   }
 };
