@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -15,7 +16,7 @@ interface PricingCardProps {
 }
 
 const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = false, language = 'de' }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('packages');
   const navigate = useNavigate();
 
   // Package name mapping for new package structure
@@ -49,7 +50,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = fals
   const getFeaturesBySlug = (packageSlug: string) => {
     try {
       // Try to get features from translation files first
-      const translatedFeatures = t(`packages.${packageSlug}.features`, { returnObjects: true });
+      const translatedFeatures = t(`${packageSlug}.features`, { returnObjects: true });
       if (Array.isArray(translatedFeatures)) {
         return translatedFeatures;
       }
@@ -67,8 +68,8 @@ const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = fals
   const getPackageName = (packageSlug: string) => {
     // First try translation key, then fallback to mapping, then default name
     try {
-      const translatedName = t(`packages.${packageSlug}.title`);
-      if (translatedName && translatedName !== `packages.${packageSlug}.title`) {
+      const translatedName = t(`${packageSlug}.title`);
+      if (translatedName && translatedName !== `${packageSlug}.title`) {
         return translatedName;
       }
     } catch (error) {
@@ -127,7 +128,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = fals
       {pkg.is_recommended && (
         <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
           <Badge className="bg-black text-white px-4 py-1">
-            {t('pricing.recommended')}
+            {t('recommended', 'Empfohlen')}
           </Badge>
         </div>
       )}
@@ -141,10 +142,10 @@ const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = fals
           {pkg.base_price === 0 ? (
             <div className="text-center">
               <span className="text-2xl font-bold text-gray-600">
-                {t('pricing.priceOnRequest')}
+                {t('priceOnRequest', 'Preis auf Anfrage')}
               </span>
               <p className="text-gray-500 mt-1 text-sm">
-                {t('pricing.contactUs')}
+                {t('contactUs', 'Kontaktieren Sie uns')}
               </p>
             </div>
           ) : (
@@ -152,7 +153,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = fals
               {pkg.original_price && pkg.original_price > pkg.base_price && (
                 <>
                   <p className="text-sm text-red-600 font-medium mb-1">
-                    {t('pricing.limitedTime')}
+                    {t('banner.text', 'Nur für kurze Zeit')}
                   </p>
                   <div className="flex items-center justify-center gap-2">
                     <span className="text-2xl text-gray-400 line-through">
@@ -170,9 +171,9 @@ const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = fals
                 </span>
               )}
               <p className="text-gray-600 mt-1">
-                {pkg.period === 'monthly' ? `/${t('pricing.month')}` : 
-                 pkg.slug === 'starter_kit' ? t('pricing.sixMonths') : 
-                 t('pricing.oneTime')}
+                {pkg.period === 'monthly' ? `/${t('period.monthly', 'monatlich')}` : 
+                 pkg.slug === 'starter_kit' ? t('period.sixMonths', '6 Monate') : 
+                 t('period.oneTime', 'einmalig')}
               </p>
             </>
           )}
@@ -185,7 +186,9 @@ const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = fals
             <div key={index} className="flex items-start gap-3">
               <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
               <span className="text-gray-700 text-sm leading-relaxed">
-                {feature}
+                {typeof feature === 'string' && feature.startsWith('packages.') 
+                  ? t(feature.replace(/^packages\./, ''), feature)
+                  : feature}
               </span>
             </div>
           ))}
@@ -197,12 +200,12 @@ const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = fals
           disabled={viewOnly}
           onClick={viewOnly ? undefined : handleSelectPackage}
         >
-          {viewOnly ? t('pricing.viewOnly') : t('pricing.selectPackage')}
+          {viewOnly ? t('viewOnly', 'Nur ansehen') : t('cta.selectPackage', 'Paket auswählen')}
         </Button>
         
         {pkg.min_duration_months > 0 && (
           <p className="text-xs text-gray-500 text-center mt-2">
-            {t('pricing.minDuration')}: {pkg.min_duration_months} {language === 'de' ? 'Monate' : 'Months'}
+            {t('minDuration', 'Mindestlaufzeit')}: {pkg.min_duration_months} {language === 'de' ? 'Monate' : 'Months'}
           </p>
         )}
       </CardContent>

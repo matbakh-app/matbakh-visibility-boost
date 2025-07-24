@@ -8,6 +8,9 @@ import PackageComparison from '@/components/PackageComparison';
 import TrustElements from '@/components/TrustElements';
 import PackageFAQ from '@/components/PackageFAQ';
 import PainPointCards from '@/components/PainPointCards';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import BackHomeButtons from '@/components/navigation/BackHomeButtons';
 
 const AngebotePage: React.FC = () => {
   const { t } = useTranslation('packages');
@@ -42,14 +45,24 @@ const AngebotePage: React.FC = () => {
   }
 
   return (
-    <>
+    <div className="min-h-screen bg-white flex flex-col">
       <SeoMeta 
         title={t('title', 'Unsere Pakete')}
         description={t('subtitle', 'Wählen Sie das passende Angebot für Ihr Unternehmen')}
         namespace="packages"
       />
       
-      <div className="min-h-screen bg-white">
+      <Header />
+      
+      <main className="flex-1 w-full">
+        <div className="w-full border-b border-gray-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="py-4">
+              <BackHomeButtons />
+            </div>
+          </div>
+        </div>
+        
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-16">
             {/* Hero Section */}
@@ -98,8 +111,10 @@ const AngebotePage: React.FC = () => {
             <PackageFAQ language="de" />
           </div>
         </div>
-      </div>
-    </>
+      </main>
+      
+      <Footer />
+    </div>
   );
 };
 

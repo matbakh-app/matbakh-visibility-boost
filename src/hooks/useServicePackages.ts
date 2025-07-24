@@ -1,4 +1,3 @@
-
 // src/hooks/useServicePackages.ts
 // Matbakh 3.0 – updated for new service_packages / service_prices schema
 
@@ -149,45 +148,45 @@ export const useServicePackages = () =>
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
-// Helper function to get features by package code - now uses translation keys
+// Helper function to get features by package code - corrected without packages prefix
 const getFeaturesByCode = (code: string): string[] => {
   const featureMap: Record<string, string[]> = {
     'profile_dashboard_basic': [
-      'packages.profile_dashboard_basic.features.0',
-      'packages.profile_dashboard_basic.features.1',
-      'packages.profile_dashboard_basic.features.2'
+      'profile_dashboard_basic.features.0',
+      'profile_dashboard_basic.features.1',
+      'profile_dashboard_basic.features.2'
     ],
     'google_profile_setup': [
-      'packages.google_profile_setup.features.0',
-      'packages.google_profile_setup.features.1',
-      'packages.google_profile_setup.features.2',
-      'packages.google_profile_setup.features.3'
+      'google_profile_setup.features.0',
+      'google_profile_setup.features.1',
+      'google_profile_setup.features.2',
+      'google_profile_setup.features.3'
     ],
     'profile_management_classic': [
-      'packages.profile_management_classic.features.0',
-      'packages.profile_management_classic.features.1',
-      'packages.profile_management_classic.features.2',
-      'packages.profile_management_classic.features.3',
-      'packages.profile_management_classic.features.4'
+      'profile_management_classic.features.0',
+      'profile_management_classic.features.1',
+      'profile_management_classic.features.2',
+      'profile_management_classic.features.3',
+      'profile_management_classic.features.4'
     ],
     'profile_management_premium': [
-      'packages.profile_management_premium.features.0',
-      'packages.profile_management_premium.features.1',
-      'packages.profile_management_premium.features.2',
-      'packages.profile_management_premium.features.3',
-      'packages.profile_management_premium.features.4',
-      'packages.profile_management_premium.features.5'
+      'profile_management_premium.features.0',
+      'profile_management_premium.features.1',
+      'profile_management_premium.features.2',
+      'profile_management_premium.features.3',
+      'profile_management_premium.features.4',
+      'profile_management_premium.features.5'
     ],
     'meta_business_suite_setup': [
-      'packages.meta_business_suite_setup.features.0',
-      'packages.meta_business_suite_setup.features.1',
-      'packages.meta_business_suite_setup.features.2'
+      'meta_business_suite_setup.features.0',
+      'meta_business_suite_setup.features.1',
+      'meta_business_suite_setup.features.2'
     ],
     'starter_kit': [
-      'packages.starter_kit.features.0',
-      'packages.starter_kit.features.1',
-      'packages.starter_kit.features.2',
-      'packages.starter_kit.features.3'
+      'starter_kit.features.0',
+      'starter_kit.features.1',
+      'starter_kit.features.2',
+      'starter_kit.features.3'
     ]
   };
   
