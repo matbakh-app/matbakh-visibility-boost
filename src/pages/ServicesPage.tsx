@@ -18,24 +18,33 @@ const ServicesPage: React.FC = () => {
     return `https://wa.me/4915123456789?text=${message}`;
   };
 
+  // Helper function to safely get array from translation
+  const getTranslationArray = (key: string): string[] => {
+    const result = t(key, { returnObjects: true });
+    if (Array.isArray(result)) {
+      return result;
+    }
+    return [];
+  };
+
   const coreServices = [
     {
       icon: '🎯',
       titleKey: 'services.setup.coreTitle',
       descriptionKey: 'services.setup.coreDescription',
-      highlights: t('services.setup.highlights', { returnObjects: true }) as string[] || []
+      highlights: getTranslationArray('services.setup.highlights')
     },
     {
       icon: '📘',
       titleKey: 'services.meta.title',
       descriptionKey: 'services.meta.description',
-      highlights: t('services.meta.highlights', { returnObjects: true }) as string[] || []
+      highlights: getTranslationArray('services.meta.highlights')
     },
     {
       icon: '🤖',
       titleKey: 'services.management.title',
       descriptionKey: 'services.management.coreDescription',
-      highlights: t('services.management.highlights', { returnObjects: true }) as string[] || []
+      highlights: getTranslationArray('services.management.highlights')
     }
   ];
 
@@ -44,19 +53,19 @@ const ServicesPage: React.FC = () => {
       icon: '📊',
       titleKey: 'services.analytics.coreTitle',
       descriptionKey: 'services.analytics.coreDescription',
-      highlights: t('services.analytics.highlights', { returnObjects: true }) as string[] || []
+      highlights: getTranslationArray('services.analytics.highlights')
     },
     {
       icon: '📱',
       titleKey: 'services.social.title',
       descriptionKey: 'services.social.description',
-      highlights: t('services.social.highlights', { returnObjects: true }) as string[] || []
+      highlights: getTranslationArray('services.social.highlights')
     },
     {
       icon: '🌐',
       titleKey: 'services.googleTools.title',
       descriptionKey: 'services.googleTools.description',
-      highlights: t('services.googleTools.highlights', { returnObjects: true }) as string[] || []
+      highlights: getTranslationArray('services.googleTools.highlights')
     }
   ];
 
@@ -64,17 +73,20 @@ const ServicesPage: React.FC = () => {
     {
       icon: '⭐',
       titleKey: 'services.additional.reviews.title',
-      descriptionKey: 'services.additional.reviews.description'
+      descriptionKey: 'services.additional.reviews.description',
+      highlights: []
     },
     {
       icon: '🎯',
       titleKey: 'services.additional.audience.title',
-      descriptionKey: 'services.additional.audience.description'
+      descriptionKey: 'services.additional.audience.description',
+      highlights: []
     },
     {
       icon: '⚙️',
       titleKey: 'services.additional.automation.title',
-      descriptionKey: 'services.additional.automation.description'
+      descriptionKey: 'services.additional.automation.description',
+      highlights: []
     }
   ];
 
@@ -90,7 +102,7 @@ const ServicesPage: React.FC = () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {service.highlights && (
+        {service.highlights && Array.isArray(service.highlights) && service.highlights.length > 0 && (
           <ul className="space-y-2 mb-4">
             {service.highlights.map((highlight: string, index: number) => (
               <li key={index} className="flex items-center gap-2">
