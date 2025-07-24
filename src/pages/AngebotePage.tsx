@@ -11,10 +11,18 @@ import PainPointCards from '@/components/PainPointCards';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import BackHomeButtons from '@/components/navigation/BackHomeButtons';
+import I18nDebugger from '@/components/I18nDebugger';
 
 const AngebotePage: React.FC = () => {
   const { t } = useTranslation('packages');
   const { data: packages, isLoading, error } = useServicePackages();
+
+  console.log('AngebotePage Debug:', {
+    titleKey: t('title'),
+    subtitleKey: t('subtitle'),
+    bannerTextKey: t('banner.text'),
+    packagesData: packages
+  });
 
   if (isLoading) {
     return (
@@ -114,6 +122,7 @@ const AngebotePage: React.FC = () => {
       </main>
       
       <Footer />
+      <I18nDebugger />
     </div>
   );
 };
