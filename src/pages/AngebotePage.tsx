@@ -18,7 +18,7 @@ const AngebotePage: React.FC = () => {
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('loading')}</p>
+          <p className="text-gray-600">{t('loading', 'Pakete werden geladen...')}</p>
         </div>
       </div>
     );
@@ -28,13 +28,13 @@ const AngebotePage: React.FC = () => {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-black mb-4">{t('errorTitle')}</h2>
-          <p className="text-gray-600 mb-4">{t('errorHint')}</p>
+          <h2 className="text-2xl font-bold text-black mb-4">{t('errorTitle', 'Fehler beim Laden')}</h2>
+          <p className="text-gray-600 mb-4">{t('errorHint', 'Bitte versuchen Sie es später erneut')}</p>
           <button 
             onClick={() => window.location.reload()} 
             className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
           >
-            {t('reloadPage')}
+            {t('reloadPage', 'Seite neu laden')}
           </button>
         </div>
       </div>
@@ -44,8 +44,8 @@ const AngebotePage: React.FC = () => {
   return (
     <>
       <SeoMeta 
-        title={t('title')}
-        description={t('subtitle')}
+        title={t('title', 'Unsere Pakete')}
+        description={t('subtitle', 'Wählen Sie das passende Angebot für Ihr Unternehmen')}
         namespace="packages"
       />
       
@@ -55,18 +55,18 @@ const AngebotePage: React.FC = () => {
             {/* Hero Section */}
             <div className="text-center mb-16">
               <h1 className="text-4xl md:text-5xl font-bold text-black mb-6 leading-tight">
-                {t('title')}
+                {t('title', 'Unsere Pakete')}
               </h1>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-                {t('subtitle')}
+                {t('subtitle', 'Wählen Sie das passende Angebot für Ihr Unternehmen – von den ersten Schritten bis zur vollen Sichtbarkeit.')}
               </p>
             </div>
 
             {/* Limited Time Banner */}
             <div className="bg-black text-white rounded-lg p-6 text-center mb-16">
-              <h2 className="text-xl font-bold mb-2">{t('banner.text')}</h2>
-              <p className="text-lg mb-2">{t('banner.discount')}</p>
-              <p className="text-sm opacity-90">{t('banner.description')}</p>
+              <h2 className="text-xl font-bold mb-2">{t('banner.text', 'Nur für kurze Zeit')}</h2>
+              <p className="text-lg mb-2">{t('banner.discount', 'Bis zu 50% Rabatt auf alle Services')}</p>
+              <p className="text-sm opacity-90">{t('banner.description', 'Starten Sie jetzt und profitieren Sie von unseren Einführungspreisen')}</p>
             </div>
 
             {/* Pain Point Cards */}
@@ -80,8 +80,8 @@ const AngebotePage: React.FC = () => {
               
               {!packages || packages.length === 0 ? (
                 <div className="text-center py-12">
-                  <h3 className="text-2xl font-bold text-black mb-4">{t('noPackagesTitle')}</h3>
-                  <p className="text-gray-600">{t('noPackagesText')}</p>
+                  <h3 className="text-2xl font-bold text-black mb-4">{t('noPackagesTitle', 'Keine Pakete verfügbar')}</h3>
+                  <p className="text-gray-600">{t('noPackagesText', 'Aktuell sind keine Pakete verfügbar')}</p>
                 </div>
               ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
