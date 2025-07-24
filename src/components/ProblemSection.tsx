@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { AlertTriangle, Search, Users, TrendingDown } from 'lucide-react';
 
 const ProblemSection: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('landing');
   
   const problems = [
     {
