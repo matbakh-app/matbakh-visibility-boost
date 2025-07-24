@@ -6,8 +6,6 @@
 
 import React, { useEffect, useState, Suspense } from "react";
 import { useTranslation } from "react-i18next";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import LanguageToggle from "@/components/header/LanguageToggle";
 import { Helmet } from "react-helmet-async";
 import { Globe } from "lucide-react";
@@ -152,22 +150,16 @@ const LegalContent: React.FC<LegalLayoutProps> = ({ titleKey, children, pageType
 
 const LegalLayout: React.FC<LegalLayoutProps> = (props) => {
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <Header />
-      
-      <Suspense fallback={
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading...</p>
-          </div>
+    <Suspense fallback={
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
         </div>
-      }>
-        <LegalContent {...props} />
-      </Suspense>
-      
-      <Footer />
-    </div>
+      </div>
+    }>
+      <LegalContent {...props} />
+    </Suspense>
   );
 };
 
