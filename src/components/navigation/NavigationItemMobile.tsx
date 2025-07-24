@@ -20,12 +20,13 @@ const NavigationItemMobile: React.FC<NavigationItemMobileProps> = ({
   language, 
   onItemClick 
 }) => {
-  const { t } = useTranslation('nav');
+  const { t } = useTranslation('navigation');
   const location = useLocation();
   
   const href = item.currentHref;
-  const label = isSafeTranslationKey(item.labelKey)
-    ? t(item.labelKey, item.currentLabel)
+  const labelKey = item.labelKey.replace('nav.', '');
+  const label = isSafeTranslationKey(labelKey)
+    ? t(labelKey, item.currentLabel)
     : item.currentLabel;
   const isActive = location.pathname === href;
 

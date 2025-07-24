@@ -43,7 +43,11 @@ i18n
         .replace(/_/g, ' ')
         .toLowerCase()
         .replace(/^\w/, c => c.toUpperCase());
-    }
+    },
+    
+    // Namespace fallback chain
+    ns: ['common', 'navigation', 'services', 'packages', 'hero', 'landing'],
+    defaultNS: 'common'
   });
 
 export default i18n;
