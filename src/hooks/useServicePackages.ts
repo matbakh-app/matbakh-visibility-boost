@@ -1,3 +1,4 @@
+
 // src/hooks/useServicePackages.ts
 // Matbakh 3.0 – updated for new service_packages / service_prices schema
 
@@ -148,7 +149,7 @@ export const useServicePackages = () =>
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
-// Helper function to get features by package code - corrected without packages prefix
+// Helper function to get features by package code - FIXED: removed packages prefix
 const getFeaturesByCode = (code: string): string[] => {
   const featureMap: Record<string, string[]> = {
     'profile_dashboard_basic': [

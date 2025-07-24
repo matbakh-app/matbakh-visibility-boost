@@ -47,24 +47,6 @@ const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = fals
     }
   };
 
-  const getFeaturesBySlug = (packageSlug: string) => {
-    try {
-      // Try to get features from translation files first
-      const translatedFeatures = t(`${packageSlug}.features`, { returnObjects: true });
-      if (Array.isArray(translatedFeatures)) {
-        return translatedFeatures;
-      }
-    } catch (error) {
-      monitoring.warn('Translation missing for package features', { 
-        packageSlug, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
-      });
-    }
-    
-    // Fallback to package.features if translation fails
-    return pkg.features || [];
-  };
-
   const getPackageName = (packageSlug: string) => {
     // First try translation key, then fallback to mapping, then default name
     try {
@@ -98,7 +80,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = fals
       name: getPackageName(pkg.slug),
       price: pkg.base_price,
       originalPrice: pkg.original_price,
-      features: safeFeatures,
+      features: pkg.features,
       period: pkg.period,
       minDurationMonths: pkg.min_duration_months,
       selectedAt: new Date().toISOString()
@@ -117,11 +99,6 @@ const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = fals
     // Add package slug as URL parameter for additional context
     navigate(`${onboardingPath}?package=${pkg.slug}`);
   };
-
-  const packageFeatures = getFeaturesBySlug(pkg.slug);
-  
-  // Ensure packageFeatures is always an array
-  const safeFeatures = Array.isArray(packageFeatures) ? packageFeatures : (pkg.features || []);
 
   return (
     <Card className={`relative bg-white ${pkg.is_recommended ? 'border-black border-2' : 'border-gray-200'} ${viewOnly ? 'opacity-90' : ''}`}>
@@ -182,13 +159,11 @@ const PricingCard: React.FC<PricingCardProps> = ({ package: pkg, viewOnly = fals
       
       <CardContent className="pt-0">
         <div className="space-y-3 mb-6">
-          {safeFeatures.map((feature, index) => (
+          {pkg.features.map((feature, index) => (
             <div key={index} className="flex items-start gap-3">
               <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
               <span className="text-gray-700 text-sm leading-relaxed">
-                {typeof feature === 'string' && feature.startsWith('packages.') 
-                  ? t(feature.replace(/^packages\./, ''), feature)
-                  : feature}
+                {t(feature, feature)}
               </span>
             </div>
           ))}

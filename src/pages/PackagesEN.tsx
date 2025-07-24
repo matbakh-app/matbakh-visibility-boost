@@ -5,6 +5,7 @@ import TrustElements from '@/components/TrustElements';
 import PackageComparison from '@/components/PackageComparison';
 import PackageFAQ from '@/components/PackageFAQ';
 import PricingCard from '@/components/PricingCard';
+import PainPointCards from '@/components/PainPointCards';
 import ProcessOverview from '@/components/ProcessOverview';
 import { useServicePackages } from '@/hooks/useServicePackages';
 import { SeoMeta } from '@/components/SeoMeta';
@@ -78,26 +79,34 @@ const PackagesEN: React.FC = () => {
           <div className="py-16">
             {/* Header */}
             <div className="text-center mb-16">
-              <h1 className="text-4xl font-bold text-black mb-4">
+              <h1 className="text-4xl md:text-5xl font-bold text-black mb-6 leading-tight">
                 {t('title')}
               </h1>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
                 {t('subtitle')}
               </p>
             </div>
 
             {/* Limited Time Banner */}
-            <div className="bg-black text-white rounded-lg p-6 text-center mb-12">
+            <div className="bg-black text-white rounded-lg p-6 text-center mb-16">
               <h2 className="text-xl font-bold mb-2">{t('banner.text')}</h2>
               <p className="text-lg mb-2">{t('banner.discount')}</p>
               <p className="text-sm opacity-90">{t('banner.description')}</p>
             </div>
 
+            {/* Pain Point Cards */}
+            <PainPointCards />
+
             {/* Packages Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-              {packages.map((pkg) => (
-                <PricingCard key={pkg.id} package={pkg} language="en" />
-              ))}
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-black text-center mb-12">
+                {t('packagesTitle')}
+              </h2>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {packages.map((pkg) => (
+                  <PricingCard key={pkg.id} package={pkg} language="en" />
+                ))}
+              </div>
             </div>
 
             {/* Components */}
