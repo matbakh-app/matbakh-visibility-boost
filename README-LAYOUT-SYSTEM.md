@@ -7,20 +7,41 @@ Dieses Dokument beschreibt das zentrale Layout-System und die i18n-Namespace-Arc
 
 ## 🎯 Layout-Komponenten
 
+### Zentrale Layout-Regel (NEU)
+
+**ALLE Seiten verwenden IMMER `AppLayout`** - keine Ausnahmen!
+
+```tsx
+// Standard (mit Header/Navigation)
+<AppLayout>
+  <MeinContent />
+</AppLayout>
+
+// Ohne Header/Navigation (für spezielle Seiten)
+<AppLayout hideNav>
+  <MeinContent />
+</AppLayout>
+```
+
 ### Zentrale Layout-Dateien
 
-| Layout | Verwendung | Enthält |
-|--------|------------|---------|
-| `AppLayout.tsx` | Alle öffentlichen Seiten | Header, Footer, Logo zentral |
-| `LegalLayout.tsx` | Rechtliche Seiten | Minimaler Header, Fokus auf Content |
-| `DashboardLayout.tsx` | Partner-Dashboard & Unterseiten | Sidebar, Navigation, Header |
-| `AdminLayout.tsx` | Admin-Bereiche | Admin-Navigation, Header |
+| Layout | Verwendung | Enthält | Navigation |
+|--------|------------|---------|------------|
+| `AppLayout.tsx` | **ALLE Seiten** | Header, Footer, BackButtons | Über `hideNav` Prop steuerbar |
+| `DashboardLayout.tsx` | Partner-Dashboard & Unterseiten | Sidebar, Navigation, Header | Immer sichtbar |
+| `AdminLayout.tsx` | Admin-Bereiche | Admin-Navigation, Header | Immer sichtbar |
+
+### Navigation-Steuerung
+
+- **Standard**: Header/Navigation sichtbar
+- **Spezielle Seiten**: `hideNav={true}` für Landingpages, Funnels, Promo-Seiten
+- **Footer**: Bleibt immer sichtbar (auch bei `hideNav={true}`)
 
 ### Logo-Integration
 
 - **Zentral:** `Header.tsx` enthält das Logo
 - **Einzige Quelle:** Logo wird nur einmal gerendert
-- **Überall sichtbar:** Durch zentrale Layouts auf allen Seiten
+- **Sichtbarkeit:** Nur wenn Header angezeigt wird (nicht bei `hideNav={true}`)
 
 ## 🌐 i18n-Namespace-Struktur
 
@@ -52,12 +73,17 @@ Dieses Dokument beschreibt das zentrale Layout-System und die i18n-Namespace-Arc
 
 ## 🚀 Neue Seiten erstellen
 
-### 1. Layout wählen
+### 1. Layout wählen (AKTUALISIERT)
 
 ```tsx
-// Öffentliche Seite
+// Normale Seite (mit Header/Navigation)
 <AppLayout>
   <MeinContent />
+</AppLayout>
+
+// Spezielle Seite (ohne Header/Navigation)
+<AppLayout hideNav>
+  <MeinLandingContent />
 </AppLayout>
 
 // Dashboard-Seite
@@ -107,6 +133,21 @@ public/locales/en/mein-namespace.json
 
 ## 🔧 Entwickler-Guidelines
 
+### Layout-Regeln (NEU)
+
+1. **Jede Seite verwendet `AppLayout`** - keine Ausnahmen
+2. **Navigation nur über `hideNav` Prop steuern** - keine anderen Patterns
+3. **Footer bleibt immer sichtbar** - auch bei ausgeblendeter Navigation
+4. **Back-Buttons werden automatisch ausgeblendet** bei `hideNav={true}`
+
+### Anwendungsfälle für `hideNav={true}`
+
+- Landingpages für Kampagnen
+- Funnel-Seiten
+- Spezielle Promo-Seiten
+- Checkout-Flows
+- Onboarding-Prozesse
+
 ### Neue Übersetzungen hinzufügen
 
 1. **Namespace registrieren** in `src/lib/i18n.ts`:
@@ -147,6 +188,8 @@ const { t } = useTranslation('packages');
 ## 📊 Aktueller Status
 
 ### ✅ Implementiert
+- [x] **Zentrale Layout-Regel mit `hideNav` Prop**
+- [x] **Einheitliches AppLayout für alle Seiten**
 - [x] Zentrale Layout-Komponenten
 - [x] Logo-Integration überall
 - [x] Separate i18n-Namespaces
@@ -166,12 +209,14 @@ const { t } = useTranslation('packages');
 
 ## 🎨 Design-Prinzipien
 
-1. **Ein Logo überall** - Zentral in Header.tsx
-2. **Konsistente Layouts** - Jede Seite nutzt passenden Layout-Wrapper
-3. **Flache i18n-Struktur** - Einfache Schlüssel ohne tiefe Verschachtelung
-4. **Feature-basierte Namespaces** - Ein Namespace pro Anwendungsbereich
-5. **Admin-steuerbar** - Alle Inhalte später über Admin-Panel editierbar
+1. **Einheitliches Layout-System** - Jede Seite nutzt AppLayout
+2. **Flexible Navigation** - Über `hideNav` Prop steuerbar
+3. **Ein Logo überall** - Zentral in Header.tsx (wenn sichtbar)
+4. **Konsistente Layouts** - Jede Seite nutzt passenden Layout-Wrapper
+5. **Flache i18n-Struktur** - Einfache Schlüssel ohne tiefe Verschachtelung
+6. **Feature-basierte Namespaces** - Ein Namespace pro Anwendungsbereich
+7. **Admin-steuerbar** - Alle Inhalte später über Admin-Panel editierbar
 
 ---
 
-*Stand: Phase 2 abgeschlossen - Zentrale Layouts & i18n-Namespaces implementiert*
+*Stand: Phase 3 abgeschlossen - Einheitliches Layout-System mit flexibler Navigation*

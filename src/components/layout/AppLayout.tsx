@@ -7,9 +7,10 @@ import BackHomeButtons from '@/components/navigation/BackHomeButtons';
 
 interface AppLayoutProps {
   children: React.ReactNode;
+  hideNav?: boolean; // Neues optionales Prop zum Ausblenden der Navigation
 }
 
-const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
+const AppLayout: React.FC<AppLayoutProps> = ({ children, hideNav = false }) => {
   const location = useLocation();
   
   // Seiten ohne BackHomeButtons (Landing und Home)
@@ -19,12 +20,13 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <Header />
+      {/* Header wird nur angezeigt, wenn hideNav nicht gesetzt ist */}
+      {!hideNav && <Header />}
       
       {/* Main Content */}
       <main className="flex-1 w-full">
-        {/* Back Navigation - nur auf bestimmten Seiten */}
-        {showBackButtons && (
+        {/* Back Navigation - nur auf bestimmten Seiten und wenn Header sichtbar */}
+        {!hideNav && showBackButtons && (
           <div className="w-full border-b border-gray-100">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="py-4">
@@ -40,6 +42,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </div>
       </main>
       
+      {/* Footer bleibt immer sichtbar */}
       <Footer />
     </div>
   );
