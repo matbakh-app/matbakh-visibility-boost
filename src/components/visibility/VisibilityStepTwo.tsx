@@ -6,16 +6,35 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/input';
 import { Form, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTranslation } from 'react-i18next';
+import { Globe, Facebook, Instagram } from 'lucide-react';
 import InstagramCandidatePicker from './InstagramCandidatePicker';
 
 const stepTwoSchema = z.object({
   website: z.string().url('Bitte gültige URL eingeben').optional().or(z.literal('')),
-  instagram: z.string().optional(),
-  facebook: z.string().optional(),
+  instagram: z.string().min(1, 'Instagram ist ein Pflichtfeld').optional(),
+  facebook: z.string().min(1, 'Facebook ist ein Pflichtfeld').optional(),
   benchmarkOne: z.string().optional(),
   benchmarkTwo: z.string().optional(),
   benchmarkThree: z.string().optional(),
+}).superRefine((data, ctx) => {
+  // Mindestens Instagram oder Facebook muss angegeben werden
+  const hasInstagram = !!data.instagram?.trim();
+  const hasFacebook = !!data.facebook?.trim();
+  
+  if (!hasInstagram && !hasFacebook) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['instagram'],
+      message: 'Bitte gib mindestens Instagram oder Facebook an',
+    });
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['facebook'],
+      message: 'Bitte gib mindestens Instagram oder Facebook an',
+    });
+  }
 });
 
 type StepTwoValues = z.infer<typeof stepTwoSchema>;
@@ -87,116 +106,151 @@ const VisibilityStepTwo: React.FC<Props> = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="website"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Website</FormLabel>
-              <Input placeholder="https://meinrestaurant.de" {...field} />
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {/* Pflichtfelder Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-red-600">
+              Pflichtfelder für Social Media Analyse
+            </CardTitle>
+            <p className="text-sm text-gray-600">
+              Mindestens Instagram oder Facebook muss angegeben werden. 
+              Ohne Social Media erfolgt nur eine Google Business Profil Analyse.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Instagram Section */}
+            <div className="space-y-3">
+              <FormLabel className="flex items-center gap-2">
+                <Instagram className="w-4 h-4" />
+                Instagram (Pflichtfeld)*
+              </FormLabel>
+              
+              {/* Show candidates if available and no manual input yet */}
+              {instagramCandidates.length > 0 && !showManualInstagram && (
+                <InstagramCandidatePicker
+                  candidates={instagramCandidates}
+                  onSelect={handleInstagramCandidateSelect}
+                  value={selectedInstagramCandidate}
+                />
+              )}
 
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Social Media Profile</h3>
-          
-          {/* Instagram Section */}
-          <div className="space-y-3">
-            <FormLabel>Instagram</FormLabel>
-            
-            {/* Show candidates if available and no manual input yet */}
-            {instagramCandidates.length > 0 && !showManualInstagram && (
-              <InstagramCandidatePicker
-                candidates={instagramCandidates}
-                onSelect={handleInstagramCandidateSelect}
-                value={selectedInstagramCandidate}
-              />
-            )}
+              {/* Manual Instagram input */}
+              {(showManualInstagram || instagramCandidates.length === 0) && (
+                <FormField
+                  control={form.control}
+                  name="instagram"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Input 
+                        placeholder="@meinrestaurant oder https://instagram.com/meinrestaurant" 
+                        {...field} 
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
-            {/* Manual Instagram input */}
-            {(showManualInstagram || instagramCandidates.length === 0) && (
-              <FormField
-                control={form.control}
-                name="instagram"
-                render={({ field }) => (
-                  <FormItem>
-                    <Input placeholder="@meinrestaurant oder https://instagram.com/..." {...field} />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
+              {/* Toggle back to candidates if they exist */}
+              {instagramCandidates.length > 0 && showManualInstagram && (
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setShowManualInstagram(false)}
+                >
+                  ← Zurück zu Vorschlägen
+                </Button>
+              )}
+            </div>
 
-            {/* Toggle back to candidates if they exist */}
-            {instagramCandidates.length > 0 && showManualInstagram && (
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="sm"
-                onClick={() => setShowManualInstagram(false)}
-              >
-                ← Zurück zu Vorschlägen
-              </Button>
-            )}
-          </div>
-
-          {/* Facebook */}
-          <FormField
-            control={form.control}
-            name="facebook"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Facebook (Benutzername oder URL)</FormLabel>
-                <Input placeholder="z. B. https://facebook.com/..." {...field} />
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="pt-4">
-          <h3 className="text-lg font-semibold">Optional: Mitbewerber (zum Vergleich)</h3>
-          <p className="text-sm text-muted-foreground mb-2">
-            Tragen Sie bis zu 3 Lokale ein, mit denen Sie sich vergleichen möchten.
-          </p>
-          <div className="space-y-3">
+            {/* Facebook */}
             <FormField
               control={form.control}
-              name="benchmarkOne"
+              name="facebook"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Benchmark 1</FormLabel>
-                  <Input placeholder="z. B. Weinbar X in München" {...field} />
+                  <FormLabel className="flex items-center gap-2">
+                    <Facebook className="w-4 h-4" />
+                    Facebook (Pflichtfeld)*
+                  </FormLabel>
+                  <Input 
+                    placeholder="Seitenname oder https://facebook.com/meine-seite" 
+                    {...field} 
+                  />
                   <FormMessage />
                 </FormItem>
               )}
             />
+          </CardContent>
+        </Card>
+
+        {/* Optionale Angaben Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">Optionale Angaben</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <FormField
               control={form.control}
-              name="benchmarkTwo"
+              name="website"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Benchmark 2</FormLabel>
-                  <Input placeholder="optional" {...field} />
+                  <FormLabel className="flex items-center gap-2">
+                    <Globe className="w-4 h-4" />
+                    Website
+                  </FormLabel>
+                  <Input placeholder="https://meinrestaurant.de" {...field} />
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="benchmarkThree"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Benchmark 3</FormLabel>
-                  <Input placeholder="optional" {...field} />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
+
+            <div>
+              <FormLabel className="text-base font-medium">
+                Vergleichbare Unternehmen (Benchmarks)
+              </FormLabel>
+              <p className="text-sm text-muted-foreground mb-3">
+                Tragen Sie bis zu 3 Lokale ein, mit denen Sie sich vergleichen möchten.
+              </p>
+              <div className="space-y-3">
+                <FormField
+                  control={form.control}
+                  name="benchmarkOne"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Benchmark 1</FormLabel>
+                      <Input placeholder="z. B. Weinbar X in München" {...field} />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="benchmarkTwo"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Benchmark 2</FormLabel>
+                      <Input placeholder="optional" {...field} />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="benchmarkThree"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Benchmark 3</FormLabel>
+                      <Input placeholder="optional" {...field} />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="flex justify-between pt-6">
           <Button type="button" variant="outline" onClick={onBack}>
