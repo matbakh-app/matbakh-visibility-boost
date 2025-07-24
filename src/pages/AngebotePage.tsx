@@ -9,7 +9,7 @@ import TrustElements from '@/components/TrustElements';
 import PackageFAQ from '@/components/PackageFAQ';
 import PainPointCards from '@/components/PainPointCards';
 import I18nDebugger from '@/components/I18nDebugger';
-import AppLayout from '@/components/layout/AppLayout';
+
 
 const AngebotePage: React.FC = () => {
   const { t } = useTranslation('packages');
@@ -17,20 +17,20 @@ const AngebotePage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <AppLayout>
+      <>
         <div className="min-h-screen bg-white flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
             <p className="text-gray-600">{t('loading', 'Pakete werden geladen...')}</p>
           </div>
         </div>
-      </AppLayout>
+      </>
     );
   }
 
   if (error) {
     return (
-      <AppLayout>
+      <>
         <div className="min-h-screen bg-white flex items-center justify-center">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-black mb-4">{t('errorTitle', 'Fehler beim Laden')}</h2>
@@ -43,12 +43,12 @@ const AngebotePage: React.FC = () => {
             </button>
           </div>
         </div>
-      </AppLayout>
+      </>
     );
   }
 
   return (
-    <AppLayout>
+    <>
       <SeoMeta 
         title={t('title', 'Unsere Pakete')}
         description={t('subtitle', 'Wählen Sie das passende Angebot für Ihr Unternehmen')}
@@ -103,7 +103,7 @@ const AngebotePage: React.FC = () => {
         </div>
       </div>
       <I18nDebugger />
-    </AppLayout>
+    </>
   );
 };
 
