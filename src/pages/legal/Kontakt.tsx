@@ -8,41 +8,50 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import LegalLayout from '@/layouts/LegalLayout';
 import ContactForm from '@/components/ContactForm';
-import { getNamespaceForLegalPage } from '@/utils/getLegalNamespace';
 
 const Kontakt: React.FC = () => {
-  // CRITICAL FIX: Verwende dynamisches Namespace-Mapping wie in anderen Legal-Seiten
-  const { i18n } = useTranslation();
-  const namespace = getNamespaceForLegalPage(i18n.language, 'contact');
-  const { t } = useTranslation(namespace);
+  const { t } = useTranslation('common');
   
-  // Clean mapping of existing translation keys from legal-kontakt.json
-  const LEGAL_SECTIONS = [
-    ['contactInfoTitle', 'contactInfoText'],
-    ['supportTitle', 'supportText'],
-    ['businessTitle', 'businessText'],
-  ];
-
   return (
-    <LegalLayout titleKey="title" pageType="contact">
+    <LegalLayout titleKey="contact.title" pageType="contact">
       <div className="prose max-w-none space-y-8">
-        {LEGAL_SECTIONS.map(([titleKey, textKey]) => (
-          <section key={titleKey}>
-            <h2 className="text-xl font-semibold mb-4">{t(titleKey)}</h2>
-            <p className="text-muted-foreground leading-relaxed">
-              {t(textKey)}
-            </p>
-          </section>
-        ))}
+        <section>
+          <h2 className="text-xl font-semibold mb-4">
+            {t('contact.contactInfoTitle', 'Kontaktinformationen')}
+          </h2>
+          <p className="text-muted-foreground leading-relaxed">
+            {t('contact.contactInfoText', 'Für Fragen zu unseren Services und Angeboten erreichen Sie uns über folgende Wege:')}
+          </p>
+        </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4">{t('formTitle', 'Kontaktformular')}</h2>
+          <h2 className="text-xl font-semibold mb-4">
+            {t('contact.supportTitle', 'Support')}
+          </h2>
+          <p className="text-muted-foreground leading-relaxed">
+            {t('contact.supportText', 'Für technische Fragen und Support wenden Sie sich bitte an unsere E-Mail-Adresse.')}
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-xl font-semibold mb-4">
+            {t('contact.businessTitle', 'Geschäftsanfragen')}
+          </h2>
+          <p className="text-muted-foreground leading-relaxed">
+            {t('contact.businessText', 'Für Partnerschaften und Geschäftsanfragen nutzen Sie bitte ebenfalls unsere E-Mail-Adresse.')}
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-xl font-semibold mb-4">
+            {t('contact.formTitle', 'Kontaktformular')}
+          </h2>
           <ContactForm />
         </section>
 
         <div className="mt-8 pt-4 border-t border-border">
           <p className="text-sm text-muted-foreground">
-            {t('lastUpdated')}
+            {t('contact.lastUpdated', 'Zuletzt aktualisiert: Januar 2025')}
           </p>
         </div>
       </div>
