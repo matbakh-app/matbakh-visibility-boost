@@ -6,7 +6,7 @@ import { ArrowRight, CheckCircle, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SeoMeta } from '@/components/SeoMeta';
-import AppLayout from '@/components/layout/AppLayout';
+
 
 const ServicesPage: React.FC = () => {
   const { t, i18n } = useTranslation(['services', 'common']);
@@ -164,10 +164,10 @@ const ServicesPage: React.FC = () => {
   );
 
   return (
-    <AppLayout>
+    <>
       <SeoMeta
-        title="Kernleistungen"
-        description="matbakh.app übernimmt für Sie"
+        title={t('title')}
+        description={t('subtitle')}
         namespace="services"
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -175,10 +175,10 @@ const ServicesPage: React.FC = () => {
           {/* Header */}
           <div className="text-center mb-16">
             <h1 className="text-4xl font-bold text-black mb-4">
-              Kernleistungen
+              {t('title')}
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              matbakh.app übernimmt für Sie
+              {t('subtitle')}
             </p>
           </div>
 
@@ -244,7 +244,7 @@ const ServicesPage: React.FC = () => {
           </div>
         </div>
       </div>
-    </AppLayout>
+    </>
   );
 };
 

@@ -46,7 +46,7 @@ i18n
         .replace(/^\w/, c => c.toUpperCase());
     },
     
-    // Updated namespace list to include hero
+    // Updated namespace list to include all required namespaces
     ns: ['common', 'navigation', 'services', 'packages', 'hero', 'landing', 'trust', 'auth', 'adminPanel', 'onboarding', 'dashboard'],
     defaultNS: 'common'
   });
