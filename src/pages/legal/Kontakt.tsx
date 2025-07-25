@@ -6,14 +6,14 @@
 
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import LegalLayout from '@/layouts/LegalLayout';
+import SimpleLegalLayout from '@/layouts/SimpleLegalLayout';
 import ContactForm from '@/components/ContactForm';
 
 const Kontakt: React.FC = () => {
   const { t } = useTranslation('legal-kontakt');
   
   return (
-    <LegalLayout titleKey="contact.title" pageType="contact">
+    <SimpleLegalLayout titleKey="title" pageType="contact">
       <div className="prose max-w-none space-y-8">
         <section>
           <p className="text-muted-foreground leading-relaxed">
@@ -59,7 +59,7 @@ const Kontakt: React.FC = () => {
           </p>
         </div>
       </div>
-    </LegalLayout>
+    </SimpleLegalLayout>
   );
 };
 

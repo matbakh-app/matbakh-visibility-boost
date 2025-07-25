@@ -85,17 +85,15 @@ function App() {
               <Route path="datenschutz" element={<Datenschutz />} />
               <Route path="agb" element={<AGB />} />
               <Route path="nutzung" element={<Nutzung />} />
+              <Route path="kontakt" element={<Kontakt />} />
               
               {/* Legal pages - English */}
               <Route path="imprint" element={<Imprint />} />
               <Route path="privacy" element={<Privacy />} />
               <Route path="terms" element={<Terms />} />
               <Route path="usage" element={<Usage />} />
-              </Route>
-
-              {/* Contact pages - separate from AppLayout to avoid double navigation */}
-              <Route path="kontakt" element={<Kontakt />} />
               <Route path="contact" element={<Contact />} />
+              </Route>
 
               {/* Partner/Business routes */}
               <Route path="/partner" element={
