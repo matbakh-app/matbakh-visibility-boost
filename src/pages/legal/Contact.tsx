@@ -1,14 +1,14 @@
 
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import LegalLayout from '@/layouts/LegalLayout';
+import SimpleLegalLayout from '@/layouts/SimpleLegalLayout';
 import ContactForm from '@/components/ContactForm';
 
 const Contact: React.FC = () => {
   const { t } = useTranslation('legal-contact');
   
   return (
-    <LegalLayout titleKey="contact.title" pageType="contact">
+    <SimpleLegalLayout titleKey="title" pageType="contact">
       <div className="space-y-8">
         <div className="prose max-w-none space-y-6">
           <section>
@@ -43,7 +43,7 @@ const Contact: React.FC = () => {
           <ContactForm />
         </div>
       </div>
-    </LegalLayout>
+    </SimpleLegalLayout>
   );
 };
 
