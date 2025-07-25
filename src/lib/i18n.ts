@@ -47,7 +47,7 @@ i18n
     },
     
     // Updated namespace list to include all required namespaces
-    ns: ['common', 'navigation', 'services', 'packages', 'hero', 'landing', 'trust', 'auth', 'adminPanel', 'onboarding', 'dashboard'],
+    ns: ['common', 'navigation', 'services', 'packages', 'hero', 'landing', 'trust', 'auth', 'adminPanel', 'onboarding', 'dashboard', 'legal-kontakt', 'legal-contact'],
     defaultNS: 'common'
   });
 

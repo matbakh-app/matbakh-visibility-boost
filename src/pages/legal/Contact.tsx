@@ -5,7 +5,7 @@ import LegalLayout from '@/layouts/LegalLayout';
 import ContactForm from '@/components/ContactForm';
 
 const Contact: React.FC = () => {
-  const { t } = useTranslation('common');
+  const { t } = useTranslation('legal-contact');
   
   return (
     <LegalLayout titleKey="contact.title" pageType="contact">
@@ -13,23 +13,32 @@ const Contact: React.FC = () => {
         <div className="prose max-w-none space-y-6">
           <section>
             <h2 className="text-xl font-semibold mb-4">
-              {t('contact.contactTitle', 'Contact Information')}
+              {t('contactInfo.title', 'Contact Information')}
             </h2>
-            <div className="whitespace-pre-line text-muted-foreground">
-              {t('contact.contactText', 'For questions about our services and offers, you can reach us through the following ways:')}
+            <div className="space-y-2 text-muted-foreground">
+              <p>{t('contactInfo.company', 'BaSSco (Bavarian Software Solution)')}</p>
+              <p>{t('contactInfo.address', 'Munich, Germany')}</p>
+              <p>{t('contactInfo.email', 'mail(at)matbakh(dot)app')}</p>
+              <p>{t('contactInfo.phone', 'Available on request')}</p>
             </div>
           </section>
           
-          <div className="mt-8 pt-4 border-t border-border">
-            <p className="text-sm text-muted-foreground">
-              {t('contact.disclaimerText', 'Last updated: January 2025')}
+          <section>
+            <h2 className="text-xl font-semibold mb-4">
+              {t('support.title', 'Support')}
+            </h2>
+            <p className="text-muted-foreground">
+              {t('support.description', 'For technical support or urgent matters, please contact us directly.')}
             </p>
-          </div>
+            <p className="text-muted-foreground">
+              {t('support.response', 'We typically respond within 24 hours during business days.')}
+            </p>
+          </section>
         </div>
         
         <div className="mt-8">
           <h2 className="text-2xl font-semibold mb-6">
-            {t('contact.formTitle', 'Contact Form')}
+            {t('form.title', 'Send us a message')}
           </h2>
           <ContactForm />
         </div>
