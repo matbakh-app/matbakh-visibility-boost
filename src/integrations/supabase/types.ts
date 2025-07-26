@@ -413,6 +413,56 @@ export type Database = {
           },
         ]
       }
+      competitive_analysis: {
+        Row: {
+          competitor_name: string
+          competitor_score: number | null
+          competitor_url: string | null
+          created_at: string | null
+          gap_analysis: Json | null
+          id: string
+          lead_id: string
+          our_score: number | null
+          platform: string
+          recommendations: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          competitor_name: string
+          competitor_score?: number | null
+          competitor_url?: string | null
+          created_at?: string | null
+          gap_analysis?: Json | null
+          id?: string
+          lead_id: string
+          our_score?: number | null
+          platform: string
+          recommendations?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          competitor_name?: string
+          competitor_score?: number | null
+          competitor_url?: string | null
+          created_at?: string | null
+          gap_analysis?: Json | null
+          id?: string
+          lead_id?: string
+          our_score?: number | null
+          platform?: string
+          recommendations?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competitive_analysis_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "visibility_check_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       consultation_requests: {
         Row: {
           assigned_to: string | null
@@ -831,15 +881,19 @@ export type Database = {
           category_path: string | null
           country_availability: string[] | null
           created_at: string
-          description: string | null
+          description_de: string | null
+          description_en: string | null
+          haupt_kategorie: string | null
           id: string
           is_popular: boolean
           is_primary: boolean | null
           keywords: string[] | null
+          main_category: string | null
           name_de: string
           name_en: string
           parent_category_id: string | null
           parent_id: string | null
+          public_id: number | null
           sort_order: number
           synonyms: string[] | null
           updated_at: string
@@ -849,15 +903,19 @@ export type Database = {
           category_path?: string | null
           country_availability?: string[] | null
           created_at?: string
-          description?: string | null
+          description_de?: string | null
+          description_en?: string | null
+          haupt_kategorie?: string | null
           id?: string
           is_popular?: boolean
           is_primary?: boolean | null
           keywords?: string[] | null
+          main_category?: string | null
           name_de: string
           name_en: string
           parent_category_id?: string | null
           parent_id?: string | null
+          public_id?: number | null
           sort_order?: number
           synonyms?: string[] | null
           updated_at?: string
@@ -867,15 +925,19 @@ export type Database = {
           category_path?: string | null
           country_availability?: string[] | null
           created_at?: string
-          description?: string | null
+          description_de?: string | null
+          description_en?: string | null
+          haupt_kategorie?: string | null
           id?: string
           is_popular?: boolean
           is_primary?: boolean | null
           keywords?: string[] | null
+          main_category?: string | null
           name_de?: string
           name_en?: string
           parent_category_id?: string | null
           parent_id?: string | null
+          public_id?: number | null
           sort_order?: number
           synonyms?: string[] | null
           updated_at?: string
@@ -1031,6 +1093,48 @@ export type Database = {
           scopes?: string[] | null
           updated_at?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      industry_benchmarks: {
+        Row: {
+          created_at: string | null
+          data_source: string | null
+          id: string
+          industry: string
+          last_updated: string | null
+          location: string | null
+          metric_name: string
+          metric_value: number
+          percentile_rank: number | null
+          platform: string
+          sample_size: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          data_source?: string | null
+          id?: string
+          industry: string
+          last_updated?: string | null
+          location?: string | null
+          metric_name: string
+          metric_value: number
+          percentile_rank?: number | null
+          platform: string
+          sample_size?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          data_source?: string | null
+          id?: string
+          industry?: string
+          last_updated?: string | null
+          location?: string | null
+          metric_name?: string
+          metric_value?: number
+          percentile_rank?: number | null
+          platform?: string
+          sample_size?: number | null
         }
         Relationships: []
       }
@@ -1615,6 +1719,62 @@ export type Database = {
           uploads_used?: number | null
         }
         Relationships: []
+      }
+      platform_recommendations: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          estimated_impact: string | null
+          id: string
+          implementation_difficulty: string | null
+          lead_id: string
+          metadata: Json | null
+          platform: string
+          priority: string | null
+          recommendation_type: string
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          estimated_impact?: string | null
+          id?: string
+          implementation_difficulty?: string | null
+          lead_id: string
+          metadata?: Json | null
+          platform: string
+          priority?: string | null
+          recommendation_type: string
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          estimated_impact?: string | null
+          id?: string
+          implementation_difficulty?: string | null
+          lead_id?: string
+          metadata?: Json | null
+          platform?: string
+          priority?: string | null
+          recommendation_type?: string
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_recommendations_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "visibility_check_leads"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -2361,6 +2521,53 @@ export type Database = {
         }
         Relationships: []
       }
+      swot_analysis: {
+        Row: {
+          analysis_data: Json | null
+          created_at: string | null
+          id: string
+          lead_id: string
+          opportunities: string[] | null
+          overall_score: number | null
+          strengths: string[] | null
+          threats: string[] | null
+          updated_at: string | null
+          weaknesses: string[] | null
+        }
+        Insert: {
+          analysis_data?: Json | null
+          created_at?: string | null
+          id?: string
+          lead_id: string
+          opportunities?: string[] | null
+          overall_score?: number | null
+          strengths?: string[] | null
+          threats?: string[] | null
+          updated_at?: string | null
+          weaknesses?: string[] | null
+        }
+        Update: {
+          analysis_data?: Json | null
+          created_at?: string | null
+          id?: string
+          lead_id?: string
+          opportunities?: string[] | null
+          overall_score?: number | null
+          strengths?: string[] | null
+          threats?: string[] | null
+          updated_at?: string | null
+          weaknesses?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "swot_analysis_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "visibility_check_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_consent_tracking: {
         Row: {
           consent_given: boolean
@@ -2647,6 +2854,8 @@ export type Database = {
       visibility_check_leads: {
         Row: {
           analysis_data: Json | null
+          analysis_status: string | null
+          business_model: string[] | null
           business_name: string
           check_type: string
           created_at: string
@@ -2657,16 +2866,25 @@ export type Database = {
           google_score: number | null
           id: string
           instagram_score: number | null
+          linkedin_handle: string | null
           location_text: string | null
           migrated_to_profile: boolean | null
+          opening_hours: Json | null
           overall_score: number | null
           result_status: string
+          revenue_streams: string[] | null
+          seating_capacity: number | null
+          special_features: Json | null
+          target_audience: string[] | null
+          tiktok_handle: string | null
           updated_at: string
           user_id: string | null
           website: string | null
         }
         Insert: {
           analysis_data?: Json | null
+          analysis_status?: string | null
+          business_model?: string[] | null
           business_name: string
           check_type?: string
           created_at?: string
@@ -2677,16 +2895,25 @@ export type Database = {
           google_score?: number | null
           id?: string
           instagram_score?: number | null
+          linkedin_handle?: string | null
           location_text?: string | null
           migrated_to_profile?: boolean | null
+          opening_hours?: Json | null
           overall_score?: number | null
           result_status?: string
+          revenue_streams?: string[] | null
+          seating_capacity?: number | null
+          special_features?: Json | null
+          target_audience?: string[] | null
+          tiktok_handle?: string | null
           updated_at?: string
           user_id?: string | null
           website?: string | null
         }
         Update: {
           analysis_data?: Json | null
+          analysis_status?: string | null
+          business_model?: string[] | null
           business_name?: string
           check_type?: string
           created_at?: string
@@ -2697,10 +2924,17 @@ export type Database = {
           google_score?: number | null
           id?: string
           instagram_score?: number | null
+          linkedin_handle?: string | null
           location_text?: string | null
           migrated_to_profile?: boolean | null
+          opening_hours?: Json | null
           overall_score?: number | null
           result_status?: string
+          revenue_streams?: string[] | null
+          seating_capacity?: number | null
+          special_features?: Json | null
+          target_audience?: string[] | null
+          tiktok_handle?: string | null
           updated_at?: string
           user_id?: string | null
           website?: string | null

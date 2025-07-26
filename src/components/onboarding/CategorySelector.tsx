@@ -66,8 +66,8 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <h3 className="font-medium">{getCategoryName(category)}</h3>
-              {category.description && (
-                <p className="text-sm text-gray-600 mt-1">{category.description}</p>
+              {(category.description_de || category.description_en) && (
+                <p className="text-sm text-gray-600 mt-1">{category.description_de || category.description_en}</p>
               )}
               {category.keywords && category.keywords.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-2">
