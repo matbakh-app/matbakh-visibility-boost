@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { X } from 'lucide-react';
-import { usePrimaryGmbCategories } from '@/hooks/useGmbCategories';
+import { usePrimaryGmbCategories, useGmbCategorySearch } from '@/hooks/useGmbCategories';
 import type { GmbCategory } from '@/hooks/useGmbCategories';
 
 interface CategorySelectorProps {
