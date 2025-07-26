@@ -7,8 +7,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
-import { MapPin, Phone, Globe, Info, Users, TrendingUp, Clock } from 'lucide-react';
+import { MapPin, Phone, Globe, Info, Users, TrendingUp, Clock, HelpCircle } from 'lucide-react';
 import { CategorySelector } from './CategorySelector';
+import { MainCategorySelector } from './MainCategorySelector';
+import { SubCategorySelector } from './SubCategorySelector';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface BusinessBasicsStepProps {
   data: {
@@ -18,10 +21,12 @@ interface BusinessBasicsStepProps {
     website: string;
     description: string;
     categories: string[];
+    mainCategories?: string[];
+    subCategories?: string[];
     businessModel?: string[];
     revenueStreams?: string[];
     targetAudience?: string[];
-    seatingCapacity?: number;
+    seatingCapacity?: string;
     openingHours?: string;
     specialFeatures?: string[];
   };
@@ -49,7 +54,7 @@ export const BusinessBasicsStep: React.FC<BusinessBasicsStepProps> = ({
     }
   };
 
-  const handleNumberChange = (field: string, value: number | undefined) => {
+  const handleNumberChange = (field: string, value: string) => {
     onDataChange({
       ...data,
       [field]: value
@@ -63,6 +68,20 @@ export const BusinessBasicsStep: React.FC<BusinessBasicsStepProps> = ({
     onDataChange({
       ...data,
       categories
+    });
+  };
+
+  const handleMainCategoryChange = (categories: string[]) => {
+    onDataChange({
+      ...data,
+      mainCategories: categories
+    });
+  };
+
+  const handleSubCategoryChange = (categories: string[]) => {
+    onDataChange({
+      ...data,
+      subCategories: categories
     });
   };
 
@@ -103,6 +122,31 @@ export const BusinessBasicsStep: React.FC<BusinessBasicsStepProps> = ({
       newErrors.categories = t('validation.categoriesRequired');
     }
 
+    // Validate main categories
+    if (!data.mainCategories || data.mainCategories.length === 0) {
+      newErrors.mainCategories = t('visibilityStepOne.validation.mainCategoriesRequired');
+    }
+
+    // Validate business model  
+    if (!data.businessModel || data.businessModel.length === 0) {
+      newErrors.businessModel = t('visibilityStepOne.validation.businessModelRequired');
+    }
+
+    // Validate revenue streams
+    if (!data.revenueStreams || data.revenueStreams.length === 0) {
+      newErrors.revenueStreams = t('visibilityStepOne.validation.revenueStreamsRequired');
+    }
+
+    // Validate target audience
+    if (!data.targetAudience || data.targetAudience.length === 0) {
+      newErrors.targetAudience = t('visibilityStepOne.validation.targetAudienceRequired');
+    }
+
+    // Validate opening hours
+    if (!data.openingHours?.trim()) {
+      newErrors.openingHours = t('visibilityStepOne.validation.openingHoursRequired');
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -113,8 +157,106 @@ export const BusinessBasicsStep: React.FC<BusinessBasicsStepProps> = ({
     }
   };
 
+  const renderTooltip = (text: string) => (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
+        </TooltipTrigger>
+        <TooltipContent className="max-w-xs">
+          <p className="text-sm">{text}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+
+  const renderCheckboxGroup = (
+    fieldName: string,
+    options: Array<{ value: string; label: string }>,
+    title: string,
+    tooltip: string,
+    required: boolean = false
+  ) => (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <Label>{title} {required && '*'}</Label>
+        {renderTooltip(tooltip)}
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        {options.map((option) => (
+          <div key={option.value} className="flex items-center space-x-2">
+            <Checkbox
+              id={`${fieldName}-${option.value}`}
+              checked={(data[fieldName] as string[])?.includes(option.value) || false}
+              onCheckedChange={(checked) => {
+                handleCheckboxGroupChange(fieldName, option.value, checked as boolean);
+              }}
+            />
+            <Label
+              htmlFor={`${fieldName}-${option.value}`}
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+            >
+              {option.label}
+            </Label>
+          </div>
+        ))}
+      </div>
+      {errors[fieldName] && (
+        <p className="text-sm text-red-500">{errors[fieldName]}</p>
+      )}
+    </div>
+  );
+
+  // Define business data arrays using i18n
+  const BUSINESS_MODELS = [
+    { value: 'restaurant', label: t('visibilityStepOne.businessModels.restaurant') },
+    { value: 'cafe', label: t('visibilityStepOne.businessModels.cafe') },
+    { value: 'bar', label: t('visibilityStepOne.businessModels.bar') },
+    { value: 'foodtruck', label: t('visibilityStepOne.businessModels.foodtruck') },
+    { value: 'catering', label: t('visibilityStepOne.businessModels.catering') },
+    { value: 'delivery', label: t('visibilityStepOne.businessModels.delivery') },
+    { value: 'retail', label: t('visibilityStepOne.businessModels.retail') },
+    { value: 'hybrid', label: t('visibilityStepOne.businessModels.hybrid') },
+  ];
+
+  const REVENUE_STREAMS = [
+    { value: 'dine_in', label: t('visibilityStepOne.revenueStreams.dine_in') },
+    { value: 'takeaway', label: t('visibilityStepOne.revenueStreams.takeaway') },
+    { value: 'delivery', label: t('visibilityStepOne.revenueStreams.delivery') },
+    { value: 'catering', label: t('visibilityStepOne.revenueStreams.catering') },
+    { value: 'retail', label: t('visibilityStepOne.revenueStreams.retail') },
+    { value: 'beverages', label: t('visibilityStepOne.revenueStreams.beverages') },
+    { value: 'courses', label: t('visibilityStepOne.revenueStreams.courses') },
+    { value: 'merchandise', label: t('visibilityStepOne.revenueStreams.merchandise') },
+  ];
+
+  const TARGET_AUDIENCES = [
+    { value: 'families', label: t('visibilityStepOne.targetAudiences.families') },
+    { value: 'young_adults', label: t('visibilityStepOne.targetAudiences.young_adults') },
+    { value: 'professionals', label: t('visibilityStepOne.targetAudiences.professionals') },
+    { value: 'seniors', label: t('visibilityStepOne.targetAudiences.seniors') },
+    { value: 'students', label: t('visibilityStepOne.targetAudiences.students') },
+    { value: 'tourists', label: t('visibilityStepOne.targetAudiences.tourists') },
+    { value: 'locals', label: t('visibilityStepOne.targetAudiences.locals') },
+    { value: 'business', label: t('visibilityStepOne.targetAudiences.business') },
+  ];
+
+  const SPECIAL_FEATURES = [
+    { value: 'outdoor_seating', label: t('visibilityStepOne.specialFeatures.outdoor_seating') },
+    { value: 'parking', label: t('visibilityStepOne.specialFeatures.parking') },
+    { value: 'wheelchair_accessible', label: t('visibilityStepOne.specialFeatures.wheelchair_accessible') },
+    { value: 'pet_friendly', label: t('visibilityStepOne.specialFeatures.pet_friendly') },
+    { value: 'wifi', label: t('visibilityStepOne.specialFeatures.wifi') },
+    { value: 'live_music', label: t('visibilityStepOne.specialFeatures.live_music') },
+    { value: 'private_dining', label: t('visibilityStepOne.specialFeatures.private_dining') },
+    { value: 'vegan_options', label: t('visibilityStepOne.specialFeatures.vegan_options') },
+    { value: 'organic', label: t('visibilityStepOne.specialFeatures.organic') },
+    { value: 'local_products', label: t('visibilityStepOne.specialFeatures.local_products') },
+  ];
+
   return (
-    <div className="space-y-6">
+    <TooltipProvider>
+      <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -228,151 +370,139 @@ export const BusinessBasicsStep: React.FC<BusinessBasicsStepProps> = ({
 
       <Separator />
 
+      {/* Main and Sub Categories */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            {t('businessModel.title', 'Geschäftsmodell & Zielgruppe')}
+            <Info className="w-5 h-5" />
+            Google Business Kategorien
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Business Model */}
-          <div className="space-y-3">
-            <Label>{t('businessModel.label', 'Geschäftsmodell')} *</Label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {['restaurant', 'cafe', 'bar', 'fastfood', 'catering', 'delivery'].map((model) => (
-                <div key={model} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`business-model-${model}`}
-                    checked={(data.businessModel || []).includes(model)}
-                    onCheckedChange={(checked) => 
-                      handleCheckboxGroupChange('businessModel', model, checked as boolean)
-                    }
-                  />
-                  <Label htmlFor={`business-model-${model}`} className="text-sm">
-                    {t(`businessModel.options.${model}`, model)}
-                  </Label>
-                </div>
-              ))}
-            </div>
+        <CardContent className="space-y-4">
+          <div>
+            <MainCategorySelector 
+              selectedCategories={data.mainCategories || []} 
+              onCategoryChange={handleMainCategoryChange} 
+              maxSelections={3}
+            />
+            {errors.mainCategories && (
+              <p className="text-sm text-red-500 mt-2">{errors.mainCategories}</p>
+            )}
           </div>
 
-          {/* Revenue Streams */}
-          <div className="space-y-3">
-            <Label>{t('revenueStreams.label', 'Einnahmequellen')}</Label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {['dine_in', 'takeaway', 'delivery', 'catering', 'events', 'retail'].map((stream) => (
-                <div key={stream} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`revenue-stream-${stream}`}
-                    checked={(data.revenueStreams || []).includes(stream)}
-                    onCheckedChange={(checked) => 
-                      handleCheckboxGroupChange('revenueStreams', stream, checked as boolean)
-                    }
-                  />
-                  <Label htmlFor={`revenue-stream-${stream}`} className="text-sm">
-                    {t(`revenueStreams.options.${stream}`, stream)}
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Target Audience */}
-          <div className="space-y-3">
-            <Label className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              {t('targetAudience.label', 'Zielgruppe')}
-            </Label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {['families', 'professionals', 'students', 'tourists', 'locals', 'seniors'].map((audience) => (
-                <div key={audience} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`target-audience-${audience}`}
-                    checked={(data.targetAudience || []).includes(audience)}
-                    onCheckedChange={(checked) => 
-                      handleCheckboxGroupChange('targetAudience', audience, checked as boolean)
-                    }
-                  />
-                  <Label htmlFor={`target-audience-${audience}`} className="text-sm">
-                    {t(`targetAudience.options.${audience}`, audience)}
-                  </Label>
-                </div>
-              ))}
-            </div>
+          <div>
+            <SubCategorySelector 
+              selectedCategories={data.subCategories || []} 
+              onCategoryChange={handleSubCategoryChange} 
+              maxSelections={20}
+            />
           </div>
         </CardContent>
       </Card>
 
       <Separator />
 
+      {/* Business Model & Target Audience */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" />
+            {t('visibilityStepOne.sections.businessModel')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {renderCheckboxGroup(
+            'businessModel',
+            BUSINESS_MODELS,
+            t('visibilityStepOne.fields.businessModel.label'),
+            t('visibilityStepOne.fields.businessModel.tooltip'),
+            true
+          )}
+
+          {renderCheckboxGroup(
+            'revenueStreams',
+            REVENUE_STREAMS,
+            t('visibilityStepOne.fields.revenueStreams.label'),
+            t('visibilityStepOne.fields.revenueStreams.tooltip'),
+            true
+          )}
+
+          {renderCheckboxGroup(
+            'targetAudience',
+            TARGET_AUDIENCES,
+            t('visibilityStepOne.fields.targetAudience.label'),
+            t('visibilityStepOne.fields.targetAudience.tooltip'),
+            true
+          )}
+        </CardContent>
+      </Card>
+
+      <Separator />
+
+      {/* Capacity & Details */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5" />
-            {t('capacity.title', 'Kapazität & Details')}
+            {t('visibilityStepOne.sections.capacity')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Seating Capacity */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="seatingCapacity">
-                {t('capacity.seatingCapacity', 'Sitzplätze')}
-              </Label>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="seatingCapacity">
+                  {t('visibilityStepOne.fields.seatingCapacity.label')}
+                </Label>
+                {renderTooltip(t('visibilityStepOne.fields.seatingCapacity.tooltip'))}
+              </div>
               <Input
                 id="seatingCapacity"
                 type="number"
-                placeholder="50"
+                placeholder={t('visibilityStepOne.fields.seatingCapacity.placeholder')}
                 value={data.seatingCapacity || ''}
-                onChange={(e) => handleNumberChange('seatingCapacity', e.target.value ? parseInt(e.target.value) : undefined)}
+                onChange={(e) => handleNumberChange('seatingCapacity', e.target.value)}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="openingHours">
-                {t('capacity.openingHours', 'Öffnungszeiten')} *
-              </Label>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="openingHours">
+                  {t('visibilityStepOne.fields.openingHours.label')} *
+                </Label>
+                {renderTooltip(t('visibilityStepOne.fields.openingHours.tooltip'))}
+              </div>
               <Input
                 id="openingHours"
-                placeholder="Mo-So 10:00-22:00"
+                placeholder={t('visibilityStepOne.fields.openingHours.placeholder')}
                 value={data.openingHours || ''}
                 onChange={(e) => handleInputChange('openingHours', e.target.value)}
+                className={errors.openingHours ? 'border-red-500' : ''}
               />
+              {errors.openingHours && (
+                <p className="text-sm text-red-500">{errors.openingHours}</p>
+              )}
             </div>
           </div>
 
-          {/* Special Features */}
-          <div className="space-y-3">
-            <Label>{t('capacity.specialFeatures', 'Besondere Merkmale')}</Label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {['terrace', 'garden', 'parking', 'wifi', 'live_music', 'kids_area'].map((feature) => (
-                <div key={feature} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`special-feature-${feature}`}
-                    checked={(data.specialFeatures || []).includes(feature)}
-                    onCheckedChange={(checked) => 
-                      handleCheckboxGroupChange('specialFeatures', feature, checked as boolean)
-                    }
-                  />
-                  <Label htmlFor={`special-feature-${feature}`} className="text-sm">
-                    {t(`capacity.features.${feature}`, feature)}
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </div>
+          {renderCheckboxGroup(
+            'specialFeatures',
+            SPECIAL_FEATURES,
+            t('visibilityStepOne.fields.specialFeatures.label'),
+            t('visibilityStepOne.fields.specialFeatures.tooltip')
+          )}
         </CardContent>
       </Card>
 
       <div className="flex justify-between">
         <Button variant="outline" onClick={onPrevious}>
-          {t('common.previous')}
+          {t('navigation.back')}
         </Button>
         <Button onClick={handleNext}>
-          {t('common.next')}
+          {t('navigation.next')}
         </Button>
       </div>
     </div>
+    </TooltipProvider>
   );
 };
