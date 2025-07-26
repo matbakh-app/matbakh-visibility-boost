@@ -95,7 +95,7 @@ const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
       businessModel: defaultValues?.businessModel || [],
       revenueStreams: defaultValues?.revenueStreams || [],
       targetAudience: defaultValues?.targetAudience || [],
-      seatingCapacity: defaultValues?.seatingCapacity,
+      seatingCapacity: defaultValues?.seatingCapacity || undefined,
       openingHours: defaultValues?.openingHours || '',
       specialFeatures: defaultValues?.specialFeatures || [],
     },
