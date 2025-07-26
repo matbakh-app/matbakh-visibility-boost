@@ -556,13 +556,6 @@ export type Database = {
             foreignKeyName: "dudle_options_restaurant_id_fkey"
             columns: ["restaurant_id"]
             isOneToOne: false
-            referencedRelation: "restaurant_match_scores"
-            referencedColumns: ["restaurant_id"]
-          },
-          {
-            foreignKeyName: "dudle_options_restaurant_id_fkey"
-            columns: ["restaurant_id"]
-            isOneToOne: false
             referencedRelation: "restaurants"
             referencedColumns: ["id"]
           },
@@ -1234,13 +1227,6 @@ export type Database = {
             foreignKeyName: "matching_performance_restaurant_id_fkey"
             columns: ["restaurant_id"]
             isOneToOne: false
-            referencedRelation: "restaurant_match_scores"
-            referencedColumns: ["restaurant_id"]
-          },
-          {
-            foreignKeyName: "matching_performance_restaurant_id_fkey"
-            columns: ["restaurant_id"]
-            isOneToOne: false
             referencedRelation: "restaurants"
             referencedColumns: ["id"]
           },
@@ -1326,13 +1312,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "meal_plans"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "meals_restaurant_id_fkey"
-            columns: ["restaurant_id"]
-            isOneToOne: false
-            referencedRelation: "restaurant_match_scores"
-            referencedColumns: ["restaurant_id"]
           },
           {
             foreignKeyName: "meals_restaurant_id_fkey"
@@ -1426,13 +1405,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "recipes"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "nutrition_logs_restaurant_id_fkey"
-            columns: ["restaurant_id"]
-            isOneToOne: false
-            referencedRelation: "restaurant_match_scores"
-            referencedColumns: ["restaurant_id"]
           },
           {
             foreignKeyName: "nutrition_logs_restaurant_id_fkey"
@@ -1893,13 +1865,6 @@ export type Database = {
             foreignKeyName: "ratings_restaurant_id_fkey"
             columns: ["restaurant_id"]
             isOneToOne: false
-            referencedRelation: "restaurant_match_scores"
-            referencedColumns: ["restaurant_id"]
-          },
-          {
-            foreignKeyName: "ratings_restaurant_id_fkey"
-            columns: ["restaurant_id"]
-            isOneToOne: false
             referencedRelation: "restaurants"
             referencedColumns: ["id"]
           },
@@ -2007,13 +1972,6 @@ export type Database = {
             foreignKeyName: "restaurant_analytics_restaurant_id_fkey"
             columns: ["restaurant_id"]
             isOneToOne: false
-            referencedRelation: "restaurant_match_scores"
-            referencedColumns: ["restaurant_id"]
-          },
-          {
-            foreignKeyName: "restaurant_analytics_restaurant_id_fkey"
-            columns: ["restaurant_id"]
-            isOneToOne: false
             referencedRelation: "restaurants"
             referencedColumns: ["id"]
           },
@@ -2072,13 +2030,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "restaurant_features_restaurant_id_fkey"
-            columns: ["restaurant_id"]
-            isOneToOne: false
-            referencedRelation: "restaurant_match_scores"
-            referencedColumns: ["restaurant_id"]
-          },
           {
             foreignKeyName: "restaurant_features_restaurant_id_fkey"
             columns: ["restaurant_id"]
@@ -2936,13 +2887,6 @@ export type Database = {
             foreignKeyName: "user_shares_restaurant_id_fkey"
             columns: ["restaurant_id"]
             isOneToOne: false
-            referencedRelation: "restaurant_match_scores"
-            referencedColumns: ["restaurant_id"]
-          },
-          {
-            foreignKeyName: "user_shares_restaurant_id_fkey"
-            columns: ["restaurant_id"]
-            isOneToOne: false
             referencedRelation: "restaurants"
             referencedColumns: ["id"]
           },
@@ -3326,24 +3270,6 @@ export type Database = {
           sort_order?: number | null
           synonyms?: string[] | null
           updated_at?: string | null
-        }
-        Relationships: []
-      }
-      restaurant_match_scores: {
-        Row: {
-          address: string | null
-          avg_daily_views: number | null
-          avg_rating: number | null
-          cuisine_type: string | null
-          latitude: number | null
-          longitude: number | null
-          name: string | null
-          popularity_score: number | null
-          restaurant_id: string | null
-          review_count: number | null
-          share_count: number | null
-          total_social_likes: number | null
-          verified: boolean | null
         }
         Relationships: []
       }
