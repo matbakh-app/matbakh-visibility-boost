@@ -31,15 +31,22 @@ export const MainCategorySelector: React.FC<MainCategorySelectorProps> = ({
   const mainCategoryOptions = React.useMemo(() => {
     if (!gmbCategories) return [];
     
-    // Filter for main categories (parent_id is null) 
-    // For gastronomy categories, use name_de/name_en even if haupt_kategorie is null
-    const filtered = gmbCategories.filter(cat => 
-      !cat.parent_id || cat.parent_id === null
-    );
+    // Filter main categories based on language-specific fields
+    const filtered = gmbCategories.filter(cat => {
+      // For German: check haupt_kategorie field
+      if (i18n.language === 'de' && cat.haupt_kategorie) {
+        return true;
+      }
+      // For English: check main_category field  
+      if (i18n.language === 'en' && cat.main_category) {
+        return true;
+      }
+      return false;
+    });
     
-    console.log('🔍 Filtered main categories:', filtered.length, filtered.slice(0, 3));
+    console.log('🔍 Filtered main categories for', i18n.language, ':', filtered.length, filtered.slice(0, 3));
     return filtered;
-  }, [gmbCategories]);
+  }, [gmbCategories, i18n.language]);
 
   const getCategoryName = (category: GmbCategory) => {
     if (i18n.language === 'de') {
