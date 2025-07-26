@@ -21,7 +21,11 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
   const { data: primaryCategories, isLoading: isPrimaryLoading } = usePrimaryGmbCategories();
 
   const getCategoryName = (category: GmbCategory) => {
-    return i18n.language === 'de' ? category.name_de : category.name_en;
+    if (i18n.language === 'de') {
+      return category.haupt_kategorie || category.name_de;
+    } else {
+      return category.main_category || category.name_en;
+    }
   };
 
   const handleCategorySelect = (categoryId: string) => {
