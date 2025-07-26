@@ -41,12 +41,6 @@ const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
       postalCode: defaultValues?.postalCode || '',
       mainCategories: defaultValues?.mainCategories || [],
       subCategories: defaultValues?.subCategories || [],
-      businessModel: defaultValues?.businessModel || [],
-      revenueStreams: defaultValues?.revenueStreams || [],
-      targetAudience: defaultValues?.targetAudience || [],
-      seatingCapacity: defaultValues?.seatingCapacity || '',
-      openingHours: defaultValues?.openingHours || '',
-      specialFeatures: defaultValues?.specialFeatures || [],
     },
     mode: 'onChange',
   });
@@ -66,50 +60,6 @@ const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
     </TooltipProvider>
   );
 
-  const renderCheckboxGroup = (
-    fieldName: keyof StepOneValues,
-    options: Array<{ value: string; label: string }>,
-    title: string,
-    tooltip: string
-  ) => (
-    <FormField
-      control={form.control}
-      name={fieldName}
-      render={({ field }) => (
-        <FormItem>
-          <div className="flex items-center gap-2 mb-3">
-            <FormLabel className="text-base font-medium">{title} *</FormLabel>
-            {renderTooltip(tooltip)}
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {options.map((option) => (
-              <div key={option.value} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`${fieldName}-${option.value}`}
-                  checked={(field.value as string[])?.includes(option.value)}
-                  onCheckedChange={(checked) => {
-                    const currentValues = field.value as string[] || [];
-                    if (checked) {
-                      field.onChange([...currentValues, option.value]);
-                    } else {
-                      field.onChange(currentValues.filter(v => v !== option.value));
-                    }
-                  }}
-                />
-                <label
-                  htmlFor={`${fieldName}-${option.value}`}
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                >
-                  {option.label}
-                </label>
-              </div>
-            ))}
-          </div>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-  );
 
   return (
     <TooltipProvider>
@@ -196,87 +146,6 @@ const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
                   </FormItem>
                 )}
               />
-            </CardContent>
-          </Card>
-
-          {/* Geschäftsmodell & Zielgruppe */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('visibilityStepOne.sections.businessModel')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {renderCheckboxGroup(
-                'businessModel',
-                BUSINESS_MODELS,
-                t('visibilityStepOne.fields.businessModel.label'),
-                t('visibilityStepOne.fields.businessModel.tooltip')
-              )}
-
-              {renderCheckboxGroup(
-                'revenueStreams',
-                REVENUE_STREAMS,
-                t('visibilityStepOne.fields.revenueStreams.label'),
-                t('visibilityStepOne.fields.revenueStreams.tooltip')
-              )}
-
-              {renderCheckboxGroup(
-                'targetAudience',
-                TARGET_AUDIENCES,
-                t('visibilityStepOne.fields.targetAudience.label'),
-                t('visibilityStepOne.fields.targetAudience.tooltip')
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Kapazität & Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('visibilityStepOne.sections.capacity')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="seatingCapacity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <div className="flex items-center gap-2">
-                        <FormLabel>{t('visibilityStepOne.fields.seatingCapacity.label')}</FormLabel>
-                        {renderTooltip(t('visibilityStepOne.fields.seatingCapacity.tooltip'))}
-                      </div>
-                       <Input 
-                         type="number" 
-                         placeholder={t('visibilityStepOne.fields.seatingCapacity.placeholder')}
-                         {...field}
-                         onChange={(e) => field.onChange(e.target.value || '')}
-                       />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="openingHours"
-                  render={({ field }) => (
-                    <FormItem>
-                      <div className="flex items-center gap-2">
-                        <FormLabel>{t('visibilityStepOne.fields.openingHours.label')} *</FormLabel>
-                        {renderTooltip(t('visibilityStepOne.fields.openingHours.tooltip'))}
-                      </div>
-                      <Input placeholder={t('visibilityStepOne.fields.openingHours.placeholder')} {...field} />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {renderCheckboxGroup(
-                'specialFeatures',
-                SPECIAL_FEATURES,
-                t('visibilityStepOne.fields.specialFeatures.label'),
-                t('visibilityStepOne.fields.specialFeatures.tooltip')
-              )}
             </CardContent>
           </Card>
 
