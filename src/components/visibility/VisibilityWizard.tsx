@@ -9,7 +9,7 @@ import { useEnhancedLeadTracking } from '@/hooks/useEnhancedLeadTracking';
 import type { AnalysisResult } from '@/types/visibility';
 
 export interface VisibilityFormData {
-  companyName: string;
+  businessName: string;
   location: string;
   postalCode?: string;
   mainCategory: string;
@@ -51,7 +51,7 @@ const VisibilityWizard: React.FC = () => {
     
     // Pre-run Instagram candidate search for Step 2
     const preCheckData = {
-      businessName: data.companyName,
+      businessName: data.businessName,
       location: data.location,
       mainCategory: data.mainCategory,
       subCategory: data.subCategory,
@@ -91,7 +91,7 @@ const VisibilityWizard: React.FC = () => {
     try {
       // First, create the enhanced lead in our database
       const leadData = {
-        business_name: stepOneData.companyName,
+        business_name: stepOneData.businessName,
         location: stepOneData.location,
         postal_code: stepOneData.postalCode || '',
         main_category: stepOneData.mainCategory,
@@ -137,7 +137,7 @@ const VisibilityWizard: React.FC = () => {
 
       // Prepare data for the legacy analysis function
       const completeFormData = {
-        businessName: stepOneData.companyName,
+        businessName: stepOneData.businessName,
         location: stepOneData.location,
         postalCode: stepOneData.postalCode || '',
         mainCategory: stepOneData.mainCategory,
@@ -222,7 +222,7 @@ const VisibilityWizard: React.FC = () => {
   if (analysisResult) {
     return (
       <VisibilityResults
-        businessName={stepOneData?.companyName || ''}
+        businessName={stepOneData?.businessName || ''}
         analysisResult={analysisResult}
         onRequestDetailedReport={handleRequestDetailedReport}
         onNewAnalysis={restart}
@@ -269,7 +269,7 @@ const VisibilityWizard: React.FC = () => {
           loading={loading}
           success={!!analysisResult}
           onRestart={restart}
-          restaurantName={stepOneData?.companyName}
+          restaurantName={stepOneData?.businessName}
         />
       )}
     </div>
