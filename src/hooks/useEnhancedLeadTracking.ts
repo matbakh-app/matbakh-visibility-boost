@@ -58,7 +58,6 @@ export const useEnhancedLeadTracking = () => {
           gdpr_consent: leadData.gdpr_consent,
           marketing_consent: leadData.marketing_consent,
           analysis_status: 'pending',
-          created_at: new Date().toISOString(),
         }])
         .select('id')
         .single();
