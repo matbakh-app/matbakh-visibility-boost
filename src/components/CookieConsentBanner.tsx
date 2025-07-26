@@ -4,17 +4,34 @@ import { useTranslation } from 'react-i18next';
 import { X, Cookie, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { loadFacebookPixel, removeFacebookPixel } from '@/utils/facebookPixel';
+import { supabase } from '@/integrations/supabase/client';
 
 const CookieConsentBanner: React.FC = () => {
   const { t } = useTranslation('common');
   const [isVisible, setIsVisible] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [facebookPixelId, setFacebookPixelId] = useState<string | null>(null);
 
-  // Facebook Pixel Konfiguration aus Environment-Variablen
-  const facebookPixelId = import.meta.env.VITE_FACEBOOK_PIXEL_ID;
   const isDebugMode = import.meta.env.DEV;
 
   useEffect(() => {
+    // Fetch Facebook Pixel ID from Supabase secrets
+    const fetchFacebookPixelId = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('facebook-conversions', {
+          body: { action: 'get_config' }
+        });
+        
+        if (data?.pixel_id) {
+          setFacebookPixelId(data.pixel_id);
+        }
+      } catch (error) {
+        console.warn('Failed to fetch Facebook Pixel ID:', error);
+      }
+    };
+
+    fetchFacebookPixelId();
+    
     // Check if consent has already been given
     const consent = localStorage.getItem('cookieConsent');
     if (!consent) {
@@ -24,14 +41,16 @@ const CookieConsentBanner: React.FC = () => {
       }, 1500);
       return () => clearTimeout(timer);
     } else if (consent === 'accepted') {
-      // Consent bereits erteilt - Facebook Pixel laden
-      initializeFacebookPixel();
+      // Consent bereits erteilt - Facebook Pixel laden (when pixelId is available)
+      if (facebookPixelId) {
+        initializeFacebookPixel();
+      }
     }
-  }, []);
+  }, [facebookPixelId]);
 
   const initializeFacebookPixel = async () => {
     if (!facebookPixelId) {
-      console.warn('Facebook Pixel ID fehlt in Environment-Variablen');
+      console.warn('Facebook Pixel ID nicht verfügbar');
       return;
     }
 
