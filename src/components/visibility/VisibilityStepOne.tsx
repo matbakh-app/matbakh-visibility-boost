@@ -12,14 +12,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { useTranslation } from 'react-i18next';
 import { HelpCircle, Info } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { CategorySelector } from '@/components/onboarding/CategorySelector';
+import { MainCategorySelector } from '@/components/onboarding/MainCategorySelector';
+import { SubCategorySelector } from '@/components/onboarding/SubCategorySelector';
 
 const stepOneSchema = z.object({
   businessName: z.string().min(1, 'Pflichtfeld'),
   location: z.string().min(1, 'Pflichtfeld'),
   postalCode: z.string().optional(),
-  selectedCategories: z.array(z.string()).min(1, 'Mindestens eine Kategorie wählen'),
-  matbakhCategory: z.string().min(1, 'Bitte eintragen'),
+  mainCategories: z.array(z.string()).min(1, 'Mindestens eine Hauptkategorie wählen'),
+  subCategories: z.array(z.string()).optional(),
   businessModel: z.array(z.string()).min(1, 'Mindestens ein Geschäftsmodell wählen'),
   revenueStreams: z.array(z.string()).min(1, 'Mindestens eine Einnahmequelle wählen'),
   targetAudience: z.array(z.string()).min(1, 'Mindestens eine Zielgruppe wählen'),
@@ -89,8 +90,8 @@ const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
       businessName: defaultValues?.businessName || '',
       location: defaultValues?.location || '',
       postalCode: defaultValues?.postalCode || '',
-      selectedCategories: defaultValues?.selectedCategories || [],
-      matbakhCategory: defaultValues?.matbakhCategory || '',
+      mainCategories: defaultValues?.mainCategories || [],
+      subCategories: defaultValues?.subCategories || [],
       businessModel: defaultValues?.businessModel || [],
       revenueStreams: defaultValues?.revenueStreams || [],
       targetAudience: defaultValues?.targetAudience || [],
@@ -219,10 +220,10 @@ const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
 
               <FormField
                 control={form.control}
-                name="selectedCategories"
+                name="mainCategories"
                 render={({ field }) => (
                   <FormItem>
-                    <CategorySelector 
+                    <MainCategorySelector 
                       selectedCategories={field.value || []} 
                       onCategoryChange={field.onChange} 
                       maxSelections={3}
@@ -234,14 +235,14 @@ const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
 
               <FormField
                 control={form.control}
-                name="matbakhCategory"
+                name="subCategories"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="flex items-center gap-2">
-                      <FormLabel>Matbakh.app Kategorie *</FormLabel>
-                      {renderTooltip('Besondere Merkmale oder Küchenstil, die Ihr Unternehmen auszeichnen.')}
-                    </div>
-                    <Input placeholder="z. B. libanesisch, Weinbar, Familienbetrieb, …" {...field} />
+                    <SubCategorySelector 
+                      selectedCategories={field.value || []} 
+                      onCategoryChange={field.onChange} 
+                      maxSelections={20}
+                    />
                     <FormMessage />
                   </FormItem>
                 )}
