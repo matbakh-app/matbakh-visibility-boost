@@ -181,6 +181,16 @@ const VisibilityWizard: React.FC = () => {
       }
     } finally {
       setLoading(false);
+      
+      // Send double opt-in email after analysis completion
+      if (currentLeadId && stepTwoData?.email && stepOneData?.businessName) {
+        try {
+          console.log('📧 Sending double opt-in email...');
+          await sendDoubleOptInEmail(currentLeadId, stepTwoData.email, stepOneData.businessName);
+        } catch (emailError) {
+          console.error('❌ Error sending double opt-in email:', emailError);
+        }
+      }
     }
   };
 
@@ -193,9 +203,52 @@ const VisibilityWizard: React.FC = () => {
     setLoading(false);
   };
 
-  const handleRequestDetailedReport = () => {
+  const sendDoubleOptInEmail = async (leadId: string, email: string, businessName: string) => {
+    try {
+      const { error } = await supabase.functions.invoke('send-visibility-report', {
+        body: {
+          leadId,
+          email,
+          businessName,
+          reportType: 'basic'
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      console.log('✅ Double opt-in email sent successfully');
+    } catch (error) {
+      console.error('❌ Failed to send double opt-in email:', error);
+      throw error;
+    }
+  };
+
+  const handleRequestDetailedReport = async () => {
     setReportRequested(true);
     console.log('📧 Detailed report requested');
+    
+    // Send detailed report email if we have the necessary data
+    if (analysisResult && stepTwoData?.email && stepOneData?.businessName) {
+      try {
+        // Get the lead ID from the current analysis
+        const leadId = (analysisResult as any)?.leadId;
+        if (leadId) {
+          await supabase.functions.invoke('send-visibility-report', {
+            body: {
+              leadId,
+              email: stepTwoData.email,
+              businessName: stepOneData.businessName,
+              reportType: 'detailed'
+            }
+          });
+          console.log('✅ Detailed report email sent successfully');
+        }
+      } catch (error) {
+        console.error('❌ Failed to send detailed report email:', error);
+      }
+    }
   };
 
   // Show results if analysis is complete
