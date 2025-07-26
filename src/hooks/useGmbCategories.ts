@@ -45,18 +45,48 @@ export const usePrimaryGmbCategories = () => {
   return useQuery({
     queryKey: ['gmb-categories-primary'],
     queryFn: async () => {
+      // Get the main categories (18 high-level categories)
       const { data, error } = await supabase
         .from('gmb_categories')
-        .select('*')
+        .select('main_category, haupt_kategorie')
         .eq('is_primary', true)
-        .order('sort_order', { ascending: true });
+        .not('main_category', 'is', null)
+        .order('main_category', { ascending: true });
 
       if (error) {
         console.error('Error fetching primary GMB categories:', error);
         throw error;
       }
 
-      return data as GmbCategory[];
+      // Remove duplicates and create category objects with unique main categories
+      const uniqueCategories = Array.from(
+        new Map(
+          data.map(item => [
+            item.main_category,
+            {
+              id: `main_${item.main_category?.toLowerCase().replace(/[^a-z0-9]/g, '_')}`,
+              category_id: `main_${item.main_category?.toLowerCase().replace(/[^a-z0-9]/g, '_')}`,
+              name_en: item.main_category,
+              name_de: item.haupt_kategorie,
+              is_popular: true,
+              is_primary: true,
+              sort_order: 10,
+              parent_category_id: null,
+              parent_id: null,
+              category_path: item.main_category,
+              country_availability: null,
+              description_de: null,
+              description_en: null,
+              keywords: null,
+              synonyms: null,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            }
+          ])
+        ).values()
+      );
+
+      return uniqueCategories as GmbCategory[];
     },
   });
 };
