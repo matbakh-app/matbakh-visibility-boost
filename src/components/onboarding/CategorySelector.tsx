@@ -17,7 +17,7 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
   onCategoryChange,
   maxSelections = 3
 }) => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation('onboarding');
   const { data: primaryCategories, isLoading: isPrimaryLoading } = usePrimaryGmbCategories();
 
   const getCategoryName = (category: GmbCategory) => {
@@ -51,15 +51,15 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
     <div className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          {t('onboarding.selectCategories')}
+          {t('selectCategories')}
         </label>
         
         <Select onValueChange={handleCategorySelect} disabled={selectedCategories.length >= maxSelections}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder={
               selectedCategories.length >= maxSelections 
-                ? t('onboarding.maxCategoriesSelected', 'Maximum erreicht') 
-                : t('onboarding.selectCategories')
+                ? t('maxCategoriesSelected') 
+                : t('selectCategories')
             } />
           </SelectTrigger>
           <SelectContent>
@@ -74,7 +74,7 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
 
       <div className="space-y-2">
         <p className="text-sm text-gray-600">
-          {t('onboarding.categoriesSelected', { 
+          {t('categoriesSelected', { 
             count: selectedCategories.length, 
             max: maxSelections
           })}
