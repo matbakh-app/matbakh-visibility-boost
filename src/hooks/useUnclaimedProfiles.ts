@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { UnclaimedBusinessProfile } from '@/types/visibility';
 
 export function useUnclaimedProfiles() {
   return useQuery({
@@ -13,7 +12,7 @@ export function useUnclaimedProfiles() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as UnclaimedBusinessProfile[];
+      return data;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -32,7 +31,7 @@ export function useUnclaimedProfileByLead(leadId?: string) {
         .maybeSingle();
 
       if (error) throw error;
-      return data as UnclaimedBusinessProfile | null;
+      return data;
     },
     enabled: !!leadId,
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -43,7 +42,7 @@ export function useCreateUnclaimedProfile() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (profileData: Partial<UnclaimedBusinessProfile>) => {
+    mutationFn: async (profileData: any) => {
       const { data, error } = await supabase
         .from('unclaimed_business_profiles')
         .insert(profileData)

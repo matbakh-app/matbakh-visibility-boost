@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { VisibilityCheckResult } from '@/types/visibility';
 
 export function useVisibilityResults(leadId?: string) {
   return useQuery({
@@ -17,7 +16,7 @@ export function useVisibilityResults(leadId?: string) {
         .maybeSingle();
 
       if (error) throw error;
-      return data as VisibilityCheckResult | null;
+      return data;
     },
     enabled: !!leadId,
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -37,7 +36,7 @@ export function usePartnerVisibilityResults(partnerId?: string) {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as VisibilityCheckResult[];
+      return data;
     },
     enabled: !!partnerId,
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -48,7 +47,7 @@ export function useCreateVisibilityResult() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (resultData: Partial<VisibilityCheckResult>) => {
+    mutationFn: async (resultData: any) => {
       const { data, error } = await supabase
         .from('visibility_check_results')
         .insert(resultData)

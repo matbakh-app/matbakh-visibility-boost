@@ -199,6 +199,7 @@ export type Database = {
         Row: {
           address: string | null
           billing_address: Json | null
+          business_model: string[] | null
           categories: string[] | null
           category_ids: string[] | null
           company_name: string
@@ -212,10 +213,14 @@ export type Database = {
           location: unknown | null
           notes: string | null
           onboarding_completed: boolean | null
+          opening_hours: string[] | null
           profile_verified: boolean | null
+          revenue_streams: string[] | null
+          seating_capacity: number | null
           services_selected: string[] | null
           special_features: Json | null
           status: string | null
+          target_audience: string[] | null
           tax_id: string | null
           updated_at: string | null
           user_id: string | null
@@ -224,6 +229,7 @@ export type Database = {
         Insert: {
           address?: string | null
           billing_address?: Json | null
+          business_model?: string[] | null
           categories?: string[] | null
           category_ids?: string[] | null
           company_name: string
@@ -237,10 +243,14 @@ export type Database = {
           location?: unknown | null
           notes?: string | null
           onboarding_completed?: boolean | null
+          opening_hours?: string[] | null
           profile_verified?: boolean | null
+          revenue_streams?: string[] | null
+          seating_capacity?: number | null
           services_selected?: string[] | null
           special_features?: Json | null
           status?: string | null
+          target_audience?: string[] | null
           tax_id?: string | null
           updated_at?: string | null
           user_id?: string | null
@@ -249,6 +259,7 @@ export type Database = {
         Update: {
           address?: string | null
           billing_address?: Json | null
+          business_model?: string[] | null
           categories?: string[] | null
           category_ids?: string[] | null
           company_name?: string
@@ -262,10 +273,14 @@ export type Database = {
           location?: unknown | null
           notes?: string | null
           onboarding_completed?: boolean | null
+          opening_hours?: string[] | null
           profile_verified?: boolean | null
+          revenue_streams?: string[] | null
+          seating_capacity?: number | null
           services_selected?: string[] | null
           special_features?: Json | null
           status?: string | null
+          target_audience?: string[] | null
           tax_id?: string | null
           updated_at?: string | null
           user_id?: string | null
@@ -2610,6 +2625,96 @@ export type Database = {
           },
         ]
       }
+      unclaimed_business_profiles: {
+        Row: {
+          address: string | null
+          business_model: string[] | null
+          business_name: string | null
+          category_ids: string[] | null
+          claim_status: string | null
+          claimed_at: string | null
+          claimed_by_user_id: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string | null
+          id: string
+          lead_id: string | null
+          location: string | null
+          matbakh_category: string | null
+          notes: string | null
+          opening_hours: string[] | null
+          revenue_streams: string[] | null
+          seating_capacity: number | null
+          special_features: Json | null
+          target_audience: string[] | null
+          updated_at: string | null
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          business_model?: string[] | null
+          business_name?: string | null
+          category_ids?: string[] | null
+          claim_status?: string | null
+          claimed_at?: string | null
+          claimed_by_user_id?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          id?: string
+          lead_id?: string | null
+          location?: string | null
+          matbakh_category?: string | null
+          notes?: string | null
+          opening_hours?: string[] | null
+          revenue_streams?: string[] | null
+          seating_capacity?: number | null
+          special_features?: Json | null
+          target_audience?: string[] | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          business_model?: string[] | null
+          business_name?: string | null
+          category_ids?: string[] | null
+          claim_status?: string | null
+          claimed_at?: string | null
+          claimed_by_user_id?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          id?: string
+          lead_id?: string | null
+          location?: string | null
+          matbakh_category?: string | null
+          notes?: string | null
+          opening_hours?: string[] | null
+          revenue_streams?: string[] | null
+          seating_capacity?: number | null
+          special_features?: Json | null
+          target_audience?: string[] | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unclaimed_business_profiles_claimed_by_user_id_fkey"
+            columns: ["claimed_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unclaimed_business_profiles_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "visibility_check_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_consent_tracking: {
         Row: {
           consent_given: boolean
@@ -3021,6 +3126,66 @@ export type Database = {
           website?: string | null
         }
         Relationships: []
+      }
+      visibility_check_results: {
+        Row: {
+          action_recommendations: Json | null
+          created_at: string | null
+          id: string
+          lead_id: string | null
+          partner_id: string | null
+          provider: string | null
+          swot_opportunities: Json | null
+          swot_strengths: Json | null
+          swot_threats: Json | null
+          swot_weaknesses: Json | null
+          updated_at: string | null
+          visibility_score: number | null
+        }
+        Insert: {
+          action_recommendations?: Json | null
+          created_at?: string | null
+          id?: string
+          lead_id?: string | null
+          partner_id?: string | null
+          provider?: string | null
+          swot_opportunities?: Json | null
+          swot_strengths?: Json | null
+          swot_threats?: Json | null
+          swot_weaknesses?: Json | null
+          updated_at?: string | null
+          visibility_score?: number | null
+        }
+        Update: {
+          action_recommendations?: Json | null
+          created_at?: string | null
+          id?: string
+          lead_id?: string | null
+          partner_id?: string | null
+          provider?: string | null
+          swot_opportunities?: Json | null
+          swot_strengths?: Json | null
+          swot_threats?: Json | null
+          swot_weaknesses?: Json | null
+          updated_at?: string | null
+          visibility_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visibility_check_results_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "visibility_check_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visibility_check_results_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "business_partners"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       waitlist: {
         Row: {
