@@ -1,7 +1,74 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { normalizeFacebookUrl, normalizeInstagramUrl, extractSocialHandle } from '../../../src/lib/normalizeSocialUrls.ts'
+
+// Social URL normalization functions (copied from src/lib/normalizeSocialUrls.ts)
+function normalizeFacebookUrl(input: string): string {
+  if (!input?.trim()) return '';
+  
+  const trimmed = input.trim();
+  
+  // Wenn bereits vollständiger Link vorhanden, bereinige doppelte Präfixe
+  if (trimmed.startsWith('http')) {
+    // Entferne doppelte facebook.com Präfixe
+    const cleaned = trimmed.replace(/^https?:\/\/(www\.)?facebook\.com\/https?:\/\/(www\.)?facebook\.com\//, '');
+    if (cleaned !== trimmed) {
+      return `https://www.facebook.com/${cleaned}`;
+    }
+    return trimmed;
+  }
+  
+  // Wenn nur Benutzername oder ID übergeben wurde
+  return `https://www.facebook.com/${trimmed}`;
+}
+
+function normalizeInstagramUrl(input: string): string {
+  if (!input?.trim()) return '';
+  
+  const trimmed = input.trim();
+  
+  // Wenn bereits vollständiger Link vorhanden
+  if (trimmed.startsWith('http')) {
+    return trimmed;
+  }
+  
+  // Entferne @ Symbol falls vorhanden
+  const cleanedHandle = trimmed.replace(/^@/, '');
+  
+  return `https://www.instagram.com/${cleanedHandle}`;
+}
+
+function extractSocialHandle(input: string, type: 'instagram' | 'facebook'): string {
+  if (!input?.trim()) return '';
+  
+  const trimmed = input.trim();
+  
+  // Wenn URL: Extrahiere Handle/Slug
+  if (trimmed.startsWith('http')) {
+    try {
+      const url = new URL(trimmed);
+      const parts = url.pathname.split('/').filter(Boolean);
+      
+      if (type === 'instagram') {
+        return parts[0] || ''; // z. B. "saxmuenchen"
+      }
+      
+      if (type === 'facebook') {
+        // Beispiel: https://www.facebook.com/p/SAX-Essen-Trinken-100086793825776/
+        if (parts.includes('p') && parts.length > 1) {
+          return parts[parts.indexOf('p') + 1] || '';
+        }
+        return parts[0] || ''; // Page-Name oder Slug
+      }
+    } catch (error) {
+      console.warn('Invalid URL provided:', trimmed);
+      return trimmed;
+    }
+  }
+  
+  // Entferne @ Symbol falls vorhanden
+  return trimmed.replace(/^@/, '');
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
