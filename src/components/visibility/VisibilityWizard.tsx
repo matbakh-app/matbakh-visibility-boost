@@ -15,12 +15,6 @@ export interface VisibilityFormData {
   mainCategory: string;
   subCategory: string;
   matbakhCategory: string;
-  businessModel: string[];
-  revenueStreams: string[];
-  targetAudience: string[];
-  seatingCapacity?: number;
-  openingHours: string;
-  specialFeatures?: string[];
   website?: string;
   facebook?: string;
   instagram?: string;
@@ -97,12 +91,6 @@ const VisibilityWizard: React.FC = () => {
         main_category: stepOneData.mainCategory,
         sub_category: stepOneData.subCategory,
         matbakh_category: stepOneData.matbakhCategory,
-        business_model: stepOneData.businessModel || [],
-        revenue_streams: stepOneData.revenueStreams || [],
-        target_audience: stepOneData.targetAudience || [],
-        seating_capacity: stepOneData.seatingCapacity,
-        opening_hours: stepOneData.openingHours || '',
-        special_features: stepOneData.specialFeatures || [],
         website: data.website || '',
         facebook_handle: data.facebook || '',
         instagram_handle: data.instagram || '',
@@ -143,12 +131,6 @@ const VisibilityWizard: React.FC = () => {
         mainCategory: stepOneData.mainCategory,
         subCategory: stepOneData.subCategory,
         matbakhTags: [stepOneData.matbakhCategory],
-        businessModel: stepOneData.businessModel || [],
-        revenueStreams: stepOneData.revenueStreams || [],
-        targetAudience: stepOneData.targetAudience || [],
-        seatingCapacity: stepOneData.seatingCapacity,
-        openingHours: stepOneData.openingHours || '',
-        specialFeatures: stepOneData.specialFeatures || [],
         website: data.website || '',
         facebookName: data.facebook || '',
         instagramName: data.instagram || '',
