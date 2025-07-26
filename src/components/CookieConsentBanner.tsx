@@ -15,22 +15,10 @@ const CookieConsentBanner: React.FC = () => {
   const isDebugMode = import.meta.env.DEV;
 
   useEffect(() => {
-    // Fetch Facebook Pixel ID from Supabase secrets
-    const fetchFacebookPixelId = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke('facebook-conversions', {
-          body: { action: 'get_config' }
-        });
-        
-        if (data?.pixel_id) {
-          setFacebookPixelId(data.pixel_id);
-        }
-      } catch (error) {
-        console.warn('Failed to fetch Facebook Pixel ID:', error);
-      }
-    };
-
-    fetchFacebookPixelId();
+    // For now, use a hardcoded Facebook Pixel ID for the cookie banner
+    // In production, this should come from environment variables or admin settings
+    const defaultPixelId = "1234567890"; // Replace with actual global pixel ID
+    setFacebookPixelId(defaultPixelId);
     
     // Check if consent has already been given
     const consent = localStorage.getItem('cookieConsent');
