@@ -5,6 +5,7 @@ import VisibilityStepTwo from './VisibilityStepTwo';
 import VisibilityStepThree from './VisibilityStepThree';
 import VisibilityResults from './VisibilityResults';
 import { supabase } from '@/integrations/supabase/client';
+import { useEnhancedLeadTracking } from '@/hooks/useEnhancedLeadTracking';
 import type { AnalysisResult } from '@/types/visibility';
 
 export interface VisibilityFormData {
@@ -14,12 +15,23 @@ export interface VisibilityFormData {
   mainCategory: string;
   subCategory: string;
   matbakhCategory: string;
+  businessModel: string[];
+  revenueStreams: string[];
+  targetAudience: string[];
+  seatingCapacity?: number;
+  openingHours: string;
+  specialFeatures?: string[];
   website?: string;
   facebook?: string;
   instagram?: string;
+  tiktok?: string;
+  linkedin?: string;
   benchmarkOne?: string;
   benchmarkTwo?: string;
   benchmarkThree?: string;
+  email?: string;
+  gdprConsent?: boolean;
+  marketingConsent?: boolean;
 }
 
 const VisibilityWizard: React.FC = () => {
@@ -30,6 +42,9 @@ const VisibilityWizard: React.FC = () => {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [reportRequested, setReportRequested] = useState(false);
   const [instagramCandidates, setInstagramCandidates] = useState<any[]>([]);
+  const [currentLeadId, setCurrentLeadId] = useState<string | null>(null);
+  
+  const { createEnhancedLead, updateLeadAnalysis, processGDPRConsent, trackLeadAction } = useEnhancedLeadTracking();
 
   const handleStepOne = async (data: any) => {
     setStepOneData(data);
@@ -73,22 +88,80 @@ const VisibilityWizard: React.FC = () => {
     setLoading(true);
     setStep(3);
 
-    // Combine all form data
-    const completeFormData = {
-      businessName: stepOneData.companyName,
-      location: stepOneData.location,
-      mainCategory: stepOneData.mainCategory,
-      subCategory: stepOneData.subCategory,
-      matbakhTags: [stepOneData.matbakhCategory],
-      website: data.website || '',
-      facebookName: data.facebook || '',
-      instagramName: data.instagram || '',
-      benchmarks: [data.benchmarkOne, data.benchmarkTwo, data.benchmarkThree].filter(Boolean),
-      email: ''
-    };
-
     try {
-      console.log('🚀 Starting visibility check with data:', completeFormData);
+      // First, create the enhanced lead in our database
+      const leadData = {
+        business_name: stepOneData.companyName,
+        location: stepOneData.location,
+        postal_code: stepOneData.postalCode || '',
+        main_category: stepOneData.mainCategory,
+        sub_category: stepOneData.subCategory,
+        matbakh_category: stepOneData.matbakhCategory,
+        business_model: stepOneData.businessModel || [],
+        revenue_streams: stepOneData.revenueStreams || [],
+        target_audience: stepOneData.targetAudience || [],
+        seating_capacity: stepOneData.seatingCapacity,
+        opening_hours: stepOneData.openingHours || '',
+        special_features: stepOneData.specialFeatures || [],
+        website: data.website || '',
+        facebook_handle: data.facebook || '',
+        instagram_handle: data.instagram || '',
+        tiktok_handle: data.tiktok || '',
+        linkedin_handle: data.linkedin || '',
+        benchmarks: [data.benchmarkOne, data.benchmarkTwo, data.benchmarkThree].filter(Boolean),
+        email: data.email || '',
+        gdpr_consent: data.gdprConsent || false,
+        marketing_consent: data.marketingConsent || false,
+        ip_address: '', // Will be captured in edge function
+        user_agent: '', // Will be captured in edge function
+      };
+
+      console.log('🏗️ Creating enhanced lead...');
+      const leadId = await createEnhancedLead(leadData);
+      
+      if (!leadId) {
+        throw new Error('Failed to create lead');
+      }
+      
+      setCurrentLeadId(leadId);
+
+      // Process GDPR consent
+      await processGDPRConsent(leadId, data.email, data.gdprConsent, data.marketingConsent);
+
+      // Track the analysis start action
+      await trackLeadAction({
+        lead_id: leadId,
+        action_type: 'analysis_started',
+        details: { step: 'visibility_check' },
+      });
+
+      // Prepare data for the legacy analysis function
+      const completeFormData = {
+        businessName: stepOneData.companyName,
+        location: stepOneData.location,
+        postalCode: stepOneData.postalCode || '',
+        mainCategory: stepOneData.mainCategory,
+        subCategory: stepOneData.subCategory,
+        matbakhTags: [stepOneData.matbakhCategory],
+        businessModel: stepOneData.businessModel || [],
+        revenueStreams: stepOneData.revenueStreams || [],
+        targetAudience: stepOneData.targetAudience || [],
+        seatingCapacity: stepOneData.seatingCapacity,
+        openingHours: stepOneData.openingHours || '',
+        specialFeatures: stepOneData.specialFeatures || [],
+        website: data.website || '',
+        facebookName: data.facebook || '',
+        instagramName: data.instagram || '',
+        tiktokName: data.tiktok || '',
+        linkedinName: data.linkedin || '',
+        benchmarks: [data.benchmarkOne, data.benchmarkTwo, data.benchmarkThree].filter(Boolean),
+        email: data.email || '',
+        gdprConsent: data.gdprConsent || false,
+        marketingConsent: data.marketingConsent || false,
+        leadId: leadId, // Pass the lead ID to the analysis function
+      };
+
+      console.log('🚀 Starting enhanced visibility check with data:', completeFormData);
       
       const { data: result, error } = await supabase.functions.invoke('enhanced-visibility-check', {
         body: completeFormData
@@ -96,13 +169,36 @@ const VisibilityWizard: React.FC = () => {
 
       if (error) {
         console.error('❌ Analysis error:', error);
+        await trackLeadAction({
+          lead_id: leadId,
+          action_type: 'analysis_failed',
+          details: { error: error.message },
+        });
         throw error;
       }
 
-      console.log('✅ Analysis complete:', result);
+      console.log('✅ Enhanced analysis complete:', result);
+      
+      // Update the lead with analysis results
+      await updateLeadAnalysis(leadId, result, 'completed');
+      
+      // Track successful analysis
+      await trackLeadAction({
+        lead_id: leadId,
+        action_type: 'analysis_completed',
+        details: { 
+          overall_score: result?.overallScore,
+          platforms_analyzed: result?.platformAnalyses?.length || 0
+        },
+      });
+      
       setAnalysisResult(result);
     } catch (err) {
-      console.error('Error during analysis:', err);
+      console.error('❌ Error during enhanced analysis:', err);
+      
+      if (currentLeadId) {
+        await updateLeadAnalysis(currentLeadId, { error: err.message }, 'failed');
+      }
     } finally {
       setLoading(false);
     }

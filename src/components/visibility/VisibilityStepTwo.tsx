@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -7,17 +6,27 @@ import { Input } from '@/components/ui/input';
 import { Form, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useTranslation } from 'react-i18next';
-import { Globe, Facebook, Instagram } from 'lucide-react';
+import { Globe, Facebook, Instagram, Mail, Shield, Linkedin } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { HelpCircle } from 'lucide-react';
 import InstagramCandidatePicker from './InstagramCandidatePicker';
 
 const stepTwoSchema = z.object({
   website: z.string().url('Bitte gültige URL eingeben').optional().or(z.literal('')),
-  instagram: z.string().min(1, 'Instagram ist ein Pflichtfeld').optional(),
-  facebook: z.string().min(1, 'Facebook ist ein Pflichtfeld').optional(),
+  instagram: z.string().optional(),
+  facebook: z.string().optional(),
+  tiktok: z.string().optional(),
+  linkedin: z.string().optional(),
   benchmarkOne: z.string().optional(),
   benchmarkTwo: z.string().optional(),
   benchmarkThree: z.string().optional(),
+  email: z.string().email('Gültige E-Mail-Adresse erforderlich'),
+  gdprConsent: z.boolean().refine(val => val === true, {
+    message: 'Datenschutz-Einverständnis ist erforderlich'
+  }),
+  marketingConsent: z.boolean().optional(),
 }).superRefine((data, ctx) => {
   // Mindestens Instagram oder Facebook muss angegeben werden
   const hasInstagram = !!data.instagram?.trim();
@@ -70,9 +79,14 @@ const VisibilityStepTwo: React.FC<Props> = ({
       website: '',
       instagram: '',
       facebook: '',
+      tiktok: '',
+      linkedin: '',
       benchmarkOne: '',
       benchmarkTwo: '',
       benchmarkThree: '',
+      email: '',
+      gdprConsent: false,
+      marketingConsent: false,
       ...defaultValues,
     },
   });
@@ -103,165 +117,328 @@ const VisibilityStepTwo: React.FC<Props> = ({
     onNext(values);
   };
 
+  const renderTooltip = (text: string) => (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
+        </TooltipTrigger>
+        <TooltipContent className="max-w-xs">
+          <p className="text-sm">{text}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        {/* Pflichtfelder Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-red-600">
-              Pflichtfelder für Social Media Analyse
-            </CardTitle>
-            <p className="text-sm text-gray-600">
-              Mindestens Instagram oder Facebook muss angegeben werden. 
-              Ohne Social Media erfolgt nur eine Google Business Profil Analyse.
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Instagram Section */}
-            <div className="space-y-3">
-              <FormLabel className="flex items-center gap-2">
-                <Instagram className="w-4 h-4" />
-                Instagram (Pflichtfeld)*
-              </FormLabel>
-              
-              {/* Show candidates if available and no manual input yet */}
-              {instagramCandidates.length > 0 && !showManualInstagram && (
-                <InstagramCandidatePicker
-                  candidates={instagramCandidates}
-                  onSelect={handleInstagramCandidateSelect}
-                  value={selectedInstagramCandidate}
-                />
-              )}
-
-              {/* Manual Instagram input */}
-              {(showManualInstagram || instagramCandidates.length === 0) && (
-                <FormField
-                  control={form.control}
-                  name="instagram"
-                  render={({ field }) => (
-                    <FormItem>
-                      <Input 
-                        placeholder="@meinrestaurant oder https://instagram.com/meinrestaurant" 
-                        {...field} 
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
-
-              {/* Toggle back to candidates if they exist */}
-              {instagramCandidates.length > 0 && showManualInstagram && (
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setShowManualInstagram(false)}
-                >
-                  ← Zurück zu Vorschlägen
-                </Button>
-              )}
-            </div>
-
-            {/* Facebook */}
-            <FormField
-              control={form.control}
-              name="facebook"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    <Facebook className="w-4 h-4" />
-                    Facebook (Pflichtfeld)*
-                  </FormLabel>
-                  <Input 
-                    placeholder="Seitenname oder https://facebook.com/meine-seite" 
-                    {...field} 
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
-
-        {/* Optionale Angaben Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Optionale Angaben</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <FormField
-              control={form.control}
-              name="website"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    <Globe className="w-4 h-4" />
-                    Website
-                  </FormLabel>
-                  <Input placeholder="https://meinrestaurant.de" {...field} />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div>
-              <FormLabel className="text-base font-medium">
-                Vergleichbare Unternehmen (Benchmarks)
-              </FormLabel>
-              <p className="text-sm text-muted-foreground mb-3">
-                Tragen Sie bis zu 3 Lokale ein, mit denen Sie sich vergleichen möchten.
+    <TooltipProvider>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          {/* Social Media Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-red-600">
+                Social Media Profile (Pflicht)
+              </CardTitle>
+              <p className="text-sm text-gray-600">
+                Mindestens Instagram oder Facebook muss angegeben werden für eine vollständige Analyse.
               </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Instagram Section */}
               <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <FormLabel className="flex items-center gap-2">
+                    <Instagram className="w-4 h-4" />
+                    Instagram *
+                  </FormLabel>
+                  {renderTooltip('Instagram-Handle oder Profil-URL für die Analyse Ihrer Instagram-Präsenz.')}
+                </div>
+                
+                {/* Show candidates if available and no manual input yet */}
+                {instagramCandidates.length > 0 && !showManualInstagram && (
+                  <InstagramCandidatePicker
+                    candidates={instagramCandidates}
+                    onSelect={handleInstagramCandidateSelect}
+                    value={selectedInstagramCandidate}
+                  />
+                )}
+
+                {/* Manual Instagram input */}
+                {(showManualInstagram || instagramCandidates.length === 0) && (
+                  <FormField
+                    control={form.control}
+                    name="instagram"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Input 
+                          placeholder="@meinrestaurant oder https://instagram.com/meinrestaurant" 
+                          {...field} 
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
+                {/* Toggle back to candidates if they exist */}
+                {instagramCandidates.length > 0 && showManualInstagram && (
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setShowManualInstagram(false)}
+                  >
+                    ← Zurück zu Vorschlägen
+                  </Button>
+                )}
+              </div>
+
+              {/* Facebook */}
+              <FormField
+                control={form.control}
+                name="facebook"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex items-center gap-2">
+                      <FormLabel className="flex items-center gap-2">
+                        <Facebook className="w-4 h-4" />
+                        Facebook *
+                      </FormLabel>
+                      {renderTooltip('Facebook-Seite für Ihr Unternehmen.')}
+                    </div>
+                    <Input 
+                      placeholder="Seitenname oder https://facebook.com/meine-seite" 
+                      {...field} 
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* TikTok */}
+              <FormField
+                control={form.control}
+                name="tiktok"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex items-center gap-2">
+                      <FormLabel className="flex items-center gap-2">
+                        📱 TikTok (optional)
+                      </FormLabel>
+                      {renderTooltip('TikTok-Profil für zukünftige Analysen (derzeit in Vorbereitung).')}
+                    </div>
+                    <Input 
+                      placeholder="@meinrestaurant oder https://tiktok.com/@meinrestaurant" 
+                      {...field} 
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* LinkedIn */}
+              <FormField
+                control={form.control}
+                name="linkedin"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex items-center gap-2">
+                      <FormLabel className="flex items-center gap-2">
+                        <Linkedin className="w-4 h-4" />
+                        LinkedIn (optional)
+                      </FormLabel>
+                      {renderTooltip('LinkedIn-Unternehmensseite für B2B-Analysen.')}
+                    </div>
+                    <Input 
+                      placeholder="https://linkedin.com/company/mein-unternehmen" 
+                      {...field} 
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Website & Benchmarks */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Website & Vergleiche</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <FormField
+                control={form.control}
+                name="website"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex items-center gap-2">
+                      <FormLabel className="flex items-center gap-2">
+                        <Globe className="w-4 h-4" />
+                        Website (optional)
+                      </FormLabel>
+                      {renderTooltip('Ihre Unternehmens-Website für die technische Analyse.')}
+                    </div>
+                    <Input placeholder="https://meinrestaurant.de" {...field} />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <FormLabel className="text-base font-medium">
+                    Vergleichbare Unternehmen (Benchmarks)
+                  </FormLabel>
+                  {renderTooltip('Konkurrenten oder ähnliche Unternehmen für Vergleichsanalysen.')}
+                </div>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Tragen Sie bis zu 3 Lokale ein, mit denen Sie sich vergleichen möchten.
+                </p>
+                <div className="space-y-3">
+                  <FormField
+                    control={form.control}
+                    name="benchmarkOne"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Benchmark 1</FormLabel>
+                        <Input placeholder="z. B. Weinbar X in München" {...field} />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="benchmarkTwo"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Benchmark 2</FormLabel>
+                        <Input placeholder="optional" {...field} />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="benchmarkThree"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Benchmark 3</FormLabel>
+                        <Input placeholder="optional" {...field} />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* E-Mail & GDPR Consent */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="w-5 h-5" />
+                E-Mail & Datenschutz
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Für den PDF-Report und weitere Analysen benötigen wir Ihre E-Mail-Adresse.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex items-center gap-2">
+                      <FormLabel className="flex items-center gap-2">
+                        <Mail className="w-4 h-4" />
+                        E-Mail-Adresse *
+                      </FormLabel>
+                      {renderTooltip('Benötigt für den PDF-Report und Double-Opt-In-Bestätigung.')}
+                    </div>
+                    <Input 
+                      type="email"
+                      placeholder="ihre.email@beispiel.de" 
+                      {...field} 
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* GDPR Consent */}
+              <div className="space-y-3 p-4 bg-blue-50 rounded-lg border">
                 <FormField
                   control={form.control}
-                  name="benchmarkOne"
+                  name="gdprConsent"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Benchmark 1</FormLabel>
-                      <Input placeholder="z. B. Weinbar X in München" {...field} />
-                      <FormMessage />
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="cursor-pointer">
+                          Datenschutz-Einverständnis *
+                        </FormLabel>
+                        <p className="text-xs text-muted-foreground">
+                          Ich stimme der Verarbeitung meiner Daten für die Sichtbarkeits-Analyse zu. 
+                          Der PDF-Report wird nur nach Double-Opt-In per E-Mail versendet. 
+                          <a href="/datenschutz" target="_blank" className="underline text-blue-600 ml-1">
+                            Datenschutzerklärung
+                          </a>
+                        </p>
+                        <FormMessage />
+                      </div>
                     </FormItem>
                   )}
                 />
+
                 <FormField
                   control={form.control}
-                  name="benchmarkTwo"
+                  name="marketingConsent"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Benchmark 2</FormLabel>
-                      <Input placeholder="optional" {...field} />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="benchmarkThree"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Benchmark 3</FormLabel>
-                      <Input placeholder="optional" {...field} />
-                      <FormMessage />
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="cursor-pointer">
+                          Marketing-Einverständnis (optional)
+                        </FormLabel>
+                        <p className="text-xs text-muted-foreground">
+                          Ich möchte über neue Features und Gastro-Tipps von matbakh.app informiert werden. 
+                          Jederzeit widerrufbar.
+                        </p>
+                      </div>
                     </FormItem>
                   )}
                 />
               </div>
-            </div>
-          </CardContent>
-        </Card>
 
-        <div className="flex justify-between pt-6">
-          <Button type="button" variant="outline" onClick={onBack}>
-            Zurück
-          </Button>
-          <Button type="submit">
-            Weiter zur Auswertung
-          </Button>
-        </div>
-      </form>
-    </Form>
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <p className="text-sm text-yellow-800">
+                  <strong>Wichtig:</strong> Sie erhalten eine Bestätigungs-E-Mail. 
+                  Erst nach Bestätigung wird der vollständige PDF-Report generiert und versendet.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="flex justify-between pt-6">
+            <Button type="button" variant="outline" onClick={onBack}>
+              Zurück
+            </Button>
+            <Button type="submit">
+              Analyse starten
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </TooltipProvider>
   );
 };
 
