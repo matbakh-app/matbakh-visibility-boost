@@ -49,9 +49,24 @@ export function loadFacebookPixel(options: FacebookPixelOptions): Promise<void> 
         s = b.getElementsByTagName(e)[0] as HTMLScriptElement;
         s.parentNode!.insertBefore(t, s);
         
-        // Resolve Promise wenn Script geladen ist
+        // Resolve Promise und initialisiere Pixel erst NACH dem Script-Load
         t.onload = () => {
           console.log('✅ Facebook Pixel Script geladen');
+          
+          // Pixel initialisieren (erst nach erfolgreichem Script-Load)
+          window.fbq('init', pixelId);
+          
+          // Debug-Modus aktivieren falls gewünscht
+          if (debug) {
+            console.log('[FacebookPixel] Debug-Mode aktiviert');
+          }
+          
+          // Automatisches PageView-Event senden
+          if (autoPageView) {
+            window.fbq('track', 'PageView');
+            console.log('🎯 Facebook Pixel PageView Event gesendet');
+          }
+          
           resolve();
         };
         
@@ -60,20 +75,6 @@ export function loadFacebookPixel(options: FacebookPixelOptions): Promise<void> 
           reject(new Error('Facebook Pixel script failed to load'));
         };
       })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js', undefined, undefined, undefined);
-
-      // Pixel initialisieren
-      window.fbq('init', pixelId);
-      
-      // Debug-Modus aktivieren falls gewünscht
-      if (debug) {
-       console.log('[FacebookPixel] Debug-Mode aktiviert');
-      }
-      
-      // Automatisches PageView-Event senden
-      if (autoPageView) {
-        window.fbq('track', 'PageView');
-        console.log('🎯 Facebook Pixel PageView Event gesendet');
-      }
       
     } catch (error) {
       console.error('Facebook Pixel Initialisierung fehlgeschlagen:', error);

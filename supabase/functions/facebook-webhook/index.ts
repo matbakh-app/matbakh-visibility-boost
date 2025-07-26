@@ -1,9 +1,16 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
 
 const VERIFY_TOKEN = Deno.env.get("FACEBOOK_WEBHOOK_VERIFY_TOKEN") || "";
 const APP_SECRET = Deno.env.get("FACEBOOK_APP_SECRET") || "";
 const DEBUG_MODE = Deno.env.get("FACEBOOK_DEBUG_MODE") === "true";
+
+// Initialize Supabase client
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+);
 
 const SIGNATURE_HEADER = "x-hub-signature";
 
@@ -126,8 +133,92 @@ serve(async (req: Request) => {
           } : null
         });
 
-        // Hier könntest du später Events verarbeiten und in Supabase speichern
-        // Beispiel: await supabase.from('facebook_events').insert({ ... })
+        // Process webhook events and store in database
+        for (const entry of body.entry || []) {
+          try {
+            const eventData = {
+              event_type: body.object || 'unknown',
+              object_type: entry.id ? 'page' : 'unknown',
+              object_id: entry.id || null,
+              raw_payload: entry,
+              processing_status: 'pending'
+            };
+
+            const { data, error } = await supabase
+              .from('facebook_webhook_events')
+              .insert(eventData)
+              .select('id')
+              .single();
+
+            if (error) {
+              log("❌ Failed to store webhook event:", error);
+              continue;
+            }
+
+            log("✅ Stored webhook event with ID:", data.id);
+
+            // Process the event based on type
+            let processed = false;
+            let errorMessage = null;
+
+            try {
+              // Handle different object types
+              if (entry.messaging) {
+                log("📱 Processing messaging events");
+                processed = true;
+              }
+              
+              if (entry.changes) {
+                // Handle page/feed changes
+                for (const change of entry.changes) {
+                  log("🔄 Processing change:", change.field, change.value);
+                  
+                  // Example: Handle page feed updates, ratings, etc.
+                  if (change.field === 'feed' && change.value?.item === 'status') {
+                    log("📝 Page status update detected");
+                  }
+                  
+                  if (change.field === 'ratings' && change.value?.rating) {
+                    log("⭐ New rating received:", change.value.rating);
+                  }
+
+                  if (change.field === 'leadgen' && change.value?.leadgen_id) {
+                    log("🎯 Lead generation event detected:", change.value.leadgen_id);
+                  }
+                }
+                processed = true;
+              }
+
+              // Update processing status
+              await supabase
+                .from('facebook_webhook_events')
+                .update({
+                  processing_status: 'completed',
+                  processed_at: new Date().toISOString()
+                })
+                .eq('id', data.id);
+
+              log("✅ Successfully processed webhook event");
+
+            } catch (processingError) {
+              log("❌ Error processing webhook event:", processingError);
+              errorMessage = processingError.message;
+
+              // Update with error status
+              await supabase
+                .from('facebook_webhook_events')
+                .update({
+                  processing_status: 'failed',
+                  error_message: errorMessage,
+                  processed_at: new Date().toISOString()
+                })
+                .eq('id', data.id);
+            }
+
+          } catch (dbError) {
+            log("❌ Database error storing webhook event:", dbError);
+          }
+        }
 
         return new Response("EVENT_RECEIVED", { 
           status: 200,
