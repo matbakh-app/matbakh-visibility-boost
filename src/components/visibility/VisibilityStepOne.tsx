@@ -14,7 +14,7 @@ import { HelpCircle, Info } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const stepOneSchema = z.object({
-  companyName: z.string().min(1, 'Pflichtfeld'),
+  businessName: z.string().min(1, 'Pflichtfeld'),
   location: z.string().min(1, 'Pflichtfeld'),
   postalCode: z.string().optional(),
   mainCategory: z.string().min(1, 'Bitte auswählen'),
@@ -23,7 +23,7 @@ const stepOneSchema = z.object({
   businessModel: z.array(z.string()).min(1, 'Mindestens ein Geschäftsmodell wählen'),
   revenueStreams: z.array(z.string()).min(1, 'Mindestens eine Einnahmequelle wählen'),
   targetAudience: z.array(z.string()).min(1, 'Mindestens eine Zielgruppe wählen'),
-  seatingCapacity: z.number().min(1, 'Kapazität muss größer als 0 sein').optional(),
+  seatingCapacity: z.string().optional(),
   openingHours: z.string().min(1, 'Öffnungszeiten sind Pflicht'),
   specialFeatures: z.array(z.string()).optional(),
 });
@@ -86,7 +86,7 @@ const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
   const form = useForm<StepOneValues>({
     resolver: zodResolver(stepOneSchema),
     defaultValues: {
-      companyName: defaultValues?.companyName || '',
+      businessName: defaultValues?.businessName || '',
       location: defaultValues?.location || '',
       postalCode: defaultValues?.postalCode || '',
       mainCategory: defaultValues?.mainCategory || '',
@@ -95,7 +95,7 @@ const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
       businessModel: defaultValues?.businessModel || [],
       revenueStreams: defaultValues?.revenueStreams || [],
       targetAudience: defaultValues?.targetAudience || [],
-      seatingCapacity: defaultValues?.seatingCapacity || undefined,
+      seatingCapacity: defaultValues?.seatingCapacity || '',
       openingHours: defaultValues?.openingHours || '',
       specialFeatures: defaultValues?.specialFeatures || [],
     },
@@ -178,7 +178,7 @@ const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="companyName"
+                  name="businessName"
                   render={({ field }) => (
                     <FormItem>
                       <div className="flex items-center gap-2">
@@ -336,12 +336,12 @@ const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
                         <FormLabel>Sitzplätze (optional)</FormLabel>
                         {renderTooltip('Anzahl der Sitzplätze in Ihrem Lokal. Hilft bei der Einschätzung der Unternehmensgröße.')}
                       </div>
-                      <Input 
-                        type="number" 
-                        placeholder="z. B. 50" 
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
-                      />
+                       <Input 
+                         type="number" 
+                         placeholder="z. B. 50" 
+                         {...field}
+                         onChange={(e) => field.onChange(e.target.value || '')}
+                       />
                       <FormMessage />
                     </FormItem>
                   )}
