@@ -20,7 +20,7 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
   onCategoryChange,
   maxSelections = 3
 }) => {
-  const { t, i18n } = useTranslation(['onboarding', 'common']);
+  const { t, i18n } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   const [showSearch, setShowSearch] = useState(false);
@@ -132,7 +132,7 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">
-          {t('selectCategories', { ns: 'onboarding' })}
+          {t('onboarding.selectCategories')}
         </h2>
         <Button
           variant="outline"
@@ -140,18 +140,18 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
           onClick={() => setShowSearch(!showSearch)}
         >
           <Search className="h-4 w-4 mr-2" />
-          {t('search', { ns: 'common' })}
+          {t('common.search')}
         </Button>
       </div>
 
       {showSearch && (
         <Card>
           <CardHeader>
-            <CardTitle>{t('searchCategories', { ns: 'onboarding' })}</CardTitle>
+            <CardTitle>{t('onboarding.searchCategories')}</CardTitle>
           </CardHeader>
           <CardContent>
             <Input
-              placeholder={t('searchPlaceholder', { ns: 'onboarding' })}
+              placeholder={t('onboarding.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="mb-4"
@@ -176,10 +176,9 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
 
       <div className="mb-4">
         <p className="text-sm text-gray-600">
-          {t('categoriesSelected', { 
+          {t('onboarding.categoriesSelected', { 
             count: selectedCategories.length, 
-            max: maxSelections,
-            ns: 'onboarding'
+            max: maxSelections
           })}
         </p>
         {selectedCategories.length > 0 && (
@@ -203,7 +202,7 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
       </div>
 
       <div className="space-y-4">
-        <h3 className="font-medium text-lg">{t('mainCategories', { ns: 'onboarding' })}</h3>
+        <h3 className="font-medium text-lg">{t('onboarding.mainCategories')}</h3>
         {primaryCategories?.map(category => (
           <div key={category.category_id}>
             <CategoryCard category={category} />
