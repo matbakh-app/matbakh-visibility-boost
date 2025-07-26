@@ -49,6 +49,16 @@ export const BusinessBasicsStep: React.FC<BusinessBasicsStepProps> = ({
     }
   };
 
+  const handleNumberChange = (field: string, value: number | undefined) => {
+    onDataChange({
+      ...data,
+      [field]: value
+    });
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
   const handleCategoryChange = (categories: string[]) => {
     onDataChange({
       ...data,
@@ -315,7 +325,7 @@ export const BusinessBasicsStep: React.FC<BusinessBasicsStepProps> = ({
                 type="number"
                 placeholder="50"
                 value={data.seatingCapacity || ''}
-                onChange={(e) => handleInputChange('seatingCapacity', e.target.value ? parseInt(e.target.value) : undefined)}
+                onChange={(e) => handleNumberChange('seatingCapacity', e.target.value ? parseInt(e.target.value) : undefined)}
               />
             </div>
 
