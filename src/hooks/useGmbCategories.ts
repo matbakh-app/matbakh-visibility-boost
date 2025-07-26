@@ -7,6 +7,8 @@ export interface GmbCategory {
   category_id: string;
   name_en: string;
   name_de: string;
+  haupt_kategorie: string | null;
+  main_category: string | null;
   is_popular: boolean;
   is_primary: boolean;
   sort_order: number;
