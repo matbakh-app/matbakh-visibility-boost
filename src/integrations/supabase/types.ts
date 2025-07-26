@@ -3246,10 +3246,6 @@ export type Database = {
       }
     }
     Views: {
-      admin_booking_details: {
-        Row: {}
-        Relationships: []
-      }
       admin_booking_kpis: {
         Row: {
           cancellations: number | null
