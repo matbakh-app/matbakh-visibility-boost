@@ -62,15 +62,15 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
     <div className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Unterkategorien auswählen (max. {maxSelections})
+          {t('categorySelector.subCategory.label', { maxSelections })}
         </label>
         
         <Select onValueChange={handleCategorySelect} disabled={selectedCategories.length >= maxSelections}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder={
               selectedCategories.length >= maxSelections 
-                ? `Maximal ${maxSelections} Kategorien ausgewählt`
-                : 'Unterkategorien auswählen'
+                ? t('categorySelector.subCategory.maxReached', { maxSelections })
+                : t('categorySelector.subCategory.placeholder')
             } />
           </SelectTrigger>
           <SelectContent>
@@ -85,7 +85,7 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
 
       <div className="space-y-2">
         <p className="text-sm text-gray-600">
-          {selectedCategories.length} von {maxSelections} Kategorien ausgewählt
+          {t('categorySelector.subCategory.selectedCount', { count: selectedCategories.length, max: maxSelections })}
         </p>
         
         {selectedCategories.length > 0 && (

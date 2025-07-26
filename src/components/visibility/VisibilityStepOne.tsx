@@ -16,16 +16,16 @@ import { MainCategorySelector } from '@/components/onboarding/MainCategorySelect
 import { SubCategorySelector } from '@/components/onboarding/SubCategorySelector';
 
 const stepOneSchema = z.object({
-  businessName: z.string().min(1, 'Pflichtfeld'),
-  location: z.string().min(1, 'Pflichtfeld'),
+  businessName: z.string().min(1, 'visibilityStepOne.validation.businessNameRequired'),
+  location: z.string().min(1, 'visibilityStepOne.validation.locationRequired'),
   postalCode: z.string().optional(),
-  mainCategories: z.array(z.string()).min(1, 'Mindestens eine Hauptkategorie wählen'),
+  mainCategories: z.array(z.string()).min(1, 'visibilityStepOne.validation.mainCategoriesRequired'),
   subCategories: z.array(z.string()).optional(),
-  businessModel: z.array(z.string()).min(1, 'Mindestens ein Geschäftsmodell wählen'),
-  revenueStreams: z.array(z.string()).min(1, 'Mindestens eine Einnahmequelle wählen'),
-  targetAudience: z.array(z.string()).min(1, 'Mindestens eine Zielgruppe wählen'),
+  businessModel: z.array(z.string()).min(1, 'visibilityStepOne.validation.businessModelRequired'),
+  revenueStreams: z.array(z.string()).min(1, 'visibilityStepOne.validation.revenueStreamsRequired'),
+  targetAudience: z.array(z.string()).min(1, 'visibilityStepOne.validation.targetAudienceRequired'),
   seatingCapacity: z.string().optional(),
-  openingHours: z.string().min(1, 'Öffnungszeiten sind Pflicht'),
+  openingHours: z.string().min(1, 'visibilityStepOne.validation.openingHoursRequired'),
   specialFeatures: z.array(z.string()).optional(),
 });
 
@@ -36,54 +36,55 @@ interface Props {
   defaultValues?: Partial<StepOneValues>;
 }
 
-const BUSINESS_MODELS = [
-  { value: 'restaurant', label: 'Restaurant/Gaststätte' },
-  { value: 'cafe', label: 'Café/Bistro' },
-  { value: 'bar', label: 'Bar/Club' },
-  { value: 'foodtruck', label: 'Food Truck/Mobile Gastronomie' },
-  { value: 'catering', label: 'Catering/Event-Service' },
-  { value: 'delivery', label: 'Lieferservice' },
-  { value: 'retail', label: 'Einzelhandel/Shop' },
-  { value: 'hybrid', label: 'Hybrid (Restaurant + Retail)' },
-];
-
-const REVENUE_STREAMS = [
-  { value: 'dine_in', label: 'Vor-Ort-Verzehr' },
-  { value: 'takeaway', label: 'Außer-Haus-Verkauf' },
-  { value: 'delivery', label: 'Lieferservice' },
-  { value: 'catering', label: 'Catering/Events' },
-  { value: 'retail', label: 'Produktverkauf' },
-  { value: 'beverages', label: 'Getränke/Bar' },
-  { value: 'courses', label: 'Kurse/Workshops' },
-  { value: 'merchandise', label: 'Merchandise' },
-];
-
-const TARGET_AUDIENCES = [
-  { value: 'families', label: 'Familien mit Kindern' },
-  { value: 'young_adults', label: 'Junge Erwachsene (18-35)' },
-  { value: 'professionals', label: 'Berufstätige' },
-  { value: 'seniors', label: 'Senioren (55+)' },
-  { value: 'students', label: 'Studenten' },
-  { value: 'tourists', label: 'Touristen/Besucher' },
-  { value: 'locals', label: 'Einheimische/Stammkunden' },
-  { value: 'business', label: 'Geschäftskunden' },
-];
-
-const SPECIAL_FEATURES = [
-  { value: 'outdoor_seating', label: 'Außenbereich/Terrasse' },
-  { value: 'parking', label: 'Parkplätze verfügbar' },
-  { value: 'wheelchair_accessible', label: 'Barrierefrei' },
-  { value: 'pet_friendly', label: 'Haustierfreundlich' },
-  { value: 'wifi', label: 'Kostenloses WLAN' },
-  { value: 'live_music', label: 'Live-Musik/Events' },
-  { value: 'private_dining', label: 'Private Räume' },
-  { value: 'vegan_options', label: 'Vegane Optionen' },
-  { value: 'organic', label: 'Bio/Nachhaltig' },
-  { value: 'local_products', label: 'Regionale Produkte' },
-];
-
 const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('onboarding');
+  
+  const BUSINESS_MODELS = [
+    { value: 'restaurant', label: t('visibilityStepOne.businessModels.restaurant') },
+    { value: 'cafe', label: t('visibilityStepOne.businessModels.cafe') },
+    { value: 'bar', label: t('visibilityStepOne.businessModels.bar') },
+    { value: 'foodtruck', label: t('visibilityStepOne.businessModels.foodtruck') },
+    { value: 'catering', label: t('visibilityStepOne.businessModels.catering') },
+    { value: 'delivery', label: t('visibilityStepOne.businessModels.delivery') },
+    { value: 'retail', label: t('visibilityStepOne.businessModels.retail') },
+    { value: 'hybrid', label: t('visibilityStepOne.businessModels.hybrid') },
+  ];
+
+  const REVENUE_STREAMS = [
+    { value: 'dine_in', label: t('visibilityStepOne.revenueStreams.dine_in') },
+    { value: 'takeaway', label: t('visibilityStepOne.revenueStreams.takeaway') },
+    { value: 'delivery', label: t('visibilityStepOne.revenueStreams.delivery') },
+    { value: 'catering', label: t('visibilityStepOne.revenueStreams.catering') },
+    { value: 'retail', label: t('visibilityStepOne.revenueStreams.retail') },
+    { value: 'beverages', label: t('visibilityStepOne.revenueStreams.beverages') },
+    { value: 'courses', label: t('visibilityStepOne.revenueStreams.courses') },
+    { value: 'merchandise', label: t('visibilityStepOne.revenueStreams.merchandise') },
+  ];
+
+  const TARGET_AUDIENCES = [
+    { value: 'families', label: t('visibilityStepOne.targetAudiences.families') },
+    { value: 'young_adults', label: t('visibilityStepOne.targetAudiences.young_adults') },
+    { value: 'professionals', label: t('visibilityStepOne.targetAudiences.professionals') },
+    { value: 'seniors', label: t('visibilityStepOne.targetAudiences.seniors') },
+    { value: 'students', label: t('visibilityStepOne.targetAudiences.students') },
+    { value: 'tourists', label: t('visibilityStepOne.targetAudiences.tourists') },
+    { value: 'locals', label: t('visibilityStepOne.targetAudiences.locals') },
+    { value: 'business', label: t('visibilityStepOne.targetAudiences.business') },
+  ];
+
+  const SPECIAL_FEATURES = [
+    { value: 'outdoor_seating', label: t('visibilityStepOne.specialFeatures.outdoor_seating') },
+    { value: 'parking', label: t('visibilityStepOne.specialFeatures.parking') },
+    { value: 'wheelchair_accessible', label: t('visibilityStepOne.specialFeatures.wheelchair_accessible') },
+    { value: 'pet_friendly', label: t('visibilityStepOne.specialFeatures.pet_friendly') },
+    { value: 'wifi', label: t('visibilityStepOne.specialFeatures.wifi') },
+    { value: 'live_music', label: t('visibilityStepOne.specialFeatures.live_music') },
+    { value: 'private_dining', label: t('visibilityStepOne.specialFeatures.private_dining') },
+    { value: 'vegan_options', label: t('visibilityStepOne.specialFeatures.vegan_options') },
+    { value: 'organic', label: t('visibilityStepOne.specialFeatures.organic') },
+    { value: 'local_products', label: t('visibilityStepOne.specialFeatures.local_products') },
+  ];
+
   const form = useForm<StepOneValues>({
     resolver: zodResolver(stepOneSchema),
     defaultValues: {
@@ -171,7 +172,7 @@ const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Info className="w-5 h-5" />
-                Basis-Informationen
+                {t('visibilityStepOne.sections.basicInfo')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -182,10 +183,10 @@ const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
                   render={({ field }) => (
                     <FormItem>
                       <div className="flex items-center gap-2">
-                        <FormLabel>Unternehmensname *</FormLabel>
-                        {renderTooltip('Der offizielle Name Ihres Unternehmens, wie er auch bei Google My Business erscheinen soll.')}
+                        <FormLabel>{t('visibilityStepOne.fields.businessName.label')} *</FormLabel>
+                        {renderTooltip(t('visibilityStepOne.fields.businessName.tooltip'))}
                       </div>
-                      <Input placeholder="z. B. Trattoria Bella Vista" {...field} />
+                      <Input placeholder={t('visibilityStepOne.fields.businessName.placeholder')} {...field} />
                       <FormMessage />
                     </FormItem>
                   )}
@@ -196,10 +197,10 @@ const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
                   render={({ field }) => (
                     <FormItem>
                       <div className="flex items-center gap-2">
-                        <FormLabel>Standort *</FormLabel>
-                        {renderTooltip('Stadt oder Stadtteil, in dem sich Ihr Unternehmen befindet.')}
+                        <FormLabel>{t('visibilityStepOne.fields.location.label')} *</FormLabel>
+                        {renderTooltip(t('visibilityStepOne.fields.location.tooltip'))}
                       </div>
-                      <Input placeholder="z. B. München" {...field} />
+                      <Input placeholder={t('visibilityStepOne.fields.location.placeholder')} {...field} />
                       <FormMessage />
                     </FormItem>
                   )}
@@ -211,8 +212,8 @@ const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
                 name="postalCode"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Postleitzahl (optional)</FormLabel>
-                    <Input placeholder="z. B. 80333" {...field} />
+                    <FormLabel>{t('visibilityStepOne.fields.postalCode.label')}</FormLabel>
+                    <Input placeholder={t('visibilityStepOne.fields.postalCode.placeholder')} {...field} />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -253,28 +254,28 @@ const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
           {/* Geschäftsmodell & Zielgruppe */}
           <Card>
             <CardHeader>
-              <CardTitle>Geschäftsmodell & Zielgruppe</CardTitle>
+              <CardTitle>{t('visibilityStepOne.sections.businessModel')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {renderCheckboxGroup(
                 'businessModel',
                 BUSINESS_MODELS,
-                'Geschäftsmodell',
-                'Wählen Sie alle zutreffenden Geschäftsmodelle. Dies hilft uns, passende Empfehlungen zu erstellen.'
+                t('visibilityStepOne.fields.businessModel.label'),
+                t('visibilityStepOne.fields.businessModel.tooltip')
               )}
 
               {renderCheckboxGroup(
                 'revenueStreams',
                 REVENUE_STREAMS,
-                'Einnahmequellen',
-                'Wie verdienen Sie Geld? Mehrfachauswahl möglich.'
+                t('visibilityStepOne.fields.revenueStreams.label'),
+                t('visibilityStepOne.fields.revenueStreams.tooltip')
               )}
 
               {renderCheckboxGroup(
                 'targetAudience',
                 TARGET_AUDIENCES,
-                'Zielgruppe',
-                'Wer sind Ihre Hauptkunden? Diese Information hilft bei der Optimierung Ihrer Online-Präsenz.'
+                t('visibilityStepOne.fields.targetAudience.label'),
+                t('visibilityStepOne.fields.targetAudience.tooltip')
               )}
             </CardContent>
           </Card>
@@ -282,7 +283,7 @@ const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
           {/* Kapazität & Details */}
           <Card>
             <CardHeader>
-              <CardTitle>Kapazität & Details</CardTitle>
+              <CardTitle>{t('visibilityStepOne.sections.capacity')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -292,12 +293,12 @@ const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
                   render={({ field }) => (
                     <FormItem>
                       <div className="flex items-center gap-2">
-                        <FormLabel>Sitzplätze (optional)</FormLabel>
-                        {renderTooltip('Anzahl der Sitzplätze in Ihrem Lokal. Hilft bei der Einschätzung der Unternehmensgröße.')}
+                        <FormLabel>{t('visibilityStepOne.fields.seatingCapacity.label')}</FormLabel>
+                        {renderTooltip(t('visibilityStepOne.fields.seatingCapacity.tooltip'))}
                       </div>
                        <Input 
                          type="number" 
-                         placeholder="z. B. 50" 
+                         placeholder={t('visibilityStepOne.fields.seatingCapacity.placeholder')}
                          {...field}
                          onChange={(e) => field.onChange(e.target.value || '')}
                        />
@@ -312,10 +313,10 @@ const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
                   render={({ field }) => (
                     <FormItem>
                       <div className="flex items-center gap-2">
-                        <FormLabel>Öffnungszeiten *</FormLabel>
-                        {renderTooltip('Grundlegende Öffnungszeiten. Detaillierte Zeiten können später ergänzt werden.')}
+                        <FormLabel>{t('visibilityStepOne.fields.openingHours.label')} *</FormLabel>
+                        {renderTooltip(t('visibilityStepOne.fields.openingHours.tooltip'))}
                       </div>
-                      <Input placeholder="z. B. Mo-So 11:00-22:00" {...field} />
+                      <Input placeholder={t('visibilityStepOne.fields.openingHours.placeholder')} {...field} />
                       <FormMessage />
                     </FormItem>
                   )}
@@ -325,15 +326,15 @@ const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
               {renderCheckboxGroup(
                 'specialFeatures',
                 SPECIAL_FEATURES,
-                'Besondere Merkmale (optional)',
-                'Besonderheiten, die Ihr Unternehmen auszeichnen und in der Online-Präsenz hervorgehoben werden sollten.'
+                t('visibilityStepOne.fields.specialFeatures.label'),
+                t('visibilityStepOne.fields.specialFeatures.tooltip')
               )}
             </CardContent>
           </Card>
 
           <div className="pt-4">
             <Button type="submit" disabled={!isValid} className="w-full">
-              Weiter zu Social Media & Website
+              {t('visibilityStepOne.submitButton')}
             </Button>
           </div>
         </form>
