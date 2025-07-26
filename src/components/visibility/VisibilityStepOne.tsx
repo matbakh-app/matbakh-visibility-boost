@@ -21,12 +21,6 @@ const stepOneSchema = z.object({
   postalCode: z.string().optional(),
   mainCategories: z.array(z.string()).min(1, 'visibilityStepOne.validation.mainCategoriesRequired'),
   subCategories: z.array(z.string()).optional(),
-  businessModel: z.array(z.string()).min(1, 'visibilityStepOne.validation.businessModelRequired'),
-  revenueStreams: z.array(z.string()).min(1, 'visibilityStepOne.validation.revenueStreamsRequired'),
-  targetAudience: z.array(z.string()).min(1, 'visibilityStepOne.validation.targetAudienceRequired'),
-  seatingCapacity: z.string().optional(),
-  openingHours: z.string().min(1, 'visibilityStepOne.validation.openingHoursRequired'),
-  specialFeatures: z.array(z.string()).optional(),
 });
 
 type StepOneValues = z.infer<typeof stepOneSchema>;
@@ -39,52 +33,6 @@ interface Props {
 const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
   const { t } = useTranslation('onboarding');
   
-  const BUSINESS_MODELS = [
-    { value: 'restaurant', label: t('visibilityStepOne.businessModels.restaurant') },
-    { value: 'cafe', label: t('visibilityStepOne.businessModels.cafe') },
-    { value: 'bar', label: t('visibilityStepOne.businessModels.bar') },
-    { value: 'foodtruck', label: t('visibilityStepOne.businessModels.foodtruck') },
-    { value: 'catering', label: t('visibilityStepOne.businessModels.catering') },
-    { value: 'delivery', label: t('visibilityStepOne.businessModels.delivery') },
-    { value: 'retail', label: t('visibilityStepOne.businessModels.retail') },
-    { value: 'hybrid', label: t('visibilityStepOne.businessModels.hybrid') },
-  ];
-
-  const REVENUE_STREAMS = [
-    { value: 'dine_in', label: t('visibilityStepOne.revenueStreams.dine_in') },
-    { value: 'takeaway', label: t('visibilityStepOne.revenueStreams.takeaway') },
-    { value: 'delivery', label: t('visibilityStepOne.revenueStreams.delivery') },
-    { value: 'catering', label: t('visibilityStepOne.revenueStreams.catering') },
-    { value: 'retail', label: t('visibilityStepOne.revenueStreams.retail') },
-    { value: 'beverages', label: t('visibilityStepOne.revenueStreams.beverages') },
-    { value: 'courses', label: t('visibilityStepOne.revenueStreams.courses') },
-    { value: 'merchandise', label: t('visibilityStepOne.revenueStreams.merchandise') },
-  ];
-
-  const TARGET_AUDIENCES = [
-    { value: 'families', label: t('visibilityStepOne.targetAudiences.families') },
-    { value: 'young_adults', label: t('visibilityStepOne.targetAudiences.young_adults') },
-    { value: 'professionals', label: t('visibilityStepOne.targetAudiences.professionals') },
-    { value: 'seniors', label: t('visibilityStepOne.targetAudiences.seniors') },
-    { value: 'students', label: t('visibilityStepOne.targetAudiences.students') },
-    { value: 'tourists', label: t('visibilityStepOne.targetAudiences.tourists') },
-    { value: 'locals', label: t('visibilityStepOne.targetAudiences.locals') },
-    { value: 'business', label: t('visibilityStepOne.targetAudiences.business') },
-  ];
-
-  const SPECIAL_FEATURES = [
-    { value: 'outdoor_seating', label: t('visibilityStepOne.specialFeatures.outdoor_seating') },
-    { value: 'parking', label: t('visibilityStepOne.specialFeatures.parking') },
-    { value: 'wheelchair_accessible', label: t('visibilityStepOne.specialFeatures.wheelchair_accessible') },
-    { value: 'pet_friendly', label: t('visibilityStepOne.specialFeatures.pet_friendly') },
-    { value: 'wifi', label: t('visibilityStepOne.specialFeatures.wifi') },
-    { value: 'live_music', label: t('visibilityStepOne.specialFeatures.live_music') },
-    { value: 'private_dining', label: t('visibilityStepOne.specialFeatures.private_dining') },
-    { value: 'vegan_options', label: t('visibilityStepOne.specialFeatures.vegan_options') },
-    { value: 'organic', label: t('visibilityStepOne.specialFeatures.organic') },
-    { value: 'local_products', label: t('visibilityStepOne.specialFeatures.local_products') },
-  ];
-
   const form = useForm<StepOneValues>({
     resolver: zodResolver(stepOneSchema),
     defaultValues: {
