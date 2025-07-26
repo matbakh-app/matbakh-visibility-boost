@@ -13,8 +13,8 @@ interface EnhancedLeadData {
   revenue_streams: string[];
   target_audience: string[];
   seating_capacity?: number;
-  opening_hours: string;
-  special_features?: string[];
+  opening_hours: any;
+  special_features?: any;
   website?: string;
   facebook_handle?: string;
   instagram_handle?: string;
@@ -51,7 +51,29 @@ export const useEnhancedLeadTracking = () => {
       const { data, error } = await supabase
         .from('visibility_check_leads')
         .insert([{
-          ...leadData,
+          business_name: leadData.business_name,
+          location: leadData.location,
+          postal_code: leadData.postal_code,
+          main_category: leadData.main_category,
+          sub_category: leadData.sub_category,
+          matbakh_category: leadData.matbakh_category,
+          business_model: leadData.business_model,
+          revenue_streams: leadData.revenue_streams,
+          target_audience: leadData.target_audience,
+          seating_capacity: leadData.seating_capacity,
+          opening_hours: typeof leadData.opening_hours === 'string' ? { text: leadData.opening_hours } : leadData.opening_hours,
+          special_features: typeof leadData.special_features === 'object' ? leadData.special_features : { features: leadData.special_features || [] },
+          website: leadData.website,
+          facebook_handle: leadData.facebook_handle,
+          instagram_handle: leadData.instagram_handle,
+          tiktok_handle: leadData.tiktok_handle,
+          linkedin_handle: leadData.linkedin_handle,
+          benchmarks: leadData.benchmarks,
+          email: leadData.email,
+          gdpr_consent: leadData.gdpr_consent,
+          marketing_consent: leadData.marketing_consent,
+          ip_address: leadData.ip_address,
+          user_agent: leadData.user_agent,
           analysis_status: 'pending',
           created_at: new Date().toISOString(),
         }])

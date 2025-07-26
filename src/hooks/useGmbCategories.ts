@@ -14,7 +14,8 @@ export interface GmbCategory {
   parent_id: string | null;
   category_path: string | null;
   country_availability: string[] | null;
-  description: string | null;
+  description_de: string | null;
+  description_en: string | null;
   keywords: string[] | null;
   synonyms: string[] | null;
   created_at: string;
@@ -118,7 +119,7 @@ export const useGmbCategorySearch = (searchTerm: string) => {
       const { data, error } = await supabase
         .from('gmb_categories')
         .select('*')
-        .or(`name_en.ilike.%${searchTerm}%,name_de.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`)
+        .or(`name_en.ilike.%${searchTerm}%,name_de.ilike.%${searchTerm}%,description_de.ilike.%${searchTerm}%,description_en.ilike.%${searchTerm}%`)
         .order('sort_order', { ascending: true })
         .limit(20);
 
