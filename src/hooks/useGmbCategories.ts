@@ -52,7 +52,6 @@ export const usePrimaryGmbCategories = () => {
         .from('gmb_categories')
         .select('*')
         .eq('is_primary', true)
-        .is('parent_category_id', null)
         .order('sort_order', { ascending: true });
 
       if (error) {
