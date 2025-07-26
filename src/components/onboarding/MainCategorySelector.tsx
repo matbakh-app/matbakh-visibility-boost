@@ -20,12 +20,26 @@ export const MainCategorySelector: React.FC<MainCategorySelectorProps> = ({
   const { t, i18n } = useTranslation('onboarding');
   const { data: gmbCategories, isLoading } = useGmbCategories();
 
-  const mainCategoryOptions = React.useMemo(
-    () => (gmbCategories ?? []).filter(cat => 
-      (!cat.parent_id || cat.parent_id === null) && (cat.haupt_kategorie || cat.main_category)
-    ),
-    [gmbCategories]
-  );
+  // Debug logging
+  React.useEffect(() => {
+    if (gmbCategories) {
+      console.log('🔍 Loaded GMB categories:', gmbCategories.length);
+      console.log('🔍 Sample categories:', gmbCategories.slice(0, 3));
+    }
+  }, [gmbCategories]);
+
+  const mainCategoryOptions = React.useMemo(() => {
+    if (!gmbCategories) return [];
+    
+    // Filter for main categories (parent_id is null) 
+    // For gastronomy categories, use name_de/name_en even if haupt_kategorie is null
+    const filtered = gmbCategories.filter(cat => 
+      !cat.parent_id || cat.parent_id === null
+    );
+    
+    console.log('🔍 Filtered main categories:', filtered.length, filtered.slice(0, 3));
+    return filtered;
+  }, [gmbCategories]);
 
   const getCategoryName = (category: GmbCategory) => {
     if (i18n.language === 'de') {
