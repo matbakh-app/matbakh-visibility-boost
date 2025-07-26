@@ -66,7 +66,7 @@ export function loadFacebookPixel(options: FacebookPixelOptions): Promise<void> 
       
       // Debug-Modus aktivieren falls gewünscht
       if (debug) {
-        window.fbq('debug');
+       console.log('[FacebookPixel] Debug-Mode aktiviert');
       }
       
       // Automatisches PageView-Event senden
