@@ -62,15 +62,15 @@ export const MainCategorySelector: React.FC<MainCategorySelectorProps> = ({
     <div className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Hauptkategorie auswählen (max. {maxSelections})
+          {t('categorySelector.mainCategory.label', { maxSelections })}
         </label>
         
         <Select onValueChange={handleCategorySelect} disabled={selectedCategories.length >= maxSelections}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder={
               selectedCategories.length >= maxSelections 
-                ? `Maximal ${maxSelections} Kategorien ausgewählt`
-                : 'Hauptkategorie auswählen'
+                ? t('categorySelector.mainCategory.maxReached', { maxSelections })
+                : t('categorySelector.mainCategory.placeholder')
             } />
           </SelectTrigger>
           <SelectContent>
@@ -85,7 +85,7 @@ export const MainCategorySelector: React.FC<MainCategorySelectorProps> = ({
 
       <div className="space-y-2">
         <p className="text-sm text-gray-600">
-          {selectedCategories.length} von {maxSelections} Kategorien ausgewählt
+          {t('categorySelector.mainCategory.selectedCount', { count: selectedCategories.length, max: maxSelections })}
         </p>
         
         {selectedCategories.length > 0 && (
