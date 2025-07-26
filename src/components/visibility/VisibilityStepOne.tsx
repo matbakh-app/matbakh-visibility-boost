@@ -12,13 +12,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { useTranslation } from 'react-i18next';
 import { HelpCircle, Info } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { CategorySelector } from '@/components/onboarding/CategorySelector';
 
 const stepOneSchema = z.object({
   businessName: z.string().min(1, 'Pflichtfeld'),
   location: z.string().min(1, 'Pflichtfeld'),
   postalCode: z.string().optional(),
-  mainCategory: z.string().min(1, 'Bitte auswählen'),
-  subCategory: z.string().min(1, 'Bitte auswählen'),
+  selectedCategories: z.array(z.string()).min(1, 'Mindestens eine Kategorie wählen'),
   matbakhCategory: z.string().min(1, 'Bitte eintragen'),
   businessModel: z.array(z.string()).min(1, 'Mindestens ein Geschäftsmodell wählen'),
   revenueStreams: z.array(z.string()).min(1, 'Mindestens eine Einnahmequelle wählen'),
@@ -89,8 +89,7 @@ const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
       businessName: defaultValues?.businessName || '',
       location: defaultValues?.location || '',
       postalCode: defaultValues?.postalCode || '',
-      mainCategory: defaultValues?.mainCategory || '',
-      subCategory: defaultValues?.subCategory || '',
+      selectedCategories: defaultValues?.selectedCategories || [],
       matbakhCategory: defaultValues?.matbakhCategory || '',
       businessModel: defaultValues?.businessModel || [],
       revenueStreams: defaultValues?.revenueStreams || [],
@@ -218,61 +217,20 @@ const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
                 )}
               />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="mainCategory"
-                  render={({ field }) => (
-                    <FormItem>
-                      <div className="flex items-center gap-2">
-                        <FormLabel>Hauptkategorie *</FormLabel>
-                        {renderTooltip('Die übergeordnete Branche Ihres Unternehmens.')}
-                      </div>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Bitte wählen" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Food & Dining">Food & Dining</SelectItem>
-                          <SelectItem value="Health & Wellness">Health & Wellness</SelectItem>
-                          <SelectItem value="Retail">Retail</SelectItem>
-                          <SelectItem value="Services">Services</SelectItem>
-                          <SelectItem value="Entertainment">Entertainment</SelectItem>
-                          <SelectItem value="Other">Andere</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="subCategory"
-                  render={({ field }) => (
-                    <FormItem>
-                      <div className="flex items-center gap-2">
-                        <FormLabel>Unterkategorie *</FormLabel>
-                        {renderTooltip('Spezifische Kategorie innerhalb Ihrer Branche.')}
-                      </div>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="z. B. Italienisches Restaurant" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="italian">Italienisch</SelectItem>
-                          <SelectItem value="turkish">Türkisch</SelectItem>
-                          <SelectItem value="asian">Asiatisch</SelectItem>
-                          <SelectItem value="cafe">Café</SelectItem>
-                          <SelectItem value="bar">Bar</SelectItem>
-                          <SelectItem value="other">Andere</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="selectedCategories"
+                render={({ field }) => (
+                  <FormItem>
+                    <CategorySelector 
+                      selectedCategories={field.value || []} 
+                      onCategoryChange={field.onChange} 
+                      maxSelections={3}
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}
