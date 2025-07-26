@@ -20,7 +20,7 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
   onCategoryChange,
   maxSelections = 3
 }) => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation('onboarding');
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   const [showSearch, setShowSearch] = useState(false);
