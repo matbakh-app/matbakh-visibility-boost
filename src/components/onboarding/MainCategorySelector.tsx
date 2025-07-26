@@ -31,21 +31,44 @@ export const MainCategorySelector: React.FC<MainCategorySelectorProps> = ({
   const mainCategoryOptions = React.useMemo(() => {
     if (!gmbCategories) return [];
     
-    // Filter main categories based on language-specific fields
-    const filtered = gmbCategories.filter(cat => {
-      // For German: check haupt_kategorie field
-      if (i18n.language === 'de' && cat.haupt_kategorie) {
-        return true;
-      }
-      // For English: check main_category field  
-      if (i18n.language === 'en' && cat.main_category) {
-        return true;
-      }
-      return false;
-    });
+    // 1. Extract all values based on language
+    const values = gmbCategories.map(cat =>
+      i18n.language === 'de'
+        ? cat.haupt_kategorie
+        : cat.main_category
+    ).filter(Boolean); // Remove empty values
+
+    // 2. Remove duplicates using Set
+    const unique = Array.from(new Set(values));
+
+    // 3. Sort alphabetically
+    unique.sort((a, b) => a.localeCompare(b, i18n.language));
+
+    // 4. Create category objects with unique IDs (complete GmbCategory structure)
+    const uniqueCategories = unique.map((name, index) => ({
+      id: `main_${index}`,
+      category_id: `main_${index}`,
+      name_de: name,
+      name_en: name,
+      haupt_kategorie: i18n.language === 'de' ? name : null,
+      main_category: i18n.language === 'en' ? name : null,
+      parent_category_id: null,
+      parent_id: null,
+      category_path: null,
+      country_availability: null,
+      description_de: null,
+      description_en: null,
+      keywords: null,
+      synonyms: null,
+      is_popular: false,
+      is_primary: true,
+      sort_order: index,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    } as GmbCategory));
     
-    console.log('🔍 Filtered main categories for', i18n.language, ':', filtered.length, filtered.slice(0, 3));
-    return filtered;
+    console.log('🔍 Unique main categories for', i18n.language, ':', uniqueCategories.length, uniqueCategories.slice(0, 3));
+    return uniqueCategories;
   }, [gmbCategories, i18n.language]);
 
   const getCategoryName = (category: GmbCategory) => {
