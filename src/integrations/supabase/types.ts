@@ -2855,87 +2855,126 @@ export type Database = {
         Row: {
           analysis_data: Json | null
           analysis_status: string | null
+          analyzed_at: string | null
+          benchmarks: Json | null
           business_model: string[] | null
           business_name: string
           check_type: string
           created_at: string
           email: string | null
+          facebook_handle: string | null
           facebook_score: number | null
           found_business: boolean | null
           full_report_url: string | null
+          gdpr_consent: boolean | null
           google_score: number | null
           id: string
+          instagram_handle: string | null
           instagram_score: number | null
+          ip_address: string | null
           linkedin_handle: string | null
+          location: string | null
           location_text: string | null
+          main_category: string | null
+          marketing_consent: boolean | null
+          matbakh_category: string | null
           migrated_to_profile: boolean | null
           opening_hours: Json | null
           overall_score: number | null
+          postal_code: string | null
           result_status: string
           revenue_streams: string[] | null
           seating_capacity: number | null
           special_features: Json | null
+          sub_category: string | null
           target_audience: string[] | null
           tiktok_handle: string | null
           updated_at: string
+          user_agent: string | null
           user_id: string | null
           website: string | null
         }
         Insert: {
           analysis_data?: Json | null
           analysis_status?: string | null
+          analyzed_at?: string | null
+          benchmarks?: Json | null
           business_model?: string[] | null
           business_name: string
           check_type?: string
           created_at?: string
           email?: string | null
+          facebook_handle?: string | null
           facebook_score?: number | null
           found_business?: boolean | null
           full_report_url?: string | null
+          gdpr_consent?: boolean | null
           google_score?: number | null
           id?: string
+          instagram_handle?: string | null
           instagram_score?: number | null
+          ip_address?: string | null
           linkedin_handle?: string | null
+          location?: string | null
           location_text?: string | null
+          main_category?: string | null
+          marketing_consent?: boolean | null
+          matbakh_category?: string | null
           migrated_to_profile?: boolean | null
           opening_hours?: Json | null
           overall_score?: number | null
+          postal_code?: string | null
           result_status?: string
           revenue_streams?: string[] | null
           seating_capacity?: number | null
           special_features?: Json | null
+          sub_category?: string | null
           target_audience?: string[] | null
           tiktok_handle?: string | null
           updated_at?: string
+          user_agent?: string | null
           user_id?: string | null
           website?: string | null
         }
         Update: {
           analysis_data?: Json | null
           analysis_status?: string | null
+          analyzed_at?: string | null
+          benchmarks?: Json | null
           business_model?: string[] | null
           business_name?: string
           check_type?: string
           created_at?: string
           email?: string | null
+          facebook_handle?: string | null
           facebook_score?: number | null
           found_business?: boolean | null
           full_report_url?: string | null
+          gdpr_consent?: boolean | null
           google_score?: number | null
           id?: string
+          instagram_handle?: string | null
           instagram_score?: number | null
+          ip_address?: string | null
           linkedin_handle?: string | null
+          location?: string | null
           location_text?: string | null
+          main_category?: string | null
+          marketing_consent?: boolean | null
+          matbakh_category?: string | null
           migrated_to_profile?: boolean | null
           opening_hours?: Json | null
           overall_score?: number | null
+          postal_code?: string | null
           result_status?: string
           revenue_streams?: string[] | null
           seating_capacity?: number | null
           special_features?: Json | null
+          sub_category?: string | null
           target_audience?: string[] | null
           tiktok_handle?: string | null
           updated_at?: string
+          user_agent?: string | null
           user_id?: string | null
           website?: string | null
         }
