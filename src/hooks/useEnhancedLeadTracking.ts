@@ -9,12 +9,6 @@ interface EnhancedLeadData {
   main_category: string;
   sub_category: string;
   matbakh_category: string;
-  business_model: string[];
-  revenue_streams: string[];
-  target_audience: string[];
-  seating_capacity?: number;
-  opening_hours: any;
-  special_features?: any;
   website?: string;
   facebook_handle?: string;
   instagram_handle?: string;
@@ -24,9 +18,6 @@ interface EnhancedLeadData {
   email: string;
   gdpr_consent: boolean;
   marketing_consent?: boolean;
-  ip_address?: string;
-  user_agent?: string;
-  analysis_data?: any;
 }
 
 interface LeadAction {
@@ -57,12 +48,6 @@ export const useEnhancedLeadTracking = () => {
           main_category: leadData.main_category,
           sub_category: leadData.sub_category,
           matbakh_category: leadData.matbakh_category,
-          business_model: leadData.business_model,
-          revenue_streams: leadData.revenue_streams,
-          target_audience: leadData.target_audience,
-          seating_capacity: leadData.seating_capacity,
-          opening_hours: typeof leadData.opening_hours === 'string' ? { text: leadData.opening_hours } : leadData.opening_hours,
-          special_features: typeof leadData.special_features === 'object' ? leadData.special_features : { features: leadData.special_features || [] },
           website: leadData.website,
           facebook_handle: leadData.facebook_handle,
           instagram_handle: leadData.instagram_handle,
@@ -72,8 +57,6 @@ export const useEnhancedLeadTracking = () => {
           email: leadData.email,
           gdpr_consent: leadData.gdpr_consent,
           marketing_consent: leadData.marketing_consent,
-          ip_address: leadData.ip_address,
-          user_agent: leadData.user_agent,
           analysis_status: 'pending',
           created_at: new Date().toISOString(),
         }])

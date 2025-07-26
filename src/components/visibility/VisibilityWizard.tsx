@@ -100,15 +100,9 @@ const VisibilityWizard: React.FC = () => {
         email: data.email || '',
         gdpr_consent: data.gdprConsent || false,
         marketing_consent: data.marketingConsent || false,
-        business_model: [],
-        revenue_streams: [],
-        target_audience: [],
-        opening_hours: '',
-        ip_address: '', // Will be captured in edge function
-        user_agent: '', // Will be captured in edge function
       };
 
-      console.log('🏗️ Creating enhanced lead...');
+      console.log('🏗️ Creating enhanced lead:', leadData);
       const leadId = await createEnhancedLead(leadData);
       
       if (!leadId) {
