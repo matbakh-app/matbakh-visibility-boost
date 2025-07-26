@@ -22,7 +22,7 @@ export const MainCategorySelector: React.FC<MainCategorySelectorProps> = ({
 
   const mainCategoryOptions = React.useMemo(
     () => (gmbCategories ?? []).filter(cat => 
-      cat.parent_id === null && (cat.haupt_kategorie || cat.main_category)
+      (!cat.parent_id || cat.parent_id === null) && (cat.haupt_kategorie || cat.main_category)
     ),
     [gmbCategories]
   );
