@@ -722,6 +722,48 @@ export type Database = {
         }
         Relationships: []
       }
+      facebook_webhook_events: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          event_type: string
+          id: string
+          object_id: string | null
+          object_type: string
+          processed_at: string | null
+          processing_status: string
+          raw_payload: Json
+          retry_count: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          event_type: string
+          id?: string
+          object_id?: string | null
+          object_type: string
+          processed_at?: string | null
+          processing_status?: string
+          raw_payload?: Json
+          retry_count?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          event_type?: string
+          id?: string
+          object_id?: string | null
+          object_type?: string
+          processed_at?: string | null
+          processing_status?: string
+          raw_payload?: Json
+          retry_count?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       fb_conversion_logs: {
         Row: {
           error_message: string | null

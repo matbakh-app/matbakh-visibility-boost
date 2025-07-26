@@ -3,6 +3,8 @@ import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface InstagramCandidate {
   handle: string;
@@ -18,9 +20,17 @@ interface Props {
   candidates: InstagramCandidate[];
   onSelect: (handle: string) => void;
   value?: string;
+  onManualInput?: (handle: string) => void;
+  manualValue?: string;
 }
 
-const InstagramCandidatePicker: React.FC<Props> = ({ candidates, onSelect, value }) => {
+const InstagramCandidatePicker: React.FC<Props> = ({ 
+  candidates, 
+  onSelect, 
+  value, 
+  onManualInput, 
+  manualValue 
+}) => {
   if (!candidates || candidates.length === 0) {
     return null;
   }
@@ -32,6 +42,12 @@ const InstagramCandidatePicker: React.FC<Props> = ({ candidates, onSelect, value
       case 'low': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const confidenceLabels = {
+    high: 'Hoch',
+    medium: 'Mittel',
+    low: 'Niedrig'
   };
 
   return (
@@ -63,12 +79,13 @@ const InstagramCandidatePicker: React.FC<Props> = ({ candidates, onSelect, value
                     <div className="flex items-center space-x-2">
                       <span className="font-medium">@{candidate.handle}</span>
                       <Badge className={`text-xs ${getConfidenceColor(candidate.confidence)}`}>
-                        {candidate.confidence}
+                        {confidenceLabels[candidate.confidence] || candidate.confidence}
                       </Badge>
                     </div>
                     <div className="text-xs text-gray-500">
-                      {candidate.followerCount && `${candidate.followerCount} Follower`}
-                      {candidate.bio && ` • ${candidate.bio.substring(0, 40)}...`}
+                      {candidate.followerCount && `${candidate.followerCount.toLocaleString()} Follower`}
+                      {candidate.bio && candidate.bio.length > 40 && ` • ${candidate.bio.substring(0, 40)}...`}
+                      {candidate.bio && candidate.bio.length <= 40 && ` • ${candidate.bio}`}
                     </div>
                     <div className="text-xs text-gray-400">
                       {candidate.matchReason}
@@ -87,6 +104,28 @@ const InstagramCandidatePicker: React.FC<Props> = ({ candidates, onSelect, value
             </SelectItem>
           </SelectContent>
         </Select>
+
+        {/* Manual Input Field */}
+        {value === 'manual' && (
+          <div className="mt-4 p-3 bg-white rounded border">
+            <Label htmlFor="manual-instagram-handle" className="text-sm font-medium">
+              Instagram-Handle manuell eingeben
+            </Label>
+            <div className="mt-2 flex items-center space-x-2">
+              <span className="text-gray-500">@</span>
+              <Input
+                id="manual-instagram-handle"
+                placeholder="ihr_restaurant_handle"
+                value={manualValue || ''}
+                onChange={(e) => onManualInput?.(e.target.value)}
+                className="flex-1"
+              />
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              Geben Sie nur den Handle ohne @ ein (z.B. "restaurant_name")
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -21,7 +21,10 @@ export const SeoMeta: React.FC<SeoMetaProps> = ({
   
   const finalTitle = title || t('meta.defaultTitle', 'matbakh - Sichtbarkeit für Gastronomie');
   const finalDescription = description || t('meta.defaultDescription', 'Automatisierte digitale Lösungen für Restaurants');
-  const currentUrl = canonical || `https://matbakh.app${window.location.pathname}`;
+  
+  // SSR-safe URL handling
+  const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/';
+  const currentUrl = canonical || `https://matbakh.app${currentPath}`;
   const locale = i18n.language === 'de' ? 'de_DE' : 'en_US';
 
   return (
@@ -45,8 +48,8 @@ export const SeoMeta: React.FC<SeoMetaProps> = ({
       <meta name="twitter:image" content={`https://matbakh.app${ogImage}`} />
       
       {/* Language alternates */}
-      <link rel="alternate" hrefLang="de" href={`https://matbakh.app${window.location.pathname}`} />
-      <link rel="alternate" hrefLang="en" href={`https://matbakh.app${window.location.pathname}`} />
+      <link rel="alternate" hrefLang="de" href={`https://matbakh.app${currentPath}`} />
+      <link rel="alternate" hrefLang="en" href={`https://matbakh.app${currentPath}`} />
       
       {/* Additional SEO */}
       <meta name="robots" content="index,follow" />
