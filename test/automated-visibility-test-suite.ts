@@ -271,6 +271,65 @@ describe('🚀 Matbakh.app Visibility Check - Automatisierte Test Suite', () => 
     }
     
   }, 15000)
+
+  // DUAL-PIPELINE TESTS (Feature Flag + Fallback)
+  it('sollte USE_BEDROCK=false korrekt verwenden', async () => {
+    console.log('\n🔧 Testing USE_BEDROCK=false...')
+    
+    // Set environment for mock analysis
+    process.env.USE_BEDROCK = 'false'
+    
+    const testPayload = {
+      businessName: 'Mock Test Restaurant',
+      location: 'Hamburg, Deutschland',
+      mainCategory: 'Essen & Trinken',
+      subCategory: 'Restaurant',
+      email: 'mock-test@restaurant.de',
+      website: 'https://mock-test-restaurant.de',
+      facebookName: 'MockTestRestaurant',
+      instagramName: 'mock_restaurant',
+      googleName: 'Mock Test Restaurant Hamburg'
+    }
+    
+    const { data: result, error } = await supabase.functions.invoke(
+      'enhanced-visibility-check',
+      { body: testPayload }
+    )
+    
+    expect(error).toBeNull()
+    expect(result?.leadId).toBeDefined()
+    
+    // Warten auf Completion
+    const leadId = result.leadId
+    let attempts = 0
+    let status = 'pending'
+    
+    while (attempts < 30 && status !== 'completed') {
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      const { data: leadData } = await supabase
+        .from('visibility_check_leads')
+        .select('status')
+        .eq('id', leadId)
+        .single()
+        
+      status = leadData?.status || 'pending'
+      attempts++
+    }
+    
+    expect(status).toBe('completed')
+    
+    // Check provider in results
+    const { data: results } = await supabase
+      .from('visibility_check_results')
+      .select('analysis_results')
+      .eq('lead_id', leadId)
+      .single()
+    
+    expect(results?.analysis_results?.provider).toBe('mockAnalysis')
+    console.log('✅ Mock analysis correctly used')
+    
+  }, 45000)
 })
 
 // Utility Functions für erweiterte Tests

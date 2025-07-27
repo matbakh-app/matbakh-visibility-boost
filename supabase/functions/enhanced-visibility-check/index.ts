@@ -190,6 +190,48 @@ function computeRelevanceScore(businessName: string, handle: string, followers: 
   return Math.min(1.0, score)
 }
 
+// ============= MOCK ANALYSIS FUNCTION =============
+function generateMockAnalysis(input: any, categoryContext: string[], benchmarkData: any[]) {
+  return {
+    overallScore: Math.floor(Math.random() * 30) + 70,
+    platformAnalyses: [
+      {
+        platform: "google",
+        score: Math.floor(Math.random() * 40) + 60,
+        details: {
+          hasProfile: !!input.googleName,
+          profileComplete: true,
+          hasReviews: true,
+          hasPhotos: true,
+          hasHours: true,
+          rating: 4.2,
+          reviewCount: 89
+        },
+        strengths: ["Vollständiges Profil vorhanden"],
+        weaknesses: ["Begrenzte Foto-Auswahl"],
+        recommendations: ["Mehr aktuelle Fotos hinzufügen"]
+      }
+    ],
+    categoryInsights: [
+      `Als ${input.mainCategory} sollten Sie besonders auf visuelle Inhalte setzen`,
+      'Bewertungsmanagement ist in Ihrer Branche besonders wichtig'
+    ],
+    quickWins: [
+      'Fügen Sie 5-10 hochwertige Fotos zu Ihrem Google Profil hinzu',
+      'Reagieren Sie auf alle Bewertungen der letzten 30 Tage'
+    ],
+    swotAnalysis: {
+      strengths: ["Etablierte lokale Präsenz"],
+      weaknesses: ["Begrenzte Online-Sichtbarkeit"],
+      opportunities: ["Social Media Ausbau"],
+      threats: ["Lokale Konkurrenz"]
+    },
+    benchmarkInsights: "Mock-Daten - KI nicht verfügbar",
+    leadPotential: "medium",
+    provider: "mockAnalysis"
+  };
+}
+
 // ============= BEDROCK AI CLIENT =============
 async function callBedrockVisibilityAnalysis(input: any, categoryContext: string[], benchmarkData: any[]) {
   const client = new BedrockRuntimeClient({ 
@@ -294,48 +336,14 @@ WICHTIG:
     const analysisResult = JSON.parse(content);
     
     console.log('✅ Bedrock analysis completed successfully');
-    return analysisResult;
+    return {
+      ...analysisResult,
+      provider: "bedrock"
+    };
     
   } catch (error) {
     console.error('❌ Bedrock analysis failed:', error);
-    // Fallback with empty SWOT structure
-    return {
-      overallScore: Math.floor(Math.random() * 30) + 70,
-      platformAnalyses: [
-        {
-          platform: "google",
-          score: Math.floor(Math.random() * 40) + 60,
-          details: {
-            hasProfile: !!input.googleName,
-            profileComplete: true,
-            hasReviews: true,
-            hasPhotos: true,
-            hasHours: true,
-            rating: 4.2,
-            reviewCount: 89
-          },
-          strengths: ["Vollständiges Profil vorhanden"],
-          weaknesses: ["Begrenzte Foto-Auswahl"],
-          recommendations: ["Mehr aktuelle Fotos hinzufügen"]
-        }
-      ],
-      categoryInsights: [
-        `Als ${input.mainCategory} sollten Sie besonders auf visuelle Inhalte setzen`,
-        'Bewertungsmanagement ist in Ihrer Branche besonders wichtig'
-      ],
-      quickWins: [
-        'Fügen Sie 5-10 hochwertige Fotos zu Ihrem Google Profil hinzu',
-        'Reagieren Sie auf alle Bewertungen der letzten 30 Tage'
-      ],
-      swotAnalysis: {
-        strengths: [],
-        weaknesses: [],
-        opportunities: [],
-        threats: []
-      },
-      benchmarkInsights: "Keine AI-Daten verfügbar",
-      leadPotential: "medium"
-    };
+    throw error; // Let the fallback logic handle this
   }
 }
 
@@ -424,8 +432,22 @@ serve(async (req) => {
       timestamp: new Date().toISOString()
     };
 
-    // Call Bedrock for AI analysis with category context
-    const aiAnalysis = await callBedrockVisibilityAnalysis(analysisInput, promptCategories, benchmarks);
+    // Dual-Pipeline: Feature Flag + Fallback Logic
+    const useBedrock = Deno.env.get('USE_BEDROCK') === 'true';
+    console.log('🤖 Using Bedrock AI:', useBedrock);
+    
+    let aiAnalysis;
+    try {
+      if (useBedrock) {
+        aiAnalysis = await callBedrockVisibilityAnalysis(analysisInput, promptCategories, benchmarks);
+      } else {
+        console.log('📝 Using mock analysis (USE_BEDROCK=false)');
+        aiAnalysis = generateMockAnalysis(analysisInput, promptCategories, benchmarks);
+      }
+    } catch (error) {
+      console.warn('❌ Bedrock failed, using mock fallback:', error.message);
+      aiAnalysis = generateMockAnalysis(analysisInput, promptCategories, benchmarks);
+    }
     
     // 2.2.2: Extrahiere die neuen Felder aus aiAnalysis
     const {
