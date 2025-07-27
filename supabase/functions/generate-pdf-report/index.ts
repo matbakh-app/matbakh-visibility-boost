@@ -55,24 +55,22 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // Get analysis results
+    // Get analysis results (optional - PDF can be generated without them)
     const { data: analysisResults, error: analysisError } = await supabase
       .from('visibility_check_results')
       .select('*')
       .eq('lead_id', leadId)
       .order('created_at', { ascending: false })
-      .limit(1);
+      .limit(1)
+      .maybeSingle();
 
-    if (analysisError || !analysisResults?.length) {
-      console.error('❌ Error fetching analysis results:', analysisError);
-      return new Response(JSON.stringify({ error: 'Analysis results not found' }), {
-        status: 404,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    // Don't fail if no analysis results - create basic PDF
+    if (analysisError) {
+      console.warn('⚠️ Error fetching analysis results (continuing with basic PDF):', analysisError);
     }
 
-    const analysis = analysisResults[0];
-    const analysisData = analysis.analysis_results || {};
+    const analysis = analysisResults || null;
+    const analysisData = analysis?.analysis_results || {};
 
     console.log(`📄 Generating PDF for business: ${lead.business_name}`);
 
@@ -99,7 +97,24 @@ const handler = async (req: Request): Promise<Response> => {
 
     let yPosition = 80;
 
-    // Overall Score
+    // Business Info Section
+    doc.setFontSize(14);
+    doc.setTextColor(40, 40, 40);
+    doc.text('Geschäftsinformationen', 20, yPosition);
+    yPosition += 15;
+
+    doc.setFontSize(11);
+    doc.setTextColor(60, 60, 60);
+    doc.text(`Name: ${lead.business_name}`, 25, yPosition);
+    yPosition += 8;
+    if (lead.location) {
+      doc.text(`Standort: ${lead.location}`, 25, yPosition);
+      yPosition += 8;
+    }
+    doc.text(`E-Mail: ${lead.email}`, 25, yPosition);
+    yPosition += 20;
+
+    // Overall Score (if available)
     if (analysisData.overallScore !== undefined) {
       doc.setFontSize(14);
       doc.setTextColor(40, 40, 40);
@@ -112,9 +127,22 @@ const handler = async (req: Request): Promise<Response> => {
       doc.text(`${analysisData.overallScore}/100`, 20, yPosition + 15);
       
       yPosition += 35;
+    } else {
+      // Default message if no analysis available
+      doc.setFontSize(14);
+      doc.setTextColor(40, 40, 40);
+      doc.text('Analyse-Status', 20, yPosition);
+      yPosition += 15;
+      
+      doc.setFontSize(11);
+      doc.setTextColor(60, 60, 60);
+      doc.text('Ihre detaillierte Sichtbarkeitsanalyse wird noch durchgeführt.', 25, yPosition);
+      yPosition += 8;
+      doc.text('Sie erhalten eine aktualisierte Version sobald verfügbar.', 25, yPosition);
+      yPosition += 20;
     }
 
-    // Platform Analysis
+    // Platform Analysis (if available)
     if (analysisData.platformAnalyses && Array.isArray(analysisData.platformAnalyses)) {
       doc.setFontSize(14);
       doc.setTextColor(40, 40, 40);
@@ -146,7 +174,7 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // Quick Wins
+    // Quick Wins (if available)
     if (analysisData.quickWins && Array.isArray(analysisData.quickWins)) {
       if (yPosition > 200) {
         doc.addPage();
@@ -170,6 +198,36 @@ const handler = async (req: Request): Promise<Response> => {
         const lines = doc.splitTextToSize(`• ${win}`, maxWidth);
         doc.text(lines, 25, yPosition);
         yPosition += lines.length * 6 + 3;
+      });
+    } else if (!analysisData.quickWins) {
+      // Default content for basic PDF
+      if (yPosition > 200) {
+        doc.addPage();
+        yPosition = 30;
+      }
+
+      doc.setFontSize(14);
+      doc.setTextColor(40, 40, 40);
+      doc.text('Nächste Schritte', 20, yPosition);
+      yPosition += 15;
+
+      const defaultTips = [
+        'Vervollständigen Sie Ihr Google My Business Profil',
+        'Fügen Sie aktuelle Fotos Ihres Unternehmens hinzu',
+        'Sammeln Sie Kundenbewertungen',
+        'Halten Sie Ihre Öffnungszeiten aktuell',
+        'Nutzen Sie relevante Keywords in Ihrer Beschreibung'
+      ];
+
+      defaultTips.forEach((tip) => {
+        if (yPosition > 270) {
+          doc.addPage();
+          yPosition = 30;
+        }
+        doc.setFontSize(11);
+        doc.setTextColor(60, 60, 60);
+        doc.text(`• ${tip}`, 25, yPosition);
+        yPosition += 12;
       });
     }
 
