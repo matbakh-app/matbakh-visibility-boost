@@ -34,19 +34,18 @@ const stepTwoSchema = z.object({
 }).superRefine((data, ctx) => {
   // Wenn "Ja" zu Social Media gewählt wurde, muss mindestens ein Feld ausgefüllt sein
   if (data.hasSocialMedia === 'yes') {
-    const hasInstagram = !!data.instagram?.trim();
-    const hasFacebook = !!data.facebook?.trim();
+    const hasSomeEntry = !!data.instagram?.trim() || !!data.facebook?.trim();
     
-    if (!hasInstagram && !hasFacebook) {
+    if (!hasSomeEntry) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['instagram'],
-        message: 'Bitte geben Sie mindestens Instagram oder Facebook an',
+        message: 'Bitte geben Sie etwas ein - Name, @Handle oder Link genügt völlig',
       });
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['facebook'],
-        message: 'Bitte geben Sie mindestens Instagram oder Facebook an',
+        message: 'Bitte geben Sie etwas ein - Name, @Handle oder Link genügt völlig',
       });
     }
   }
@@ -217,7 +216,7 @@ const VisibilityStepTwo: React.FC<Props> = ({
                         <Instagram className="w-4 h-4" />
                         Instagram *
                       </FormLabel>
-                      {renderTooltip('Instagram-Handle oder Profil-URL für die Analyse Ihrer Instagram-Präsenz.')}
+                      {renderTooltip('Geben Sie einfach etwas ein - Unternehmensname, @Handle, Link - wir finden Ihr Profil für Sie!')}
                     </div>
                     
                     {/* Show candidates if available and no manual input yet */}
@@ -237,9 +236,12 @@ const VisibilityStepTwo: React.FC<Props> = ({
                         render={({ field }) => (
                           <FormItem>
                             <Input 
-                              placeholder="@meinrestaurant oder https://instagram.com/meinrestaurant" 
+                              placeholder="z.B. sax essen trinken, @saxessen, instagram.com/sax - alles möglich!" 
                               {...field} 
                             />
+                            <p className="text-xs text-muted-foreground mt-1">
+                              💡 Wir finden Ihr Profil automatisch. Falls nicht, bekommen Sie eine E-Mail mit Nachfragemöglichkeit.
+                            </p>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -270,12 +272,15 @@ const VisibilityStepTwo: React.FC<Props> = ({
                             <Facebook className="w-4 h-4" />
                             Facebook *
                           </FormLabel>
-                          {renderTooltip('Facebook-Seite für Ihr Unternehmen.')}
+                          {renderTooltip('Geben Sie einfach etwas ein - Seitenname, Link oder Unternehmensname - wir finden Ihre Facebook-Seite!')}
                         </div>
                         <Input 
-                          placeholder="Seitenname oder https://facebook.com/meine-seite" 
+                          placeholder="z.B. SAX Restaurant, facebook.com/sax, @saxessen - alles möglich!" 
                           {...field} 
                         />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          💡 Wir finden Ihre Seite automatisch. Falls nicht, bekommen Sie eine E-Mail mit Nachfragemöglichkeit.
+                        </p>
                         <FormMessage />
                       </FormItem>
                     )}
