@@ -1069,7 +1069,7 @@ export type Database = {
           id: number
           job_type: string
           location_id: string | null
-          partner_id: string
+          partner_id: string | null
           payload: Json
           retry_count: number | null
           run_at: string | null
@@ -1081,7 +1081,7 @@ export type Database = {
           id?: number
           job_type: string
           location_id?: string | null
-          partner_id: string
+          partner_id?: string | null
           payload: Json
           retry_count?: number | null
           run_at?: string | null
@@ -1093,7 +1093,7 @@ export type Database = {
           id?: number
           job_type?: string
           location_id?: string | null
-          partner_id?: string
+          partner_id?: string | null
           payload?: Json
           retry_count?: number | null
           run_at?: string | null
