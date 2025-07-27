@@ -3230,6 +3230,33 @@ export type Database = {
           },
         ]
       }
+      visibility_trends: {
+        Row: {
+          created_at: string | null
+          id: string
+          lead_id: string
+          trend_metrics: Json | null
+          trends_date: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          lead_id: string
+          trend_metrics?: Json | null
+          trends_date?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          lead_id?: string
+          trend_metrics?: Json | null
+          trends_date?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       waitlist: {
         Row: {
           browser: string | null
