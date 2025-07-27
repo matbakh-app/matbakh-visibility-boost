@@ -2,6 +2,183 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.2";
 import { BedrockRuntimeClient, InvokeModelCommand } from "https://esm.sh/@aws-sdk/client-bedrock-runtime@3.450.0";
 
+// ============= GOOGLE SERVICES INTEGRATION =============
+
+async function fetchGMBMetrics(businessData: any, userId: string, supabase: any) {
+  try {
+    // Get Google OAuth token for GMB
+    const { data: tokenRow } = await supabase
+      .from('google_oauth_tokens')
+      .select('access_token, refresh_token, gmb_account_id')
+      .eq('user_id', userId)
+      .eq('service_type', 'gmb')
+      .single();
+
+    if (!tokenRow || !tokenRow.access_token) {
+      console.log('⚠️ No GMB OAuth token found for user:', userId);
+      return null;
+    }
+
+    const gmbApiUrl = `https://mybusinessbusinessinformation.googleapis.com/v1/accounts/${tokenRow.gmb_account_id}/locations`;
+    
+    const response = await fetch(gmbApiUrl, {
+      headers: {
+        'Authorization': `Bearer ${tokenRow.access_token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`GMB API error: ${response.status} ${response.statusText}`);
+    }
+
+    const gmbData = await response.json();
+    
+    // Extract key metrics from GMB response
+    const metrics = {
+      profileComplete: gmbData.locations?.[0]?.attributes?.length > 0,
+      hasPhotos: gmbData.locations?.[0]?.photos?.length > 0,
+      hasHours: !!gmbData.locations?.[0]?.regularHours,
+      verificationStatus: gmbData.locations?.[0]?.verificationStatus,
+      rating: gmbData.locations?.[0]?.googleRating || 0,
+      reviewCount: gmbData.locations?.[0]?.reviewCount || 0,
+      lastUpdated: new Date().toISOString()
+    };
+
+    console.log('✅ GMB metrics fetched successfully');
+    return metrics;
+    
+  } catch (error) {
+    console.error('❌ GMB API error:', error.message);
+    return null;
+  }
+}
+
+async function fetchGA4Metrics(businessData: any, userId: string, supabase: any) {
+  try {
+    // Get Google OAuth token for Analytics
+    const { data: tokenRow } = await supabase
+      .from('google_oauth_tokens')
+      .select('access_token, refresh_token, ga4_property_id')
+      .eq('user_id', userId)
+      .eq('service_type', 'analytics')
+      .single();
+
+    if (!tokenRow || !tokenRow.access_token || !tokenRow.ga4_property_id) {
+      console.log('⚠️ No GA4 OAuth token found for user:', userId);
+      return null;
+    }
+
+    const ga4ApiUrl = `https://analyticsdata.googleapis.com/v1beta/properties/${tokenRow.ga4_property_id}:runReport`;
+    
+    const reportPayload = {
+      dimensions: [{ name: 'date' }],
+      metrics: [
+        { name: 'sessions' },
+        { name: 'pageviews' },
+        { name: 'bounceRate' },
+        { name: 'averageSessionDuration' }
+      ],
+      dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }]
+    };
+
+    const response = await fetch(ga4ApiUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${tokenRow.access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(reportPayload)
+    });
+
+    if (!response.ok) {
+      throw new Error(`GA4 API error: ${response.status} ${response.statusText}`);
+    }
+
+    const ga4Data = await response.json();
+    
+    // Process GA4 data
+    const totalSessions = ga4Data.rows?.reduce((sum: number, row: any) => sum + parseInt(row.metricValues[0].value), 0) || 0;
+    const totalPageviews = ga4Data.rows?.reduce((sum: number, row: any) => sum + parseInt(row.metricValues[1].value), 0) || 0;
+    
+    const metrics = {
+      sessions: totalSessions,
+      pageviews: totalPageviews,
+      bounceRate: ga4Data.rows?.[0]?.metricValues[2]?.value || 0,
+      avgSessionDuration: ga4Data.rows?.[0]?.metricValues[3]?.value || 0,
+      lastUpdated: new Date().toISOString()
+    };
+
+    console.log('✅ GA4 metrics fetched successfully');
+    return metrics;
+    
+  } catch (error) {
+    console.error('❌ GA4 API error:', error.message);
+    return null;
+  }
+}
+
+async function fetchGoogleAdsMetrics(businessData: any, userId: string, supabase: any) {
+  try {
+    // Get Google OAuth token for Ads
+    const { data: tokenRow } = await supabase
+      .from('google_oauth_tokens')
+      .select('access_token, refresh_token, ads_customer_id')
+      .eq('user_id', userId)
+      .eq('service_type', 'ads')
+      .single();
+
+    if (!tokenRow || !tokenRow.access_token || !tokenRow.ads_customer_id) {
+      console.log('⚠️ No Google Ads OAuth token found for user:', userId);
+      return null;
+    }
+
+    const adsApiUrl = `https://googleads.googleapis.com/v15/customers/${tokenRow.ads_customer_id}/googleAds:searchStream`;
+    
+    const query = `
+      SELECT 
+        metrics.impressions,
+        metrics.clicks,
+        metrics.ctr,
+        metrics.cost_micros
+      FROM campaign 
+      WHERE segments.date DURING LAST_30_DAYS
+    `;
+
+    const response = await fetch(adsApiUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${tokenRow.access_token}`,
+        'Content-Type': 'application/json',
+        'developer-token': Deno.env.get('GOOGLE_ADS_DEVELOPER_TOKEN') || ''
+      },
+      body: JSON.stringify({ query })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Google Ads API error: ${response.status} ${response.statusText}`);
+    }
+
+    const adsData = await response.json();
+    
+    // Process Ads data
+    const metrics = {
+      impressions: adsData.results?.[0]?.metrics?.impressions || 0,
+      clicks: adsData.results?.[0]?.metrics?.clicks || 0,
+      ctr: adsData.results?.[0]?.metrics?.ctr || 0,
+      cost: (adsData.results?.[0]?.metrics?.costMicros || 0) / 1000000, // Convert micros to euros
+      lastUpdated: new Date().toISOString()
+    };
+
+    console.log('✅ Google Ads metrics fetched successfully');
+    return metrics;
+    
+  } catch (error) {
+    console.error('❌ Google Ads API error:', error.message);
+    return null;
+  }
+}
+
 // Social URL normalization functions (copied from src/lib/normalizeSocialUrls.ts)
 function normalizeFacebookUrl(input: string): string {
   if (!input?.trim()) return '';
@@ -387,11 +564,46 @@ serve(async (req) => {
 
     console.log('🔍 Performing comprehensive AI-powered visibility analysis...')
     
-    // Initialize Supabase client for data queries
+// Initialize Supabase client for data queries
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
+
+    // Google Services Integration
+    const useGoogleServices = Deno.env.get('USE_GOOGLE_SERVICES') === 'true';
+    console.log('🔌 Using Google Services:', useGoogleServices);
+    
+    let gmbMetrics = null;
+    let ga4Metrics = null;
+    let adsMetrics = null;
+
+    if (useGoogleServices && data.leadId) {
+      try {
+        // Get Google OAuth tokens for this user/lead
+        const { data: leadData } = await supabase
+          .from('visibility_check_leads')
+          .select('user_id, email')
+          .eq('id', data.leadId)
+          .single();
+
+        if (leadData?.user_id) {
+          // Fetch Google metrics from authenticated APIs
+          gmbMetrics = await fetchGMBMetrics(data, leadData.user_id, supabase);
+          ga4Metrics = await fetchGA4Metrics(data, leadData.user_id, supabase);
+          adsMetrics = await fetchGoogleAdsMetrics(data, leadData.user_id, supabase);
+          
+          console.log('📊 Fetched Google Services data:', {
+            gmb: !!gmbMetrics,
+            ga4: !!ga4Metrics, 
+            ads: !!adsMetrics
+          });
+        }
+      } catch (error) {
+        console.warn('⚠️ Google Services API error, falling back to mock data:', error.message);
+        // Continue with mock data as fallback
+      }
+    }
 
     // 2.1.1: Load subcategories for dynamic prompting
     const { data: subcats } = await supabase
@@ -418,7 +630,7 @@ serve(async (req) => {
     const benchmarks = benchmarkData || [];
     console.log('📊 Loaded industry benchmarks:', benchmarks.length);
     
-    // Prepare data for Bedrock analysis
+    // Prepare data for Bedrock analysis with Google metrics
     const analysisInput = {
       businessName: data.businessName,
       mainCategory: data.mainCategory,
@@ -429,7 +641,12 @@ serve(async (req) => {
       instagramCandidates: instagramCandidates,
       benchmarks: data.benchmarks,
       industry: data.mainCategory,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      // Real Google data integration
+      gmbMetrics,
+      ga4Metrics,
+      adsMetrics,
+      hasGoogleData: !!(gmbMetrics || ga4Metrics || adsMetrics)
     };
 
     // Dual-Pipeline: Feature Flag + Fallback Logic

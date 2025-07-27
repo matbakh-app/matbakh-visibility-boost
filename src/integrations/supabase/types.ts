@@ -291,10 +291,13 @@ export type Database = {
       business_profiles: {
         Row: {
           address: string
+          ads_metrics: Json | null
           business_name: string
           created_at: string | null
           facebook_page_id: string | null
+          ga4_metrics: Json | null
           gmb_connected: boolean | null
+          gmb_metrics: Json | null
           go_live: boolean | null
           google_connected: boolean | null
           google_place_id: string | null
@@ -320,10 +323,13 @@ export type Database = {
         }
         Insert: {
           address: string
+          ads_metrics?: Json | null
           business_name: string
           created_at?: string | null
           facebook_page_id?: string | null
+          ga4_metrics?: Json | null
           gmb_connected?: boolean | null
+          gmb_metrics?: Json | null
           go_live?: boolean | null
           google_connected?: boolean | null
           google_place_id?: string | null
@@ -349,10 +355,13 @@ export type Database = {
         }
         Update: {
           address?: string
+          ads_metrics?: Json | null
           business_name?: string
           created_at?: string | null
           facebook_page_id?: string | null
+          ga4_metrics?: Json | null
           gmb_connected?: boolean | null
+          gmb_metrics?: Json | null
           go_live?: boolean | null
           google_connected?: boolean | null
           google_place_id?: string | null
@@ -1111,43 +1120,55 @@ export type Database = {
       google_oauth_tokens: {
         Row: {
           access_token: string
+          ads_customer_id: string | null
           consent_given: boolean | null
           consent_timestamp: string | null
           created_at: string | null
           email: string | null
           expires_at: string | null
+          ga4_property_id: string | null
+          gmb_account_id: string | null
           google_user_id: string
           id: string
           refresh_token: string | null
           scopes: string[] | null
+          service_type: string | null
           updated_at: string | null
           user_id: string | null
         }
         Insert: {
           access_token: string
+          ads_customer_id?: string | null
           consent_given?: boolean | null
           consent_timestamp?: string | null
           created_at?: string | null
           email?: string | null
           expires_at?: string | null
+          ga4_property_id?: string | null
+          gmb_account_id?: string | null
           google_user_id: string
           id?: string
           refresh_token?: string | null
           scopes?: string[] | null
+          service_type?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
         Update: {
           access_token?: string
+          ads_customer_id?: string | null
           consent_given?: boolean | null
           consent_timestamp?: string | null
           created_at?: string | null
           email?: string | null
           expires_at?: string | null
+          ga4_property_id?: string | null
+          gmb_account_id?: string | null
           google_user_id?: string
           id?: string
           refresh_token?: string | null
           scopes?: string[] | null
+          service_type?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -3526,10 +3547,13 @@ export type Database = {
         }
         Returns: {
           address: string
+          ads_metrics: Json | null
           business_name: string
           created_at: string | null
           facebook_page_id: string | null
+          ga4_metrics: Json | null
           gmb_connected: boolean | null
+          gmb_metrics: Json | null
           go_live: boolean | null
           google_connected: boolean | null
           google_place_id: string | null

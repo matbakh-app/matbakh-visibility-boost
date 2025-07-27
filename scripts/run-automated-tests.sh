@@ -135,6 +135,20 @@ else
     echo '{"test": "provider_tracking_tests", "status": "failed", "details": "Provider tracking tests failed"}' | jq '.' >> $RESULTS_FILE
 fi
 
+# 5.3. Google Services Integration Tests
+log_info "Führe Google Services Integration Tests aus..."
+
+npx vitest run test/integration/google-services.test.ts 2>&1 | tee /tmp/google_services_test_output.log
+GOOGLE_SERVICES_EXIT_CODE=${PIPESTATUS[0]}
+
+if [ $GOOGLE_SERVICES_EXIT_CODE -eq 0 ]; then
+    log_success "Google Services Tests bestanden"
+    echo '{"test": "google_services_tests", "status": "passed", "details": "Google API integration verified"}' | jq '.' >> $RESULTS_FILE
+else
+    log_error "Google Services Tests fehlgeschlagen"
+    echo '{"test": "google_services_tests", "status": "failed", "details": "Google services integration tests failed"}' | jq '.' >> $RESULTS_FILE
+fi
+
 # 6. End-to-End API Tests
 log_info "Führe E2E API Tests aus..."
 
