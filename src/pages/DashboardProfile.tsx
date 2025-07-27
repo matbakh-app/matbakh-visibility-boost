@@ -12,6 +12,7 @@ import { useGoogleConnection } from '@/hooks/useGoogleConnection';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, User, Building2, Mail, Phone, Globe, Settings, Shield } from 'lucide-react';
+import { GoogleOAuthManager } from '@/components/onboarding/GoogleOAuthManager';
 
 export default function DashboardProfile() {
   const { t } = useTranslation(['common', 'dashboard']);
@@ -213,39 +214,25 @@ export default function DashboardProfile() {
         </CardContent>
       </Card>
 
-      {/* Google Connection Status */}
+      {/* Google Services Integration */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="w-5 h-5" />
-            {t('dashboard:profile.googleConnection', 'Google-Verbindung')}
+            Google Services
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={`w-3 h-3 rounded-full ${googleConnection?.isGoogleConnected ? 'bg-green-500' : 'bg-red-500'}`} />
-              <div>
-                <p className="font-medium">
-                  {googleConnection?.isGoogleConnected 
-                    ? t('dashboard:profile.connected', 'Verbunden') 
-                    : t('dashboard:profile.notConnected', 'Nicht verbunden')
-                  }
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {googleConnection?.isGoogleConnected 
-                    ? t('dashboard:profile.connectedDesc', 'Ihr Google-Konto ist mit matbakh.app verbunden')
-                    : t('dashboard:profile.notConnectedDesc', 'Verbinden Sie Ihr Google-Konto für vollständige Funktionalität')
-                  }
-                </p>
-              </div>
-            </div>
-            {!googleConnection?.isGoogleConnected && (
-              <Button onClick={handleGoogleReconnect} variant="outline">
-                {t('dashboard:profile.connect', 'Verbinden')}
-              </Button>
-            )}
-          </div>
+          {profile?.partner?.user_id && (
+            <GoogleOAuthManager 
+              userId={profile.partner.user_id} 
+              onConnectionUpdate={() => {
+                refetch();
+                // Also refetch Google connection status
+                window.location.reload();
+              }}
+            />
+          )}
         </CardContent>
       </Card>
 

@@ -149,6 +149,20 @@ else
     echo '{"test": "google_services_tests", "status": "failed", "details": "Google services integration tests failed"}' | jq '.' >> $RESULTS_FILE
 fi
 
+# 5.4. Google OAuth Flow Tests
+log_info "Führe Google OAuth Flow Tests aus..."
+
+npx vitest run test/integration/google-oauth-flow.test.ts 2>&1 | tee /tmp/google_oauth_test_output.log
+GOOGLE_OAUTH_EXIT_CODE=${PIPESTATUS[0]}
+
+if [ $GOOGLE_OAUTH_EXIT_CODE -eq 0 ]; then
+    log_success "Google OAuth Flow Tests bestanden"
+    echo '{"test": "google_oauth_flow_tests", "status": "passed", "details": "OAuth integration and token management verified"}' | jq '.' >> $RESULTS_FILE
+else
+    log_error "Google OAuth Flow Tests fehlgeschlagen"
+    echo '{"test": "google_oauth_flow_tests", "status": "failed", "details": "OAuth flow tests failed"}' | jq '.' >> $RESULTS_FILE
+fi
+
 # 6. End-to-End API Tests
 log_info "Führe E2E API Tests aus..."
 

@@ -37,6 +37,7 @@ import AdminLayout from '@/components/layout/AdminLayout';
 import VisibilityCheckPage from '@/components/visibility/VisibilityCheckPage';
 import CookieConsentBanner from '@/components/CookieConsentBanner';
 import { DashboardRedirect } from '@/components/DashboardRedirect';
+import { GoogleOAuthCallback } from '@/components/auth/GoogleOAuthCallback';
 
 // Legal pages
 import Impressum from '@/pages/legal/Impressum';
@@ -80,6 +81,7 @@ function App() {
                 <Route path="checkout-success" element={<CheckoutSuccess />} />
                 <Route path="visibility-check" element={<VisibilityCheckPage />} />
                 <Route path="visibility-check/verified" element={<VisibilityCheckVerified />} />
+                <Route path="auth/google/callback" element={<GoogleOAuthCallback />} />
                 <Route path="notes" element={<NotesPage />} />
                 
               {/* Legal pages - German */}
