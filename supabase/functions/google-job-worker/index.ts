@@ -73,6 +73,9 @@ Deno.serve(async (req) => {
           case 'publish_post':
             jobResult = await publishPost(job.payload, supabase);
             break;
+          case 'generate_visibility_report':
+            jobResult = await generateVisibilityReport(job.payload, supabase);
+            break;
           default:
             throw new Error(`Unknown job type: ${job.job_type}`);
         }
@@ -561,4 +564,87 @@ async function publishPost(payload: any, supabase: any) {
     message: 'Post published successfully',
     post_id: result.name,
   };
+}
+
+// New function to handle visibility report generation
+async function generateVisibilityReport(payload: any, supabase: any) {
+  console.log('🔄 Processing visibility report generation job:', payload);
+  
+  const { lead_id, email } = payload;
+  
+  if (!lead_id) {
+    throw new Error('Lead ID is required for visibility report generation');
+  }
+
+  try {
+    // Verify lead exists and is in completed state
+    const { data: lead, error: leadError } = await supabase
+      .from('visibility_check_leads')
+      .select('*')
+      .eq('id', lead_id)
+      .single();
+
+    if (leadError || !lead) {
+      throw new Error(`Lead not found: ${leadError?.message || 'Unknown error'}`);
+    }
+
+    if (lead.status !== 'completed') {
+      throw new Error(`Lead status is '${lead.status}', expected 'completed' for PDF generation`);
+    }
+
+    console.log('📄 Calling PDF generation function for lead:', lead_id);
+
+    // Call the PDF generation function
+    const { data: pdfResult, error: pdfError } = await supabase.functions.invoke('generate-pdf-report', {
+      body: { leadId: lead_id }
+    });
+
+    if (pdfError) {
+      console.error('❌ PDF generation failed:', pdfError);
+      throw new Error(`PDF generation failed: ${pdfError.message}`);
+    }
+
+    console.log('✅ PDF report generated successfully:', pdfResult);
+
+    // Log successful operation  
+    await supabase.from('visibility_check_actions').insert({
+      lead_id: lead_id,
+      action_type: 'report_generated_via_job',
+      details: { 
+        job_processed: true,
+        pdf_result: pdfResult,
+        processing_time: new Date().toISOString()
+      }
+    });
+
+    return { 
+      success: true, 
+      message: 'Visibility report generated successfully',
+      lead_id: lead_id,
+      report_url: pdfResult?.downloadUrl || null
+    };
+
+  } catch (error) {
+    console.error('❌ Error in generateVisibilityReport:', error);
+    
+    // Update lead with error information
+    await supabase
+      .from('visibility_check_leads')
+      .update({ 
+        analysis_error_message: `PDF generation job failed: ${error.message}`
+      })
+      .eq('id', lead_id);
+
+    // Log failed operation
+    await supabase.from('visibility_check_actions').insert({
+      lead_id: lead_id,
+      action_type: 'report_generation_failed',
+      details: { 
+        error_message: error.message,
+        processing_time: new Date().toISOString()
+      }
+    });
+
+    throw error;
+  }
 }
