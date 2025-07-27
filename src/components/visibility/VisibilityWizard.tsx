@@ -186,7 +186,21 @@ const VisibilityWizard: React.FC = () => {
       if (currentLeadId && stepTwoData?.email && stepOneData?.businessName) {
         try {
           console.log('📧 Sending double opt-in email...');
-          await sendDoubleOptInEmail(currentLeadId, stepTwoData.email, stepOneData.businessName);
+          
+          const { data: emailResponse, error: emailError } = await supabase.functions.invoke('send-visibility-report', {
+            body: {
+              leadId: currentLeadId,
+              email: stepTwoData.email,
+              businessName: stepOneData.businessName,
+              reportType: 'double_optin'
+            }
+          });
+
+          if (emailError) {
+            console.error('❌ Error sending double opt-in email:', emailError);
+          } else {
+            console.log('✅ Double opt-in email sent successfully');
+          }
         } catch (emailError) {
           console.error('❌ Error sending double opt-in email:', emailError);
         }
@@ -251,17 +265,61 @@ const VisibilityWizard: React.FC = () => {
     }
   };
 
-  // Show results if analysis is complete
+  // Show double opt-in confirmation if analysis is complete
   if (analysisResult) {
     return (
-      <VisibilityResults
-        businessName={stepOneData?.businessName || ''}
-        analysisResult={analysisResult}
-        onRequestDetailedReport={handleRequestDetailedReport}
-        onNewAnalysis={restart}
-        reportRequested={reportRequested}
-        email=""
-      />
+      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-8">
+        <div className="text-center py-16 px-6 max-w-xl mx-auto">
+          <div className="mb-6">
+            <svg className="mx-auto h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            Analyse abgeschlossen!
+          </h2>
+          
+          <p className="text-gray-600 mb-6">
+            Vielen Dank für Ihr Interesse an unserem Sichtbarkeits-Check für <strong>{stepOneData?.businessName}</strong>.
+          </p>
+          
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+            <h3 className="text-lg font-semibold text-blue-900 mb-2">
+              📧 Bestätigungs-E-Mail versendet
+            </h3>
+            <p className="text-blue-800 text-sm">
+              Wir haben Ihnen eine E-Mail an <strong>{stepTwoData?.email}</strong> gesendet. 
+              Bitte bestätigen Sie Ihre E-Mail-Adresse, um Ihren detaillierten Sichtbarkeits-Report zu erhalten.
+            </p>
+          </div>
+          
+          <div className="space-y-3 text-sm text-gray-600">
+            <p>✅ Ihr Gesamtscore: <strong>{analysisResult.overallScore}/100</strong></p>
+            <p>📊 {analysisResult.platformAnalyses?.length || 0} Plattformen analysiert</p>
+            <p>🎯 {analysisResult.quickWins?.length || 0} sofortige Verbesserungen identifiziert</p>
+          </div>
+          
+          <div className="mt-8 space-y-4">
+            <p className="text-xs text-gray-500">
+              E-Mail nicht erhalten? Prüfen Sie Ihren Spam-Ordner oder 
+              <button 
+                onClick={restart}
+                className="text-blue-600 hover:text-blue-800 underline ml-1"
+              >
+                starten Sie eine neue Analyse
+              </button>
+            </p>
+            
+            <button
+              onClick={restart}
+              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-lg text-sm transition-colors"
+            >
+              Neue Analyse starten
+            </button>
+          </div>
+        </div>
+      </div>
     );
   }
 
