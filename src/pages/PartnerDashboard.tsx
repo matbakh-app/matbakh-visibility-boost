@@ -1,16 +1,38 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { RedeemCodeForm } from '@/components/redeem/RedeemCodeForm';
+import { CampaignReport } from '@/components/redeem/CampaignReport';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const PartnerDashboard: React.FC = () => {
+  const [activeTab, setActiveTab] = useState('overview');
+
+  // Mock partner ID - in real app would come from auth context
+  const partnerId = "your-partner-id";
+
+  const handleCodeGenerated = (code: string) => {
+    console.log('New code generated:', code);
+    // Here you could show a success toast or update the campaign report
+  };
+
   return (
     <DashboardLayout>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-gray-600">Überblick über Ihre Restaurant-Sichtbarkeit</p>
+        <h1 className="text-3xl font-bold">Partner Dashboard</h1>
+        <p className="text-gray-600">Überblick über Ihre Restaurant-Sichtbarkeit und Marketing-Tools</p>
       </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="overview">Übersicht</TabsTrigger>
+          <TabsTrigger value="redeem-codes">Redeem-Codes</TabsTrigger>
+          <TabsTrigger value="campaign-stats">Kampagnen-Statistik</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-6">
 
       <div className="grid md:grid-cols-3 gap-6 mb-8">
         <Card>
@@ -90,6 +112,26 @@ const PartnerDashboard: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+        </TabsContent>
+
+        <TabsContent value="redeem-codes" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Neuen Redeem-Code generieren</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RedeemCodeForm 
+                partnerId={partnerId} 
+                onCodeGenerated={handleCodeGenerated}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="campaign-stats" className="space-y-6">
+          <CampaignReport partnerId={partnerId} />
+        </TabsContent>
+      </Tabs>
     </DashboardLayout>
   );
 };
