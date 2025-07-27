@@ -3102,6 +3102,7 @@ export type Database = {
         Row: {
           action_recommendations: Json | null
           analysis_results: Json | null
+          benchmark_insights: string | null
           benchmarks: Json | null
           category_insights: Json | null
           created_at: string | null
@@ -3114,6 +3115,7 @@ export type Database = {
           platform_analyses: Json | null
           provider: string | null
           quick_wins: Json | null
+          swot_analysis: Json | null
           swot_opportunities: Json | null
           swot_strengths: Json | null
           swot_threats: Json | null
@@ -3124,6 +3126,7 @@ export type Database = {
         Insert: {
           action_recommendations?: Json | null
           analysis_results?: Json | null
+          benchmark_insights?: string | null
           benchmarks?: Json | null
           category_insights?: Json | null
           created_at?: string | null
@@ -3136,6 +3139,7 @@ export type Database = {
           platform_analyses?: Json | null
           provider?: string | null
           quick_wins?: Json | null
+          swot_analysis?: Json | null
           swot_opportunities?: Json | null
           swot_strengths?: Json | null
           swot_threats?: Json | null
@@ -3146,6 +3150,7 @@ export type Database = {
         Update: {
           action_recommendations?: Json | null
           analysis_results?: Json | null
+          benchmark_insights?: string | null
           benchmarks?: Json | null
           category_insights?: Json | null
           created_at?: string | null
@@ -3158,6 +3163,7 @@ export type Database = {
           platform_analyses?: Json | null
           provider?: string | null
           quick_wins?: Json | null
+          swot_analysis?: Json | null
           swot_opportunities?: Json | null
           swot_strengths?: Json | null
           swot_threats?: Json | null
