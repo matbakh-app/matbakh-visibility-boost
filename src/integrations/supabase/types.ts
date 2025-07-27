@@ -476,6 +476,13 @@ export type Database = {
             referencedRelation: "visibility_check_leads"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "competitive_analysis_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "visibility_full_results"
+            referencedColumns: ["lead_id"]
+          },
         ]
       }
       consultation_requests: {
@@ -1803,6 +1810,13 @@ export type Database = {
             referencedRelation: "visibility_check_leads"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "platform_recommendations_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "visibility_full_results"
+            referencedColumns: ["lead_id"]
+          },
         ]
       }
       profiles: {
@@ -2574,6 +2588,13 @@ export type Database = {
             referencedRelation: "visibility_check_leads"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "swot_analysis_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "visibility_full_results"
+            referencedColumns: ["lead_id"]
+          },
         ]
       }
       unclaimed_business_profiles: {
@@ -2663,6 +2684,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "visibility_check_leads"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unclaimed_business_profiles_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "visibility_full_results"
+            referencedColumns: ["lead_id"]
           },
         ]
       }
@@ -2940,6 +2968,13 @@ export type Database = {
             referencedRelation: "visibility_check_leads"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "visibility_check_actions_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "visibility_full_results"
+            referencedColumns: ["lead_id"]
+          },
         ]
       }
       visibility_check_leads: {
@@ -3180,6 +3215,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "visibility_check_results_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "visibility_full_results"
+            referencedColumns: ["lead_id"]
+          },
+          {
             foreignKeyName: "visibility_check_results_partner_id_fkey"
             columns: ["partner_id"]
             isOneToOne: false
@@ -3327,6 +3369,24 @@ export type Database = {
           sort_order?: number | null
           synonyms?: string[] | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      visibility_full_results: {
+        Row: {
+          analysis_date: string | null
+          analysis_results: Json | null
+          benchmark_insights: string | null
+          business_name: string | null
+          category_insights: Json | null
+          email: string | null
+          lead_id: string | null
+          overall_score: number | null
+          platform_analyses: Json | null
+          quick_wins: Json | null
+          report_url: string | null
+          status: string | null
+          swot_analysis: Json | null
         }
         Relationships: []
       }
