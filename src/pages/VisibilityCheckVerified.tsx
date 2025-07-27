@@ -64,6 +64,7 @@ const VisibilityCheckVerified: React.FC = () => {
 
   const isSuccess = status === 'success' && leadData?.double_optin_confirmed;
   const hasReport = leadData?.report_sent_at;
+  const hasReportUrl = leadData?.report_url;
 
   return (
     <AppLayout>
@@ -133,6 +134,19 @@ const VisibilityCheckVerified: React.FC = () => {
                         Report wurde am {new Date(hasReport).toLocaleString('de-DE')} versendet
                       </span>
                     </div>
+                    {hasReportUrl && (
+                      <div className="mt-3">
+                        <a 
+                          href={hasReportUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center space-x-2 text-primary hover:text-primary/80"
+                        >
+                          <FileText className="w-4 h-4" />
+                          <span>PDF-Report herunterladen</span>
+                        </a>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>

@@ -266,7 +266,7 @@ const handler = async (req: Request): Promise<Response> => {
           businessName,
           email,
           analysisData: analysisData.analysis_results,
-          reportUrl: `${Deno.env.get('SUPABASE_URL')?.replace('/rest/v1', '')}/functions/v1/generate-pdf-report?leadId=${leadId}`
+          reportUrl: `${Deno.env.get('PUBLIC_APP_URL') || 'https://matbakh.app'}/visibility-check/verified?leadId=${leadId}&status=success`
         })
       );
 
