@@ -107,6 +107,20 @@ else
     echo '{"test": "integration_tests", "status": "failed", "details": "Integration tests failed"}' | jq '.' >> $RESULTS_FILE
 fi
 
+# 5.1. Dual-Pipeline Tests
+log_info "Führe Dual-Pipeline Tests aus..."
+
+npm run test test/integration/full-visibility-pipeline.test.ts 2>&1 | tee /tmp/dual_pipeline_test_output.log
+DUAL_PIPELINE_EXIT_CODE=${PIPESTATUS[0]}
+
+if [ $DUAL_PIPELINE_EXIT_CODE -eq 0 ]; then
+    log_success "Dual-Pipeline Tests bestanden"
+    echo '{"test": "dual_pipeline_tests", "status": "passed", "details": "Feature flag and fallback tests passed"}' | jq '.' >> $RESULTS_FILE
+else
+    log_error "Dual-Pipeline Tests fehlgeschlagen"
+    echo '{"test": "dual_pipeline_tests", "status": "failed", "details": "Feature flag and fallback tests failed"}' | jq '.' >> $RESULTS_FILE
+fi
+
 # 6. End-to-End API Tests
 log_info "Führe E2E API Tests aus..."
 
