@@ -7,13 +7,17 @@ import { Form, FormField, FormItem, FormLabel, FormMessage } from '@/components/
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useTranslation } from 'react-i18next';
-import { Globe, Facebook, Instagram, Mail, Shield, Linkedin } from 'lucide-react';
+import { Globe, Facebook, Instagram, Mail, Shield, Linkedin, AlertCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { HelpCircle } from 'lucide-react';
 import InstagramCandidatePicker from './InstagramCandidatePicker';
 
 const stepTwoSchema = z.object({
+  hasSocialMedia: z.enum(['yes', 'no'], {
+    required_error: 'Bitte wählen Sie eine Option aus'
+  }),
   website: z.string().url('Bitte gültige URL eingeben').optional().or(z.literal('')),
   instagram: z.string().optional(),
   facebook: z.string().optional(),
@@ -28,21 +32,23 @@ const stepTwoSchema = z.object({
   }),
   marketingConsent: z.boolean().optional(),
 }).superRefine((data, ctx) => {
-  // Mindestens Instagram oder Facebook muss angegeben werden
-  const hasInstagram = !!data.instagram?.trim();
-  const hasFacebook = !!data.facebook?.trim();
-  
-  if (!hasInstagram && !hasFacebook) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ['instagram'],
-      message: 'Bitte gib mindestens Instagram oder Facebook an',
-    });
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ['facebook'],
-      message: 'Bitte gib mindestens Instagram oder Facebook an',
-    });
+  // Wenn "Ja" zu Social Media gewählt wurde, muss mindestens ein Feld ausgefüllt sein
+  if (data.hasSocialMedia === 'yes') {
+    const hasInstagram = !!data.instagram?.trim();
+    const hasFacebook = !!data.facebook?.trim();
+    
+    if (!hasInstagram && !hasFacebook) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['instagram'],
+        message: 'Bitte geben Sie mindestens Instagram oder Facebook an',
+      });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['facebook'],
+        message: 'Bitte geben Sie mindestens Instagram oder Facebook an',
+      });
+    }
   }
 });
 
@@ -76,6 +82,7 @@ const VisibilityStepTwo: React.FC<Props> = ({
   const form = useForm<StepTwoValues>({
     resolver: zodResolver(stepTwoSchema),
     defaultValues: {
+      hasSocialMedia: undefined,
       website: '',
       instagram: '',
       facebook: '',
@@ -90,6 +97,8 @@ const VisibilityStepTwo: React.FC<Props> = ({
       ...defaultValues,
     },
   });
+
+  const hasSocialMedia = form.watch('hasSocialMedia');
 
   // Show manual input if we have manual default value or user selected manual
   useEffect(() => {
@@ -114,6 +123,15 @@ const VisibilityStepTwo: React.FC<Props> = ({
     if (selectedInstagramCandidate && selectedInstagramCandidate !== 'manual') {
       values.instagram = selectedInstagramCandidate;
     }
+    
+    // Clear social media fields if user said "no" to having social media
+    if (values.hasSocialMedia === 'no') {
+      values.instagram = '';
+      values.facebook = '';
+      values.tiktok = '';
+      values.linkedin = '';
+    }
+    
     onNext(values);
   };
 
@@ -134,130 +152,179 @@ const VisibilityStepTwo: React.FC<Props> = ({
     <TooltipProvider>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-          {/* Social Media Section */}
+          {/* Social Media Question */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-red-600">
-                Social Media Profile (Pflicht)
+              <CardTitle className="text-lg font-semibold">
+                Social Media Profile
               </CardTitle>
               <p className="text-sm text-gray-600">
-                Mindestens Instagram oder Facebook muss angegeben werden für eine vollständige Analyse.
+                Haben Sie einen Instagram- oder Facebook-Account für dieses Unternehmen?
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Instagram Section */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <FormLabel className="flex items-center gap-2">
-                    <Instagram className="w-4 h-4" />
-                    Instagram *
-                  </FormLabel>
-                  {renderTooltip('Instagram-Handle oder Profil-URL für die Analyse Ihrer Instagram-Präsenz.')}
-                </div>
-                
-                {/* Show candidates if available and no manual input yet */}
-                {instagramCandidates.length > 0 && !showManualInstagram && (
-                  <InstagramCandidatePicker
-                    candidates={instagramCandidates}
-                    onSelect={handleInstagramCandidateSelect}
-                    value={selectedInstagramCandidate}
-                  />
+              <FormField
+                control={form.control}
+                name="hasSocialMedia"
+                render={({ field }) => (
+                  <FormItem className="space-y-3">
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      className="flex flex-col space-y-2"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="yes" id="social-yes" />
+                        <label htmlFor="social-yes" className="text-sm font-medium cursor-pointer">
+                          Ja, ich habe Social Media Accounts
+                        </label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="no" id="social-no" />
+                        <label htmlFor="social-no" className="text-sm font-medium cursor-pointer">
+                          Nein, ich habe keine Social Media Accounts für dieses Unternehmen
+                        </label>
+                      </div>
+                    </RadioGroup>
+                    <FormMessage />
+                  </FormItem>
                 )}
+              />
 
-                {/* Manual Instagram input */}
-                {(showManualInstagram || instagramCandidates.length === 0) && (
+              {/* Info when no social media */}
+              {hasSocialMedia === 'no' && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm text-amber-800 font-medium mb-1">
+                      Eingeschränkte Sichtbarkeits-Analyse
+                    </p>
+                    <p className="text-sm text-amber-700">
+                      Ohne Social Media Profile ist der Check eingeschränkt (z.B. keine Social Benchmarks). 
+                      Nach der Analyse können Sie jederzeit ein Social-Profil nachtragen für eine vollständige Bewertung.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Social Media Fields - nur wenn "Ja" gewählt */}
+              {hasSocialMedia === 'yes' && (
+                <div className="space-y-4 pt-4 border-t">
+                  {/* Instagram Section */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <FormLabel className="flex items-center gap-2">
+                        <Instagram className="w-4 h-4" />
+                        Instagram *
+                      </FormLabel>
+                      {renderTooltip('Instagram-Handle oder Profil-URL für die Analyse Ihrer Instagram-Präsenz.')}
+                    </div>
+                    
+                    {/* Show candidates if available and no manual input yet */}
+                    {instagramCandidates.length > 0 && !showManualInstagram && (
+                      <InstagramCandidatePicker
+                        candidates={instagramCandidates}
+                        onSelect={handleInstagramCandidateSelect}
+                        value={selectedInstagramCandidate}
+                      />
+                    )}
+
+                    {/* Manual Instagram input */}
+                    {(showManualInstagram || instagramCandidates.length === 0) && (
+                      <FormField
+                        control={form.control}
+                        name="instagram"
+                        render={({ field }) => (
+                          <FormItem>
+                            <Input 
+                              placeholder="@meinrestaurant oder https://instagram.com/meinrestaurant" 
+                              {...field} 
+                            />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+
+                    {/* Toggle back to candidates if they exist */}
+                    {instagramCandidates.length > 0 && showManualInstagram && (
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setShowManualInstagram(false)}
+                      >
+                        ← Zurück zu Vorschlägen
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Facebook */}
                   <FormField
                     control={form.control}
-                    name="instagram"
+                    name="facebook"
                     render={({ field }) => (
                       <FormItem>
+                        <div className="flex items-center gap-2">
+                          <FormLabel className="flex items-center gap-2">
+                            <Facebook className="w-4 h-4" />
+                            Facebook *
+                          </FormLabel>
+                          {renderTooltip('Facebook-Seite für Ihr Unternehmen.')}
+                        </div>
                         <Input 
-                          placeholder="@meinrestaurant oder https://instagram.com/meinrestaurant" 
+                          placeholder="Seitenname oder https://facebook.com/meine-seite" 
                           {...field} 
                         />
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                )}
 
-                {/* Toggle back to candidates if they exist */}
-                {instagramCandidates.length > 0 && showManualInstagram && (
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setShowManualInstagram(false)}
-                  >
-                    ← Zurück zu Vorschlägen
-                  </Button>
-                )}
-              </div>
+                  {/* TikTok */}
+                  <FormField
+                    control={form.control}
+                    name="tiktok"
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="flex items-center gap-2">
+                          <FormLabel className="flex items-center gap-2">
+                            📱 TikTok (optional)
+                          </FormLabel>
+                          {renderTooltip('TikTok-Profil für zukünftige Analysen (derzeit in Vorbereitung).')}
+                        </div>
+                        <Input 
+                          placeholder="@meinrestaurant oder https://tiktok.com/@meinrestaurant" 
+                          {...field} 
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              {/* Facebook */}
-              <FormField
-                control={form.control}
-                name="facebook"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center gap-2">
-                      <FormLabel className="flex items-center gap-2">
-                        <Facebook className="w-4 h-4" />
-                        Facebook *
-                      </FormLabel>
-                      {renderTooltip('Facebook-Seite für Ihr Unternehmen.')}
-                    </div>
-                    <Input 
-                      placeholder="Seitenname oder https://facebook.com/meine-seite" 
-                      {...field} 
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* TikTok */}
-              <FormField
-                control={form.control}
-                name="tiktok"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center gap-2">
-                      <FormLabel className="flex items-center gap-2">
-                        📱 TikTok (optional)
-                      </FormLabel>
-                      {renderTooltip('TikTok-Profil für zukünftige Analysen (derzeit in Vorbereitung).')}
-                    </div>
-                    <Input 
-                      placeholder="@meinrestaurant oder https://tiktok.com/@meinrestaurant" 
-                      {...field} 
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* LinkedIn */}
-              <FormField
-                control={form.control}
-                name="linkedin"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center gap-2">
-                      <FormLabel className="flex items-center gap-2">
-                        <Linkedin className="w-4 h-4" />
-                        LinkedIn (optional)
-                      </FormLabel>
-                      {renderTooltip('LinkedIn-Unternehmensseite für B2B-Analysen.')}
-                    </div>
-                    <Input 
-                      placeholder="https://linkedin.com/company/mein-unternehmen" 
-                      {...field} 
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  {/* LinkedIn */}
+                  <FormField
+                    control={form.control}
+                    name="linkedin"
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="flex items-center gap-2">
+                          <FormLabel className="flex items-center gap-2">
+                            <Linkedin className="w-4 h-4" />
+                            LinkedIn (optional)
+                          </FormLabel>
+                          {renderTooltip('LinkedIn-Unternehmensseite für B2B-Analysen.')}
+                        </div>
+                        <Input 
+                          placeholder="https://linkedin.com/company/mein-unternehmen" 
+                          {...field} 
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
             </CardContent>
           </Card>
 
