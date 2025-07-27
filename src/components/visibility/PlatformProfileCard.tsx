@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ExternalLink, Users, CheckCircle2, AlertCircle, Clock, Calendar } from 'lucide-react';
+import { ExternalLink, Users, CheckCircle2, AlertCircle, Clock, Calendar, Star, BarChart3 } from 'lucide-react';
 
 interface PlatformData {
   platform: 'google' | 'facebook' | 'instagram';
@@ -22,6 +22,9 @@ interface PlatformData {
   askSectionVisible?: boolean;
   isListingComplete?: boolean;
   category?: string;
+  gmb_metrics?: any;
+  ga4_metrics?: any;
+  ads_metrics?: any;
 }
 
 const getPlatformIcon = (platform: string) => {
@@ -251,6 +254,29 @@ const PlatformProfileCard: React.FC<{ platform: PlatformData }> = ({ platform })
           </div>
         )}
 
+        {/* Google Metrics Integration */}
+        {platform.platform === 'google' && platform.gmb_metrics && Object.keys(platform.gmb_metrics).length > 0 && (
+          <div className="bg-blue-50 p-3 rounded-lg space-y-2">
+            <h5 className="font-medium text-blue-700 text-sm flex items-center gap-1">
+              <BarChart3 className="w-4 h-4" />
+              Live Google Metriken
+            </h5>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              {platform.gmb_metrics.rating && (
+                <div className="flex items-center gap-1">
+                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                  <span>{platform.gmb_metrics.rating}</span>
+                </div>
+              )}
+              {platform.gmb_metrics.reviewCount !== undefined && (
+                <div className="text-gray-600">
+                  {platform.gmb_metrics.reviewCount} Bewertungen
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        
         {/* Category Info */}
         {platform.category && (
           <div className="text-xs text-gray-600">

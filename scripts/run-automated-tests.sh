@@ -163,6 +163,34 @@ else
     echo '{"test": "google_oauth_flow_tests", "status": "failed", "details": "OAuth flow tests failed"}' | jq '.' >> $RESULTS_FILE
 fi
 
+# 5.5. Google Metrics UI Tests
+log_info "Führe Google Metrics UI Tests aus..."
+
+npx vitest run test/unit/visibility-metrics-ui.test.tsx 2>&1 | tee /tmp/ui_metrics_test_output.log
+UI_METRICS_EXIT_CODE=${PIPESTATUS[0]}
+
+if [ $UI_METRICS_EXIT_CODE -eq 0 ]; then
+    log_success "Google Metrics UI Tests bestanden"
+    echo '{"test": "ui_metrics_tests", "status": "passed", "details": "UI component rendering with Google metrics verified"}' | jq '.' >> $RESULTS_FILE
+else
+    log_error "Google Metrics UI Tests fehlgeschlagen"
+    echo '{"test": "ui_metrics_tests", "status": "failed", "details": "UI metrics tests failed"}' | jq '.' >> $RESULTS_FILE
+fi
+
+# 5.6. E2E Google Metrics Integration Tests
+log_info "Führe E2E Google Metrics Integration Tests aus..."
+
+npx playwright test test/e2e/google-metrics-integration.spec.ts 2>&1 | tee /tmp/e2e_metrics_test_output.log
+E2E_METRICS_EXIT_CODE=${PIPESTATUS[0]}
+
+if [ $E2E_METRICS_EXIT_CODE -eq 0 ]; then
+    log_success "E2E Google Metrics Tests bestanden"
+    echo '{"test": "e2e_metrics_tests", "status": "passed", "details": "End-to-end Google metrics integration verified"}' | jq '.' >> $RESULTS_FILE
+else
+    log_error "E2E Google Metrics Tests fehlgeschlagen"
+    echo '{"test": "e2e_metrics_tests", "status": "failed", "details": "E2E metrics tests failed"}' | jq '.' >> $RESULTS_FILE
+fi
+
 # 6. End-to-End API Tests
 log_info "Führe E2E API Tests aus..."
 

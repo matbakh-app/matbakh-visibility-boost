@@ -72,7 +72,68 @@ export const VisibilityReportEmail = ({
                 </Text>
               ))}
             </Section>
-          )}
+           )}
+           
+           {/* Google Metrics Section */}
+           {(analysisData?.gmb_metrics || analysisData?.ga4_metrics || analysisData?.ads_metrics) && (
+             <Section>
+               <Heading style={h2}>Google Services Metriken:</Heading>
+               
+               {analysisData.gmb_metrics && Object.keys(analysisData.gmb_metrics).length > 0 && (
+                 <Section>
+                   <Text style={text}><strong>Google My Business:</strong></Text>
+                   {analysisData.gmb_metrics.rating && (
+                     <Text style={platformText}>• Bewertung: {analysisData.gmb_metrics.rating} ⭐</Text>
+                   )}
+                   {analysisData.gmb_metrics.reviewCount !== undefined && (
+                     <Text style={platformText}>• Anzahl Bewertungen: {analysisData.gmb_metrics.reviewCount}</Text>
+                   )}
+                   {analysisData.gmb_metrics.profileComplete !== undefined && (
+                     <Text style={platformText}>• Profil vollständig: {analysisData.gmb_metrics.profileComplete ? 'Ja ✅' : 'Nein ❌'}</Text>
+                   )}
+                   {analysisData.gmb_metrics.hasPhotos !== undefined && (
+                     <Text style={platformText}>• Fotos vorhanden: {analysisData.gmb_metrics.hasPhotos ? 'Ja ✅' : 'Nein ❌'}</Text>
+                   )}
+                 </Section>
+               )}
+               
+               {analysisData.ga4_metrics && Object.keys(analysisData.ga4_metrics).length > 0 && (
+                 <Section>
+                   <Text style={text}><strong>Google Analytics 4:</strong></Text>
+                   {analysisData.ga4_metrics.sessions !== undefined && (
+                     <Text style={platformText}>• Sitzungen: {analysisData.ga4_metrics.sessions.toLocaleString()}</Text>
+                   )}
+                   {analysisData.ga4_metrics.pageviews !== undefined && (
+                     <Text style={platformText}>• Seitenaufrufe: {analysisData.ga4_metrics.pageviews.toLocaleString()}</Text>
+                   )}
+                   {analysisData.ga4_metrics.bounceRate !== undefined && (
+                     <Text style={platformText}>• Absprungrate: {(analysisData.ga4_metrics.bounceRate * 100).toFixed(1)}%</Text>
+                   )}
+                   {analysisData.ga4_metrics.avgSessionDuration !== undefined && (
+                     <Text style={platformText}>• Ø Sitzungsdauer: {Math.round(analysisData.ga4_metrics.avgSessionDuration)}s</Text>
+                   )}
+                 </Section>
+               )}
+               
+               {analysisData.ads_metrics && Object.keys(analysisData.ads_metrics).length > 0 && (
+                 <Section>
+                   <Text style={text}><strong>Google Ads:</strong></Text>
+                   {analysisData.ads_metrics.impressions !== undefined && (
+                     <Text style={platformText}>• Impressions: {analysisData.ads_metrics.impressions.toLocaleString()}</Text>
+                   )}
+                   {analysisData.ads_metrics.clicks !== undefined && (
+                     <Text style={platformText}>• Klicks: {analysisData.ads_metrics.clicks.toLocaleString()}</Text>
+                   )}
+                   {analysisData.ads_metrics.ctr !== undefined && (
+                     <Text style={platformText}>• CTR: {(analysisData.ads_metrics.ctr * 100).toFixed(2)}%</Text>
+                   )}
+                   {analysisData.ads_metrics.cost !== undefined && (
+                     <Text style={platformText}>• Kosten: €{analysisData.ads_metrics.cost.toFixed(2)}</Text>
+                   )}
+                 </Section>
+               )}
+             </Section>
+           )}
           
           <Section style={buttonContainer}>
             <Button href={reportUrl} style={button}>

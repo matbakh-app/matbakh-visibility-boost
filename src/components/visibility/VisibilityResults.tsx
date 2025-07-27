@@ -3,13 +3,17 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Download, Star, Users, TrendingUp } from 'lucide-react';
+import { Download, Star, Users, TrendingUp, BarChart3, MousePointer, Eye } from 'lucide-react';
 import type { AnalysisResult } from '@/types/visibility';
 import PlatformProfileCard from './PlatformProfileCard';
 
 interface VisibilityResultsProps {
   businessName: string;
-  analysisResult: AnalysisResult;
+  analysisResult: AnalysisResult & {
+    gmb_metrics?: any;
+    ga4_metrics?: any; 
+    ads_metrics?: any;
+  };
   onRequestDetailedReport: () => void;
   onNewAnalysis: () => void;
   reportRequested: boolean;
@@ -125,6 +129,139 @@ const VisibilityResults: React.FC<VisibilityResultsProps> = ({
           ))}
         </div>
       </div>
+
+      {/* Google Metrics Section */}
+      {(analysisResult.gmb_metrics || analysisResult.ga4_metrics || analysisResult.ads_metrics) && (
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-center">Google Services Metriken</h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            {/* Google My Business Metrics */}
+            {analysisResult.gmb_metrics && Object.keys(analysisResult.gmb_metrics).length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <span className="text-xl">🔍</span>
+                    Google My Business
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {analysisResult.gmb_metrics.rating && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Bewertung:</span>
+                      <div className="flex items-center gap-1">
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        <span className="font-medium">{analysisResult.gmb_metrics.rating}</span>
+                      </div>
+                    </div>
+                  )}
+                  {analysisResult.gmb_metrics.reviewCount !== undefined && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Bewertungen:</span>
+                      <span className="font-medium">{analysisResult.gmb_metrics.reviewCount}</span>
+                    </div>
+                  )}
+                  {analysisResult.gmb_metrics.profileComplete !== undefined && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Profil vollständig:</span>
+                      <span className={`font-medium ${analysisResult.gmb_metrics.profileComplete ? 'text-green-600' : 'text-red-600'}`}>
+                        {analysisResult.gmb_metrics.profileComplete ? 'Ja' : 'Nein'}
+                      </span>
+                    </div>
+                  )}
+                  {analysisResult.gmb_metrics.hasPhotos !== undefined && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Fotos vorhanden:</span>
+                      <span className={`font-medium ${analysisResult.gmb_metrics.hasPhotos ? 'text-green-600' : 'text-red-600'}`}>
+                        {analysisResult.gmb_metrics.hasPhotos ? 'Ja' : 'Nein'}
+                      </span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Google Analytics 4 Metrics */}
+            {analysisResult.ga4_metrics && Object.keys(analysisResult.ga4_metrics).length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5" />
+                    Google Analytics 4
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {analysisResult.ga4_metrics.sessions !== undefined && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Sitzungen:</span>
+                      <span className="font-medium">{analysisResult.ga4_metrics.sessions.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {analysisResult.ga4_metrics.pageviews !== undefined && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Seitenaufrufe:</span>
+                      <span className="font-medium">{analysisResult.ga4_metrics.pageviews.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {analysisResult.ga4_metrics.bounceRate !== undefined && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Absprungrate:</span>
+                      <span className="font-medium">{(analysisResult.ga4_metrics.bounceRate * 100).toFixed(1)}%</span>
+                    </div>
+                  )}
+                  {analysisResult.ga4_metrics.avgSessionDuration !== undefined && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Ø Sitzungsdauer:</span>
+                      <span className="font-medium">{Math.round(analysisResult.ga4_metrics.avgSessionDuration)}s</span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Google Ads Metrics */}
+            {analysisResult.ads_metrics && Object.keys(analysisResult.ads_metrics).length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MousePointer className="w-5 h-5" />
+                    Google Ads
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {analysisResult.ads_metrics.impressions !== undefined && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Impressions:</span>
+                      <div className="flex items-center gap-1">
+                        <Eye className="w-4 h-4 text-gray-500" />
+                        <span className="font-medium">{analysisResult.ads_metrics.impressions.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  )}
+                  {analysisResult.ads_metrics.clicks !== undefined && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Klicks:</span>
+                      <span className="font-medium">{analysisResult.ads_metrics.clicks.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {analysisResult.ads_metrics.ctr !== undefined && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">CTR:</span>
+                      <span className="font-medium">{(analysisResult.ads_metrics.ctr * 100).toFixed(2)}%</span>
+                    </div>
+                  )}
+                  {analysisResult.ads_metrics.cost !== undefined && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Kosten:</span>
+                      <span className="font-medium">€{analysisResult.ads_metrics.cost.toFixed(2)}</span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Quick Wins */}
       <Card>
