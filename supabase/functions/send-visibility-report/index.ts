@@ -107,7 +107,8 @@ const handler = async (req: Request): Promise<Response> => {
         })());
 
         // Redirect to verification success page
-        const redirectUrl = `https://uheksobnyedarrpgxhju.lovable.app/visibility-check/verified?leadId=${leadId}&status=success`;
+        const publicBaseUrl = Deno.env.get('PUBLIC_APP_URL') || 'https://matbakh.app';
+        const redirectUrl = `${publicBaseUrl}/visibility-check/verified?leadId=${leadId}&status=success`;
         
         return new Response(null, {
           status: 302,
