@@ -770,7 +770,10 @@ serve(async (req) => {
           lead_potential: leadPotential,
           analysis_results: aiAnalysis,            // vollständiges Raw-JSON für spätere Audits
           instagram_candidates: instagramCandidates,
-          provider                                 // Provider-Tracking hinzugefügt
+          provider,                                // Provider-Tracking hinzugefügt
+          gmb_metrics: gmbMetrics || {},           // Google My Business Metriken
+          ga4_metrics: ga4Metrics || {},           // Google Analytics 4 Metriken  
+          ads_metrics: adsMetrics || {}            // Google Ads Metriken
         };
 
         // Speichere in visibility_check_results

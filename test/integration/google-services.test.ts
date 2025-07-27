@@ -105,6 +105,108 @@ describe('Google Services Integration Tests', () => {
     });
   });
 
+  describe('Google Metrics Persistence', () => {
+    it('persists Google metrics in visibility_check_results', async () => {
+      // Create test lead with user_id to enable Google Services lookup
+      const { data: leadData } = await supabase
+        .from('visibility_check_leads')
+        .insert({
+          business_name: 'Test Restaurant Persistence',
+          email: 'persistence@test.de',
+          status: 'pending',
+          user_id: '550e8400-e29b-41d4-a716-446655440002'
+        })
+        .select()
+        .single();
+
+      // Create mock Google tokens for the user
+      await supabase
+        .from('google_oauth_tokens')
+        .insert([
+          {
+            user_id: '550e8400-e29b-41d4-a716-446655440002',
+            google_user_id: 'test-persistence-gmb',
+            access_token: 'mock-gmb-token',
+            service_type: 'gmb',
+            gmb_account_id: 'test-gmb-account',
+            email: 'persistence@test.de'
+          }
+        ]);
+
+      // Call enhanced-visibility-check
+      const response = await supabase.functions.invoke('enhanced-visibility-check', {
+        body: {
+          businessName: 'Test Restaurant Persistence',
+          location: 'München, Deutschland',
+          mainCategory: 'Restaurant',
+          leadId: leadData.id
+        }
+      });
+
+      expect(response.error).toBeNull();
+
+      // Verify Google metrics were persisted
+      const { data: row } = await supabase
+        .from('visibility_check_results')
+        .select('gmb_metrics, ga4_metrics, ads_metrics')
+        .eq('lead_id', leadData.id)
+        .single();
+
+      expect(row).toBeDefined();
+      expect(row.gmb_metrics).toBeDefined();
+      expect(row.ga4_metrics).toBeDefined();
+      expect(row.ads_metrics).toBeDefined();
+      
+      // Should at least be empty objects, not null
+      expect(typeof row.gmb_metrics).toBe('object');
+      expect(typeof row.ga4_metrics).toBe('object');
+      expect(typeof row.ads_metrics).toBe('object');
+
+      // Clean up
+      await supabase.from('google_oauth_tokens')
+        .delete()
+        .eq('user_id', '550e8400-e29b-41d4-a716-446655440002');
+      await supabase.from('visibility_check_results').delete().eq('lead_id', leadData.id);
+      await supabase.from('visibility_check_leads').delete().eq('id', leadData.id);
+    });
+
+    it('verifies CSV export includes Google metrics columns', async () => {
+      // Create test data with Google metrics
+      const { data: leadData } = await supabase
+        .from('visibility_check_leads')
+        .insert({
+          business_name: 'CSV Test Restaurant',
+          email: 'csvtest@restaurant.de',
+          status: 'completed'
+        })
+        .select()
+        .single();
+
+      await supabase
+        .from('visibility_check_results')
+        .insert({
+          lead_id: leadData.id,
+          overall_score: 85,
+          provider: 'bedrock',
+          gmb_metrics: { rating: 4.5, reviewCount: 20 },
+          ga4_metrics: { sessions: 1000, pageviews: 3000 },
+          ads_metrics: { impressions: 5000, clicks: 150 }
+        });
+
+      // Call CSV export function
+      const csvResponse = await supabase.functions.invoke('export-visibility-csv', {
+        body: { leadId: leadData.id }
+      });
+
+      expect(csvResponse.error).toBeNull();
+      expect(csvResponse.data).toBeDefined();
+
+      // Clean up
+      await supabase.from('visibility_check_results').delete().eq('lead_id', leadData.id);
+      await supabase.from('visibility_check_leads').delete().eq('id', leadData.id);
+    });
+  });
+
   describe('Business Profile Updates', () => {
     it('should update business profile with Google metrics', async () => {
       // Create test partner and profile
