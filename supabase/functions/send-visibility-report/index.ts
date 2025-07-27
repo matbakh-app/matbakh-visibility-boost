@@ -85,24 +85,41 @@ const handler = async (req: Request): Promise<Response> => {
             details: { verified_at: new Date().toISOString() }
           });
 
-        // Trigger report email in background
+        // Generate PDF and send report email in background
         EdgeRuntime.waitUntil((async () => {
           try {
-            await fetch(`${Deno.env.get('SUPABASE_URL')?.replace('/rest/v1', '')}/functions/v1/send-visibility-report`, {
-              method: 'POST',
+            console.log('🔄 Starting background PDF generation and email...');
+            
+            // First generate the PDF
+            const pdfResponse = await fetch(`${Deno.env.get('SUPABASE_URL')?.replace('/rest/v1', '')}/functions/v1/generate-pdf-report?leadId=${lead.id}`, {
+              method: 'GET',
               headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`
-              },
-              body: JSON.stringify({
-                leadId: lead.id,
-                email: lead.email,
-                businessName: lead.business_name,
-                reportType: 'full_report'
-              })
+              }
             });
+
+            if (pdfResponse.ok) {
+              console.log('✅ PDF generated successfully, sending email...');
+              
+              // Then send the full report email
+              await fetch(`${Deno.env.get('SUPABASE_URL')?.replace('/rest/v1', '')}/functions/v1/send-visibility-report`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`
+                },
+                body: JSON.stringify({
+                  leadId: lead.id,
+                  email: lead.email,
+                  businessName: lead.business_name,
+                  reportType: 'full_report'
+                })
+              });
+            } else {
+              console.error('❌ PDF generation failed:', await pdfResponse.text());
+            }
           } catch (error) {
-            console.error('Error sending report email:', error);
+            console.error('❌ Error in background PDF/email process:', error);
           }
         })());
 
