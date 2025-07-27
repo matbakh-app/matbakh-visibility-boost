@@ -171,6 +171,23 @@ const VisibilityWizard: React.FC = () => {
           platforms_analyzed: result?.platformAnalyses?.length || 0
         },
       });
+
+      // Send double opt-in email immediately after successful analysis
+      console.log('📧 Sending double opt-in email...');
+      const { data: emailResponse, error: emailError } = await supabase.functions.invoke('send-visibility-report', {
+        body: {
+          leadId: currentLeadId,
+          email: stepTwoData.email,
+          businessName: stepOneData.businessName,
+          reportType: 'double_optin'
+        }
+      });
+
+      if (emailError) {
+        console.error('❌ Error sending double opt-in email:', emailError);
+      } else {
+        console.log('✅ Double opt-in email sent successfully');
+      }
       
       setAnalysisResult(result);
     } catch (err) {
@@ -181,30 +198,6 @@ const VisibilityWizard: React.FC = () => {
       }
     } finally {
       setLoading(false);
-      
-      // Send double opt-in email after analysis completion
-      if (currentLeadId && stepTwoData?.email && stepOneData?.businessName) {
-        try {
-          console.log('📧 Sending double opt-in email...');
-          
-          const { data: emailResponse, error: emailError } = await supabase.functions.invoke('send-visibility-report', {
-            body: {
-              leadId: currentLeadId,
-              email: stepTwoData.email,
-              businessName: stepOneData.businessName,
-              reportType: 'double_optin'
-            }
-          });
-
-          if (emailError) {
-            console.error('❌ Error sending double opt-in email:', emailError);
-          } else {
-            console.log('✅ Double opt-in email sent successfully');
-          }
-        } catch (emailError) {
-          console.error('❌ Error sending double opt-in email:', emailError);
-        }
-      }
     }
   };
 
