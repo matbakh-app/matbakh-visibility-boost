@@ -2945,6 +2945,7 @@ export type Database = {
       visibility_check_leads: {
         Row: {
           analysis_data: Json | null
+          analysis_error_message: string | null
           analysis_status: string | null
           analyzed_at: string | null
           benchmarks: Json | null
@@ -2976,7 +2977,9 @@ export type Database = {
           opening_hours: Json | null
           overall_score: number | null
           postal_code: string | null
+          report_generated_at: string | null
           report_sent_at: string | null
+          report_url: string | null
           result_status: string
           revenue_streams: string[] | null
           seating_capacity: number | null
@@ -2993,6 +2996,7 @@ export type Database = {
         }
         Insert: {
           analysis_data?: Json | null
+          analysis_error_message?: string | null
           analysis_status?: string | null
           analyzed_at?: string | null
           benchmarks?: Json | null
@@ -3024,7 +3028,9 @@ export type Database = {
           opening_hours?: Json | null
           overall_score?: number | null
           postal_code?: string | null
+          report_generated_at?: string | null
           report_sent_at?: string | null
+          report_url?: string | null
           result_status?: string
           revenue_streams?: string[] | null
           seating_capacity?: number | null
@@ -3041,6 +3047,7 @@ export type Database = {
         }
         Update: {
           analysis_data?: Json | null
+          analysis_error_message?: string | null
           analysis_status?: string | null
           analyzed_at?: string | null
           benchmarks?: Json | null
@@ -3072,7 +3079,9 @@ export type Database = {
           opening_hours?: Json | null
           overall_score?: number | null
           postal_code?: string | null
+          report_generated_at?: string | null
           report_sent_at?: string | null
+          report_url?: string | null
           result_status?: string
           revenue_streams?: string[] | null
           seating_capacity?: number | null
@@ -3092,11 +3101,19 @@ export type Database = {
       visibility_check_results: {
         Row: {
           action_recommendations: Json | null
+          analysis_results: Json | null
+          benchmarks: Json | null
+          category_insights: Json | null
           created_at: string | null
           id: string
+          instagram_candidates: Json | null
           lead_id: string | null
+          lead_potential: string | null
+          overall_score: number | null
           partner_id: string | null
+          platform_analyses: Json | null
           provider: string | null
+          quick_wins: Json | null
           swot_opportunities: Json | null
           swot_strengths: Json | null
           swot_threats: Json | null
@@ -3106,11 +3123,19 @@ export type Database = {
         }
         Insert: {
           action_recommendations?: Json | null
+          analysis_results?: Json | null
+          benchmarks?: Json | null
+          category_insights?: Json | null
           created_at?: string | null
           id?: string
+          instagram_candidates?: Json | null
           lead_id?: string | null
+          lead_potential?: string | null
+          overall_score?: number | null
           partner_id?: string | null
+          platform_analyses?: Json | null
           provider?: string | null
+          quick_wins?: Json | null
           swot_opportunities?: Json | null
           swot_strengths?: Json | null
           swot_threats?: Json | null
@@ -3120,11 +3145,19 @@ export type Database = {
         }
         Update: {
           action_recommendations?: Json | null
+          analysis_results?: Json | null
+          benchmarks?: Json | null
+          category_insights?: Json | null
           created_at?: string | null
           id?: string
+          instagram_candidates?: Json | null
           lead_id?: string | null
+          lead_potential?: string | null
+          overall_score?: number | null
           partner_id?: string | null
+          platform_analyses?: Json | null
           provider?: string | null
+          quick_wins?: Json | null
           swot_opportunities?: Json | null
           swot_strengths?: Json | null
           swot_threats?: Json | null
@@ -3288,6 +3321,20 @@ export type Database = {
           sort_order?: number | null
           synonyms?: string[] | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      visibility_health_monitor: {
+        Row: {
+          analyzing_leads: number | null
+          check_date: string | null
+          completed_leads: number | null
+          failed_leads: number | null
+          missing_reports: number | null
+          pending_leads: number | null
+          reports_generated: number | null
+          stale_pending: number | null
+          total_leads: number | null
         }
         Relationships: []
       }
