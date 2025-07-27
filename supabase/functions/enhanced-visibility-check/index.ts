@@ -541,6 +541,7 @@ serve(async (req) => {
         }
 
         // Baue das Insert-Objekt
+        const provider = aiAnalysis.provider || (useBedrock ? 'bedrock' : 'mockAnalysis');
         const insertPayload = {
           lead_id: data.leadId,
           overall_score: overallScore,
@@ -551,7 +552,8 @@ serve(async (req) => {
           benchmark_insights: benchmarkInsights,
           lead_potential: leadPotential,
           analysis_results: aiAnalysis,            // vollständiges Raw-JSON für spätere Audits
-          instagram_candidates: instagramCandidates
+          instagram_candidates: instagramCandidates,
+          provider                                 // Provider-Tracking hinzugefügt
         };
 
         // Speichere in visibility_check_results

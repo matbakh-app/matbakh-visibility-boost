@@ -47,6 +47,7 @@ export interface AnalysisResult {
   categoryInsights: string[];
   quickWins: string[];
   leadPotential: 'high' | 'medium' | 'low';
+  provider?: 'bedrock' | 'mockAnalysis';
   reportData: any;
 }
 
