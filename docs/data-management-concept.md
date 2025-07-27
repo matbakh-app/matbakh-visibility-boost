@@ -36,19 +36,26 @@
 ---
 
 ### 📊 **Visibility & Analytics Domain**
-**Sichtbarkeitsprüfung, Reports, Benchmarking**
+**Enhanced Sichtbarkeitsprüfung, KI-gestützte Reports, Benchmarking**
 
-| Tabelle | Zweck | Abhängigkeiten |
-|---------|-------|----------------|
-| `visibility_check_leads` | Lead-Erfassung (B2B + B2C) | Optional: → profiles |
-| `visibility_check_results` | Analyse-Ergebnisse | → visibility_check_leads |
-| `visibility_check_actions` | Action-Logs (Double-Opt-In, etc.) | → visibility_check_leads |
-| `unclaimed_business_profiles` | Nicht-beanspruchte Profile | → visibility_check_leads |
-| `competitive_analysis` | Wettbewerbsanalyse | → visibility_check_leads |
-| `swot_analysis` | SWOT-Auswertungen | → visibility_check_leads |
-| `industry_benchmarks` | Branchenvergleiche | Standalone |
+| Tabelle | Zweck | Abhängigkeiten | Neue Felder (Enhanced) |
+|---------|-------|----------------|------------------------|
+| `visibility_check_leads` | Lead-Erfassung (B2B + B2C) | Optional: → profiles | `analysis_error_message`, `report_url`, `report_generated_at` |
+| `visibility_check_results` | Detaillierte Analyse-Ergebnisse | → visibility_check_leads | `overall_score`, `platform_analyses`, `benchmarks`, `category_insights`, `quick_wins`, `lead_potential`, `instagram_candidates` |
+| `visibility_check_actions` | Action-Logs (Double-Opt-In, etc.) | → visibility_check_leads | Erweitert um `duration_ms`, `language`, `device`, `profile_source` |
+| `unclaimed_business_profiles` | Nicht-beanspruchte Profile | → visibility_check_leads | - |
+| `competitive_analysis` | Wettbewerbsanalyse | → visibility_check_leads | - |
+| `swot_analysis` | SWOT-Auswertungen | → visibility_check_leads | - |
+| `industry_benchmarks` | Branchenvergleiche | Standalone | - |
 
-**Datenfluss:** Lead-Erfassung → Analyse → Results → Double-Opt-In → Report-Versand
+**Enhanced Datenfluss:** 
+Lead-Erfassung → Enhanced Analyse (Multi-Platform) → JSONB Results → PDF-Report-Generation → Storage (visibility-reports bucket) → Double-Opt-In → E-Mail mit Download-Link → Optional: B2B Conversion
+
+**KI-Features:**
+- Instagram Auto-Detection mit Relevance-Scoring
+- Plattform-übergreifende Benchmarks (Google, Facebook, Instagram)
+- Dynamische Quick-Wins basierend auf Analyse
+- Lead-Potential-Scoring für B2B Conversion
 
 ---
 
@@ -187,12 +194,21 @@ onboarding_steps → google_oauth_tokens → business_profiles →
 service_packages (booking) → ga4_daily (sync)
 ```
 
-### **B) Visibility Check (Lead-to-Customer)**
+### **B) Enhanced Visibility Check (Lead-to-Customer)**
 ```
-Anonymer Check → visibility_check_leads → 
-visibility_check_results → Double-Opt-In → 
-Report-Versand → Optional: business_partners (Conversion)
+Anonymer Check → visibility_check_leads (status: pending) → 
+Enhanced Analysis (Multi-Platform API Calls) → 
+visibility_check_results (JSONB: scores, platforms, benchmarks) → 
+PDF Report Generation → Storage (visibility-reports bucket) → 
+visibility_check_leads.report_url UPDATE → 
+Double-Opt-In Email with Download Link → 
+Optional: business_partners (B2B Conversion)
 ```
+
+**Status Flow:**
+- `pending` → Analysis läuft
+- `completed` → Report verfügbar 
+- `failed` → Fehler in analysis_error_message
 
 ### **C) B2C Restaurant Discovery**
 ```
