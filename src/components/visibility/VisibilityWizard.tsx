@@ -173,12 +173,13 @@ const VisibilityWizard: React.FC = () => {
       });
 
       // Send double opt-in email immediately after successful analysis
-      if (currentLeadId && completeFormData?.email && completeFormData?.businessName) {
+      const leadIdForEmail = currentLeadId || leadId; // Use leadId from the analysis process
+      if (leadIdForEmail && completeFormData?.email && completeFormData?.businessName) {
         console.log('📧 Sending double opt-in email...');
         try {
           const { data: emailResponse, error: emailError } = await supabase.functions.invoke('send-visibility-report', {
             body: {
-              leadId: currentLeadId,
+              leadId: leadIdForEmail,
               email: completeFormData.email,
               businessName: completeFormData.businessName,
               reportType: 'double_optin'
@@ -194,7 +195,7 @@ const VisibilityWizard: React.FC = () => {
           console.error('❌ Error sending double opt-in email:', emailError);
         }
       } else {
-        console.error('❌ Missing data for email:', { currentLeadId, email: completeFormData?.email, businessName: completeFormData?.businessName });
+        console.error('❌ Missing data for email:', { leadIdForEmail, currentLeadId, email: completeFormData?.email, businessName: completeFormData?.businessName });
       }
       
       setAnalysisResult(result);
