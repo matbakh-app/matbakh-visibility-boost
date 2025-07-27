@@ -3157,11 +3157,14 @@ export type Database = {
       visibility_check_results: {
         Row: {
           action_recommendations: Json | null
+          ads_metrics: Json | null
           analysis_results: Json | null
           benchmark_insights: string | null
           benchmarks: Json | null
           category_insights: Json | null
           created_at: string | null
+          ga4_metrics: Json | null
+          gmb_metrics: Json | null
           id: string
           instagram_candidates: Json | null
           lead_id: string | null
@@ -3181,11 +3184,14 @@ export type Database = {
         }
         Insert: {
           action_recommendations?: Json | null
+          ads_metrics?: Json | null
           analysis_results?: Json | null
           benchmark_insights?: string | null
           benchmarks?: Json | null
           category_insights?: Json | null
           created_at?: string | null
+          ga4_metrics?: Json | null
+          gmb_metrics?: Json | null
           id?: string
           instagram_candidates?: Json | null
           lead_id?: string | null
@@ -3205,11 +3211,14 @@ export type Database = {
         }
         Update: {
           action_recommendations?: Json | null
+          ads_metrics?: Json | null
           analysis_results?: Json | null
           benchmark_insights?: string | null
           benchmarks?: Json | null
           category_insights?: Json | null
           created_at?: string | null
+          ga4_metrics?: Json | null
+          gmb_metrics?: Json | null
           id?: string
           instagram_candidates?: Json | null
           lead_id?: string | null
