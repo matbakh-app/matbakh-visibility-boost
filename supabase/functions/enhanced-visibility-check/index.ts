@@ -191,7 +191,7 @@ function computeRelevanceScore(businessName: string, handle: string, followers: 
 }
 
 // ============= BEDROCK AI CLIENT =============
-async function callBedrockVisibilityAnalysis(input: any) {
+async function callBedrockVisibilityAnalysis(input: any, categoryContext: string[], benchmarkData: any[]) {
   const client = new BedrockRuntimeClient({ 
     region: Deno.env.get('AWS_REGION') || 'eu-central-1',
     credentials: {
@@ -202,11 +202,19 @@ async function callBedrockVisibilityAnalysis(input: any) {
 
   const MODEL_ID = "anthropic.claude-3-5-sonnet-20241022-v2:0";
 
+  // Dynamic prompt generation with category context
   const prompt = `
-Du bist ein Experte für Restaurant-Marketing und Online-Sichtbarkeit. Analysiere die digitale Präsenz des folgenden Restaurants und erstelle eine detaillierte Bewertung.
+Du bist ein zertifizierter Experte für ${categoryContext.join(', ')}. 
+Analysiere die digitale Sichtbarkeit dieses Restaurants und gib eine JSON-Antwort zurück.
 
 RESTAURANT-DATEN:
-${JSON.stringify(input, null, 2)}
+– Name: ${input.businessName}
+– Standort: ${input.location}
+– Social Handles:
+  • Google: ${input.googleName || '–'}
+  • Facebook: ${input.facebookName || '–'}
+  • Instagram: ${input.instagramName || '–'}
+– Benchmarks: ${benchmarkData.map(b => b.name).join(', ')}
 
 AUFGABE: Erstelle eine professionelle Sichtbarkeitsanalyse als JSON mit folgender Struktur:
 
@@ -290,7 +298,7 @@ WICHTIG:
     
   } catch (error) {
     console.error('❌ Bedrock analysis failed:', error);
-    // Fallback to enhanced mock data
+    // Fallback with empty SWOT structure
     return {
       overallScore: Math.floor(Math.random() * 30) + 70,
       platformAnalyses: [
@@ -320,12 +328,12 @@ WICHTIG:
         'Reagieren Sie auf alle Bewertungen der letzten 30 Tage'
       ],
       swotAnalysis: {
-        strengths: ["Etablierte lokale Präsenz"],
-        weaknesses: ["Begrenzte Online-Sichtbarkeit"],
-        opportunities: ["Social Media Ausbau", "Bewertungsoptimierung"],
-        threats: ["Lokale Konkurrenz", "Negative Online-Bewertungen"]
+        strengths: [],
+        weaknesses: [],
+        opportunities: [],
+        threats: []
       },
-      benchmarkInsights: "Ihr Restaurant liegt im oberen Mittelfeld der lokalen Konkurrenz",
+      benchmarkInsights: "Keine AI-Daten verfügbar",
       leadPotential: "medium"
     };
   }
@@ -371,6 +379,37 @@ serve(async (req) => {
 
     console.log('🔍 Performing comprehensive AI-powered visibility analysis...')
     
+    // Initialize Supabase client for data queries
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // 2.1.1: Load subcategories for dynamic prompting
+    const { data: subcats } = await supabase
+      .from('gmb_categories')
+      .select('name_de, name_en')
+      .eq('haupt_kategorie', data.mainCategory);
+    
+    const locale = 'de'; // Can be dynamic based on user locale
+    const unterKategorien = (subcats || [])
+      .map(c => locale === 'de' ? c.name_de : c.name_en)
+      .filter(Boolean);
+    
+    // Top-3 subcategories for prompt
+    const promptCategories = unterKategorien.slice(0, 3);
+    console.log('📋 Using subcategories for AI context:', promptCategories);
+
+    // 2.1.2: Load benchmark data from industry_benchmarks table
+    const { data: benchmarkData } = await supabase
+      .from('industry_benchmarks')
+      .select('*')
+      .eq('industry', data.mainCategory)
+      .limit(5);
+    
+    const benchmarks = benchmarkData || [];
+    console.log('📊 Loaded industry benchmarks:', benchmarks.length);
+    
     // Prepare data for Bedrock analysis
     const analysisInput = {
       businessName: data.businessName,
@@ -385,33 +424,50 @@ serve(async (req) => {
       timestamp: new Date().toISOString()
     };
 
-    // Call Bedrock for AI analysis
-    const aiAnalysis = await callBedrockVisibilityAnalysis(analysisInput);
+    // Call Bedrock for AI analysis with category context
+    const aiAnalysis = await callBedrockVisibilityAnalysis(analysisInput, promptCategories, benchmarks);
     
     // Extract and structure the results
     const platformAnalyses = aiAnalysis.platformAnalyses || [];
     const overallScore = aiAnalysis.overallScore || 75;
 
-    // Generate enhanced benchmark data
-    const benchmarks = data.benchmarks.filter(Boolean).map(name => ({
-      name,
-      scores: {
-        google: Math.floor(Math.random() * 40) + 60,
-        facebook: Math.floor(Math.random() * 40) + 50,
-        instagram: Math.floor(Math.random() * 40) + 45,
-        overall: Math.floor(Math.random() * 30) + 65
-      },
-      profileUrls: {
-        google: `https://www.google.com/maps/search/${encodeURIComponent(name)}`,
-        facebook: `https://www.facebook.com/search/top?q=${encodeURIComponent(name)}`,
-        instagram: `https://www.instagram.com/explore/tags/${encodeURIComponent(name.replace(/\s+/g, ''))}`
-      }
-    }));
+    // Generate enhanced benchmark data using industry_benchmarks
+    const enhancedBenchmarks = benchmarks.length > 0 
+      ? benchmarks.map(benchmark => ({
+          name: benchmark.metric_name || 'Benchmark',
+          scores: {
+            google: Math.round(benchmark.metric_value * 0.8),
+            facebook: Math.round(benchmark.metric_value * 0.7),
+            instagram: Math.round(benchmark.metric_value * 0.6),
+            overall: Math.round(benchmark.metric_value)
+          },
+          profileUrls: {
+            google: `https://www.google.com/maps/search/${encodeURIComponent(data.businessName)}`,
+            facebook: `https://www.facebook.com/search/top?q=${encodeURIComponent(data.businessName)}`,
+            instagram: `https://www.instagram.com/explore/tags/${encodeURIComponent(data.businessName.replace(/\s+/g, ''))}`
+          },
+          percentileRank: benchmark.percentile_rank || null,
+          sampleSize: benchmark.sample_size || null
+        }))
+      : data.benchmarks.filter(Boolean).map(name => ({
+          name,
+          scores: {
+            google: Math.floor(Math.random() * 40) + 60,
+            facebook: Math.floor(Math.random() * 40) + 50,
+            instagram: Math.floor(Math.random() * 40) + 45,
+            overall: Math.floor(Math.random() * 30) + 65
+          },
+          profileUrls: {
+            google: `https://www.google.com/maps/search/${encodeURIComponent(name)}`,
+            facebook: `https://www.facebook.com/search/top?q=${encodeURIComponent(name)}`,
+            instagram: `https://www.instagram.com/explore/tags/${encodeURIComponent(name.replace(/\s+/g, ''))}`
+          }
+        }));
 
     const result = {
       overallScore,
       platformAnalyses,
-      benchmarks,
+      benchmarks: enhancedBenchmarks,
       categoryInsights: aiAnalysis.categoryInsights || [
         `Als ${data.mainCategory} sollten Sie besonders auf visuelle Inhalte setzen`,
         'Bewertungsmanagement ist in Ihrer Branche besonders wichtig'
@@ -443,11 +499,6 @@ serve(async (req) => {
     // CRITICAL: Persistiere die Analyseergebnisse in die Datenbank mit vollständigem Status-Management
     if (data.leadId) {
       console.log('💾 Saving analysis results to database for lead:', data.leadId)
-      
-      const supabase = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-      );
 
       try {
         // Set status to analyzing first
@@ -460,14 +511,14 @@ serve(async (req) => {
           console.error('❌ Error updating lead status to analyzing:', statusError);
         }
 
-        // Speichere Analyseergebnisse
+        // Speichere Analyseergebnisse mit verbesserter Fallback-Logik
         const { error: insertError } = await supabase
           .from('visibility_check_results')
           .insert({
             lead_id: data.leadId,
             overall_score: overallScore,
             platform_analyses: platformAnalyses,
-            benchmarks: benchmarks,
+            benchmarks: enhancedBenchmarks,
             category_insights: result.categoryInsights,
             quick_wins: result.quickWins,
             swot_analysis: result.swotAnalysis,
@@ -479,12 +530,14 @@ serve(async (req) => {
 
         if (insertError) {
           console.error('❌ Error saving analysis results:', insertError);
-          // Update lead status to failed with detailed error
+          // Enhanced error logging with fallback data
+          const errorMessage = `Analysis failed: ${insertError.message}. AI Data: ${aiAnalysis ? 'Success' : 'Fallback'}. Categories: ${promptCategories.length}. Benchmarks: ${benchmarks.length}`;
+          
           await supabase
             .from('visibility_check_leads')
             .update({ 
               status: 'failed',
-              analysis_error_message: `Analysis failed: ${insertError.message}`
+              analysis_error_message: errorMessage
             })
             .eq('id', data.leadId);
           
