@@ -148,23 +148,24 @@ const VisibilityCheckVerified: React.FC = () => {
                   <div className="grid md:grid-cols-3 gap-4">
                     <div className="text-center p-4 bg-primary/5 rounded-lg">
                       <div className="text-2xl font-bold text-primary">
-                        {visibilityResult.visibility_score}%
+                        {(visibilityResult as any).overall_score || visibilityResult.visibility_score || 'N/A'}%
                       </div>
-                      <div className="text-sm text-gray-600">Sichtbarkeitsbewertung</div>
+                      <div className="text-sm text-gray-600">Gesamtbewertung</div>
                     </div>
                     
                     <div className="text-center p-4 bg-primary/5 rounded-lg">
                       <div className="text-2xl font-bold text-primary">
-                        {visibilityResult.provider}
+                        {(visibilityResult as any).platform_analyses?.length || 
+                         (visibilityResult.provider ? 1 : 0) || 0}
                       </div>
-                      <div className="text-sm text-gray-600">Analysierte Plattform</div>
+                      <div className="text-sm text-gray-600">Analysierte Plattformen</div>
                     </div>
                     
                     <div className="text-center p-4 bg-primary/5 rounded-lg">
                       <div className="text-2xl font-bold text-primary">
-                        <FileText className="w-6 h-6 mx-auto" />
+                        {(visibilityResult as any).quick_wins?.length || 0}
                       </div>
-                      <div className="text-sm text-gray-600">Detailanalyse verfügbar</div>
+                      <div className="text-sm text-gray-600">Sofort-Empfehlungen</div>
                     </div>
                   </div>
                 </CardContent>

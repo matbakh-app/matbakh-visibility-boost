@@ -337,6 +337,50 @@ serve(async (req) => {
 
     console.log('✅ Analysis completed with overall score:', overallScore)
     
+    // CRITICAL: Persistiere die Analyseergebnisse in die Datenbank
+    if (data.leadId) {
+      console.log('💾 Saving analysis results to database for lead:', data.leadId)
+      
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+
+      // Speichere Analyseergebnisse
+      const { error: insertError } = await supabase
+        .from('visibility_check_results')
+        .insert({
+          lead_id: data.leadId,
+          overall_score: overallScore,
+          platform_analyses: platformAnalyses,
+          benchmarks: benchmarks,
+          category_insights: result.categoryInsights,
+          quick_wins: result.quickWins,
+          lead_potential: result.leadPotential,
+          analysis_results: result,
+          instagram_candidates: instagramCandidates || []
+        });
+
+      if (insertError) {
+        console.error('❌ Error saving analysis results:', insertError);
+        // Update lead status to failed
+        await supabase
+          .from('visibility_check_leads')
+          .update({ 
+            status: 'failed',
+            analysis_error_message: `Failed to save results: ${insertError.message}`
+          })
+          .eq('id', data.leadId);
+      } else {
+        console.log('✅ Analysis results saved successfully');
+        // Update lead status to completed
+        await supabase
+          .from('visibility_check_leads')
+          .update({ status: 'completed' })
+          .eq('id', data.leadId);
+      }
+    }
+    
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
