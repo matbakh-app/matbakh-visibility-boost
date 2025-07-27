@@ -427,9 +427,16 @@ serve(async (req) => {
     // Call Bedrock for AI analysis with category context
     const aiAnalysis = await callBedrockVisibilityAnalysis(analysisInput, promptCategories, benchmarks);
     
-    // Extract and structure the results
-    const platformAnalyses = aiAnalysis.platformAnalyses || [];
-    const overallScore = aiAnalysis.overallScore || 75;
+    // 2.2.2: Extrahiere die neuen Felder aus aiAnalysis
+    const {
+      overallScore,
+      platformAnalyses,
+      categoryInsights,
+      quickWins,
+      swotAnalysis,
+      benchmarkInsights,
+      leadPotential
+    } = aiAnalysis;
 
     // Generate enhanced benchmark data using industry_benchmarks
     const enhancedBenchmarks = benchmarks.length > 0 
@@ -496,7 +503,7 @@ serve(async (req) => {
 
     console.log('✅ AI Analysis completed with overall score:', overallScore)
     
-    // CRITICAL: Persistiere die Analyseergebnisse in die Datenbank mit vollständigem Status-Management
+    // 2.2.2: Ergebnis-Mapping & Persistierung der AI-Antwort
     if (data.leadId) {
       console.log('💾 Saving analysis results to database for lead:', data.leadId)
 
@@ -511,59 +518,51 @@ serve(async (req) => {
           console.error('❌ Error updating lead status to analyzing:', statusError);
         }
 
-        // Speichere Analyseergebnisse mit verbesserter Fallback-Logik
-        const { error: insertError } = await supabase
-          .from('visibility_check_results')
-          .insert({
-            lead_id: data.leadId,
-            overall_score: overallScore,
-            platform_analyses: platformAnalyses,
-            benchmarks: enhancedBenchmarks,
-            category_insights: result.categoryInsights,
-            quick_wins: result.quickWins,
-            swot_analysis: result.swotAnalysis,
-            benchmark_insights: result.benchmarkInsights,
-            lead_potential: result.leadPotential,
-            analysis_results: result,
-            instagram_candidates: instagramCandidates || []
-          });
+        // Baue das Insert-Objekt
+        const insertPayload = {
+          lead_id: data.leadId,
+          overall_score: overallScore,
+          platform_analyses: platformAnalyses,
+          category_insights: categoryInsights,
+          quick_wins: quickWins,
+          swot_analysis: swotAnalysis,
+          benchmark_insights: benchmarkInsights,
+          lead_potential: leadPotential,
+          analysis_results: aiAnalysis,            // vollständiges Raw-JSON für spätere Audits
+          instagram_candidates: instagramCandidates
+        };
 
-        if (insertError) {
-          console.error('❌ Error saving analysis results:', insertError);
-          // Enhanced error logging with fallback data
-          const errorMessage = `Analysis failed: ${insertError.message}. AI Data: ${aiAnalysis ? 'Success' : 'Fallback'}. Categories: ${promptCategories.length}. Benchmarks: ${benchmarks.length}`;
-          
+        // Speichere in visibility_check_results
+        const { error: insertErr } = await supabase
+          .from('visibility_check_results')
+          .insert(insertPayload);
+
+        if (insertErr) {
+          console.error('❌ Insert AI results failed:', insertErr);
           await supabase
             .from('visibility_check_leads')
-            .update({ 
-              status: 'failed',
-              analysis_error_message: errorMessage
-            })
+            .update({ status: 'failed', analysis_error_message: insertErr.message })
             .eq('id', data.leadId);
-          
-          throw new Error(`Failed to save analysis results: ${insertError.message}`);
-        } else {
-          console.log('✅ Analysis results saved successfully');
-          
-          // Update lead status to completed - this will trigger PDF generation automatically via DB trigger
-          const { error: completedError } = await supabase
-            .from('visibility_check_leads')
-            .update({ status: 'completed' })
-            .eq('id', data.leadId);
-
-          if (completedError) {
-            console.error('❌ Error updating lead status to completed:', completedError);
-            await supabase
-              .from('visibility_check_leads')
-              .update({ 
-                status: 'failed',
-                analysis_error_message: `Status update failed: ${completedError.message}`
-              })
-              .eq('id', data.leadId);
-          } else {
-            console.log('🎯 Lead status updated to completed - PDF generation will be triggered automatically');
-          }
+          throw insertErr;
         }
+
+        // Status auf „completed" setzen → PDF-Trigger via DB-Trigger greift
+        const { error: statusErr } = await supabase
+          .from('visibility_check_leads')
+          .update({ status: 'completed' })
+          .eq('id', data.leadId);
+
+        if (statusErr) {
+          console.error('❌ Updating status to completed failed:', statusErr);
+          await supabase
+            .from('visibility_check_leads')
+            .update({ status: 'failed', analysis_error_message: statusErr.message })
+            .eq('id', data.leadId);
+          throw statusErr;
+        }
+
+        console.log('✅ AI results persisted and lead marked completed');
+        
       } catch (error) {
         console.error('❌ Critical error in analysis workflow:', error);
         // Ensure lead is marked as failed in any error case
