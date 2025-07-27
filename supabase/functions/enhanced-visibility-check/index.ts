@@ -337,7 +337,7 @@ serve(async (req) => {
 
     console.log('✅ Analysis completed with overall score:', overallScore)
     
-    // CRITICAL: Persistiere die Analyseergebnisse in die Datenbank
+    // CRITICAL: Persistiere die Analyseergebnisse in die Datenbank mit vollständigem Status-Management
     if (data.leadId) {
       console.log('💾 Saving analysis results to database for lead:', data.leadId)
       
@@ -346,38 +346,78 @@ serve(async (req) => {
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
       );
 
-      // Speichere Analyseergebnisse
-      const { error: insertError } = await supabase
-        .from('visibility_check_results')
-        .insert({
-          lead_id: data.leadId,
-          overall_score: overallScore,
-          platform_analyses: platformAnalyses,
-          benchmarks: benchmarks,
-          category_insights: result.categoryInsights,
-          quick_wins: result.quickWins,
-          lead_potential: result.leadPotential,
-          analysis_results: result,
-          instagram_candidates: instagramCandidates || []
-        });
+      try {
+        // Set status to analyzing first
+        const { error: statusError } = await supabase
+          .from('visibility_check_leads')
+          .update({ status: 'analyzing' })
+          .eq('id', data.leadId);
 
-      if (insertError) {
-        console.error('❌ Error saving analysis results:', insertError);
-        // Update lead status to failed
+        if (statusError) {
+          console.error('❌ Error updating lead status to analyzing:', statusError);
+        }
+
+        // Speichere Analyseergebnisse
+        const { error: insertError } = await supabase
+          .from('visibility_check_results')
+          .insert({
+            lead_id: data.leadId,
+            overall_score: overallScore,
+            platform_analyses: platformAnalyses,
+            benchmarks: benchmarks,
+            category_insights: result.categoryInsights,
+            quick_wins: result.quickWins,
+            lead_potential: result.leadPotential,
+            analysis_results: result,
+            instagram_candidates: instagramCandidates || []
+          });
+
+        if (insertError) {
+          console.error('❌ Error saving analysis results:', insertError);
+          // Update lead status to failed with detailed error
+          await supabase
+            .from('visibility_check_leads')
+            .update({ 
+              status: 'failed',
+              analysis_error_message: `Analysis failed: ${insertError.message}`
+            })
+            .eq('id', data.leadId);
+          
+          throw new Error(`Failed to save analysis results: ${insertError.message}`);
+        } else {
+          console.log('✅ Analysis results saved successfully');
+          
+          // Update lead status to completed - this will trigger PDF generation automatically via DB trigger
+          const { error: completedError } = await supabase
+            .from('visibility_check_leads')
+            .update({ status: 'completed' })
+            .eq('id', data.leadId);
+
+          if (completedError) {
+            console.error('❌ Error updating lead status to completed:', completedError);
+            await supabase
+              .from('visibility_check_leads')
+              .update({ 
+                status: 'failed',
+                analysis_error_message: `Status update failed: ${completedError.message}`
+              })
+              .eq('id', data.leadId);
+          } else {
+            console.log('🎯 Lead status updated to completed - PDF generation will be triggered automatically');
+          }
+        }
+      } catch (error) {
+        console.error('❌ Critical error in analysis workflow:', error);
+        // Ensure lead is marked as failed in any error case
         await supabase
           .from('visibility_check_leads')
           .update({ 
             status: 'failed',
-            analysis_error_message: `Failed to save results: ${insertError.message}`
+            analysis_error_message: `Critical workflow error: ${error.message}`
           })
           .eq('id', data.leadId);
-      } else {
-        console.log('✅ Analysis results saved successfully');
-        // Update lead status to completed
-        await supabase
-          .from('visibility_check_leads')
-          .update({ status: 'completed' })
-          .eq('id', data.leadId);
+        
+        throw error;
       }
     }
     
