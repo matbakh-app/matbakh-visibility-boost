@@ -29,6 +29,7 @@ import PasswordReset from '@/pages/PasswordReset';
 import NotFound from '@/pages/NotFound';
 import NotesPage from '@/pages/NotesPage';
 import CheckoutSuccess from '@/pages/CheckoutSuccess';
+import VisibilityCheckVerified from '@/pages/VisibilityCheckVerified';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import AppLayout from '@/components/layout/AppLayout';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -78,6 +79,7 @@ function App() {
                 <Route path="password-reset" element={<PasswordReset />} />
                 <Route path="checkout-success" element={<CheckoutSuccess />} />
                 <Route path="visibility-check" element={<VisibilityCheckPage />} />
+                <Route path="visibility-check/verified" element={<VisibilityCheckVerified />} />
                 <Route path="notes" element={<NotesPage />} />
                 
               {/* Legal pages - German */}

@@ -106,31 +106,15 @@ const handler = async (req: Request): Promise<Response> => {
           }
         })());
 
-        // Show success page
-        return new Response(`
-          <html>
-            <head>
-              <title>E-Mail bestätigt - matbakh.app</title>
-              <meta charset="utf-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1">
-            </head>
-            <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f8f9fa;">
-              <div style="max-width: 500px; margin: 0 auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                <h1 style="color: #28a745;">✅ E-Mail erfolgreich bestätigt!</h1>
-                <p style="font-size: 16px; color: #333; line-height: 1.6;">
-                  Vielen Dank! Ihr Sichtbarkeits-Report für <strong>${lead.business_name}</strong> wird nun erstellt und innerhalb der nächsten Minuten an <strong>${lead.email}</strong> versendet.
-                </p>
-                <p style="color: #666; margin-top: 30px;">
-                  <a href="/" style="background: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
-                    Zurück zur Startseite
-                  </a>
-                </p>
-              </div>
-            </body>
-          </html>
-        `, {
-          status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'text/html' }
+        // Redirect to verification success page
+        const redirectUrl = `https://uheksobnyedarrpgxhju.lovable.app/visibility-check/verified?leadId=${leadId}&status=success`;
+        
+        return new Response(null, {
+          status: 302,
+          headers: {
+            ...corsHeaders,
+            'Location': redirectUrl
+          }
         });
       }
 
