@@ -2952,6 +2952,9 @@ export type Database = {
           business_name: string
           check_type: string
           created_at: string
+          double_optin_confirmed: boolean | null
+          double_optin_confirmed_at: string | null
+          double_optin_sent_at: string | null
           email: string | null
           facebook_handle: string | null
           facebook_score: number | null
@@ -2973,16 +2976,19 @@ export type Database = {
           opening_hours: Json | null
           overall_score: number | null
           postal_code: string | null
+          report_sent_at: string | null
           result_status: string
           revenue_streams: string[] | null
           seating_capacity: number | null
           special_features: Json | null
+          status: string | null
           sub_category: string | null
           target_audience: string[] | null
           tiktok_handle: string | null
           updated_at: string
           user_agent: string | null
           user_id: string | null
+          verification_token: string | null
           website: string | null
         }
         Insert: {
@@ -2994,6 +3000,9 @@ export type Database = {
           business_name: string
           check_type?: string
           created_at?: string
+          double_optin_confirmed?: boolean | null
+          double_optin_confirmed_at?: string | null
+          double_optin_sent_at?: string | null
           email?: string | null
           facebook_handle?: string | null
           facebook_score?: number | null
@@ -3015,16 +3024,19 @@ export type Database = {
           opening_hours?: Json | null
           overall_score?: number | null
           postal_code?: string | null
+          report_sent_at?: string | null
           result_status?: string
           revenue_streams?: string[] | null
           seating_capacity?: number | null
           special_features?: Json | null
+          status?: string | null
           sub_category?: string | null
           target_audience?: string[] | null
           tiktok_handle?: string | null
           updated_at?: string
           user_agent?: string | null
           user_id?: string | null
+          verification_token?: string | null
           website?: string | null
         }
         Update: {
@@ -3036,6 +3048,9 @@ export type Database = {
           business_name?: string
           check_type?: string
           created_at?: string
+          double_optin_confirmed?: boolean | null
+          double_optin_confirmed_at?: string | null
+          double_optin_sent_at?: string | null
           email?: string | null
           facebook_handle?: string | null
           facebook_score?: number | null
@@ -3057,16 +3072,19 @@ export type Database = {
           opening_hours?: Json | null
           overall_score?: number | null
           postal_code?: string | null
+          report_sent_at?: string | null
           result_status?: string
           revenue_streams?: string[] | null
           seating_capacity?: number | null
           special_features?: Json | null
+          status?: string | null
           sub_category?: string | null
           target_audience?: string[] | null
           tiktok_handle?: string | null
           updated_at?: string
           user_agent?: string | null
           user_id?: string | null
+          verification_token?: string | null
           website?: string | null
         }
         Relationships: []
