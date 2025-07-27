@@ -205,6 +205,48 @@ else
     echo '{"test": "redeem_code_tests", "status": "failed", "details": "Redeem code tests failed"}' | jq '.' >> $RESULTS_FILE
 fi
 
+# 5.8. Redeem-Code Security Tests
+log_info "Führe Redeem-Code Security Tests aus..."
+
+npx vitest run test/security/redeem-code-security.test.ts 2>&1 | tee /tmp/redeem_security_test_output.log
+REDEEM_SECURITY_EXIT_CODE=${PIPESTATUS[0]}
+
+if [ $REDEEM_SECURITY_EXIT_CODE -eq 0 ]; then
+    log_success "Redeem-Code Security Tests bestanden"
+    echo '{"test": "redeem_security_tests", "status": "passed", "details": "Security policies and RLS verified"}' | jq '.' >> $RESULTS_FILE
+else
+    log_error "Redeem-Code Security Tests fehlgeschlagen"
+    echo '{"test": "redeem_security_tests", "status": "failed", "details": "Security tests failed"}' | jq '.' >> $RESULTS_FILE
+fi
+
+# 5.9. Redeem-Code E2E Tests
+log_info "Führe Redeem-Code E2E Tests aus..."
+
+npx vitest run test/integration/redeem-code-e2e.test.ts 2>&1 | tee /tmp/redeem_e2e_test_output.log
+REDEEM_E2E_EXIT_CODE=${PIPESTATUS[0]}
+
+if [ $REDEEM_E2E_EXIT_CODE -eq 0 ]; then
+    log_success "Redeem-Code E2E Tests bestanden"
+    echo '{"test": "redeem_e2e_tests", "status": "passed", "details": "End-to-end redeem code flow verified"}' | jq '.' >> $RESULTS_FILE
+else
+    log_error "Redeem-Code E2E Tests fehlgeschlagen"
+    echo '{"test": "redeem_e2e_tests", "status": "failed", "details": "E2E redeem code tests failed"}' | jq '.' >> $RESULTS_FILE
+fi
+
+# 5.10. Redeem-Code UI Tests
+log_info "Führe Redeem-Code UI Tests aus..."
+
+npx vitest run test/components/redeem-ui.test.tsx 2>&1 | tee /tmp/redeem_ui_test_output.log
+REDEEM_UI_EXIT_CODE=${PIPESTATUS[0]}
+
+if [ $REDEEM_UI_EXIT_CODE -eq 0 ]; then
+    log_success "Redeem-Code UI Tests bestanden"
+    echo '{"test": "redeem_ui_tests", "status": "passed", "details": "UI components rendering and interaction verified"}' | jq '.' >> $RESULTS_FILE
+else
+    log_error "Redeem-Code UI Tests fehlgeschlagen"
+    echo '{"test": "redeem_ui_tests", "status": "failed", "details": "UI tests failed"}' | jq '.' >> $RESULTS_FILE
+fi
+
 # 6. End-to-End API Tests
 log_info "Führe E2E API Tests aus..."
 

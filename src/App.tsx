@@ -30,6 +30,7 @@ import NotFound from '@/pages/NotFound';
 import NotesPage from '@/pages/NotesPage';
 import CheckoutSuccess from '@/pages/CheckoutSuccess';
 import VisibilityCheckVerified from '@/pages/VisibilityCheckVerified';
+import RedeemPage from '@/pages/RedeemPage';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import AppLayout from '@/components/layout/AppLayout';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -81,6 +82,7 @@ function App() {
                 <Route path="checkout-success" element={<CheckoutSuccess />} />
                 <Route path="visibility-check" element={<VisibilityCheckPage />} />
                 <Route path="visibility-check/verified" element={<VisibilityCheckVerified />} />
+                <Route path="redeem" element={<RedeemPage />} />
                 <Route path="auth/google/callback" element={<GoogleOAuthCallback />} />
                 <Route path="notes" element={<NotesPage />} />
                 
