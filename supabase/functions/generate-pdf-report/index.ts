@@ -112,6 +112,11 @@ const handler = async (req: Request): Promise<Response> => {
       yPosition += 8;
     }
     doc.text(`E-Mail: ${lead.email}`, 25, yPosition);
+    yPosition += 8;
+    
+    // Provider Info hinzufügen
+    const providerLabel = analysisData.provider === 'bedrock' ? 'AWS Bedrock AI' : 'Mock Fallback';
+    doc.text(`Analyse-Quelle: ${providerLabel}`, 25, yPosition);
     yPosition += 20;
 
     // Overall Score (if available)

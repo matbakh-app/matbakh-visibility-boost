@@ -87,7 +87,12 @@ const VisibilityResults: React.FC<VisibilityResultsProps> = ({
       <div className="text-center space-y-4">
         <h1 className="text-3xl font-bold">Sichtbarkeits-Analyse für {businessName}</h1>
         <p className="text-gray-600">Umfassende Bewertung Ihrer Online-Präsenz mit Profildaten</p>
-        {getLeadPotentialBadge(analysisResult.leadPotential)}
+        <div className="flex flex-col items-center gap-2">
+          {getLeadPotentialBadge(analysisResult.leadPotential)}
+          <Badge variant="outline" className="text-xs">
+            {analysisResult.provider === 'bedrock' ? '🤖 Powered by Bedrock AI' : '📋 Mock Analysis'}
+          </Badge>
+        </div>
       </div>
 
       {/* Overall Score */}

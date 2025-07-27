@@ -121,6 +121,20 @@ else
     echo '{"test": "dual_pipeline_tests", "status": "failed", "details": "Feature flag and fallback tests failed"}' | jq '.' >> $RESULTS_FILE
 fi
 
+# 5.2. Provider Tracking Tests
+log_info "Führe Provider Tracking Tests aus..."
+
+npx vitest run test/integration/provider-tracking.test.ts 2>&1 | tee /tmp/provider_tracking_test_output.log
+PROVIDER_TRACKING_EXIT_CODE=${PIPESTATUS[0]}
+
+if [ $PROVIDER_TRACKING_EXIT_CODE -eq 0 ]; then
+    log_success "Provider Tracking Tests bestanden"
+    echo '{"test": "provider_tracking_tests", "status": "passed", "details": "End-to-end provider tracking verified"}' | jq '.' >> $RESULTS_FILE
+else
+    log_error "Provider Tracking Tests fehlgeschlagen" 
+    echo '{"test": "provider_tracking_tests", "status": "failed", "details": "Provider tracking tests failed"}' | jq '.' >> $RESULTS_FILE
+fi
+
 # 6. End-to-End API Tests
 log_info "Führe E2E API Tests aus..."
 
