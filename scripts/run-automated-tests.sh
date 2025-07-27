@@ -191,6 +191,20 @@ else
     echo '{"test": "e2e_metrics_tests", "status": "failed", "details": "E2E metrics tests failed"}' | jq '.' >> $RESULTS_FILE
 fi
 
+# 5.7. Redeem-Code Integration Tests
+log_info "Führe Redeem-Code Integration Tests aus..."
+
+npx vitest run test/integration/redeem-code.test.ts 2>&1 | tee /tmp/redeem_code_test_output.log
+REDEEM_CODE_EXIT_CODE=${PIPESTATUS[0]}
+
+if [ $REDEEM_CODE_EXIT_CODE -eq 0 ]; then
+    log_success "Redeem-Code Tests bestanden"
+    echo '{"test": "redeem_code_tests", "status": "passed", "details": "Redeem code generation and redemption verified"}' | jq '.' >> $RESULTS_FILE
+else
+    log_error "Redeem-Code Tests fehlgeschlagen"
+    echo '{"test": "redeem_code_tests", "status": "failed", "details": "Redeem code tests failed"}' | jq '.' >> $RESULTS_FILE
+fi
+
 # 6. End-to-End API Tests
 log_info "Führe E2E API Tests aus..."
 
