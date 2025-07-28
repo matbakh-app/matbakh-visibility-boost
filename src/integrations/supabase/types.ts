@@ -2627,13 +2627,16 @@ export type Database = {
           claim_status: string | null
           claimed_at: string | null
           claimed_by_user_id: string | null
+          competition_level: string
           contact_email: string | null
           contact_phone: string | null
           created_at: string | null
           id: string
           lead_id: string | null
           location: string | null
+          market_analysis: Json
           matbakh_category: string | null
+          monetization_tier: string
           notes: string | null
           opening_hours: string[] | null
           revenue_streams: string[] | null
@@ -2651,13 +2654,16 @@ export type Database = {
           claim_status?: string | null
           claimed_at?: string | null
           claimed_by_user_id?: string | null
+          competition_level?: string
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string | null
           id?: string
           lead_id?: string | null
           location?: string | null
+          market_analysis?: Json
           matbakh_category?: string | null
+          monetization_tier?: string
           notes?: string | null
           opening_hours?: string[] | null
           revenue_streams?: string[] | null
@@ -2675,13 +2681,16 @@ export type Database = {
           claim_status?: string | null
           claimed_at?: string | null
           claimed_by_user_id?: string | null
+          competition_level?: string
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string | null
           id?: string
           lead_id?: string | null
           location?: string | null
+          market_analysis?: Json
           matbakh_category?: string | null
+          monetization_tier?: string
           notes?: string | null
           opening_hours?: string[] | null
           revenue_streams?: string[] | null
@@ -3162,6 +3171,7 @@ export type Database = {
           benchmark_insights: string | null
           benchmarks: Json | null
           category_insights: Json | null
+          competitive_analysis: Json
           created_at: string | null
           ga4_metrics: Json | null
           gmb_metrics: Json | null
@@ -3169,11 +3179,14 @@ export type Database = {
           instagram_candidates: Json | null
           lead_id: string | null
           lead_potential: string | null
+          market_insights: Json
+          monetization_score: number
           overall_score: number | null
           partner_id: string | null
           platform_analyses: Json | null
           provider: string | null
           quick_wins: Json | null
+          seasonal_data: Json
           swot_analysis: Json | null
           swot_opportunities: Json | null
           swot_strengths: Json | null
@@ -3189,6 +3202,7 @@ export type Database = {
           benchmark_insights?: string | null
           benchmarks?: Json | null
           category_insights?: Json | null
+          competitive_analysis?: Json
           created_at?: string | null
           ga4_metrics?: Json | null
           gmb_metrics?: Json | null
@@ -3196,11 +3210,14 @@ export type Database = {
           instagram_candidates?: Json | null
           lead_id?: string | null
           lead_potential?: string | null
+          market_insights?: Json
+          monetization_score?: number
           overall_score?: number | null
           partner_id?: string | null
           platform_analyses?: Json | null
           provider?: string | null
           quick_wins?: Json | null
+          seasonal_data?: Json
           swot_analysis?: Json | null
           swot_opportunities?: Json | null
           swot_strengths?: Json | null
@@ -3216,6 +3233,7 @@ export type Database = {
           benchmark_insights?: string | null
           benchmarks?: Json | null
           category_insights?: Json | null
+          competitive_analysis?: Json
           created_at?: string | null
           ga4_metrics?: Json | null
           gmb_metrics?: Json | null
@@ -3223,11 +3241,14 @@ export type Database = {
           instagram_candidates?: Json | null
           lead_id?: string | null
           lead_potential?: string | null
+          market_insights?: Json
+          monetization_score?: number
           overall_score?: number | null
           partner_id?: string | null
           platform_analyses?: Json | null
           provider?: string | null
           quick_wins?: Json | null
+          seasonal_data?: Json
           swot_analysis?: Json | null
           swot_opportunities?: Json | null
           swot_strengths?: Json | null
