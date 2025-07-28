@@ -162,68 +162,83 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
     const isDisabled = !isSelected && selectedSubCategories.length >= maxSelections;
     
     return (
-      <Card 
+      <label
         key={category.id}
+        htmlFor={`sub-category-${category.id}`}
         className={`
-          cursor-pointer transition-all duration-200 
-          ${isSelected 
-            ? 'ring-2 ring-primary bg-primary/5 border-primary' 
-            : 'hover:border-primary/50 hover:shadow-sm'
-          }
-          ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+          block cursor-pointer transition-all duration-200 
+          ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}
         `}
-        onClick={() => !isDisabled && handleSubCategoryToggle(category.id)}
       >
-        <CardContent className="p-3">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <h4 className="font-medium text-sm leading-tight">
-                  {category.name}
-                </h4>
-                {showConfidence && (
-                  <Badge 
-                    variant={category.confidence === 'high' ? 'default' : 'secondary'}
-                    className="text-xs px-1.5 py-0.5"
-                  >
-                    {category.confidence === 'high' ? '🎯' : category.confidence === 'medium' ? '⭐' : '💡'}
-                  </Badge>
+        <input
+          type="checkbox"
+          id={`sub-category-${category.id}`}
+          checked={isSelected}
+          disabled={isDisabled}
+          onChange={() => handleSubCategoryToggle(category.id)}
+          className="sr-only"
+        />
+        <Card 
+          className={`
+            transition-all duration-200 hover:border-primary/50 hover:shadow-sm
+            ${isSelected 
+              ? 'ring-2 ring-primary bg-primary/5 border-primary' 
+              : ''
+            }
+            ${isDisabled ? 'opacity-50' : ''}
+          `}
+        >
+          <CardContent className="p-3">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h4 className="font-medium text-sm leading-tight">
+                    {category.name}
+                  </h4>
+                  {showConfidence && (
+                    <Badge 
+                      variant={category.confidence === 'high' ? 'default' : 'secondary'}
+                      className="text-xs px-1.5 py-0.5"
+                    >
+                      {category.confidence === 'high' ? '🎯' : category.confidence === 'medium' ? '⭐' : '💡'}
+                    </Badge>
+                  )}
+                </div>
+                
+                {category.description && (
+                  <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                    {category.description}
+                  </p>
+                )}
+                
+                {category.keywords.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {category.keywords.slice(0, 3).map(keyword => (
+                      <span key={keyword} className="text-xs bg-muted px-1.5 py-0.5 rounded">
+                        {keyword}
+                      </span>
+                    ))}
+                  </div>
                 )}
               </div>
               
-              {category.description && (
-                <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
-                  {category.description}
-                </p>
-              )}
-              
-              {category.keywords.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {category.keywords.slice(0, 3).map(keyword => (
-                    <span key={keyword} className="text-xs bg-muted px-1.5 py-0.5 rounded">
-                      {keyword}
-                    </span>
-                  ))}
-                </div>
+              {isSelected && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0 shrink-0 pointer-events-auto"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeSubCategorySelection(category.id);
+                  }}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
               )}
             </div>
-            
-            {isSelected && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0 shrink-0"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removeSubCategorySelection(category.id);
-                }}
-              >
-                <X className="h-3 w-3" />
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </label>
     );
   };
 

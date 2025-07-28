@@ -101,38 +101,53 @@ export const MainCategorySelector: React.FC<MainCategorySelectorProps> = ({
           const isDisabled = !isSelected && selectedCategories.length >= maxSelections;
           
           return (
-            <Card 
-              key={category.id} 
+            <label
+              key={category.id}
+              htmlFor={`main-category-${category.id}`}
               className={`
-                cursor-pointer transition-all duration-200 
-                ${isSelected 
-                  ? 'ring-2 ring-primary bg-primary/5 border-primary' 
-                  : 'hover:border-primary/50 hover:shadow-sm'
-                }
-                ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+                block cursor-pointer transition-all duration-200 
+                ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}
               `}
-              onClick={() => !isDisabled && handleCategoryToggle(category.id)}
             >
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <Checkbox 
-                    checked={isSelected}
-                    disabled={isDisabled}
-                    className="mt-1"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-sm leading-tight">
-                      {getCategoryName(category)}
-                    </h4>
-                    {getCategoryDescription(category.id) && (
-                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                        {getCategoryDescription(category.id)}
-                      </p>
-                    )}
+              <input
+                type="checkbox"
+                id={`main-category-${category.id}`}
+                checked={isSelected}
+                disabled={isDisabled}
+                onChange={() => handleCategoryToggle(category.id)}
+                className="sr-only"
+              />
+              <Card 
+                className={`
+                  transition-all duration-200 hover:border-primary/50 hover:shadow-sm
+                  ${isSelected 
+                    ? 'ring-2 ring-primary bg-primary/5 border-primary' 
+                    : ''
+                  }
+                  ${isDisabled ? 'opacity-50' : ''}
+                `}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <Checkbox 
+                      checked={isSelected}
+                      disabled={isDisabled}
+                      className="mt-1 pointer-events-none"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-sm leading-tight">
+                        {getCategoryName(category)}
+                      </h4>
+                      {getCategoryDescription(category.id) && (
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                          {getCategoryDescription(category.id)}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </label>
           );
         })}
       </div>
