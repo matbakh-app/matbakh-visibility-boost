@@ -13,6 +13,12 @@ interface VisibilityResultsEnhancedProps {
     gmb_metrics?: any;
     ga4_metrics?: any;
     ads_metrics?: any;
+    // Phase 2: Neue AI-Response-Felder
+    strengths?: string[];
+    weaknesses?: string[];
+    potentials?: string[];
+    missing_features?: string[];
+    competitor_benchmark?: string[];
     swotAnalysis?: {
       strengths: string[];
       weaknesses: string[];
@@ -25,6 +31,7 @@ interface VisibilityResultsEnhancedProps {
       effort: number;
       priority?: 'high' | 'medium' | 'low';
     }>;
+    benchmarkInsights?: string;
   };
   onRequestDetailedReport?: () => void;
   onNewAnalysis: () => void;
@@ -159,6 +166,135 @@ const VisibilityResultsEnhanced: React.FC<VisibilityResultsEnhancedProps> = ({
             {/* ... GMB, GA4, Ads metrics cards ... */}
           </div>
         </div>
+      )}
+
+      {/* Phase 2: New AI Analysis Sections */}
+      
+      {/* Strengths Section */}
+      {analysisResult.strengths && analysisResult.strengths.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-green-700">
+              <TrendingUp className="w-5 h-5" />
+              Ihre Stärken
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-3">
+              {analysisResult.strengths.map((strength, idx) => (
+                <div key={idx} className="flex items-start gap-2 p-3 bg-green-50 rounded-lg">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0" />
+                  <p className="text-sm">{strength}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Weaknesses Section */}
+      {analysisResult.weaknesses && analysisResult.weaknesses.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-orange-700">
+              <Target className="w-5 h-5" />
+              Verbesserungsbereiche
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-3">
+              {analysisResult.weaknesses.map((weakness, idx) => (
+                <div key={idx} className="flex items-start gap-2 p-3 bg-orange-50 rounded-lg">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0" />
+                  <p className="text-sm">{weakness}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Potentials Section */}
+      {analysisResult.potentials && analysisResult.potentials.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-blue-700">
+              <Star className="w-5 h-5" />
+              Ungenutztes Potenzial
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-3">
+              {analysisResult.potentials.map((potential, idx) => (
+                <div key={idx} className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
+                  <p className="text-sm">{potential}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Missing Features Section */}
+      {analysisResult.missing_features && analysisResult.missing_features.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-red-700">
+              <BarChart3 className="w-5 h-5" />
+              Fehlende Features
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-3">
+              {analysisResult.missing_features.map((feature, idx) => (
+                <div key={idx} className="flex items-start gap-2 p-3 bg-red-50 rounded-lg">
+                  <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0" />
+                  <p className="text-sm">{feature}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Competitor Benchmark Section */}
+      {analysisResult.competitor_benchmark && analysisResult.competitor_benchmark.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-purple-700">
+              <Users className="w-5 h-5" />
+              Wettbewerbsvergleich
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {analysisResult.competitor_benchmark.map((benchmark, idx) => (
+                <div key={idx} className="flex items-start gap-2 p-3 bg-purple-50 rounded-lg">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0" />
+                  <p className="text-sm">{benchmark}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Benchmark Insights */}
+      {analysisResult.benchmarkInsights && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-indigo-700">
+              <BarChart3 className="w-5 h-5" />
+              Markteinordnung
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="p-4 bg-indigo-50 rounded-lg">
+              <p className="text-sm">{analysisResult.benchmarkInsights}</p>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Quick Wins */}
