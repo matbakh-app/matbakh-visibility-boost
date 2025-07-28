@@ -1049,27 +1049,47 @@ serve(async (req) => {
           console.error('❌ Error updating lead status to analyzing:', statusError);
         }
 
-        // Phase 2: Enhanced Insert-Objekt mit allen neuen Feldern
+        // Task 3: AI-Response-Mapping - Enhanced Insert-Objekt mit Phase-2-Feldern
         const provider = aiAnalysis.provider || (useBedrock ? 'bedrock' : 'mockAnalysis');
+        
+        // Extract AI recommendations with proper mapping
+        const mappedRecommendations = aiAnalysis.recommendations?.map((rec: any) => ({
+          task: rec.task || rec.description || '',
+          impact: typeof rec.impact === 'number' ? rec.impact : 3,
+          effort: typeof rec.effort === 'number' ? rec.effort : 3,
+          priority: rec.priority || (rec.impact > 4 ? 'high' : rec.impact > 2 ? 'medium' : 'low')
+        })) || [];
+
         const insertPayload = {
           lead_id: data.leadId,
           overall_score: overallScore,
           platform_analyses: platformAnalyses,
-          // Phase 2: Neue Felder für erweiterte Analyse
+          
+          // Task 3: AI-Response-Mapping - Neue Phase-2-Felder
           strengths: strengths || [],
           weaknesses: weaknesses || [],
           potentials: potentials || [],
           missing_features: missing_features || [],
           competitor_benchmark: competitor_benchmark || [],
-          // Bestehende Felder
-          category_insights: categoryInsights,
-          quick_wins: quickWins,
-          swot_analysis: swotAnalysis,
-          benchmark_insights: benchmarkInsights,
-          lead_potential: leadPotential,
+          
+          // Enhanced SWOT mit Recommendations-Mapping
+          swot_analysis: {
+            ...swotAnalysis,
+            recommendations: mappedRecommendations
+          },
+          
+          // Bestehende Felder mit Fallbacks
+          category_insights: categoryInsights || [],
+          quick_wins: quickWins || [],
+          benchmark_insights: benchmarkInsights || "Analyse abgeschlossen",
+          lead_potential: leadPotential || 'medium',
+          
+          // Metadaten und Raw-Daten
           analysis_results: aiAnalysis,            // vollständiges Raw-JSON für spätere Audits
           instagram_candidates: instagramCandidates,
-          provider,                                // Provider-Tracking hinzugefügt
+          provider,                                // Provider-Tracking (bedrock/mockAnalysis)
+          
+          // Google Services Integration
           gmb_metrics: gmbMetrics || {},           // Google My Business Metriken
           ga4_metrics: ga4Metrics || {},           // Google Analytics 4 Metriken  
           ads_metrics: adsMetrics || {}            // Google Ads Metriken
