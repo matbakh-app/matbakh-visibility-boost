@@ -752,6 +752,7 @@ WICHTIG:
     console.error('❌ Bedrock analysis failed:', error);
     throw error; // Let the fallback logic handle this
   }
+}
 
 // Category-specific requirements function
 function getCategorySpecificRequirements(category: string, language: string = 'de'): string {
