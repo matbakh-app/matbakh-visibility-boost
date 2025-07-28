@@ -1071,6 +1071,7 @@ serve(async (req) => {
           potentials: potentials || [],
           missing_features: missing_features || [],
           competitor_benchmark: competitor_benchmark || [],
+          trends: aiAnalysis.trends || {},         // Google Trends Data added
           
           // Enhanced SWOT mit Recommendations-Mapping
           swot_analysis: {
