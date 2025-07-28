@@ -1,10 +1,32 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { X } from 'lucide-react';
-import { useGmbCategories } from '@/hooks/useGmbCategories';
-import type { GmbCategory } from '@/hooks/useGmbCategories';
+
+// Fixed main categories according to new blueprint
+const MAIN_CATEGORIES = [
+  { id: 'food-drink', de: 'Essen & Trinken', en: 'Food & Drink' },
+  { id: 'entertainment-culture', de: 'Unterhaltung & Kultur', en: 'Entertainment & Culture' },
+  { id: 'retail-shopping', de: 'Einzelhandel & Shopping', en: 'Retail & Shopping' },
+  { id: 'health-wellness', de: 'Gesundheit & Wellness', en: 'Health & Wellness' },
+  { id: 'automotive', de: 'Automotive & Transport', en: 'Automotive & Transport' },
+  { id: 'beauty-personal-care', de: 'Beauty & Körperpflege', en: 'Beauty & Personal Care' },
+  { id: 'sports-fitness', de: 'Sport & Fitness', en: 'Sports & Fitness' },
+  { id: 'home-garden', de: 'Haus & Garten', en: 'Home & Garden' },
+  { id: 'professional-services', de: 'Professionelle Dienstleistungen', en: 'Professional Services' },
+  { id: 'education-training', de: 'Bildung & Ausbildung', en: 'Education & Training' },
+  { id: 'technology-electronics', de: 'Technologie & Elektronik', en: 'Technology & Electronics' },
+  { id: 'travel-tourism', de: 'Reisen & Tourismus', en: 'Travel & Tourism' },
+  { id: 'finance-insurance', de: 'Finanzen & Versicherung', en: 'Finance & Insurance' },
+  { id: 'real-estate', de: 'Immobilien', en: 'Real Estate' },
+  { id: 'pets-animals', de: 'Haustiere & Tiere', en: 'Pets & Animals' },
+  { id: 'events-venues', de: 'Events & Veranstaltungsorte', en: 'Events & Venues' },
+  { id: 'government-public', de: 'Öffentliche Einrichtungen', en: 'Government & Public' },
+  { id: 'religious-spiritual', de: 'Religion & Spiritualität', en: 'Religious & Spiritual' },
+  { id: 'other-services', de: 'Weitere Dienstleistungen', en: 'Other Services' }
+];
 
 interface MainCategorySelectorProps {
   selectedCategories: string[];
@@ -18,69 +40,39 @@ export const MainCategorySelector: React.FC<MainCategorySelectorProps> = ({
   maxSelections = 3
 }) => {
   const { t, i18n } = useTranslation('onboarding');
-  const { data: gmbCategories, isLoading } = useGmbCategories();
-
-  // Debug logging
-  React.useEffect(() => {
-    if (gmbCategories) {
-      console.log('🔍 Loaded GMB categories:', gmbCategories.length);
-      console.log('🔍 Sample categories:', gmbCategories.slice(0, 3));
-    }
-  }, [gmbCategories]);
-
-  const mainCategoryOptions = React.useMemo(() => {
-    if (!gmbCategories) return [];
-    
-    // 1. Extract all values based on language
-    const values = gmbCategories.map(cat =>
-      i18n.language === 'de'
-        ? cat.haupt_kategorie
-        : cat.main_category
-    ).filter(Boolean); // Remove empty values
-
-    // 2. Remove duplicates using Set
-    const unique = Array.from(new Set(values));
-
-    // 3. Sort alphabetically
-    unique.sort((a, b) => a.localeCompare(b, i18n.language));
-
-    // 4. Create category objects with unique IDs (complete GmbCategory structure)
-    const uniqueCategories = unique.map((name, index) => ({
-      id: `main_${index}`,
-      category_id: `main_${index}`,
-      name_de: name,
-      name_en: name,
-      haupt_kategorie: i18n.language === 'de' ? name : null,
-      main_category: i18n.language === 'en' ? name : null,
-      parent_category_id: null,
-      parent_id: null,
-      category_path: null,
-      country_availability: null,
-      description_de: null,
-      description_en: null,
-      keywords: null,
-      synonyms: null,
-      is_popular: false,
-      is_primary: true,
-      sort_order: index,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    } as GmbCategory));
-    
-    console.log('🔍 Unique main categories for', i18n.language, ':', uniqueCategories.length, uniqueCategories.slice(0, 3));
-    return uniqueCategories;
-  }, [gmbCategories, i18n.language]);
-
-  const getCategoryName = (category: GmbCategory) => {
-    if (i18n.language === 'de') {
-      return category.haupt_kategorie || category.name_de;
-    } else {
-      return category.main_category || category.name_en;
-    }
+  
+  const getCategoryName = (category: typeof MAIN_CATEGORIES[0]) => {
+    return i18n.language === 'de' ? category.de : category.en;
   };
 
-  const handleCategorySelect = (categoryId: string) => {
-    if (!selectedCategories.includes(categoryId) && selectedCategories.length < maxSelections) {
+  const getCategoryDescription = (categoryId: string) => {
+    // Add descriptions for better UX
+    const descriptions: Record<string, { de: string; en: string }> = {
+      'food-drink': {
+        de: 'Restaurants, Cafés, Bars, Bäckereien, Lieferdienste',
+        en: 'Restaurants, Cafés, Bars, Bakeries, Delivery Services'
+      },
+      'entertainment-culture': {
+        de: 'Kinos, Theater, Museen, Konzerthallen, Veranstaltungen',
+        en: 'Cinemas, Theaters, Museums, Concert Halls, Events'
+      },
+      'retail-shopping': {
+        de: 'Geschäfte, Boutiquen, Märkte, Online-Shops',
+        en: 'Stores, Boutiques, Markets, Online Shops'
+      }
+      // Add more as needed
+    };
+    
+    const desc = descriptions[categoryId];
+    return desc ? (i18n.language === 'de' ? desc.de : desc.en) : '';
+  };
+
+  const handleCategoryToggle = (categoryId: string) => {
+    if (selectedCategories.includes(categoryId)) {
+      // Remove category
+      onCategoryChange(selectedCategories.filter(id => id !== categoryId));
+    } else if (selectedCategories.length < maxSelections) {
+      // Add category
       onCategoryChange([...selectedCategories, categoryId]);
     }
   };
@@ -89,60 +81,92 @@ export const MainCategorySelector: React.FC<MainCategorySelectorProps> = ({
     onCategoryChange(selectedCategories.filter(id => id !== categoryId));
   };
 
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <div className="h-10 bg-gray-200 rounded animate-pulse" />
-        <div className="h-6 bg-gray-200 rounded animate-pulse w-1/3" />
-      </div>
-    );
-  }
-
-  const availableCategories = mainCategoryOptions?.filter(
-    category => !selectedCategories.includes(category.category_id)
-  ) || [];
-
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          {t('categorySelector.mainCategory.label', { maxSelections })}
-        </label>
-        
-        <Select onValueChange={handleCategorySelect} disabled={selectedCategories.length >= maxSelections}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder={
-              selectedCategories.length >= maxSelections 
-                ? t('categorySelector.mainCategory.maxReached', { maxSelections })
-                : t('categorySelector.mainCategory.placeholder')
-            } />
-          </SelectTrigger>
-          <SelectContent>
-            {availableCategories.map(category => (
-              <SelectItem key={category.category_id} value={category.category_id}>
-                {getCategoryName(category)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <h3 className="text-lg font-semibold text-foreground mb-2">
+          {t('categorySelector.mainCategory.title', 'Hauptkategorien wählen')}
+        </h3>
+        <p className="text-sm text-muted-foreground mb-4">
+          {t('categorySelector.mainCategory.description', 
+            `Wählen Sie bis zu ${maxSelections} Hauptkategorien für Ihr Unternehmen aus.`
+          )}
+        </p>
       </div>
 
-      <div className="space-y-2">
-        <p className="text-sm text-gray-600">
-          {t('categorySelector.mainCategory.selectedCount', { count: selectedCategories.length, max: maxSelections })}
-        </p>
-        
-        {selectedCategories.length > 0 && (
+      {/* Checkbox Grid for Main Categories */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        {MAIN_CATEGORIES.map(category => {
+          const isSelected = selectedCategories.includes(category.id);
+          const isDisabled = !isSelected && selectedCategories.length >= maxSelections;
+          
+          return (
+            <Card 
+              key={category.id} 
+              className={`
+                cursor-pointer transition-all duration-200 
+                ${isSelected 
+                  ? 'ring-2 ring-primary bg-primary/5 border-primary' 
+                  : 'hover:border-primary/50 hover:shadow-sm'
+                }
+                ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+              `}
+              onClick={() => !isDisabled && handleCategoryToggle(category.id)}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <Checkbox 
+                    checked={isSelected}
+                    disabled={isDisabled}
+                    className="mt-1"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-sm leading-tight">
+                      {getCategoryName(category)}
+                    </h4>
+                    {getCategoryDescription(category.id) && (
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                        {getCategoryDescription(category.id)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Selected Categories Display */}
+      {selectedCategories.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h4 className="font-medium text-sm">
+              {t('categorySelector.mainCategory.selected', 'Ausgewählte Kategorien')}
+            </h4>
+            <span className="text-xs text-muted-foreground">
+              {selectedCategories.length} / {maxSelections}
+            </span>
+          </div>
+          
           <div className="flex flex-wrap gap-2">
             {selectedCategories.map(categoryId => {
-              const category = mainCategoryOptions?.find(c => c.category_id === categoryId);
+              const category = MAIN_CATEGORIES.find(c => c.id === categoryId);
               return category ? (
-                <Badge key={categoryId} variant="default" className="flex items-center gap-1">
+                <Badge 
+                  key={categoryId} 
+                  variant="secondary" 
+                  className="flex items-center gap-2 px-3 py-1"
+                >
                   {getCategoryName(category)}
                   <button
-                    onClick={() => removeCategorySelection(categoryId)}
-                    className="ml-1 hover:bg-white/20 rounded-full p-0.5"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeCategorySelection(categoryId);
+                    }}
+                    className="hover:bg-background/20 rounded-full p-0.5 transition-colors"
                     type="button"
+                    aria-label={t('categorySelector.remove', 'Entfernen')}
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -150,7 +174,24 @@ export const MainCategorySelector: React.FC<MainCategorySelectorProps> = ({
               ) : null;
             })}
           </div>
-        )}
+        </div>
+      )}
+
+      {/* Progress Indicator */}
+      <div className="text-center">
+        <div className="text-xs text-muted-foreground">
+          {selectedCategories.length === 0 && (
+            t('categorySelector.mainCategory.hint', 'Wählen Sie Ihre Hauptkategorien aus')
+          )}
+          {selectedCategories.length > 0 && selectedCategories.length < maxSelections && (
+            t('categorySelector.mainCategory.canAddMore', 
+              `Sie können noch ${maxSelections - selectedCategories.length} weitere Kategorie(n) auswählen`
+            )
+          )}
+          {selectedCategories.length === maxSelections && (
+            t('categorySelector.mainCategory.maxReached', 'Maximum erreicht')
+          )}
+        </div>
       </div>
     </div>
   );

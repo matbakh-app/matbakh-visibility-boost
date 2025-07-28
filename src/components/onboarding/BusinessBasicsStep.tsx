@@ -392,9 +392,10 @@ export const BusinessBasicsStep: React.FC<BusinessBasicsStepProps> = ({
 
           <div>
             <SubCategorySelector 
-              selectedCategories={data.subCategories || []} 
-              onCategoryChange={handleSubCategoryChange} 
-              maxSelections={20}
+              selectedMainCategories={data.mainCategories || []}
+              selectedSubCategories={data.subCategories || []} 
+              onSubCategoryChange={handleSubCategoryChange} 
+              maxSelections={5}
             />
           </div>
         </CardContent>
