@@ -869,20 +869,36 @@ serve(async (req) => {
       }
     }
 
-    // 2.1.1: Load subcategories for dynamic prompting
-    const { data: subcats } = await supabase
+    // 2.1.1: Load related categories for dynamic prompting using new Many-to-Many model
+    const { data: relatedCats } = await supabase
       .from('gmb_categories')
-      .select('name_de, name_en')
-      .eq('haupt_kategorie', data.mainCategory);
+      .select(`
+        name_de, 
+        name_en,
+        description_de,
+        description_en,
+        keywords,
+        related_categories!inner(
+          related_category_id,
+          relationship_type,
+          strength
+        )
+      `)
+      .eq('category_id', data.mainCategory);
     
     const locale = 'de'; // Can be dynamic based on user locale
-    const unterKategorien = (subcats || [])
-      .map(c => locale === 'de' ? c.name_de : c.name_en)
-      .filter(Boolean);
+    const relatedCategories = (relatedCats || [])
+      .map(c => ({
+        name: locale === 'de' ? c.name_de : c.name_en,
+        description: locale === 'de' ? c.description_de : c.description_en,
+        keywords: c.keywords || [],
+        relationshipType: c.related_categories?.[0]?.relationship_type
+      }))
+      .filter(cat => cat.name);
     
-    // Top-3 subcategories for prompt
-    const promptCategories = unterKategorien.slice(0, 3);
-    console.log('📋 Using subcategories for AI context:', promptCategories);
+    // Top-3 related categories for prompt with keywords
+    const promptCategories = relatedCategories.slice(0, 3);
+    console.log('📋 Using related categories for AI context:', promptCategories);
 
     // 2.1.2: Load benchmark data from industry_benchmarks table
     const { data: benchmarkData } = await supabase
