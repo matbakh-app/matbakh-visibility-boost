@@ -26,6 +26,17 @@ export interface VisibilityFormData {
   email?: string;
   gdprConsent?: boolean;
   marketingConsent?: boolean;
+  // Enhanced fields according to blueprint
+  categoryId?: number;
+  categoryName?: string;
+  competitorUrls?: string[];
+  language?: string;
+  locationData?: {
+    city: string;
+    country: string;
+    coordinates?: [number, number];
+  };
+  socialLinks?: Record<string, string>;
 }
 
 const VisibilityWizard: React.FC = () => {
@@ -121,7 +132,11 @@ const VisibilityWizard: React.FC = () => {
         details: { step: 'visibility_check' },
       });
 
-      // Prepare data for the legacy analysis function
+      // Enhanced data preparation with new fields according to blueprint
+      const locationParts = stepOneData.location.split(',').map(s => s.trim());
+      const city = locationParts[0] || stepOneData.location;
+      const country = locationParts[1] || 'Deutschland';
+      
       const completeFormData = {
         businessName: stepOneData.businessName,
         location: stepOneData.location,
@@ -139,6 +154,23 @@ const VisibilityWizard: React.FC = () => {
         gdprConsent: data.gdprConsent || false,
         marketingConsent: data.marketingConsent || false,
         leadId: leadId, // Pass the lead ID to the analysis function
+        // Enhanced fields for better AI analysis
+        categoryName: stepOneData.mainCategory,
+        competitorUrls: [data.benchmarkOne, data.benchmarkTwo, data.benchmarkThree]
+          .filter(Boolean)
+          .map(name => `https://www.google.com/search?q=${encodeURIComponent(name + ' ' + city)}`),
+        language: 'de', // TODO: Make this dynamic based on user preference
+        locationData: {
+          city,
+          country,
+          coordinates: undefined // TODO: Geocoding integration
+        },
+        socialLinks: {
+          facebook: data.facebook ? `https://www.facebook.com/${data.facebook}` : undefined,
+          instagram: data.instagram ? `https://www.instagram.com/${data.instagram}` : undefined,
+          linkedin: data.linkedin ? `https://www.linkedin.com/company/${data.linkedin}` : undefined,
+          website: data.website
+        }
       };
 
       console.log('🚀 Starting enhanced visibility check with data:', completeFormData);

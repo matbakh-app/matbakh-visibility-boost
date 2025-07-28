@@ -252,20 +252,36 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-interface VisibilityCheckRequest {
-  businessName: string
-  location: string
-  mainCategory: string
-  subCategory: string
-  matbakhTags: string[]
-  website?: string
-  facebookName?: string
-  instagramName?: string
-  benchmarks: string[]
-  email?: string
-  leadId?: string
-  googleName?: string
+// Enhanced LeadData interface according to blueprint
+interface LeadData {
+  businessName: string;
+  location: string;
+  mainCategory: string;
+  subCategory: string;
+  matbakhTags: string[];
+  website?: string;
+  facebookName?: string;
+  instagramName?: string;
+  benchmarks: string[];
+  email?: string;
+  leadId?: string;
+  googleName?: string;
+  // New enhanced fields
+  categoryId?: number;
+  categoryName?: string;
+  competitorUrls?: string[];
+  language?: string;
+  locationData?: {
+    city: string;
+    country: string;
+    coordinates?: [number, number];
+  };
+  socialLinks?: Record<string, string>;
+  gdprConsent?: boolean;
+  marketingConsent?: boolean;
 }
+
+interface VisibilityCheckRequest extends LeadData {}
 
 interface InstagramCandidate {
   handle: string
@@ -409,31 +425,77 @@ function generateMockAnalysis(input: any, categoryContext: string[], benchmarkDa
   };
 }
 
-// ============= BEDROCK AI CLIENT =============
-async function callBedrockVisibilityAnalysis(input: any, categoryContext: string[], benchmarkData: any[]) {
+// ============= BEDROCK AI CLIENT WITH LOCALIZED PROMPTS =============
+async function callBedrockVisibilityAnalysis(input: any, categoryContext: string[], benchmarkData: any[], language: string = 'de') {
   const client = new BedrockRuntimeClient({ 
-    region: Deno.env.get('AWS_REGION') || 'eu-central-1',
+    region: Deno.env.get('AWS_BEDROCK_REGION') || 'eu-central-1',
     credentials: {
-      accessKeyId: Deno.env.get('AWS_ACCESS_KEY_ID') || '',
-      secretAccessKey: Deno.env.get('AWS_SECRET_ACCESS_KEY') || ''
+      accessKeyId: Deno.env.get('AWS_BEDROCK_ACCESS_KEY_ID') || '',
+      secretAccessKey: Deno.env.get('AWS_BEDROCK_SECRET_ACCESS_KEY') || ''
     }
   });
 
-  const MODEL_ID = "anthropic.claude-3-5-sonnet-20241022-v2:0";
+  const MODEL_ID = Deno.env.get('AWS_BEDROCK_MODEL_ID') || "anthropic.claude-3-5-sonnet-20241022-v2:0";
 
-  // Dynamic prompt generation with category context
-  const prompt = `
-Du bist ein zertifizierter Experte für ${categoryContext.join(', ')}. 
-Analysiere die digitale Sichtbarkeit dieses Restaurants und gib eine JSON-Antwort zurück.
+  // Enhanced data context including Google Services metrics
+  const businessData = {
+    name: input.businessName,
+    location: input.location,
+    category: input.mainCategory,
+    competitors: benchmarkData.map(b => b.name || b.metric_name).filter(Boolean).join(', ') || 'Keine Benchmark-Daten',
+    googleProfile: input.googleName || 'Nicht angegeben',
+    facebookProfile: input.facebookName || 'Nicht angegeben', 
+    instagramProfile: input.instagramName || 'Nicht angegeben',
+    hasGoogleData: input.hasGoogleData || false,
+    gmbMetrics: input.gmbMetrics,
+    ga4Metrics: input.ga4Metrics,
+    adsMetrics: input.adsMetrics
+  };
 
-RESTAURANT-DATEN:
-– Name: ${input.businessName}
-– Standort: ${input.location}
+  // Enhanced category-specific requirements based on restaurant type
+  const categoryRequirements = getCategorySpecificRequirements(input.mainCategory, language);
+
+  // Localized system prompt with enhanced context
+  const systemPrompt = language === 'de' 
+    ? `Du bist ein KI-Analyst für digitale Sichtbarkeit von ${businessData.name}. 
+       
+       Analysiere die Online-Präsenz als ${businessData.category} im Vergleich zu: ${businessData.competitors}.
+       
+       BESONDERE ANFORDERUNGEN FÜR ${businessData.category.toUpperCase()}:
+       ${categoryRequirements}
+       
+       VERFÜGBARE ECHTE DATEN:
+       ${businessData.hasGoogleData ? '✅ Google Services Metriken verfügbar' : '❌ Keine Google-Anbindung'}
+       ${businessData.gmbMetrics ? `• GMB: ${businessData.gmbMetrics.rating || 'N/A'} Sterne, ${businessData.gmbMetrics.reviewCount || 0} Bewertungen` : ''}
+       ${businessData.ga4Metrics ? `• GA4: ${businessData.ga4Metrics.sessions || 0} Sessions, ${businessData.ga4Metrics.pageviews || 0} Pageviews` : ''}
+       ${businessData.adsMetrics ? `• Ads: ${businessData.adsMetrics.impressions || 0} Impressions, €${businessData.adsMetrics.cost || 0} Kosten` : ''}
+       
+       Erstelle eine strukturierte JSON-Antwort mit praktischen, umsetzbaren Empfehlungen.`
+    : `You are an AI analyst for digital visibility of ${businessData.name}.
+       
+       Analyze the online presence as a ${businessData.category} compared to: ${businessData.competitors}.
+       
+       SPECIFIC REQUIREMENTS FOR ${businessData.category.toUpperCase()}:
+       ${categoryRequirements}
+       
+       AVAILABLE REAL DATA:
+       ${businessData.hasGoogleData ? '✅ Google Services metrics available' : '❌ No Google connection'}
+       ${businessData.gmbMetrics ? `• GMB: ${businessData.gmbMetrics.rating || 'N/A'} stars, ${businessData.gmbMetrics.reviewCount || 0} reviews` : ''}
+       ${businessData.ga4Metrics ? `• GA4: ${businessData.ga4Metrics.sessions || 0} sessions, ${businessData.ga4Metrics.pageviews || 0} pageviews` : ''}
+       ${businessData.adsMetrics ? `• Ads: ${businessData.adsMetrics.impressions || 0} impressions, €${businessData.adsMetrics.cost || 0} cost` : ''}
+       
+       Create a structured JSON response with practical, actionable recommendations.`;
+
+  // Enhanced analysis prompt with real data integration
+  const analysisPrompt = `RESTAURANT-DATEN:
+– Name: ${businessData.name}
+– Standort: ${businessData.location}
+– Kategorie: ${businessData.category}
 – Social Handles:
-  • Google: ${input.googleName || '–'}
-  • Facebook: ${input.facebookName || '–'}
-  • Instagram: ${input.instagramName || '–'}
-– Benchmarks: ${benchmarkData.map(b => b.name).join(', ')}
+  • Google: ${businessData.googleProfile}
+  • Facebook: ${businessData.facebookProfile}
+  • Instagram: ${businessData.instagramProfile}
+– Benchmark-Unternehmen: ${businessData.competitors}
 
 AUFGABE: Erstelle eine professionelle Sichtbarkeitsanalyse als JSON mit folgender Struktur:
 
@@ -495,8 +557,8 @@ WICHTIG:
         temperature: 0.3,
         messages: [
           {
-            role: "user",
-            content: prompt
+            role: "user", 
+            content: systemPrompt + "\n\n" + analysisPrompt
           }
         ]
       })
@@ -522,6 +584,40 @@ WICHTIG:
     console.error('❌ Bedrock analysis failed:', error);
     throw error; // Let the fallback logic handle this
   }
+}
+
+// Category-specific requirements function
+function getCategorySpecificRequirements(category: string, language: string = 'de'): string {
+  const requirements: Record<string, {de: string, en: string}> = {
+    'restaurant': {
+      de: 'Hochwertige Speisefotos, Öffnungszeiten, Online-Reservierungen, aktuelle Speisekarte, Bewertungsmanagement',
+      en: 'High-quality food photos, opening hours, online reservations, current menu, review management'
+    },
+    'cafe': {
+      de: 'Atmosphäre-Fotos, WiFi-Information, Frühstückszeiten, Events, Instagram-Präsenz',
+      en: 'Atmosphere photos, WiFi information, breakfast times, events, Instagram presence'
+    },
+    'bar': {
+      de: 'Getränkekarte, Happy Hour Zeiten, Event-Ankündigungen, Atmosphere, Social Media',
+      en: 'Drink menu, happy hour times, event announcements, atmosphere, social media'
+    },
+    'pizzeria': {
+      de: 'Lieferservice-Integration, Online-Bestellung, Speisekarte mit Preisen, Bewertungen',
+      en: 'Delivery service integration, online ordering, menu with prices, reviews'
+    },
+    'fastfood': {
+      de: 'Schnelle Bestellung, Drive-Through Info, Öffnungszeiten, Preisliste, Mobile Apps',
+      en: 'Quick ordering, drive-through info, opening hours, price list, mobile apps'
+    },
+    'bakery': {
+      de: 'Frische Produkte, Tagesangebote, Frühe Öffnungszeiten, Vorbestellungen',
+      en: 'Fresh products, daily specials, early opening hours, pre-orders'
+    }
+  };
+  
+  const categoryKey = category.toLowerCase();
+  const req = requirements[categoryKey] || requirements['restaurant'];
+  return language === 'de' ? req.de : req.en;
 }
 
 serve(async (req) => {
