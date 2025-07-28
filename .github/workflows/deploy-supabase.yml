@@ -8,33 +8,31 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      PROJECT_REF: uheksobnyedarrpgxhju
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Check out code
+        uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
+      - name: Install Supabase CLI manually
+        run: |
+          # 1) Download und entpacken
+          curl -L https://github.com/supabase/cli/releases/download/v2.31.8/supabase_2.31.8_linux_amd64.tar.gz \
+            | tar -xz
+          # 2) In systemweiten Pfad verschieben
+          sudo mv supabase /usr/local/bin/
 
-    - name: Setup Supabase CLI
-      uses: supabase/cli-action@v1
-      with:
-        version: 2.31.8
+          # 3) Version prüfen (debug)
+          supabase --version
 
-    - name: Log into Supabase
-      env:
-        SUPABASE_TOKEN: ${{ secrets.SUPABASE_TOKEN }}
-      run: supabase login --token $SUPABASE_TOKEN
+      - name: Deploy enhanced-visibility-check
+        run: |
+          supabase functions deploy enhanced-visibility-check \
+            --project-ref $PROJECT_REF
 
-    - name: Link to project
-      run: supabase link --project-ref uheksobnyedarrpgxhju
-
-    - name: Deploy enhanced-visibility-check
-      run: supabase functions deploy enhanced-visibility-check
-
-    - name: Deploy log_uploader
-      run: supabase functions deploy log_uploader
-
-    # ggf. weitere Functions hier
+      - name: Deploy log_uploader
+        run: |
+          supabase functions deploy log_uploader \
+            --project-ref $PROJECT_REF
