@@ -74,7 +74,11 @@ export interface VisibilityCheckResult {
   swot_opportunities: string[];
   swot_threats: string[];
   action_recommendations: any[];
-  provider: string;
+  provider: 'bedrock' | 'mockAnalysis' | 'manual';
+  recommendations: any[];
+  competitive_analysis: Record<string, any>;
+  market_insights: Record<string, any>;
+  seasonal_data: Record<string, any>;
   created_at: string;
   updated_at: string;
 }
