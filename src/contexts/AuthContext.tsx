@@ -159,7 +159,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 .from('business_partners')
                 .select('id, onboarding_completed')
                 .eq('user_id', session.user.id)
-                .single();
+                .maybeSingle();
 
               // Log auth event
               await logOAuthEvent(
