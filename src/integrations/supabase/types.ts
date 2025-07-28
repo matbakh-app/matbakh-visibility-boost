@@ -3172,6 +3172,7 @@ export type Database = {
           benchmarks: Json | null
           category_insights: Json | null
           competitive_analysis: Json
+          competitor_benchmark: Json | null
           created_at: string | null
           ga4_metrics: Json | null
           gmb_metrics: Json | null
@@ -3203,6 +3204,7 @@ export type Database = {
           benchmarks?: Json | null
           category_insights?: Json | null
           competitive_analysis?: Json
+          competitor_benchmark?: Json | null
           created_at?: string | null
           ga4_metrics?: Json | null
           gmb_metrics?: Json | null
@@ -3234,6 +3236,7 @@ export type Database = {
           benchmarks?: Json | null
           category_insights?: Json | null
           competitive_analysis?: Json
+          competitor_benchmark?: Json | null
           created_at?: string | null
           ga4_metrics?: Json | null
           gmb_metrics?: Json | null
