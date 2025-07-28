@@ -526,7 +526,7 @@ function generateMockAnalysis(input: any, categoryContext: string[], benchmarkDa
   };
 }
 
-// ============= BEDROCK AI CLIENT WITH LOCALIZED PROMPTS =============
+// ============= BEDROCK AI CLIENT WITH LOCALIZED i18n PROMPTS - PHASE 2 =============
 async function callBedrockVisibilityAnalysis(input: any, categoryContext: string[], benchmarkData: any[], language: string = 'de') {
   const client = new BedrockRuntimeClient({ 
     region: Deno.env.get('AWS_BEDROCK_REGION') || 'eu-central-1',
@@ -556,53 +556,73 @@ async function callBedrockVisibilityAnalysis(input: any, categoryContext: string
   // Enhanced category-specific requirements based on restaurant type
   const categoryRequirements = getCategorySpecificRequirements(input.mainCategory, language);
 
-  // Enhanced localized system prompt with i18n support
-  const systemPrompt = language === 'de' 
-    ? `Du bist ein KI-Analyst für digitale Sichtbarkeit von ${businessData.name}. 
-       
-       Analysiere die Online-Präsenz als ${businessData.category} im Vergleich zu: ${businessData.competitors}.
-       
-       BESONDERE ANFORDERUNGEN FÜR ${businessData.category.toUpperCase()}:
-       ${categoryRequirements}
-       
-       VERFÜGBARE ECHTE DATEN:
+  // Task 1A: System-Prompt (Übersichtsanalyse) mit i18n
+  const systemPrompt = createSystemPrompt(businessData, categoryRequirements, language);
+  
+  // Task 1B: Detail-Prompt (SWOT & Empfehlungen) mit i18n  
+  const detailPrompt = createDetailPrompt(businessData, language);
+
+// ============= i18n PROMPT HELPER FUNCTIONS - PHASE 2 =============
+
+// Task 1A: System-Prompt (Übersichtsanalyse) mit i18n
+function createSystemPrompt(businessData: any, categoryRequirements: string, language: string): string {
+  const prompts = {
+    de: {
+      system: `Du bist ein KI-Analyst für Unternehmenssichtbarkeit. Nutze als Datenquellen: Google My Business Eintrag (Vorhandensein, Vollständigkeit), Webseite (Meta-Tags, strukturierte Daten), Social Media (Facebook, Instagram, TripAdvisor), Branchen-Kategorie (${businessData.category}), Wettbewerbsdaten (${businessData.competitors}).`,
+      overview: `Analysiere die Online-Präsenz von ${businessData.name} als ${businessData.category} im Vergleich zu: ${businessData.competitors}. Erstelle eine strukturierte JSON-Antwort mit praktischen, umsetzbaren Empfehlungen.`,
+      categoryContext: `Als ${businessData.category} solltest du besonders auf ${categoryRequirements} achten. Nutze branchenspezifische Benchmarks für ${language}.`,
+      dataAvailable: `VERFÜGBARE ECHTE DATEN:
        ${businessData.hasGoogleData ? '✅ Google Services Metriken verfügbar' : '❌ Keine Google-Anbindung'}
        ${businessData.gmbMetrics ? `• GMB: ${businessData.gmbMetrics.rating || 'N/A'} Sterne, ${businessData.gmbMetrics.reviewCount || 0} Bewertungen` : ''}
        ${businessData.ga4Metrics ? `• GA4: ${businessData.ga4Metrics.sessions || 0} Sessions, ${businessData.ga4Metrics.pageviews || 0} Pageviews` : ''}
-       ${businessData.adsMetrics ? `• Ads: ${businessData.adsMetrics.impressions || 0} Impressions, €${businessData.adsMetrics.cost || 0} Kosten` : ''}
-       
-       Erstelle eine strukturierte JSON-Antwort mit allen geforderten Feldern: 
-       - strengths (Stärken) 
-       - weaknesses (Schwächen)
-       - potentials (Potentiale)
-       - missing_features (Fehlende Features)
-       - competitor_benchmark (Wettbewerbs-Benchmark)
-       
-       Gib praktische, umsetzbare Empfehlungen.`
-    : `You are an AI analyst for digital visibility of ${businessData.name}.
-       
-       Analyze the online presence as a ${businessData.category} compared to: ${businessData.competitors}.
-       
-       SPECIFIC REQUIREMENTS FOR ${businessData.category.toUpperCase()}:
-       ${categoryRequirements}
-       
-       AVAILABLE REAL DATA:
+       ${businessData.adsMetrics ? `• Ads: ${businessData.adsMetrics.impressions || 0} Impressions, €${businessData.adsMetrics.cost || 0} Kosten` : ''}`,
+      jsonStructure: `Gib ausschließlich im JSON-Format aus: { strengths: [...], weaknesses: [...], potentials: [...], missing_features: [...], competitor_benchmark: [...], swotAnalysis: {...}, quickWins: [...], categoryInsights: [...], benchmarkInsights: '...', leadPotential: 'high/medium/low' }`
+    },
+    en: {
+      system: `You are an AI analyst for business visibility. Use as data sources: Google My Business entry (existence, completeness), Website (meta tags, structured data), Social Media (Facebook, Instagram, TripAdvisor), Industry category (${businessData.category}), Competitor data (${businessData.competitors}).`,
+      overview: `Analyze the online presence of ${businessData.name} as ${businessData.category} compared to: ${businessData.competitors}. Create a structured JSON response with practical, actionable recommendations.`,
+      categoryContext: `As a ${businessData.category} you should particularly focus on ${categoryRequirements}. Use industry-specific benchmarks for ${language}.`,
+      dataAvailable: `AVAILABLE REAL DATA:
        ${businessData.hasGoogleData ? '✅ Google Services metrics available' : '❌ No Google connection'}
        ${businessData.gmbMetrics ? `• GMB: ${businessData.gmbMetrics.rating || 'N/A'} stars, ${businessData.gmbMetrics.reviewCount || 0} reviews` : ''}
        ${businessData.ga4Metrics ? `• GA4: ${businessData.ga4Metrics.sessions || 0} sessions, ${businessData.ga4Metrics.pageviews || 0} pageviews` : ''}
-       ${businessData.adsMetrics ? `• Ads: ${businessData.adsMetrics.impressions || 0} impressions, €${businessData.adsMetrics.cost || 0} cost` : ''}
-       
-       Create a structured JSON response with all required fields:
-       - strengths
-       - weaknesses  
-       - potentials
-       - missing_features
-       - competitor_benchmark
-       
-       Provide practical, actionable recommendations.`;
+       ${businessData.adsMetrics ? `• Ads: ${businessData.adsMetrics.impressions || 0} impressions, €${businessData.adsMetrics.cost || 0} cost` : ''}`,
+      jsonStructure: `Output exclusively in JSON format: { strengths: [...], weaknesses: [...], potentials: [...], missing_features: [...], competitor_benchmark: [...], swotAnalysis: {...}, quickWins: [...], categoryInsights: [...], benchmarkInsights: '...', leadPotential: 'high/medium/low' }`
+    }
+  };
 
-  // Enhanced analysis prompt with real data integration and Phase 2 structure
-  const analysisPrompt = `RESTAURANT-DATEN:
+  const lang = prompts[language as keyof typeof prompts] || prompts.de;
+  
+  return `${lang.system}
+       
+  ${lang.overview}
+       
+  BESONDERE ANFORDERUNGEN:
+  ${lang.categoryContext}
+       
+  ${lang.dataAvailable}
+       
+  ${lang.jsonStructure}`;
+}
+
+// Task 1B: Detail-Prompt (SWOT & Empfehlungen) mit i18n
+function createDetailPrompt(businessData: any, language: string): string {
+  const prompts = {
+    de: {
+      detailSwot: `Erzeuge eine detaillierte SWOT-Analyse für das Unternehmen ${businessData.name}. Nutze: zuvor generierte Übersichtsergebnisse, Branchen-Benchmarks, Social Media Signale. Gib strukturiertes JSON mit swot und recommendations aus.`,
+      requirements: `Erstelle konkrete, umsetzbare Empfehlungen mit Priorisierung nach Aufwand (1-5) und Wirkung (1-5).`,
+      competitorAnalysis: `Vergleiche ${businessData.name} mit den Mitbewerbern: ${businessData.competitors}. Identifiziere Wettbewerbsvorteile und Aufholpotential.`
+    },
+    en: {
+      detailSwot: `Generate a detailed SWOT analysis for the company ${businessData.name}. Use: previously generated overview results, industry benchmarks, social media signals. Provide structured JSON with swot and recommendations.`,
+      requirements: `Create concrete, actionable recommendations with prioritization by effort (1-5) and impact (1-5).`,
+      competitorAnalysis: `Compare ${businessData.name} with competitors: ${businessData.competitors}. Identify competitive advantages and catch-up potential.`
+    }
+  };
+
+  const lang = prompts[language as keyof typeof prompts] || prompts.de;
+  
+  return `RESTAURANT-DATEN:
 – Name: ${businessData.name}
 – Standort: ${businessData.location}
 – Kategorie: ${businessData.category}
@@ -612,7 +632,13 @@ async function callBedrockVisibilityAnalysis(input: any, categoryContext: string
   • Instagram: ${businessData.instagramProfile}
 – Benchmark-Unternehmen: ${businessData.competitors}
 
-AUFGABE: Erstelle eine professionelle Sichtbarkeitsanalyse als JSON mit der erweiterten Phase 2 Struktur:
+AUFGABE: ${lang.detailSwot}
+
+${lang.requirements}
+
+${lang.competitorAnalysis}
+
+ERWARTETES JSON-FORMAT:
 
 {
   "overallScore": 75,
@@ -685,7 +711,9 @@ WICHTIG:
 - Bewerte realistisch basierend auf den verfügbaren Informationen
 - Antworte NUR mit dem JSON, keine zusätzlichen Erklärungen
 `;
+}
 
+// Execute Bedrock analysis with i18n prompts
   try {
     const command = new InvokeModelCommand({
       modelId: MODEL_ID,
@@ -698,7 +726,7 @@ WICHTIG:
         messages: [
           {
             role: "user", 
-            content: systemPrompt + "\n\n" + analysisPrompt
+            content: systemPrompt + "\n\n" + detailPrompt
           }
         ]
       })
@@ -714,17 +742,16 @@ WICHTIG:
     // Parse the JSON from the content
     const analysisResult = JSON.parse(content);
     
-    console.log('✅ Bedrock analysis completed successfully');
+    console.log('✅ Bedrock analysis completed successfully with i18n prompts');
     return {
       ...analysisResult,
-      provider: "bedrock"
+      provider: "bedrock-i18n"
     };
     
   } catch (error) {
     console.error('❌ Bedrock analysis failed:', error);
     throw error; // Let the fallback logic handle this
   }
-}
 
 // Category-specific requirements function
 function getCategorySpecificRequirements(category: string, language: string = 'de'): string {
