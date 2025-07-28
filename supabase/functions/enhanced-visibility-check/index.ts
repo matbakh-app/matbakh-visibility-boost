@@ -252,10 +252,22 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Enhanced LeadData interface according to blueprint
+// Enhanced LeadData interface according to Phase 2 blueprint
 interface LeadData {
+  name: string;
+  domain?: string;
+  categoryId: number;
+  categoryName: string;
+  competitorUrls: string[];
+  language: string;
+  location: { 
+    city: string; 
+    country: string; 
+    coordinates?: [number, number] 
+  };
+  socialLinks?: Record<string, string>;
+  // Legacy fields for backward compatibility
   businessName: string;
-  location: string;
   mainCategory: string;
   subCategory: string;
   matbakhTags: string[];
@@ -266,19 +278,30 @@ interface LeadData {
   email?: string;
   leadId?: string;
   googleName?: string;
-  // New enhanced fields
-  categoryId?: number;
-  categoryName?: string;
-  competitorUrls?: string[];
-  language?: string;
-  locationData?: {
-    city: string;
-    country: string;
-    coordinates?: [number, number];
-  };
-  socialLinks?: Record<string, string>;
   gdprConsent?: boolean;
   marketingConsent?: boolean;
+}
+
+// Enhanced VisibilityResult interface for AI response mapping
+interface VisibilityResult {
+  overallScore: number;
+  platformAnalyses: PlatformAnalysis[];
+  strengths: string[];
+  weaknesses: string[];
+  potentials: string[];
+  missing_features: string[];
+  competitor_benchmark: string[];
+  categoryInsights: string[];
+  quickWins: string[];
+  swotAnalysis: {
+    strengths: string[];
+    weaknesses: string[];
+    opportunities: string[];
+    threats: string[];
+  };
+  benchmarkInsights: string;
+  leadPotential: 'high' | 'medium' | 'low';
+  provider: string;
 }
 
 interface VisibilityCheckRequest extends LeadData {}
@@ -383,44 +406,122 @@ function computeRelevanceScore(businessName: string, handle: string, followers: 
   return Math.min(1.0, score)
 }
 
-// ============= MOCK ANALYSIS FUNCTION =============
+// ============= ENHANCED MOCK ANALYSIS FUNCTION - PHASE 2 =============
 function generateMockAnalysis(input: any, categoryContext: string[], benchmarkData: any[]) {
+  const businessType = input.mainCategory || 'restaurant';
+  const hasGoogleProfile = !!input.googleName;
+  const hasFacebookProfile = !!input.facebookName;
+  const hasInstagramProfile = !!input.instagramName;
+  
   return {
     overallScore: Math.floor(Math.random() * 30) + 70,
     platformAnalyses: [
       {
         platform: "google",
-        score: Math.floor(Math.random() * 40) + 60,
+        score: hasGoogleProfile ? Math.floor(Math.random() * 40) + 60 : Math.floor(Math.random() * 30) + 30,
         details: {
-          hasProfile: !!input.googleName,
-          profileComplete: true,
-          hasReviews: true,
-          hasPhotos: true,
-          hasHours: true,
-          rating: 4.2,
-          reviewCount: 89
+          hasProfile: hasGoogleProfile,
+          profileComplete: hasGoogleProfile,
+          hasReviews: hasGoogleProfile,
+          hasPhotos: hasGoogleProfile,
+          hasHours: hasGoogleProfile,
+          rating: hasGoogleProfile ? 4.2 : 0,
+          reviewCount: hasGoogleProfile ? 89 : 0
         },
-        strengths: ["Vollständiges Profil vorhanden"],
-        weaknesses: ["Begrenzte Foto-Auswahl"],
-        recommendations: ["Mehr aktuelle Fotos hinzufügen"]
+        strengths: hasGoogleProfile ? ["Vollständiges Profil vorhanden", "Gute Bewertungen"] : [],
+        weaknesses: hasGoogleProfile ? ["Begrenzte Foto-Auswahl"] : ["Kein Google Profil gefunden"],
+        recommendations: hasGoogleProfile ? ["Mehr aktuelle Fotos hinzufügen"] : ["Google My Business Profil erstellen"]
+      },
+      {
+        platform: "facebook",
+        score: hasFacebookProfile ? Math.floor(Math.random() * 30) + 50 : Math.floor(Math.random() * 20) + 20,
+        details: {
+          hasProfile: hasFacebookProfile,
+          profileComplete: hasFacebookProfile,
+          hasPhotos: hasFacebookProfile,
+          followerCount: hasFacebookProfile ? Math.floor(Math.random() * 500) + 100 : 0
+        },
+        strengths: hasFacebookProfile ? ["Facebook Seite vorhanden"] : [],
+        weaknesses: hasFacebookProfile ? ["Wenig Aktivität"] : ["Keine Facebook Präsenz"],
+        recommendations: hasFacebookProfile ? ["Regelmäßige Posts"] : ["Facebook Business Seite erstellen"]
+      },
+      {
+        platform: "instagram",
+        score: hasInstagramProfile ? Math.floor(Math.random() * 30) + 40 : Math.floor(Math.random() * 20) + 15,
+        details: {
+          hasProfile: hasInstagramProfile,
+          followerCount: hasInstagramProfile ? Math.floor(Math.random() * 800) + 200 : 0,
+          hasPhotos: hasInstagramProfile
+        },
+        strengths: hasInstagramProfile ? ["Instagram Account vorhanden", "Visuelle Inhalte"] : [],
+        weaknesses: hasInstagramProfile ? ["Begrenzte Reichweite"] : ["Keine Instagram Präsenz"],
+        recommendations: hasInstagramProfile ? ["Story-Highlights nutzen"] : ["Instagram Business Account erstellen"]
       }
     ],
+    // Phase 2: New required fields with realistic mock data
+    strengths: [
+      hasGoogleProfile ? "Vollständiges Google My Business Profil" : "Lokale Bekanntheit vorhanden",
+      input.hasGoogleData ? "Echte Metriken verfügbar" : "Grundlegende Online-Präsenz",
+      `Spezialisierung als ${businessType} erkennbar`
+    ],
+    weaknesses: [
+      !hasGoogleProfile ? "Fehlendes Google My Business Profil" : "Begrenzte Foto-Auswahl",
+      !hasFacebookProfile && !hasInstagramProfile ? "Keine Social Media Präsenz" : "Unregelmäßige Social Media Aktivität",
+      "Fehlende Online-Reservierungsmöglichkeiten"
+    ],
+    potentials: [
+      "Instagram Marketing für visuelle Speisepräsentation",
+      hasGoogleProfile ? "Google Posts für tagesaktuelle Angebote" : "Google My Business Profil Optimierung",
+      "Bewertungsmanagement zur Vertrauensbildung",
+      `${businessType}-spezifische Features nutzen`
+    ],
+    missing_features: [
+      !hasGoogleProfile ? "Google My Business Profil" : "Online-Reservierungssystem",
+      "Digitale Speisekarte mit aktuellen Preisen",
+      !hasInstagramProfile ? "Instagram Business Account" : "Instagram Story-Highlights",
+      "Lieferservice-Integration"
+    ],
+    competitor_benchmark: [
+      `Branchendurchschnitt für ${businessType}: 4.1 Sterne, 95 Bewertungen`,
+      "Konkurrenten nutzen verstärkt Social Media Marketing",
+      hasGoogleProfile ? "Ihre Google-Präsenz ist überdurchschnittlich" : "Konkurrenten haben bessere Google-Sichtbarkeit",
+      "Lokale Konkurrenz nutzt Online-Reservierungssysteme"
+    ],
     categoryInsights: [
-      `Als ${input.mainCategory} sollten Sie besonders auf visuelle Inhalte setzen`,
-      'Bewertungsmanagement ist in Ihrer Branche besonders wichtig'
+      `Als ${businessType} sollten Sie besonders auf visuelle Inhalte setzen`,
+      'Bewertungsmanagement ist in Ihrer Branche besonders wichtig',
+      categoryContext.length > 0 ? `Ihre Unterkategorie "${categoryContext[0]}" bietet spezielle Möglichkeiten` : 'Nutzen Sie branchenspezifische Features'
     ],
     quickWins: [
-      'Fügen Sie 5-10 hochwertige Fotos zu Ihrem Google Profil hinzu',
-      'Reagieren Sie auf alle Bewertungen der letzten 30 Tage'
+      hasGoogleProfile ? 'Fügen Sie 5-10 hochwertige Fotos zu Ihrem Google Profil hinzu' : 'Erstellen Sie ein Google My Business Profil',
+      'Reagieren Sie auf alle Bewertungen der letzten 30 Tage',
+      !hasInstagramProfile ? 'Erstellen Sie einen Instagram Business Account' : 'Nutzen Sie Instagram Stories regelmäßig'
     ],
     swotAnalysis: {
-      strengths: ["Etablierte lokale Präsenz"],
-      weaknesses: ["Begrenzte Online-Sichtbarkeit"],
-      opportunities: ["Social Media Ausbau"],
-      threats: ["Lokale Konkurrenz"]
+      strengths: [
+        "Etablierte lokale Präsenz", 
+        hasGoogleProfile ? "Vollständiges Google-Profil" : "Bekannter Name in der Nachbarschaft"
+      ],
+      weaknesses: [
+        !hasGoogleProfile ? "Fehlende Google-Sichtbarkeit" : "Begrenzte Online-Sichtbarkeit",
+        "Wenig Social Media Aktivität"
+      ],
+      opportunities: [
+        "Social Media Ausbau", 
+        "Bewertungsmanagement",
+        `${businessType}-spezifisches Marketing`
+      ],
+      threats: [
+        "Starke lokale Konkurrenz", 
+        "Digitale Transformation in der Gastronomie",
+        "Negative Bewertungen"
+      ]
     },
-    benchmarkInsights: "Mock-Daten - KI nicht verfügbar",
-    leadPotential: "medium",
+    benchmarkInsights: benchmarkData.length > 0 
+      ? `Basierend auf ${benchmarkData.length} Branchenbenchmarks liegt Ihre Performance im mittleren Bereich`
+      : "Mock-Daten - Ihre Performance liegt im Branchendurchschnitt",
+    leadPotential: hasGoogleProfile && (hasFacebookProfile || hasInstagramProfile) ? "high" : 
+                   hasGoogleProfile ? "medium" : "low",
     provider: "mockAnalysis"
   };
 }
@@ -455,7 +556,7 @@ async function callBedrockVisibilityAnalysis(input: any, categoryContext: string
   // Enhanced category-specific requirements based on restaurant type
   const categoryRequirements = getCategorySpecificRequirements(input.mainCategory, language);
 
-  // Localized system prompt with enhanced context
+  // Enhanced localized system prompt with i18n support
   const systemPrompt = language === 'de' 
     ? `Du bist ein KI-Analyst für digitale Sichtbarkeit von ${businessData.name}. 
        
@@ -470,7 +571,14 @@ async function callBedrockVisibilityAnalysis(input: any, categoryContext: string
        ${businessData.ga4Metrics ? `• GA4: ${businessData.ga4Metrics.sessions || 0} Sessions, ${businessData.ga4Metrics.pageviews || 0} Pageviews` : ''}
        ${businessData.adsMetrics ? `• Ads: ${businessData.adsMetrics.impressions || 0} Impressions, €${businessData.adsMetrics.cost || 0} Kosten` : ''}
        
-       Erstelle eine strukturierte JSON-Antwort mit praktischen, umsetzbaren Empfehlungen.`
+       Erstelle eine strukturierte JSON-Antwort mit allen geforderten Feldern: 
+       - strengths (Stärken) 
+       - weaknesses (Schwächen)
+       - potentials (Potentiale)
+       - missing_features (Fehlende Features)
+       - competitor_benchmark (Wettbewerbs-Benchmark)
+       
+       Gib praktische, umsetzbare Empfehlungen.`
     : `You are an AI analyst for digital visibility of ${businessData.name}.
        
        Analyze the online presence as a ${businessData.category} compared to: ${businessData.competitors}.
@@ -484,9 +592,16 @@ async function callBedrockVisibilityAnalysis(input: any, categoryContext: string
        ${businessData.ga4Metrics ? `• GA4: ${businessData.ga4Metrics.sessions || 0} sessions, ${businessData.ga4Metrics.pageviews || 0} pageviews` : ''}
        ${businessData.adsMetrics ? `• Ads: ${businessData.adsMetrics.impressions || 0} impressions, €${businessData.adsMetrics.cost || 0} cost` : ''}
        
-       Create a structured JSON response with practical, actionable recommendations.`;
+       Create a structured JSON response with all required fields:
+       - strengths
+       - weaknesses  
+       - potentials
+       - missing_features
+       - competitor_benchmark
+       
+       Provide practical, actionable recommendations.`;
 
-  // Enhanced analysis prompt with real data integration
+  // Enhanced analysis prompt with real data integration and Phase 2 structure
   const analysisPrompt = `RESTAURANT-DATEN:
 – Name: ${businessData.name}
 – Standort: ${businessData.location}
@@ -497,7 +612,7 @@ async function callBedrockVisibilityAnalysis(input: any, categoryContext: string
   • Instagram: ${businessData.instagramProfile}
 – Benchmark-Unternehmen: ${businessData.competitors}
 
-AUFGABE: Erstelle eine professionelle Sichtbarkeitsanalyse als JSON mit folgender Struktur:
+AUFGABE: Erstelle eine professionelle Sichtbarkeitsanalyse als JSON mit der erweiterten Phase 2 Struktur:
 
 {
   "overallScore": 75,
@@ -518,6 +633,31 @@ AUFGABE: Erstelle eine professionelle Sichtbarkeitsanalyse als JSON mit folgende
       "weaknesses": ["Wenige aktuelle Fotos"],
       "recommendations": ["Mehr Fotos hochladen", "Auf Bewertungen antworten"]
     }
+  ],
+  "strengths": [
+    "Vollständiges Google My Business Profil vorhanden",
+    "Gute Durchschnittsbewertung von 4.5 Sternen",
+    "Regelmäßige Bewertungen zeigen aktive Kundenbasis"
+  ],
+  "weaknesses": [
+    "Begrenzte Fotoauswahl auf Google My Business",
+    "Keine aktive Social Media Präsenz erkennbar",
+    "Öffnungszeiten nicht immer aktuell"
+  ],
+  "potentials": [
+    "Instagram Marketing für visuelle Speisepräsentation",
+    "Facebook Events für Veranstaltungen und Aktionen",
+    "Google Posts für tagesaktuelle Angebote"
+  ],
+  "missing_features": [
+    "Online-Reservierungssystem fehlt",
+    "Keine digitale Speisekarte verlinkt",
+    "Fehlende Integration von Lieferdiensten"
+  ],
+  "competitor_benchmark": [
+    "Konkurrent A: 4.2 Sterne, 89 Bewertungen, aktive Instagram-Präsenz",
+    "Konkurrent B: 4.0 Sterne, 156 Bewertungen, Online-Reservierung verfügbar",
+    "Branchendurchschnitt: 4.1 Sterne, 95 Bewertungen"
   ],
   "categoryInsights": [
     "Als italienisches Restaurant sollten Sie besonders auf visuelle Inhalte setzen",
@@ -762,10 +902,15 @@ serve(async (req) => {
       aiAnalysis = generateMockAnalysis(analysisInput, promptCategories, benchmarks);
     }
     
-    // 2.2.2: Extrahiere die neuen Felder aus aiAnalysis
+    // Phase 2: Enhanced AI-Response Mapping - Extract all required fields
     const {
       overallScore,
       platformAnalyses,
+      strengths,
+      weaknesses,
+      potentials,
+      missing_features,
+      competitor_benchmark,
       categoryInsights,
       quickWins,
       swotAnalysis,
@@ -806,33 +951,56 @@ serve(async (req) => {
           }
         }));
 
+    // Phase 2: Enhanced result structure with all required fields
     const result = {
       overallScore,
       platformAnalyses,
       benchmarks: enhancedBenchmarks,
-      categoryInsights: aiAnalysis.categoryInsights || [
+      // Phase 2: New required fields
+      strengths: strengths || [
+        "Etablierte lokale Präsenz",
+        "Grundlegende Online-Sichtbarkeit vorhanden"
+      ],
+      weaknesses: weaknesses || [
+        "Begrenzte Social Media Präsenz",
+        "Fehlende strategische Online-Ausrichtung"
+      ],
+      potentials: potentials || [
+        "Ausbau der digitalen Kanäle",
+        "Verbesserung der Kundeninteraktion"
+      ],
+      missing_features: missing_features || [
+        "Online-Reservierungssystem",
+        "Aktive Social Media Strategie"
+      ],
+      competitor_benchmark: competitor_benchmark || [
+        "Durchschnittliche Performance im Branchenvergleich"
+      ],
+      // Existing fields with fallbacks
+      categoryInsights: categoryInsights || [
         `Als ${data.mainCategory} sollten Sie besonders auf visuelle Inhalte setzen`,
         'Bewertungsmanagement ist in Ihrer Branche besonders wichtig'
       ],
-      quickWins: aiAnalysis.quickWins || [
+      quickWins: quickWins || [
         'Fügen Sie 5-10 hochwertige Fotos zu Ihrem Google Profil hinzu',
         'Reagieren Sie auf alle Bewertungen der letzten 30 Tage',
         'Erstellen Sie einen Instagram Business Account falls noch nicht vorhanden'
       ],
-      swotAnalysis: aiAnalysis.swotAnalysis || {
+      swotAnalysis: swotAnalysis || {
         strengths: ["Etablierte lokale Präsenz"],
         weaknesses: ["Begrenzte Online-Sichtbarkeit"],
         opportunities: ["Social Media Ausbau"],
         threats: ["Lokale Konkurrenz"]
       },
-      benchmarkInsights: aiAnalysis.benchmarkInsights || "Ihre Performance liegt im Branchendurchschnitt",
-      leadPotential: aiAnalysis.leadPotential || (overallScore > 70 ? 'high' : overallScore > 50 ? 'medium' : 'low'),
+      benchmarkInsights: benchmarkInsights || "Ihre Performance liegt im Branchendurchschnitt",
+      leadPotential: leadPotential || (overallScore > 70 ? 'high' : overallScore > 50 ? 'medium' : 'low'),
       reportData: {
         businessName: data.businessName,
         location: data.location,
         analysisDate: new Date().toISOString(),
         platforms: platformAnalyses.length,
-        aiPowered: true
+        aiPowered: true,
+        provider: aiAnalysis.provider || 'enhanced'
       }
     }
 
@@ -853,12 +1021,19 @@ serve(async (req) => {
           console.error('❌ Error updating lead status to analyzing:', statusError);
         }
 
-        // Baue das Insert-Objekt
+        // Phase 2: Enhanced Insert-Objekt mit allen neuen Feldern
         const provider = aiAnalysis.provider || (useBedrock ? 'bedrock' : 'mockAnalysis');
         const insertPayload = {
           lead_id: data.leadId,
           overall_score: overallScore,
           platform_analyses: platformAnalyses,
+          // Phase 2: Neue Felder für erweiterte Analyse
+          strengths: strengths || [],
+          weaknesses: weaknesses || [],
+          potentials: potentials || [],
+          missing_features: missing_features || [],
+          competitor_benchmark: competitor_benchmark || [],
+          // Bestehende Felder
           category_insights: categoryInsights,
           quick_wins: quickWins,
           swot_analysis: swotAnalysis,
