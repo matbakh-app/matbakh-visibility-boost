@@ -108,21 +108,51 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
   };
 
   const generateMockSuggestions = (mainCategories: string[]): RelatedCategory[] => {
+    // Create a comprehensive mapping of main categories to subcategories
     const mockCategories: Record<string, RelatedCategory[]> = {
-      'food-drink': [
-        { id: 'restaurant', name: 'Restaurant', description: 'Vollservice-Restaurant', keywords: ['dining', 'food'], relationshipType: 'primary', strength: 0.9, confidence: 'high' },
-        { id: 'cafe', name: 'Café', description: 'Kaffee und leichte Speisen', keywords: ['coffee', 'breakfast'], relationshipType: 'primary', strength: 0.8, confidence: 'high' },
-        { id: 'bar', name: 'Bar', description: 'Getränke und Cocktails', keywords: ['drinks', 'cocktails'], relationshipType: 'related', strength: 0.7, confidence: 'medium' },
-        { id: 'bakery', name: 'Bäckerei', description: 'Frisches Brot und Backwaren', keywords: ['bread', 'pastries'], relationshipType: 'related', strength: 0.6, confidence: 'medium' }
+      // For "Essen & Trinken" category
+      'essen-trinken': [
+        { id: 'restaurant', name: 'Restaurant', description: 'Vollservice-Restaurant mit Bedienung', keywords: ['dining', 'food', 'service'], relationshipType: 'primary', strength: 0.9, confidence: 'high' },
+        { id: 'cafe', name: 'Café', description: 'Kaffee und leichte Speisen', keywords: ['coffee', 'breakfast', 'casual'], relationshipType: 'primary', strength: 0.8, confidence: 'high' },
+        { id: 'bar', name: 'Bar', description: 'Getränke und Cocktails', keywords: ['drinks', 'cocktails', 'evening'], relationshipType: 'primary', strength: 0.8, confidence: 'high' },
+        { id: 'biergarten', name: 'Biergarten', description: 'Outdoor-Gastronomie mit Bier', keywords: ['beer', 'outdoor', 'garden'], relationshipType: 'related', strength: 0.7, confidence: 'medium' },
+        { id: 'bakery', name: 'Bäckerei', description: 'Frisches Brot und Backwaren', keywords: ['bread', 'pastries', 'fresh'], relationshipType: 'related', strength: 0.6, confidence: 'medium' },
+        { id: 'pizzeria', name: 'Pizzeria', description: 'Italienische Pizza-Spezialitäten', keywords: ['pizza', 'italian', 'casual'], relationshipType: 'related', strength: 0.7, confidence: 'medium' }
       ],
-      'entertainment-culture': [
-        { id: 'theater', name: 'Theater', description: 'Aufführungen und Shows', keywords: ['shows', 'performance'], relationshipType: 'primary', strength: 0.9, confidence: 'high' },
-        { id: 'museum', name: 'Museum', description: 'Kunst und Kultur', keywords: ['art', 'culture'], relationshipType: 'primary', strength: 0.8, confidence: 'high' },
-        { id: 'cinema', name: 'Kino', description: 'Filme und Events', keywords: ['movies', 'films'], relationshipType: 'related', strength: 0.7, confidence: 'medium' }
+      // For "Unterhaltung & Kultur" category  
+      'unterhaltung-kultur': [
+        { id: 'theater', name: 'Theater', description: 'Aufführungen und Shows', keywords: ['shows', 'performance', 'culture'], relationshipType: 'primary', strength: 0.9, confidence: 'high' },
+        { id: 'museum', name: 'Museum', description: 'Kunst und kulturelle Ausstellungen', keywords: ['art', 'culture', 'exhibition'], relationshipType: 'primary', strength: 0.8, confidence: 'high' },
+        { id: 'cinema', name: 'Kino', description: 'Filme und Kinovorstellungen', keywords: ['movies', 'films', 'entertainment'], relationshipType: 'primary', strength: 0.8, confidence: 'high' },
+        { id: 'nightclub', name: 'Nachtclub', description: 'Nachtleben und Tanzen', keywords: ['nightlife', 'dancing', 'music'], relationshipType: 'related', strength: 0.7, confidence: 'medium' },
+        { id: 'concert-hall', name: 'Konzerthalle', description: 'Live-Musik und Konzerte', keywords: ['music', 'concert', 'live'], relationshipType: 'related', strength: 0.7, confidence: 'medium' }
+      ],
+      // For "Weitere Dienstleistungen" category
+      'weitere-dienstleistungen': [
+        { id: 'event-service', name: 'Event-Service', description: 'Veranstaltungsorganisation', keywords: ['events', 'planning', 'service'], relationshipType: 'primary', strength: 0.9, confidence: 'high' },
+        { id: 'catering', name: 'Catering', description: 'Außer-Haus-Verpflegung', keywords: ['catering', 'delivery', 'events'], relationshipType: 'primary', strength: 0.8, confidence: 'high' },
+        { id: 'consulting', name: 'Beratung', description: 'Fachberatung und Consulting', keywords: ['consulting', 'advice', 'business'], relationshipType: 'related', strength: 0.7, confidence: 'medium' },
+        { id: 'cleaning', name: 'Reinigungsservice', description: 'Professionelle Reinigung', keywords: ['cleaning', 'maintenance', 'service'], relationshipType: 'related', strength: 0.6, confidence: 'medium' }
       ]
     };
 
-    return mainCategories.flatMap(cat => mockCategories[cat] || []);
+    // Map the displayed category names to our mock category keys
+    const categoryMapping: Record<string, string> = {
+      'Essen & Trinken': 'essen-trinken',
+      'Unterhaltung & Kultur': 'unterhaltung-kultur', 
+      'Weitere Dienstleistungen': 'weitere-dienstleistungen',
+      'Food & Drink': 'essen-trinken',
+      'Entertainment & Culture': 'unterhaltung-kultur',
+      'Additional Services': 'weitere-dienstleistungen'
+    };
+
+    // Get all subcategories for the selected main categories
+    const allSuggestions = mainCategories.flatMap(cat => {
+      const mappedKey = categoryMapping[cat] || cat.toLowerCase().replace(/\s+/g, '-');
+      return mockCategories[mappedKey] || [];
+    });
+
+    return allSuggestions;
   };
 
   const getConfidenceLevel = (strength: number): 'high' | 'medium' | 'low' => {
