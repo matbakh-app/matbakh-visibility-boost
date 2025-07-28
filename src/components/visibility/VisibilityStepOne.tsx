@@ -138,9 +138,10 @@ const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
                 render={({ field }) => (
                   <FormItem>
                     <SubCategorySelector 
-                      selectedCategories={field.value || []} 
-                      onCategoryChange={field.onChange} 
-                      maxSelections={20}
+                      selectedMainCategories={form.watch('mainCategories') || []}
+                      selectedSubCategories={field.value || []} 
+                      onSubCategoryChange={field.onChange} 
+                      maxSelections={5}
                     />
                     <FormMessage />
                   </FormItem>
