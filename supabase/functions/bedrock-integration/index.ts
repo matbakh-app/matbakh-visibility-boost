@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
+import { BedrockRuntimeClient, InvokeModelCommand } from "https://esm.sh/@aws-sdk/client-bedrock-runtime@3.490.0"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -38,7 +38,7 @@ serve(async (req) => {
     }
 
     // 2) Parse request payload
-    const { prompt, maxTokens = 512, systemPrompt = 'You are a helpful assistant.' } = await req.json()
+    const { prompt, maxTokens = 4096, systemPrompt = 'You are a helpful assistant.' } = await req.json()
 
     if (!prompt) {
       return new Response(
@@ -50,10 +50,16 @@ serve(async (req) => {
       )
     }
 
-    // 3) Prepare Bedrock API request
-    const bedrockEndpoint = `https://bedrock-runtime.${region}.amazonaws.com/model/${modelId}/invoke`
-    
-    // Create the request body for Claude models
+    // 3) Initialize Bedrock Runtime Client
+    const bedrockClient = new BedrockRuntimeClient({
+      region: region,
+      credentials: {
+        accessKeyId: accessKeyId,
+        secretAccessKey: secretAccessKey,
+      },
+    })
+
+    // 4) Prepare request body for Claude models
     const requestBody = JSON.stringify({
       anthropic_version: "bedrock-2023-05-31",
       max_tokens: maxTokens,
@@ -66,48 +72,37 @@ serve(async (req) => {
       system: systemPrompt
     })
 
-    // 4) Create AWS signature and headers
-    const timestamp = new Date().toISOString().replace(/[:\-]|\.\d{3}/g, '')
-    const dateStamp = timestamp.substr(0, 8)
-    
-    // For demo purposes, we'll use a simplified approach
-    // In production, you'd implement proper AWS4 signature
-    const headers = {
-      'Content-Type': 'application/json',
-      'X-Amz-Target': 'DynamoDB_20120810.Query',
-      'Authorization': `AWS4-HMAC-SHA256 Credential=${accessKeyId}/${dateStamp}/${region}/bedrock/aws4_request, SignedHeaders=host;x-amz-date, Signature=placeholder`,
-      'X-Amz-Date': timestamp
-    }
-
     console.log(`Calling Bedrock model: ${modelId} in region: ${region}`)
     console.log(`Prompt length: ${prompt.length} characters`)
+    console.log(`Request body: ${requestBody.substring(0, 200)}...`)
 
-    // 5) Make request to Bedrock (simplified for demo)
-    // Note: This is a simplified implementation
-    // In production, you'd need proper AWS4 signing
+    // 5) Create and send InvokeModel command
+    const command = new InvokeModelCommand({
+      modelId: modelId,
+      body: new TextEncoder().encode(requestBody),
+      contentType: "application/json",
+      accept: "application/json",
+    })
+
+    const response = await bedrockClient.send(command)
     
-    // For now, return a mock response to test the structure
-    const mockResponse = {
-      content: [
-        {
-          type: "text",
-          text: `Mock response from Bedrock for prompt: "${prompt.substring(0, 50)}..."`
-        }
-      ],
-      usage: {
-        input_tokens: prompt.length / 4, // rough estimate
-        output_tokens: 50
-      }
-    }
+    // 6) Parse response
+    const responseBody = new TextDecoder().decode(response.body)
+    const parsedResponse = JSON.parse(responseBody)
 
-    console.log('Bedrock integration successful (mock mode)')
+    console.log('Bedrock response received successfully')
+    console.log(`Output tokens: ${parsedResponse.usage?.output_tokens || 'unknown'}`)
 
     return new Response(
       JSON.stringify({
         success: true,
-        response: mockResponse,
+        response: parsedResponse,
         model: modelId,
-        region: region
+        region: region,
+        metadata: {
+          input_tokens: parsedResponse.usage?.input_tokens,
+          output_tokens: parsedResponse.usage?.output_tokens,
+        }
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -116,10 +111,21 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in bedrock-integration function:', error)
+    
+    // Enhanced error logging
+    if (error.name === 'ValidationException') {
+      console.error('Validation error - check model ID and request format')
+    } else if (error.name === 'AccessDeniedException') {
+      console.error('Access denied - check AWS credentials and permissions')
+    } else if (error.name === 'ThrottlingException') {
+      console.error('Request throttled - consider implementing retry logic')
+    }
+    
     return new Response(
       JSON.stringify({ 
-        error: 'Internal server error',
-        details: error.message 
+        error: 'Bedrock request failed',
+        details: error.message,
+        type: error.name || 'Unknown'
       }),
       { 
         status: 500, 
