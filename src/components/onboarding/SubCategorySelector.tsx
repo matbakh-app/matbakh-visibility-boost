@@ -53,6 +53,9 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
       // Log the selection for analytics
       const allFiltered = filterCategories(searchTerm, selectedSubCategories);
       await logSearch(searchTerm, allFiltered.map(c => c.id), cat.id);
+      
+      // Clear search term after selection for better UX
+      setSearchTerm('');
     }
   };
 
