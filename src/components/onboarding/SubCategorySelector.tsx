@@ -59,34 +59,55 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
     
     const newSuggestions: Record<string, RelatedCategory[]> = {};
     
-    selectedMainCategories.forEach(mainCategory => {
-      console.log(`🔍 Processing main category: "${mainCategory}"`);
+    selectedMainCategories.forEach(mainCategorySlug => {
+      console.log(`🔍 Processing main category slug: "${mainCategorySlug}"`);
+      
+      // Convert slug to display name for matching
+      const slugToDisplay: Record<string, string> = {
+        'food-drink': 'Essen & Trinken',
+        'entertainment-culture': 'Kunst, Unterhaltung & Freizeit',
+        'retail-shopping': 'Einzelhandel & Verbraucherdienstleistungen',
+        'health-wellness': 'Gesundheit & Medizinische Dienstleistungen',
+        'automotive': 'Automobil & Transport',
+        'beauty-personal-care': 'Mode & Lifestyle',
+        'sports-fitness': 'Sport',
+        'home-garden': 'Immobilien & Bauwesen',
+        'professional-services': 'Professionelle Dienstleistungen',
+        'education-training': 'Bildung & Ausbildung',
+        'technology-electronics': 'Sonstige',
+        'travel-tourism': 'Gastgewerbe und Tourismus',
+        'finance-insurance': 'Finanzdienstleistungen',
+        'real-estate': 'Immobilien & Bauwesen',
+        'pets-animals': 'Sonstige',
+        'events-venues': 'Kunst, Unterhaltung & Freizeit',
+        'government-public': 'Behörden & Öffentliche Dienste',
+        'religious-spiritual': 'Religiöse Stätten',
+        'other-services': 'Sonstige'
+      };
+      
+      const displayName = slugToDisplay[mainCategorySlug] || mainCategorySlug;
+      console.log(`🔍 Converted slug "${mainCategorySlug}" to display name "${displayName}"`);
       
       // Get all available subcategories for this main category
       const available = allSubCategories.filter(c => {
         if (selectedSubCategories.includes(c.id)) {
-          console.log(`🔍 Skipping ${c.name} - already selected`);
           return false;
         }
         
         // Check if this subcategory belongs to the main category
-        // mainCategory is a slug like "food-drink", but c.main_category is display name like "Essen & Trinken"
-        // So we need to check both ways: slug->display and display->slug
-        const belongsToMain = c.main_category === mainCategory;
-        const hasMainInCrossTags = c.crossTags && c.crossTags.includes(mainCategory);
-        
-        console.log(`🔍 Checking ${c.name}: mainCategory="${mainCategory}", c.main_category="${c.main_category}", belongsToMain=${belongsToMain}, hasMainInCrossTags=${hasMainInCrossTags}`);
+        const belongsToMain = c.main_category === displayName;
+        const hasMainInCrossTags = c.crossTags && c.crossTags.includes(displayName);
         
         return belongsToMain || hasMainInCrossTags;
       });
       
-      console.log(`🔍 Found ${available.length} available subcategories for "${mainCategory}"`);
+      console.log(`🔍 Found ${available.length} available subcategories for "${displayName}"`);
       
-      // Show up to 7 suggestions per main category
+      // Show only 3 suggestions per main category (instead of 7)
       const shuffled = shuffleArray(available);
-      newSuggestions[mainCategory] = shuffled.slice(0, 7);
+      newSuggestions[mainCategorySlug] = shuffled.slice(0, 3);
       
-      console.log(`🔍 Added ${newSuggestions[mainCategory].length} suggestions for "${mainCategory}"`);
+      console.log(`🔍 Added ${newSuggestions[mainCategorySlug].length} suggestions for "${mainCategorySlug}"`);
     });
     
     console.log('🔍 Final suggestions object:', newSuggestions);
@@ -98,16 +119,41 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
   };
 
   // Check how many categories are selected per main category
-  const getSelectedCountForMainCategory = (mainCategory: string) => {
+  const getSelectedCountForMainCategory = (mainCategorySlug: string) => {
+    // Convert slug to display name for matching
+    const slugToDisplay: Record<string, string> = {
+      'food-drink': 'Essen & Trinken',
+      'entertainment-culture': 'Kunst, Unterhaltung & Freizeit',
+      'retail-shopping': 'Einzelhandel & Verbraucherdienstleistungen',
+      'health-wellness': 'Gesundheit & Medizinische Dienstleistungen',
+      'automotive': 'Automobil & Transport',
+      'beauty-personal-care': 'Mode & Lifestyle',
+      'sports-fitness': 'Sport',
+      'home-garden': 'Immobilien & Bauwesen',
+      'professional-services': 'Professionelle Dienstleistungen',
+      'education-training': 'Bildung & Ausbildung',
+      'technology-electronics': 'Sonstige',
+      'travel-tourism': 'Gastgewerbe und Tourismus',
+      'finance-insurance': 'Finanzdienstleistungen',
+      'real-estate': 'Immobilien & Bauwesen',
+      'pets-animals': 'Sonstige',
+      'events-venues': 'Kunst, Unterhaltung & Freizeit',
+      'government-public': 'Behörden & Öffentliche Dienste',
+      'religious-spiritual': 'Religiöse Stätten',
+      'other-services': 'Sonstige'
+    };
+    
+    const displayName = slugToDisplay[mainCategorySlug] || mainCategorySlug;
+    
     return selectedSubCategories.filter(id => {
       const cat = allSubCategories.find(c => c.id === id);
       if (!cat) return false;
-      return cat.main_category === mainCategory || 
-             (cat.crossTags && cat.crossTags.includes(mainCategory));
+      return cat.main_category === displayName || 
+             (cat.crossTags && cat.crossTags.includes(displayName));
     }).length;
   };
 
-  // Handle category selection with logging
+  // Handle category selection with logging and card replacement
   const selectCategory = async (cat: RelatedCategory, fromMainCategory: string) => {
     const currentCountForMain = getSelectedCountForMainCategory(fromMainCategory);
     
@@ -120,6 +166,84 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
       
       // Clear search term after selection for better UX
       setSearchTerm('');
+      
+      // After selection, replace the card with a new one (nachrutschen)
+      setTimeout(() => {
+        replaceSelectedCard(fromMainCategory, cat.id);
+      }, 100);
+    }
+  };
+
+  // Replace a selected card with a new one from the pool
+  const replaceSelectedCard = (mainCategorySlug: string, selectedCardId: string) => {
+    const slugToDisplay: Record<string, string> = {
+      'food-drink': 'Essen & Trinken',
+      'entertainment-culture': 'Kunst, Unterhaltung & Freizeit',
+      'retail-shopping': 'Einzelhandel & Verbraucherdienstleistungen',
+      'health-wellness': 'Gesundheit & Medizinische Dienstleistungen',
+      'automotive': 'Automobil & Transport',
+      'beauty-personal-care': 'Mode & Lifestyle',
+      'sports-fitness': 'Sport',
+      'home-garden': 'Immobilien & Bauwesen',
+      'professional-services': 'Professionelle Dienstleistungen',
+      'education-training': 'Bildung & Ausbildung',
+      'technology-electronics': 'Sonstige',
+      'travel-tourism': 'Gastgewerbe und Tourismus',
+      'finance-insurance': 'Finanzdienstleistungen',
+      'real-estate': 'Immobilien & Bauwesen',
+      'pets-animals': 'Sonstige',
+      'events-venues': 'Kunst, Unterhaltung & Freizeit',
+      'government-public': 'Behörden & Öffentliche Dienste',
+      'religious-spiritual': 'Religiöse Stätten',
+      'other-services': 'Sonstige'
+    };
+    
+    const displayName = slugToDisplay[mainCategorySlug] || mainCategorySlug;
+    
+    // Find all available categories for this main category (exclude currently selected ones)
+    const currentlySelected = [...selectedSubCategories, selectedCardId];
+    const available = allSubCategories.filter(c => {
+      if (currentlySelected.includes(c.id)) return false;
+      
+      const belongsToMain = c.main_category === displayName;
+      const hasMainInCrossTags = c.crossTags && c.crossTags.includes(displayName);
+      
+      return belongsToMain || hasMainInCrossTags;
+    });
+    
+    // Get current suggestions and remove the selected card
+    const currentSuggestions = suggestionsByMainCategory[mainCategorySlug] || [];
+    const remainingSuggestions = currentSuggestions.filter(c => c.id !== selectedCardId);
+    
+    // If we have available cards to replace with and we're below 3 cards
+    if (available.length > 0 && remainingSuggestions.length < 3) {
+      // Filter out cards already in suggestions
+      const newCards = available.filter(c => 
+        !currentSuggestions.some(existing => existing.id === c.id)
+      );
+      
+      if (newCards.length > 0) {
+        // Add one new random card
+        const shuffled = shuffleArray(newCards);
+        const newCard = shuffled[0];
+        
+        setSuggestionsByMainCategory(prev => ({
+          ...prev,
+          [mainCategorySlug]: [...remainingSuggestions, newCard]
+        }));
+      } else {
+        // No new cards available, just update with remaining suggestions
+        setSuggestionsByMainCategory(prev => ({
+          ...prev,
+          [mainCategorySlug]: remainingSuggestions
+        }));
+      }
+    } else {
+      // Just remove the selected card from suggestions
+      setSuggestionsByMainCategory(prev => ({
+        ...prev,
+        [mainCategorySlug]: remainingSuggestions
+      }));
     }
   };
 
