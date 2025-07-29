@@ -1143,6 +1143,75 @@ serve(async (req) => {
 
         console.log('✅ AI results persisted and lead marked completed');
         
+        // ============= SPRINT 1: TO-DO GENERATION =============
+        
+        // Get industry from lead (default to hospitality if not set)
+        const { data: leadData } = await supabase
+          .from('visibility_check_leads')
+          .select('industry')
+          .eq('id', data.leadId)
+          .single();
+        
+        const industry = leadData?.industry || 'hospitality';
+        
+        // Generate todos inline
+        const todos = generateTodosInline(aiAnalysis, industry);
+        
+        // Check if fully satisfied (no high-priority todos AND score >= 80)
+        const highPriorityTodos = todos.filter(todo => todo.priority === 'high');
+        const is_fully_satisfied = highPriorityTodos.length === 0 && (aiAnalysis?.overallScore || 0) >= 80;
+        
+        console.log('📋 Generated todos:', todos.length, '| Fully satisfied:', is_fully_satisfied);
+
+        // Update result with todos and satisfaction flag
+        const { error: updateError } = await supabase
+          .from('visibility_check_results')
+          .update({
+            analysis_result: {
+              ...aiAnalysis,
+              todos: todos
+            },
+            is_fully_satisfied: is_fully_satisfied,
+            updated_at: new Date().toISOString()
+          })
+          .eq('lead_id', data.leadId);
+
+        if (updateError) {
+          console.warn('⚠️ Could not update todos and satisfaction flag:', updateError.message);
+        }
+
+        // ============= SPRINT 1: PDF GENERATION (IF FULLY SATISFIED + OPT-IN) =============
+        
+        if (is_fully_satisfied && data.gdprConsent && data.marketingConsent) {
+          try {
+            console.log('📄 Generating PDF report for satisfied lead...');
+            
+            // Call PDF generation function
+            const { data: pdfData, error: pdfError } = await supabase.functions.invoke('generate-pdf-report', {
+              body: { leadId: data.leadId }
+            });
+
+            if (!pdfError && pdfData?.downloadUrl) {
+              // Update result with PDF URL
+              const { error: pdfUpdateError } = await supabase
+                .from('visibility_check_results')
+                .update({ full_report_url: pdfData.downloadUrl })
+                .eq('lead_id', data.leadId);
+
+              if (pdfUpdateError) {
+                console.warn('⚠️ Could not update PDF URL:', pdfUpdateError.message);
+              } else {
+                console.log('✅ PDF report generated and URL saved');
+              }
+            } else {
+              console.warn('⚠️ PDF generation failed:', pdfError?.message);
+            }
+          } catch (pdfError) {
+            console.warn('⚠️ PDF generation error (non-blocking):', pdfError);
+            // Don't fail the entire request if PDF generation fails
+          }
+        }
+        
       } catch (error) {
         console.error('❌ Critical error in analysis workflow:', error);
         // Ensure lead is marked as failed in any error case
@@ -1177,3 +1246,83 @@ serve(async (req) => {
     )
   }
 })
+
+// ============= INLINE TODO GENERATOR FOR EDGE FUNCTION =============
+
+function generateTodosInline(analysis: any, industry: string) {
+  const todos: any[] = [];
+
+  // Google My Business Checks
+  if (!analysis.gmb_metrics?.hasPhotos && !analysis.google?.photos?.length) {
+    todos.push({
+      type: 'Google: Fotos fehlen',
+      priority: 'high',
+      text: 'Fügen Sie professionelle Bilder bei Google My Business hinzu.',
+      why: 'Erhöht Klickrate und Ranking um bis zu 35%.',
+    });
+  }
+
+  if (!analysis.gmb_metrics?.hasHours && !analysis.google?.hasHours) {
+    todos.push({
+      type: 'Google: Öffnungszeiten fehlen',
+      priority: 'high',
+      text: 'Hinterlegen Sie vollständige Öffnungszeiten.',
+      why: 'Wichtig für lokale Suche und Gästeplanung.',
+    });
+  }
+
+  if (!analysis.gmb_metrics?.profileComplete && !analysis.google?.profileComplete) {
+    todos.push({
+      type: 'Google: Profil unvollständig',
+      priority: 'medium',
+      text: 'Vervollständigen Sie Ihr Google My Business Profil.',
+      why: 'Vollständige Profile werden 42% öfter kontaktiert.',
+    });
+  }
+
+  // Check platform analyses for missing features
+  const googlePlatform = analysis.platformAnalyses?.find((p: any) => p.platform === 'google');
+  const facebookPlatform = analysis.platformAnalyses?.find((p: any) => p.platform === 'facebook');
+  const instagramPlatform = analysis.platformAnalyses?.find((p: any) => p.platform === 'instagram');
+
+  if (facebookPlatform && !facebookPlatform.profileFound) {
+    todos.push({
+      type: 'Meta: Keine Facebook-Seite',
+      priority: 'medium',
+      text: 'Erstellen Sie eine Facebook Business-Seite.',
+      why: 'Erreicht wichtige Zielgruppen und ermöglicht direkten Kundenkontakt.',
+    });
+  }
+
+  if (instagramPlatform && !instagramPlatform.profileFound) {
+    todos.push({
+      type: 'Instagram: Kein Business Account',
+      priority: 'medium',
+      text: 'Erstellen Sie einen Instagram Business Account.',
+      why: 'Erschließt eine wichtige Zielgruppe unter 35 Jahren.',
+    });
+  }
+
+  // Industry-specific checks
+  if (industry === 'hospitality') {
+    if ((analysis.overallScore || 0) < 70) {
+      todos.push({
+        type: 'Gastronomie: Online-Reservierung fehlt',
+        priority: 'high',
+        text: 'Integrieren Sie ein Online-Reservierungssystem.',
+        why: '68% der Gäste bevorzugen Online-Buchungen.',
+      });
+    }
+
+    if (analysis.gmb_metrics?.rating && analysis.gmb_metrics.rating < 4.0) {
+      todos.push({
+        type: 'Gastronomie: Bewertungen verbessern',
+        priority: 'high',
+        text: 'Implementieren Sie aktives Bewertungsmanagement.',
+        why: 'Bewertungen unter 4.0 reduzieren Buchungen um 70%.',
+      });
+    }
+  }
+
+  return todos;
+}

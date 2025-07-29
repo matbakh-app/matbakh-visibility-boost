@@ -13,6 +13,14 @@ interface VisibilityResultsProps {
     gmb_metrics?: any;
     ga4_metrics?: any; 
     ads_metrics?: any;
+    todos?: Array<{
+      type: string;
+      priority: 'high' | 'medium' | 'low';
+      text: string;
+      why: string;
+    }>;
+    is_fully_satisfied?: boolean;
+    full_report_url?: string;
   };
   onRequestDetailedReport: () => void;
   onNewAnalysis: () => void;
@@ -92,6 +100,22 @@ const VisibilityResults: React.FC<VisibilityResultsProps> = ({
         <h1 className="text-3xl font-bold">Sichtbarkeits-Analyse für {businessName}</h1>
         <p className="text-gray-600">Umfassende Bewertung Ihrer Online-Präsenz mit Profildaten</p>
         <div className="flex flex-col items-center gap-2">
+          {/* Satisfaction Badge */}
+          {analysisResult.is_fully_satisfied && (
+            <div className="flex items-center space-x-2 mb-4">
+              <Badge variant="default" className="bg-green-100 text-green-800 border-green-300">
+                ✅ 100% Satisfied - Perfekte Online-Präsenz!
+              </Badge>
+              {analysisResult.full_report_url && (
+                <Button asChild size="sm">
+                  <a href={analysisResult.full_report_url} target="_blank" rel="noopener noreferrer">
+                    <Download className="w-4 h-4 mr-2" />
+                    Vollständigen Report herunterladen
+                  </a>
+                </Button>
+              )}
+            </div>
+          )}
           {getLeadPotentialBadge(analysisResult.leadPotential)}
           <Badge variant="outline" className="text-xs">
             {analysisResult.provider === 'bedrock' ? '🤖 Powered by Bedrock AI' : '📋 Mock Analysis'}
@@ -261,6 +285,51 @@ const VisibilityResults: React.FC<VisibilityResultsProps> = ({
             )}
           </div>
         </div>
+      )}
+
+      {/* To-Dos Section */}
+      {analysisResult.todos && analysisResult.todos.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Star className="w-5 h-5 text-orange-500" />
+              To-Dos zur Verbesserung Ihrer Sichtbarkeit
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {analysisResult.todos.map((todo, idx) => {
+                const priorityColor = {
+                  high: 'bg-red-50 border-red-200',
+                  medium: 'bg-yellow-50 border-yellow-200',
+                  low: 'bg-blue-50 border-blue-200'
+                }[todo.priority];
+                
+                const priorityBadge = {
+                  high: <Badge variant="destructive" className="text-xs">Hoch</Badge>,
+                  medium: <Badge variant="secondary" className="text-xs bg-yellow-100 text-yellow-800">Mittel</Badge>,
+                  low: <Badge variant="outline" className="text-xs">Niedrig</Badge>
+                }[todo.priority];
+
+                return (
+                  <div key={idx} className={`flex items-start gap-3 p-4 rounded-lg border ${priorityColor}`}>
+                    <div className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
+                      {idx + 1}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h4 className="font-medium text-sm">{todo.type}</h4>
+                        {priorityBadge}
+                      </div>
+                      <p className="text-sm text-gray-700 mb-1">{todo.text}</p>
+                      <p className="text-xs text-gray-600 italic">{todo.why}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Quick Wins */}
