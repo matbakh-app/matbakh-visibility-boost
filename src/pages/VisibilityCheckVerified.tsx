@@ -1,329 +1,184 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-// Remove AppLayout to avoid duplicate navigation
+import React, { useEffect, useState } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import VisibilityResults from '@<REDACTED_AWS_SECRET_ACCESS_KEY>';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
-import { CheckCircle, XCircle, Mail, FileText, AlertCircle, Loader2 } from 'lucide-react';
+import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const VisibilityCheckVerified: React.FC = () => {
-  const { t } = useTranslation('common');
+  const { leadId } = useParams<{ leadId: string }>();
   const [searchParams] = useSearchParams();
-  const leadId = searchParams.get('leadId');
-  const status = searchParams.get('status');
+  const navigate = useNavigate();
+  const token = searchParams.get('token');
   
+  const [verificationStatus, setVerificationStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [leadData, setLeadData] = useState<any>(null);
-  const [visibilityResult, setVisibilityResult] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [pollInterval, setPollInterval] = useState<NodeJS.Timeout | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
-  // Polling function to fetch lead data and results
-  const fetchData = useCallback(async () => {
-    if (!leadId) {
-      setLoading(false);
-      setError('Keine Lead-ID gefunden');
-      return;
+  useEffect(() => {
+    if (leadId) {
+      verifyAndLoadResults();
     }
+  }, [leadId, token]);
 
+  const verifyAndLoadResults = async () => {
     try {
-      setError(null);
-      
-      // Fetch lead data
-      const { data: leadData, error: leadError } = await supabase
+      setVerificationStatus('loading');
+
+      // If there's a token, verify it first
+      if (token) {
+        const { error: verifyError } = await supabase
+          .from('visibility_check_leads')
+          .update({ 
+            email_verified: true,
+            verification_token: null,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', leadId)
+          .eq('verification_token', token);
+
+        if (verifyError) {
+          console.error('Token verification failed:', verifyError);
+          setErrorMessage('Ungültiger oder abgelaufener Verifikationslink.');
+          setVerificationStatus('error');
+          return;
+        }
+      }
+
+      // Load lead data and results
+      const { data: lead, error: leadError } = await supabase
         .from('visibility_check_leads')
         .select('*')
         .eq('id', leadId)
         .single();
 
-      if (leadError) {
-        console.error('Error fetching lead:', leadError);
-        setError('Fehler beim Abruf des Reports');
+      if (leadError || !lead) {
+        setErrorMessage('Lead-Daten konnten nicht gefunden werden.');
+        setVerificationStatus('error');
         return;
       }
 
-      setLeadData(leadData);
-
-      // Fetch visibility results if available
-      const { data: resultData, error: resultError } = await supabase
+      // Load analysis results
+      const { data: results, error: resultsError } = await supabase
         .from('visibility_check_results')
         .select('*')
         .eq('lead_id', leadId)
+        .order('created_at', { ascending: false })
+        .limit(1)
         .maybeSingle();
 
-      if (!resultError && resultData) {
-        setVisibilityResult(resultData);
+      if (resultsError) {
+        console.error('Error loading results:', resultsError);
+        setErrorMessage('Analyseergebnisse konnten nicht geladen werden.');
+        setVerificationStatus('error');
+        return;
       }
 
-      // If report URL is not available yet and status is not failed, start polling
-      if (!leadData.report_url && leadData.status !== 'failed' && leadData.double_optin_confirmed) {
-        if (!pollInterval) {
-          console.log('Starting polling for report generation...');
-          const interval = setInterval(fetchData, 10000); // Poll every 10 seconds
-          setPollInterval(interval);
-        }
-      } else if (pollInterval) {
-        // Stop polling when report is ready or failed
-        console.log('Stopping polling - report ready or failed');
-        clearInterval(pollInterval);
-        setPollInterval(null);
-      }
+      setLeadData(lead);
+      setAnalysisResult(results?.analysis_results || null);
+      setVerificationStatus('success');
 
     } catch (error) {
-      console.error('Error fetching data:', error);
-      setError('Unerwarteter Fehler beim Laden der Daten');
-    } finally {
-      setLoading(false);
+      console.error('Verification error:', error);
+      setErrorMessage('Ein unerwarteter Fehler ist aufgetreten.');
+      setVerificationStatus('error');
     }
-  }, [leadId, pollInterval]);
+  };
 
-  useEffect(() => {
-    fetchData();
-    
-    // Cleanup polling on unmount
-    return () => {
-      if (pollInterval) {
-        clearInterval(pollInterval);
-        setPollInterval(null);
-      }
-    };
-  }, [fetchData]);
+  const handleNewAnalysis = () => {
+    navigate('/');
+  };
 
-  if (loading) {
+  const handleRequestDetailedReport = () => {
+    console.log('Detailed report requested for verified lead');
+    // This could trigger a more detailed report generation
+  };
+
+  if (verificationStatus === 'loading') {
     return (
-      <div className="container mx-auto px-4 py-8 min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4">Laden...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Handle different states
-  if (error) {
-    return (
-      <div className="container mx-auto px-4 py-8 max-w-4xl min-h-screen">
-        <div className="text-center space-y-4">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto" />
-          <h1 className="text-3xl font-bold text-red-600">Fehler</h1>
-          <p className="text-lg text-gray-600">{error}</p>
-          <Link to="/#visibility-check">
-            <Button>Neuen Check starten</Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  const isSuccess = status === 'success' && leadData?.double_optin_confirmed;
-  const hasReport = leadData?.report_sent_at;
-  const hasReportUrl = leadData?.report_url;
-  const isFailed = leadData?.status === 'failed';
-  const isAnalyzing = leadData?.status === 'analyzing';
-
-  // Show failure state
-  if (isFailed && leadData?.analysis_error_message) {
-    return (
-      <div className="container mx-auto px-4 py-8 max-w-4xl min-h-screen">
-        <div className="text-center space-y-4">
-          <XCircle className="w-16 h-16 text-red-500 mx-auto" />
-          <h1 className="text-3xl font-bold text-red-600">Analyse fehlgeschlagen</h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            {leadData.analysis_error_message}
-          </p>
-          <Link to="/#visibility-check">
-            <Button>Neuen Check starten</Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl min-h-screen">
-      <div className="text-center mb-8">
-        {isSuccess ? (
-          <div className="space-y-4">
-            <CheckCircle className="w-16 h-16 text-green-500 mx-auto" />
-            <h1 className="text-3xl font-bold text-green-600">
-              E-Mail erfolgreich bestätigt!
-            </h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Vielen Dank! Ihr Sichtbarkeits-Report für{' '}
-              <strong>{leadData?.business_name}</strong>{' '}
-              {hasReportUrl ? 'ist fertig!' : 'wird gerade erstellt.'}
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <XCircle className="w-16 h-16 text-red-500 mx-auto" />
-            <h1 className="text-3xl font-bold text-red-600">
-              Verifizierung fehlgeschlagen
-            </h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Der Verifizierungslink ist ungültig oder bereits abgelaufen.
-              Bitte starten Sie einen neuen Sichtbarkeits-Check.
-            </p>
-          </div>
-        )}
-      </div>
-
-      {isSuccess && leadData && (
-        <div className="space-y-6">
-          {/* PDF Download Card - Show prominently when available */}
-          {hasReportUrl && (
-            <Card className="border-green-200 bg-green-50">
-              <CardContent className="p-6 text-center">
-                <FileText className="w-12 h-12 text-green-600 mx-auto mb-4" />
-                <h2 className="text-xl font-semibold text-green-800 mb-2">
-                  🚀 Ihr Report ist fertig!
-                </h2>
-                <p className="text-green-700 mb-4">
-                  Erstellt am: {leadData.report_generated_at ? 
-                    new Date(leadData.report_generated_at).toLocaleString('de-DE') : 
-                    'vor wenigen Minuten'}
-                </p>
-                <a 
-                  href={hasReportUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center space-x-2 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors"
-                >
-                  <FileText className="w-5 h-5" />
-                  <span>PDF-Report herunterladen</span>
-                </a>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Status Card */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold">Status Ihres Reports</h2>
-                <Badge variant={hasReportUrl ? "default" : isAnalyzing ? "secondary" : "outline"}>
-                  {hasReportUrl ? "Report verfügbar" : 
-                   isAnalyzing ? "Wird analysiert" : 
-                   "Report wird erstellt"}
-                </Badge>
-              </div>
-              
-              <div className="grid md:grid-cols-3 gap-4">
-                <div className="flex items-center space-x-3">
-                  <CheckCircle className="w-5 h-5 text-green-500" />
-                  <span>E-Mail bestätigt</span>
-                </div>
-                
-                <div className="flex items-center space-x-3">
-                  {isAnalyzing ? (
-                    <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
-                  ) : hasReportUrl ? (
-                    <CheckCircle className="w-5 h-5 text-green-500" />
-                  ) : (
-                    <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                  )}
-                  <span>
-                    {isAnalyzing ? "Analyse läuft..." :
-                     hasReportUrl ? "Analyse abgeschlossen" : 
-                     "Analyse wird gestartet..."}
-                  </span>
-                </div>
-
-                <div className="flex items-center space-x-3">
-                  {hasReportUrl ? (
-                    <CheckCircle className="w-5 h-5 text-green-500" />
-                  ) : (
-                    <div className="w-5 h-5 border-2 border-gray-300 border-t-transparent rounded-full" />
-                  )}
-                  <span>
-                    {hasReportUrl ? "PDF erstellt" : "PDF ausstehend"}
-                  </span>
-                </div>
-              </div>
-
-              {!hasReportUrl && !isFailed && (
-                <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                  <div className="flex items-center space-x-2">
-                    <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
-                    <span className="text-blue-800">
-                      {isAnalyzing ? 
-                        "Ihre Sichtbarkeit wird gerade analysiert. Dies kann einige Minuten dauern..." :
-                        "Report wird erstellt und per E-Mail versendet. Diese Seite aktualisiert sich automatisch."}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {visibilityResult && (
-            <Card>
-              <CardContent className="p-6">
-                <h2 className="text-xl font-semibold mb-4">
-                  Ihre Sichtbarkeits-Auswertung
-                </h2>
-                
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div className="text-center p-4 bg-primary/5 rounded-lg">
-                    <div className="text-2xl font-bold text-primary">
-                      {(visibilityResult as any).overall_score || visibilityResult.visibility_score || 'N/A'}%
-                    </div>
-                    <div className="text-sm text-gray-600">Gesamtbewertung</div>
-                  </div>
-                  
-                  <div className="text-center p-4 bg-primary/5 rounded-lg">
-                    <div className="text-2xl font-bold text-primary">
-                      {(visibilityResult as any).platform_analyses?.length || 
-                       (visibilityResult.provider ? 1 : 0) || 0}
-                    </div>
-                    <div className="text-sm text-gray-600">Analysierte Plattformen</div>
-                  </div>
-                  
-                  <div className="text-center p-4 bg-primary/5 rounded-lg">
-                    <div className="text-2xl font-bold text-primary">
-                      {(visibilityResult as any).quick_wins?.length || 0}
-                    </div>
-                    <div className="text-sm text-gray-600">Sofort-Empfehlungen</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          <div className="text-center space-y-4">
-            <div className="flex justify-center space-x-4">
-              <Link to="/#visibility-check">
-                <Button>
-                  Neuen Check starten
-                </Button>
-              </Link>
-              
-              <Link to="/business">
-                <Button variant="outline">
-                  Mehr über unsere Services
-                </Button>
-              </Link>
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6">
+            <div className="text-center space-y-4">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+              <h2 className="text-xl font-semibold">Verifikation läuft...</h2>
+              <p className="text-muted-foreground">
+                Ihre E-Mail wird verifiziert und die Ergebnisse werden geladen.
+              </p>
             </div>
-            
-            <p className="text-sm text-gray-500">
-              Bei Fragen kontaktieren Sie uns gerne unter mail@matbakh.app
-            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (verificationStatus === 'error') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6">
+            <div className="text-center space-y-4">
+              <AlertCircle className="h-8 w-8 mx-auto text-red-500" />
+              <h2 className="text-xl font-semibold text-red-600">Verifikation fehlgeschlagen</h2>
+              <p className="text-muted-foreground">{errorMessage}</p>
+              <Button onClick={handleNewAnalysis} className="w-full">
+                Neue Analyse starten
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!analysisResult) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6">
+            <div className="text-center space-y-4">
+              <CheckCircle className="h-8 w-8 mx-auto text-green-500" />
+              <h2 className="text-xl font-semibold">E-Mail bestätigt!</h2>
+              <p className="text-muted-foreground">
+                Ihre E-Mail wurde erfolgreich bestätigt, aber die Analyse ist noch nicht abgeschlossen.
+              </p>
+              <Button onClick={handleNewAnalysis} className="w-full">
+                Neue Analyse starten
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show the full analysis results
+  return (
+    <div className="min-h-screen bg-background">
+      {token && (
+        <div className="bg-green-50 border-b border-green-200 py-3">
+          <div className="max-w-6xl mx-auto px-6">
+            <div className="flex items-center gap-2 text-green-800">
+              <CheckCircle className="h-5 w-5" />
+              <span className="text-sm font-medium">
+                E-Mail erfolgreich bestätigt! Hier sind Ihre vollständigen Analyseergebnisse.
+              </span>
+            </div>
           </div>
         </div>
       )}
-
-      {!isSuccess && (
-        <div className="text-center space-y-4 mt-8">
-          <Link to="/#visibility-check">
-            <Button>
-              Neuen Sichtbarkeits-Check starten
-            </Button>
-          </Link>
-        </div>
-      )}
+      
+      <VisibilityResults
+        businessName={leadData?.business_name || ''}
+        analysisResult={analysisResult}
+        onRequestDetailedReport={handleRequestDetailedReport}
+        onNewAnalysis={handleNewAnalysis}
+        reportRequested={false}
+        email={leadData?.email}
+      />
     </div>
   );
 };
