@@ -26,6 +26,8 @@ interface VisibilityResultsProps {
   onNewAnalysis: () => void;
   reportRequested: boolean;
   email?: string;
+  leadId?: string;
+  allowDownload?: boolean; // Controls if download button is shown
 }
 
 const ScoreDonut: React.FC<{ score: number; size?: 'sm' | 'lg' }> = ({ score, size = 'lg' }) => {
@@ -91,8 +93,35 @@ const VisibilityResults: React.FC<VisibilityResultsProps> = ({
   onRequestDetailedReport, 
   onNewAnalysis,
   reportRequested,
-  email 
+  email,
+  leadId,
+  allowDownload = false
 }) => {
+  const handleDownloadReport = async () => {
+    if (!leadId || !allowDownload) return;
+    
+    try {
+      // Call the PDF generation edge function
+      const response = await fetch(`/api/generate-pdf-report?leadId=${leadId}`, {
+        method: 'GET',
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = `${businessName}-sichtbarkeits-report.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }
+    } catch (error) {
+      console.error('Error downloading report:', error);
+    }
+  };
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-8">
       {/* Header */}
@@ -106,12 +135,10 @@ const VisibilityResults: React.FC<VisibilityResultsProps> = ({
               <Badge variant="default" className="bg-green-100 text-green-800 border-green-300">
                 ✅ 100% Satisfied - Perfekte Online-Präsenz!
               </Badge>
-              {analysisResult.full_report_url && (
-                <Button asChild size="sm">
-                  <a href={analysisResult.full_report_url} target="_blank" rel="noopener noreferrer">
-                    <Download className="w-4 h-4 mr-2" />
-                    Vollständigen Report herunterladen
-                  </a>
+              {allowDownload && leadId && (
+                <Button onClick={handleDownloadReport} size="sm">
+                  <Download className="w-4 h-4 mr-2" />
+                  Detaillierten PDF-Report herunterladen
                 </Button>
               )}
             </div>

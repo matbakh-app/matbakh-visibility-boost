@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronDown } from 'lucide-react';
 import { useSubCategoriesWithCrossTags, type RelatedCategory } from '@/hooks/useSubCategoriesWithCrossTags';
 import { useMainCategoryMapping, slugToDisplay } from '@/hooks/useMainCategoryMapping';
+import EmptySubCategoriesMessage from './EmptySubCategoriesMessage';
 
 // RelatedCategory interface is now imported from the hook
 
@@ -224,6 +225,11 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
     // Use the hook's filter function which includes cross-tags search
     return filterCategories(term, safeSubCategories);
   }, [searchTerm, filterCategories, safeSubCategories]);
+
+  // Show empty state if no subcategories are available
+  if (!loading && allSubCategories.length === 0 && safeMainCategories.length > 0) {
+    return <EmptySubCategoriesMessage selectedMainCategories={safeMainCategories} />;
+  }
 
   return (
     <div className="space-y-4">
