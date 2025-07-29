@@ -1,4 +1,4 @@
-// Slug to display name mapping for backward compatibility
+// Temporary slug to display name mapping for backward compatibility during migration
 export const slugToDisplay: Record<string, string> = {
   'food-drink': 'Essen & Trinken',
   'entertainment-culture': 'Kunst, Unterhaltung & Freizeit',
@@ -21,30 +21,60 @@ export const slugToDisplay: Record<string, string> = {
   'other-services': 'Sonstige'
 };
 
+export interface MainCategory {
+  id: string;
+  slug: string;
+  name_de: string;
+  name_en: string;
+  description_de?: string;
+  description_en?: string;
+  sort_order: number;
+  is_active: boolean;
+}
+
 /**
- * Temporary hook for mapping until canonical categories system is migrated
- * This provides a fallback to the string-based approach for backward compatibility
+ * Hook for mapping categories - supports both legacy slug-based and new UUID-based approaches
+ * TODO: Remove legacy functions after main_categories table migration is complete
  */
 export const useMainCategoryMapping = () => {
   /**
-   * Convert array of slugs to display names (fallback for now)
+   * Convert array of slugs to display names (legacy fallback)
    */
   const slugsToIds = (slugs: string[]): string[] => {
-    // For now, return the display names as IDs
     return slugs
       .map(slug => slugToDisplay[slug])
       .filter(Boolean);
   };
 
   /**
-   * Get canonical name by slug
+   * Get canonical name by slug (legacy fallback)
    */
   const getCanonicalNameBySlug = (slug: string): string => {
     return slugToDisplay[slug] || slug;
   };
 
+  // TODO: Implement UUID-based functions after migration
+  const uuidBySlug = (slug: string): string => {
+    // Placeholder - will be implemented after main_categories table exists
+    return "";
+  };
+
+  const uuidsBySlugs = (slugs: string[]): string[] => {
+    // Placeholder - will be implemented after main_categories table exists
+    return [];
+  };
+
+  const nameById = (id: string, lang: "de" | "en" = "de"): string => {
+    // Placeholder - will be implemented after main_categories table exists
+    return id;
+  };
+
   return {
     slugsToIds,
-    getCanonicalNameBySlug
+    getCanonicalNameBySlug,
+    uuidBySlug,
+    uuidsBySlugs,
+    nameById,
+    loading: false
   };
 };
