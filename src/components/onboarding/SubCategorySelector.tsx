@@ -34,9 +34,12 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
     logSearch 
   } = useSubCategoriesWithCrossTags(selectedMainCategories, i18n.language as 'de' | 'en');
 
-  // Update suggestions when data changes
+  // Update suggestions when data changes or main categories change
   useEffect(() => {
-    updateSuggestions();
+    if (allSubCategories.length > 0 && selectedMainCategories.length > 0) {
+      console.log('Triggering updateSuggestions, categories:', allSubCategories.length, 'main cats:', selectedMainCategories);
+      updateSuggestions();
+    }
   }, [allSubCategories, selectedSubCategories, selectedMainCategories]);
 
   const shuffleArray = (array: RelatedCategory[]) => {
@@ -53,10 +56,13 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
     
     selectedMainCategories.forEach(mainCategory => {
       // Get all available subcategories for this main category
-      const available = allSubCategories.filter(c => 
-        !selectedSubCategories.includes(c.id) && 
-        (c.main_category === mainCategory || (c.crossTags && c.crossTags.includes(mainCategory)))
-      );
+      const available = allSubCategories.filter(c => {
+        if (selectedSubCategories.includes(c.id)) return false;
+        
+        // Check if this subcategory belongs to the main category
+        return c.main_category === mainCategory || 
+               (c.crossTags && c.crossTags.includes(mainCategory));
+      });
       
       // Show up to 7 suggestions per main category
       const shuffled = shuffleArray(available);
@@ -64,6 +70,7 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
     });
     
     setSuggestionsByMainCategory(newSuggestions);
+    console.log('Updated suggestions:', newSuggestions);
   };
 
   const reshuffleSuggestions = () => {
@@ -74,7 +81,9 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
   const getSelectedCountForMainCategory = (mainCategory: string) => {
     return selectedSubCategories.filter(id => {
       const cat = allSubCategories.find(c => c.id === id);
-      return cat && (cat.main_category === mainCategory || (cat.crossTags && cat.crossTags.includes(mainCategory)));
+      if (!cat) return false;
+      return cat.main_category === mainCategory || 
+             (cat.crossTags && cat.crossTags.includes(mainCategory));
     }).length;
   };
 
@@ -213,7 +222,11 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
             <Button
               variant="outline"
               size="sm"
-              onClick={reshuffleSuggestions}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                reshuffleSuggestions();
+              }}
               className="text-sm"
             >
               🎲 {t('categorySelector.subCategory.reshuffle', 'Neu mischen')}
