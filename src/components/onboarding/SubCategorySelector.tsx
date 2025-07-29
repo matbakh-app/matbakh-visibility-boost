@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -39,28 +39,25 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
     logSearch 
   } = useSubCategoriesWithCrossTags(selectedMainCategoryNames, i18n.language as 'de' | 'en');
 
-  // Update suggestions when data changes or main categories change
-  useEffect(() => {
-    if (allSubCategories.length > 0 && selectedMainCategories.length > 0) {
-      console.log('Triggering updateSuggestions, categories:', allSubCategories.length, 'main cats:', selectedMainCategories);
-      updateSuggestions();
-    }
-  }, [allSubCategories, selectedMainCategories]); // Removed selectedSubCategories to prevent infinite loop
-
-  const shuffleArray = (array: RelatedCategory[]) => {
+  const shuffleArray = useCallback((array: RelatedCategory[]) => {
     const shuffled = [...array];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
     return shuffled;
-  };
+  }, []);
 
-  const updateSuggestions = () => {
+  // Memoized function to update suggestions - prevents infinite loop
+  const updateSuggestions = useCallback(() => {
+    if (!allSubCategories.length || !selectedMainCategories.length) {
+      setSuggestionsByMainCategory({});
+      return;
+    }
+
     console.log('🔍 updateSuggestions called');
     console.log('🔍 Selected main categories:', selectedMainCategories);
     console.log('🔍 All subcategories count:', allSubCategories.length);
-    console.log('🔍 Sample subcategory:', allSubCategories[0]);
     
     const newSuggestions: Record<string, RelatedCategory[]> = {};
     
@@ -94,12 +91,22 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
     });
     
     console.log('🔍 Final suggestions object:', newSuggestions);
-    setSuggestionsByMainCategory(newSuggestions);
-  };
+    
+    // Only update state if suggestions actually changed
+    setSuggestionsByMainCategory(prevSuggestions => {
+      const hasChanged = JSON.stringify(prevSuggestions) !== JSON.stringify(newSuggestions);
+      return hasChanged ? newSuggestions : prevSuggestions;
+    });
+  }, [allSubCategories, selectedMainCategories, selectedSubCategories, getCanonicalNameBySlug, shuffleArray]);
 
-  const reshuffleSuggestions = () => {
+  // Update suggestions when data changes - now with stable dependencies
+  useEffect(() => {
     updateSuggestions();
-  };
+  }, [updateSuggestions]);
+
+  const reshuffleSuggestions = useCallback(() => {
+    updateSuggestions();
+  }, [updateSuggestions]);
 
   // Check how many categories are selected per main category
   const getSelectedCountForMainCategory = (mainCategorySlug: string) => {
