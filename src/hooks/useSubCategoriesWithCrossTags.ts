@@ -10,8 +10,9 @@ export interface SubCategoryWithCrossTags {
   keywords: string[];
   is_popular: boolean;
   sort_order: number;
-  haupt_kategorie: string;
-  crossTags: string[]; // Target main categories from cross_tags table
+  haupt_kategorie_id: string; // FK to main_categories.id
+  haupt_kategorie: string; // Legacy field for display
+  crossTags: string[]; // Target main category IDs from cross_tags table
 }
 
 export interface RelatedCategory {
@@ -21,53 +22,24 @@ export interface RelatedCategory {
   keywords: string[];
   confidence: 'high' | 'medium' | 'low';
   strength?: number;
-  crossTags?: string[];
-  main_category?: string; // Added for main category reference
+  crossTagIds?: string[]; // UUIDs instead of strings for cross-tags
+  haupt_kategorie_id: string; // FK to main_categories.id
+  haupt_kategorie_name?: string; // Canonical name for display
 }
 
 /**
- * Hook to load subcategories with cross-tags support
- * Handles the "Essen & Trinken" vs "Essen und Trinken" slug issue
+ * Hook to load subcategories with cross-tags support using canonical categories system
  */
 export const useSubCategoriesWithCrossTags = (
-  selectedMainCategories: string[],
+  selectedMainCategoryNames: string[], // Array of canonical names for now
   language: 'de' | 'en' = 'de'
 ) => {
   const [allSubCategories, setAllSubCategories] = useState<RelatedCategory[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Map main category slugs to exact DB values in 'haupt_kategorie'
-  // CRITICAL: Handle the "Essen & Trinken" vs "Essen und Trinken" issue
-  const slugToDisplay: Record<string, string> = {
-    'food-drink': 'Essen & Trinken',
-    'entertainment-culture': 'Kunst, Unterhaltung & Freizeit',
-    'retail-shopping': 'Einzelhandel & Verbraucherdienstleistungen',
-    'health-wellness': 'Gesundheit & Medizinische Dienstleistungen',
-    'automotive': 'Automobil & Transport',
-    'beauty-personal-care': 'Mode & Lifestyle',
-    'sports-fitness': 'Sport',
-    'home-garden': 'Immobilien & Bauwesen',
-    'professional-services': 'Professionelle Dienstleistungen',
-    'education-training': 'Bildung & Ausbildung',
-    'technology-electronics': 'Sonstige',
-    'travel-tourism': 'Gastgewerbe und Tourismus',
-    'finance-insurance': 'Finanzdienstleistungen',
-    'real-estate': 'Immobilien & Bauwesen',
-    'pets-animals': 'Sonstige',
-    'events-venues': 'Kunst, Unterhaltung & Freizeit',
-    'government-public': 'Behörden & Öffentliche Dienste',
-    'religious-spiritual': 'Religiöse Stätten',
-    'other-services': 'Sonstige'
-  };
-
-  // Reverse mapping: Display names to slugs for filtering
-  const displayToSlug: Record<string, string> = Object.fromEntries(
-    Object.entries(slugToDisplay).map(([slug, display]) => [display, slug])
-  );
-
   const loadSubCategories = async () => {
-    if (!selectedMainCategories.length) {
+    if (!selectedMainCategoryNames.length) {
       setAllSubCategories([]);
       return;
     }
@@ -76,12 +48,7 @@ export const useSubCategoriesWithCrossTags = (
     setError(null);
 
     try {
-      // Convert slugs to display names for DB query
-      const displayNames = selectedMainCategories
-        .map(slug => slugToDisplay[slug])
-        .filter(Boolean);
-
-      console.log('🔍 Loading subcategories for main categories:', displayNames);
+      console.log('🔍 Loading subcategories for main categories:', selectedMainCategoryNames);
 
       // First get categories by main category
       const mainCategoryQuery = supabase
@@ -97,7 +64,7 @@ export const useSubCategoriesWithCrossTags = (
           sort_order,
           haupt_kategorie
         `)
-        .in('haupt_kategorie', displayNames);
+        .in('haupt_kategorie', selectedMainCategoryNames);
 
       // Then get categories by cross-tags
       const crossTagQuery = supabase
@@ -114,7 +81,7 @@ export const useSubCategoriesWithCrossTags = (
           haupt_kategorie,
           category_cross_tags!inner(target_main_category)
         `)
-        .in('category_cross_tags.target_main_category', displayNames);
+        .in('category_cross_tags.target_main_category', selectedMainCategoryNames);
 
       // Execute both queries
       const [mainResult, crossResult] = await Promise.all([
@@ -153,8 +120,9 @@ export const useSubCategoriesWithCrossTags = (
           keywords: item.keywords || [],
           confidence: (item.is_popular ? 'high' : 'medium') as 'high' | 'medium' | 'low',
           strength: item.sort_order || 0,
-          crossTags,
-          main_category: item.haupt_kategorie
+          crossTagIds: crossTags,
+          haupt_kategorie_id: '', // Will be updated once canonical system is in place
+          haupt_kategorie_name: item.haupt_kategorie
         };
       });
 
@@ -177,7 +145,7 @@ export const useSubCategoriesWithCrossTags = (
 
   useEffect(() => {
     loadSubCategories();
-  }, [selectedMainCategories, language]);
+  }, [selectedMainCategoryNames, language]);
 
   /**
    * Filter categories by search term
@@ -195,7 +163,7 @@ export const useSubCategoriesWithCrossTags = (
       c.name.toLowerCase().includes(term) || 
       c.keywords.some(k => k.toLowerCase().includes(term)) ||
       (c.description && c.description.toLowerCase().includes(term)) ||
-      (c.crossTags && c.crossTags.some(tag => tag.toLowerCase().includes(term)))
+      (c.haupt_kategorie_name && c.haupt_kategorie_name.toLowerCase().includes(term))
     );
   };
 
@@ -208,7 +176,7 @@ export const useSubCategoriesWithCrossTags = (
         .from('category_search_logs')
         .insert({
           search_term: searchTerm,
-          selected_main_categories: selectedMainCategories.map(slug => slugToDisplay[slug]).filter(Boolean),
+          selected_main_categories: selectedMainCategoryNames, // Using display names for now
           result_category_ids: resultCategoryIds,
           selected_category_id: selectedCategoryId || null
         });
