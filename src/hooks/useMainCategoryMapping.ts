@@ -53,20 +53,20 @@ export const useMainCategoryMapping = () => {
     return slugToDisplay[slug] || slug;
   };
 
-  // TODO: Implement UUID-based functions after migration
+  // Use the new hook for UUID-based operations
+  const { useMainCategoryMappingNew } = require('./useMainCategoryMappingNew');
+  const { uuidBySlug: getUuidBySlug, uuidsBySlugs: getUuidsBySlugs, nameById: getNameById } = useMainCategoryMappingNew();
+
   const uuidBySlug = (slug: string): string => {
-    // Placeholder - will be implemented after main_categories table exists
-    return "";
+    return getUuidBySlug(slug);
   };
 
   const uuidsBySlugs = (slugs: string[]): string[] => {
-    // Placeholder - will be implemented after main_categories table exists
-    return [];
+    return getUuidsBySlugs(slugs);
   };
 
   const nameById = (id: string, lang: "de" | "en" = "de"): string => {
-    // Placeholder - will be implemented after main_categories table exists
-    return id;
+    return getNameById(id, lang);
   };
 
   return {
