@@ -162,7 +162,7 @@ const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
                       selectedMainCategories={form.watch('mainCategories') || []}
                       selectedSubCategories={field.value || []} 
                       onSubCategoryChange={field.onChange} 
-                      maxSelections={5}
+                      maxSelectionsPerMainCategory={7}
                     />
                     <FormMessage />
                   </FormItem>
