@@ -62,7 +62,7 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
       // Load ALL subcategories from database without limit
       const { data, error } = await supabase
         .from('gmb_categories')
-        .select('category_id, name_de, name_en, description_de, description_en, keywords, haupt_kategorie, is_popular, sort_order')
+        .select('id, name_de, name_en, description_de, description_en, keywords, haupt_kategorie, is_popular, sort_order')
         .in('haupt_kategorie', selectedMainCategories)
         .order('is_popular', { ascending: false })
         .order('sort_order', { ascending: true });
@@ -72,7 +72,7 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
       if (data && !error && data.length > 0) {
         // Convert ALL database entries to RelatedCategory format
         pool = data.map(item => ({
-          id: item.category_id,
+          id: item.id,
           name: i18n.language === 'de' ? (item.name_de || item.name_en) : (item.name_en || item.name_de),
           description: i18n.language === 'de' ? (item.description_de || item.description_en || '') : (item.description_en || item.description_de || ''),
           keywords: item.keywords || [],
