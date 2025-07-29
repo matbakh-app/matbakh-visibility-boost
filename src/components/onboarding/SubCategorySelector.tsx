@@ -52,25 +52,43 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
   };
 
   const updateSuggestions = () => {
+    console.log('🔍 updateSuggestions called');
+    console.log('🔍 Selected main categories:', selectedMainCategories);
+    console.log('🔍 All subcategories count:', allSubCategories.length);
+    console.log('🔍 Sample subcategory:', allSubCategories[0]);
+    
     const newSuggestions: Record<string, RelatedCategory[]> = {};
     
     selectedMainCategories.forEach(mainCategory => {
+      console.log(`🔍 Processing main category: "${mainCategory}"`);
+      
       // Get all available subcategories for this main category
       const available = allSubCategories.filter(c => {
-        if (selectedSubCategories.includes(c.id)) return false;
+        if (selectedSubCategories.includes(c.id)) {
+          console.log(`🔍 Skipping ${c.name} - already selected`);
+          return false;
+        }
         
         // Check if this subcategory belongs to the main category
-        return c.main_category === mainCategory || 
-               (c.crossTags && c.crossTags.includes(mainCategory));
+        const belongsToMain = c.main_category === mainCategory;
+        const hasMainInCrossTags = c.crossTags && c.crossTags.includes(mainCategory);
+        
+        console.log(`🔍 Checking ${c.name}: main_category="${c.main_category}", belongsToMain=${belongsToMain}, hasMainInCrossTags=${hasMainInCrossTags}`);
+        
+        return belongsToMain || hasMainInCrossTags;
       });
+      
+      console.log(`🔍 Found ${available.length} available subcategories for "${mainCategory}"`);
       
       // Show up to 7 suggestions per main category
       const shuffled = shuffleArray(available);
       newSuggestions[mainCategory] = shuffled.slice(0, 7);
+      
+      console.log(`🔍 Added ${newSuggestions[mainCategory].length} suggestions for "${mainCategory}"`);
     });
     
+    console.log('🔍 Final suggestions object:', newSuggestions);
     setSuggestionsByMainCategory(newSuggestions);
-    console.log('Updated suggestions:', newSuggestions);
   };
 
   const reshuffleSuggestions = () => {
