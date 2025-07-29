@@ -186,7 +186,11 @@ const VisibilityWizard: React.FC = () => {
           action_type: 'analysis_failed',
           details: { error: error.message },
         });
-        throw error;
+        
+        // Show user-friendly error and stay on current step
+        setLoading(false);
+        // TODO: Add error state handling here
+        throw new Error(error.details?.userMessage || 'Die Analyse konnte nicht durchgeführt werden. Bitte versuchen Sie es erneut.');
       }
 
       console.log('✅ Enhanced analysis complete:', result);

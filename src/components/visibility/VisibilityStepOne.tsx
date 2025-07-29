@@ -60,11 +60,25 @@ const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
     </TooltipProvider>
   );
 
+  const handleSubmit = (values: StepOneValues) => {
+    // Validate that at least one main category is selected
+    if (!values.mainCategories || values.mainCategories.length === 0) {
+      form.setError('mainCategories', {
+        type: 'required',
+        message: t('visibilityStepOne.validation.mainCategoriesRequired')
+      });
+      return;
+    }
+
+    // Pass data to next step without auto-scroll
+    onNext(values);
+  };
+
 
   return (
     <TooltipProvider>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onNext)} className="space-y-8">
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
           {/* Basis-Informationen */}
           <Card>
             <CardHeader>
