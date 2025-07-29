@@ -288,7 +288,7 @@ const VisibilityResults: React.FC<VisibilityResultsProps> = ({
       )}
 
       {/* To-Dos Section */}
-      {analysisResult.todos && analysisResult.todos.length > 0 && (
+      {analysisResult.todos && Array.isArray(analysisResult.todos) && analysisResult.todos.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -333,7 +333,7 @@ const VisibilityResults: React.FC<VisibilityResultsProps> = ({
       )}
 
       {/* Quick Wins */}
-      {analysisResult.quickWins && analysisResult.quickWins.length > 0 && (
+      {analysisResult.quickWins && Array.isArray(analysisResult.quickWins) && analysisResult.quickWins.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -357,7 +357,7 @@ const VisibilityResults: React.FC<VisibilityResultsProps> = ({
       )}
 
       {/* Benchmarks */}
-      {analysisResult.benchmarks && analysisResult.benchmarks.length > 0 && (
+      {analysisResult.benchmarks && Array.isArray(analysisResult.benchmarks) && analysisResult.benchmarks.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -402,7 +402,7 @@ const VisibilityResults: React.FC<VisibilityResultsProps> = ({
       )}
 
       {/* Category Insights */}
-      {analysisResult.categoryInsights && analysisResult.categoryInsights.length > 0 && (
+      {analysisResult.categoryInsights && Array.isArray(analysisResult.categoryInsights) && analysisResult.categoryInsights.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Branchenspezifische Erkenntnisse</CardTitle>
