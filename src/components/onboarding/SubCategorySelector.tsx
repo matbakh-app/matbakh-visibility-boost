@@ -39,33 +39,30 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
     logSearch 
   } = useSubCategoriesWithCrossTags(selectedMainCategoryNames, i18n.language as 'de' | 'en');
 
-  const shuffleArray = useCallback((array: RelatedCategory[]) => {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  // Update suggestions with ALL logic inside useEffect to prevent infinite loops
+  useEffect(() => {
+    // Local shuffle function - not extracted to prevent reference issues
+    function shuffleArray(array: RelatedCategory[]) {
+      const shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
     }
-    return shuffled;
-  }, []);
 
-  // Memoized function to update suggestions - prevents infinite loop
-  const updateSuggestions = useCallback(() => {
     if (!allSubCategories.length || !selectedMainCategories.length) {
       setSuggestionsByMainCategory({});
       return;
     }
 
-    console.log('🔍 updateSuggestions called');
-    console.log('🔍 Selected main categories:', selectedMainCategories);
-    console.log('🔍 All subcategories count:', allSubCategories.length);
+    console.log('🔍 Effect running, updating suggestions');
     
     const newSuggestions: Record<string, RelatedCategory[]> = {};
     
     selectedMainCategories.forEach(mainCategorySlug => {
-      console.log(`🔍 Processing main category slug: "${mainCategorySlug}"`);
-      
-      const displayName = getCanonicalNameBySlug(mainCategorySlug);
-      console.log(`🔍 Converted slug "${mainCategorySlug}" to display name "${displayName}"`);
+      // Use the mapping directly here instead of through function call
+      const displayName = slugToDisplay[mainCategorySlug] || mainCategorySlug;
       
       // Get all available subcategories for this main category
       const available = allSubCategories.filter(c => {
@@ -81,36 +78,53 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
         return belongsToMain || hasMainInCrossTags;
       });
       
-      console.log(`🔍 Found ${available.length} available subcategories for "${displayName}"`);
-      
-      // Show only 3 suggestions per main category (instead of 7)
+      // Shuffle only ONCE per effect run and take 3
       const shuffled = shuffleArray(available);
       newSuggestions[mainCategorySlug] = shuffled.slice(0, 3);
-      
-      console.log(`🔍 Added ${newSuggestions[mainCategorySlug].length} suggestions for "${mainCategorySlug}"`);
     });
-    
-    console.log('🔍 Final suggestions object:', newSuggestions);
     
     // Only update state if suggestions actually changed
-    setSuggestionsByMainCategory(prevSuggestions => {
-      const hasChanged = JSON.stringify(prevSuggestions) !== JSON.stringify(newSuggestions);
-      return hasChanged ? newSuggestions : prevSuggestions;
+    setSuggestionsByMainCategory(prev => {
+      const hasChanged = JSON.stringify(prev) !== JSON.stringify(newSuggestions);
+      if (!hasChanged) return prev;
+      console.log('🔍 Suggestions updated');
+      return newSuggestions;
     });
-  }, [allSubCategories, selectedMainCategories, selectedSubCategories, getCanonicalNameBySlug, shuffleArray]);
+  }, [
+    allSubCategories, 
+    selectedMainCategories, 
+    selectedSubCategories
+  ]); // Removed getCanonicalNameBySlug - using slugToDisplay directly instead
 
-  // Update suggestions when data changes - now with stable dependencies
-  useEffect(() => {
-    updateSuggestions();
-  }, [updateSuggestions]);
-
-  const reshuffleSuggestions = useCallback(() => {
-    updateSuggestions();
-  }, [updateSuggestions]);
+  const reshuffleSuggestions = () => {
+    // Trigger a re-shuffle by updating a key or forcing a re-run
+    const newSuggestions: Record<string, RelatedCategory[]> = {};
+    
+    selectedMainCategories.forEach(mainCategorySlug => {
+      const displayName = slugToDisplay[mainCategorySlug] || mainCategorySlug;
+      
+      const available = allSubCategories.filter(c => {
+        if (selectedSubCategories.includes(c.id)) return false;
+        const belongsToMain = c.haupt_kategorie_name === displayName;
+        const hasMainInCrossTags = c.crossTagIds && c.crossTagIds.includes(displayName);
+        return belongsToMain || hasMainInCrossTags;
+      });
+      
+      // Local shuffle function
+      const shuffled = [...available];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      newSuggestions[mainCategorySlug] = shuffled.slice(0, 3);
+    });
+    
+    setSuggestionsByMainCategory(newSuggestions);
+  };
 
   // Check how many categories are selected per main category
   const getSelectedCountForMainCategory = (mainCategorySlug: string) => {
-    const displayName = getCanonicalNameBySlug(mainCategorySlug);
+    const displayName = slugToDisplay[mainCategorySlug] || mainCategorySlug;
     
     return selectedSubCategories.filter(id => {
       const cat = allSubCategories.find(c => c.id === id);
@@ -143,7 +157,7 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
 
   // Replace a selected card with a new one from the pool
   const replaceSelectedCard = (mainCategorySlug: string, selectedCardId: string) => {
-    const displayName = getCanonicalNameBySlug(mainCategorySlug);
+    const displayName = slugToDisplay[mainCategorySlug] || mainCategorySlug;
     
     // Find all available categories for this main category (exclude currently selected ones)
     const currentlySelected = [...selectedSubCategories, selectedCardId];
@@ -168,8 +182,12 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
       );
       
       if (newCards.length > 0) {
-        // Add one new random card
-        const shuffled = shuffleArray(newCards);
+        // Add one new random card with local shuffle
+        const shuffled = [...newCards];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
         const newCard = shuffled[0];
         
         setSuggestionsByMainCategory(prev => ({
