@@ -37,13 +37,15 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
   const { uuidsBySlugs } = useMainCategoryMapping();
   const selectedMainCategoryUUIDs = uuidsBySlugs(safeMainCategories);
 
-  // Use the updated hook with UUID support
+  // Use a more stable dependency check for UUID arrays
+  const stableMainCategoryUUIDs = useMemo(() => selectedMainCategoryUUIDs, [JSON.stringify(selectedMainCategoryUUIDs)]);
+  // Use the updated hook with stable UUID support
   const { 
     allSubCategories, 
     loading, 
     filterCategories, 
     logSearch 
-  } = useSubCategoriesWithCrossTags(selectedMainCategoryUUIDs, i18n.language as 'de' | 'en');
+  } = useSubCategoriesWithCrossTags(stableMainCategoryUUIDs, i18n.language as 'de' | 'en');
 
   /**
    * Suggestions-Logik direkt, loop-proof im useEffect 
@@ -81,14 +83,17 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
       newSuggestions[mainCategorySlug] = localShuffle(available).slice(0, 3);
     }
 
-    // Nur setState, wenn wirklich Änderung
-    setSuggestionsByMainCategory(prev =>
-      JSON.stringify(prev) === JSON.stringify(newSuggestions) ? prev : newSuggestions
-    );
+    // Only setState if suggestions actually changed
+    setSuggestionsByMainCategory(prev => {
+      const prevString = JSON.stringify(prev);
+      const newString = JSON.stringify(newSuggestions);
+      return prevString === newString ? prev : newSuggestions;
+    });
   }, [
     allSubCategories, 
     safeMainCategories, 
-    safeSubCategories
+    safeSubCategories,
+    JSON.stringify(allSubCategories) // Extra stability check
   ]);
 
   /**

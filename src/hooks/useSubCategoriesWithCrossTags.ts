@@ -147,6 +147,15 @@ export const useSubCategoriesWithCrossTags = (
 
   useEffect(() => {
     loadSubCategories();
+  }, [JSON.stringify(selectedMainCategoryUUIDs), language]); // Use JSON.stringify for array stability
+
+  // Add debugging to check for unstable references
+  useEffect(() => {
+    console.log('🔍 useSubCategoriesWithCrossTags triggered with:', {
+      selectedMainCategoryUUIDs,
+      language,
+      arrayLength: selectedMainCategoryUUIDs?.length
+    });
   }, [selectedMainCategoryUUIDs, language]);
 
   /**
