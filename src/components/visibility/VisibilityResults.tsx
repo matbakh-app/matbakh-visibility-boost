@@ -148,9 +148,9 @@ const VisibilityResults: React.FC<VisibilityResultsProps> = ({
       <div className="space-y-6">
         <h2 className="text-2xl font-bold text-center">Detaillierte Plattform-Analyse</h2>
         <div className="grid md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {analysisResult.platformAnalyses.map((platform) => (
+          {analysisResult.platformAnalyses?.map((platform) => (
             <PlatformProfileCard key={platform.platform} platform={platform} />
-          ))}
+          )) || []}
         </div>
       </div>
 
@@ -333,29 +333,31 @@ const VisibilityResults: React.FC<VisibilityResultsProps> = ({
       )}
 
       {/* Quick Wins */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Star className="w-5 h-5 text-yellow-500" />
-            Sofortige Verbesserungen (Quick Wins)
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid md:grid-cols-2 gap-4">
-            {analysisResult.quickWins.map((win, idx) => (
-              <div key={idx} className="flex items-start gap-2 p-3 bg-yellow-50 rounded-lg">
-                <div className="w-6 h-6 bg-yellow-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                  {idx + 1}
+      {analysisResult.quickWins && analysisResult.quickWins.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Star className="w-5 h-5 text-yellow-500" />
+              Sofortige Verbesserungen (Quick Wins)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-4">
+              {analysisResult.quickWins.map((win, idx) => (
+                <div key={idx} className="flex items-start gap-2 p-3 bg-yellow-50 rounded-lg">
+                  <div className="w-6 h-6 bg-yellow-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                    {idx + 1}
+                  </div>
+                  <p className="text-sm">{win}</p>
                 </div>
-                <p className="text-sm">{win}</p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Benchmarks */}
-      {analysisResult.benchmarks.length > 0 && (
+      {analysisResult.benchmarks && analysisResult.benchmarks.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -378,18 +380,18 @@ const VisibilityResults: React.FC<VisibilityResultsProps> = ({
                 <tbody>
                   <tr className="bg-blue-50 font-medium">
                     <td className="p-2">{businessName} (Sie)</td>
-                    <td className="text-center p-2">{analysisResult.platformAnalyses.find(p => p.platform === 'google')?.score || 0}%</td>
-                    <td className="text-center p-2">{analysisResult.platformAnalyses.find(p => p.platform === 'facebook')?.score || 0}%</td>
-                    <td className="text-center p-2">{analysisResult.platformAnalyses.find(p => p.platform === 'instagram')?.score || 0}%</td>
+                    <td className="text-center p-2">{analysisResult.platformAnalyses?.find(p => p.platform === 'google')?.score || 0}%</td>
+                    <td className="text-center p-2">{analysisResult.platformAnalyses?.find(p => p.platform === 'facebook')?.score || 0}%</td>
+                    <td className="text-center p-2">{analysisResult.platformAnalyses?.find(p => p.platform === 'instagram')?.score || 0}%</td>
                     <td className="text-center p-2 font-bold">{analysisResult.overallScore}%</td>
                   </tr>
                   {analysisResult.benchmarks.map((benchmark, idx) => (
                     <tr key={idx} className="border-b">
                       <td className="p-2">{benchmark.name}</td>
-                      <td className="text-center p-2">{Math.round(benchmark.scores.google)}%</td>
-                      <td className="text-center p-2">{Math.round(benchmark.scores.facebook)}%</td>
-                      <td className="text-center p-2">{Math.round(benchmark.scores.instagram)}%</td>
-                      <td className="text-center p-2 font-medium">{Math.round(benchmark.scores.overall)}%</td>
+                      <td className="text-center p-2">{Math.round(benchmark.scores?.google || 0)}%</td>
+                      <td className="text-center p-2">{Math.round(benchmark.scores?.facebook || 0)}%</td>
+                      <td className="text-center p-2">{Math.round(benchmark.scores?.instagram || 0)}%</td>
+                      <td className="text-center p-2 font-medium">{Math.round(benchmark.scores?.overall || 0)}%</td>
                     </tr>
                   ))}
                 </tbody>
@@ -400,7 +402,7 @@ const VisibilityResults: React.FC<VisibilityResultsProps> = ({
       )}
 
       {/* Category Insights */}
-      {analysisResult.categoryInsights.length > 0 && (
+      {analysisResult.categoryInsights && analysisResult.categoryInsights.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Branchenspezifische Erkenntnisse</CardTitle>
