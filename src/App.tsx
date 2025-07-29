@@ -81,7 +81,7 @@ function App() {
                 <Route path="password-reset" element={<PasswordReset />} />
                 <Route path="checkout-success" element={<CheckoutSuccess />} />
                 <Route path="visibility-check" element={<VisibilityCheckPage />} />
-                <Route path="visibility-check/verified" element={<VisibilityCheckVerified />} />
+                <Route path="visibility-check/verified/:leadId" element={<VisibilityCheckVerified />} />
                 <Route path="redeem" element={<RedeemPage />} />
                 <Route path="auth/google/callback" element={<GoogleOAuthCallback />} />
                 <Route path="notes" element={<NotesPage />} />

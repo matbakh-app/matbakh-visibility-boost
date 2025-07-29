@@ -70,8 +70,15 @@ const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
       return;
     }
 
+    // Convert arrays to comma-separated strings for compatibility
+    const processedValues = {
+      ...values,
+      mainCategory: values.mainCategories[0] || '', // Take first main category
+      subCategory: values.subCategories?.join(', ') || ''
+    };
+
     // Pass data to next step without auto-scroll
-    onNext(values);
+    onNext(processedValues);
   };
 
 
