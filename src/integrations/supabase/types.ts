@@ -433,6 +433,7 @@ export type Database = {
           id: string
           source: string
           target_main_category: string
+          target_main_category_id: string | null
           updated_at: string
         }
         Insert: {
@@ -442,6 +443,7 @@ export type Database = {
           id?: string
           source: string
           target_main_category: string
+          target_main_category_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -451,6 +453,7 @@ export type Database = {
           id?: string
           source?: string
           target_main_category?: string
+          target_main_category_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -459,6 +462,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "gmb_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_cross_tags_target_main_category_id_fkey"
+            columns: ["target_main_category_id"]
+            isOneToOne: false
+            referencedRelation: "main_categories"
             referencedColumns: ["id"]
           },
         ]
@@ -1108,6 +1118,7 @@ export type Database = {
           is_primary: boolean | null
           keywords: string[] | null
           main_category: string | null
+          main_category_id: string | null
           name_de: string
           name_en: string
           parent_category_id: string | null
@@ -1130,6 +1141,7 @@ export type Database = {
           is_primary?: boolean | null
           keywords?: string[] | null
           main_category?: string | null
+          main_category_id?: string | null
           name_de: string
           name_en: string
           parent_category_id?: string | null
@@ -1152,6 +1164,7 @@ export type Database = {
           is_primary?: boolean | null
           keywords?: string[] | null
           main_category?: string | null
+          main_category_id?: string | null
           name_de?: string
           name_en?: string
           parent_category_id?: string | null
@@ -1161,7 +1174,15 @@ export type Database = {
           synonyms?: string[] | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "gmb_categories_main_category_id_fkey"
+            columns: ["main_category_id"]
+            isOneToOne: false
+            referencedRelation: "main_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       gmb_profiles: {
         Row: {
@@ -1366,6 +1387,45 @@ export type Database = {
           percentile_rank?: number | null
           platform?: string
           sample_size?: number | null
+        }
+        Relationships: []
+      }
+      main_categories: {
+        Row: {
+          created_at: string
+          description_de: string | null
+          description_en: string | null
+          id: string
+          is_active: boolean
+          name_de: string
+          name_en: string
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description_de?: string | null
+          description_en?: string | null
+          id?: string
+          is_active?: boolean
+          name_de: string
+          name_en: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description_de?: string | null
+          description_en?: string | null
+          id?: string
+          is_active?: boolean
+          name_de?: string
+          name_en?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
         }
         Relationships: []
       }
