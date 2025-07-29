@@ -1,4 +1,4 @@
-// Temporary slug to display name mapping for backward compatibility during migration
+import { useMainCategoryMappingNew } from './useMainCategoryMappingNew';
 export const slugToDisplay: Record<string, string> = {
   'food-drink': 'Essen & Trinken',
   'entertainment-culture': 'Kunst, Unterhaltung & Freizeit',
@@ -54,7 +54,6 @@ export const useMainCategoryMapping = () => {
   };
 
   // Use the new hook for UUID-based operations
-  const { useMainCategoryMappingNew } = require('./useMainCategoryMappingNew');
   const { uuidBySlug: getUuidBySlug, uuidsBySlugs: getUuidsBySlugs, nameById: getNameById } = useMainCategoryMappingNew();
 
   const uuidBySlug = (slug: string): string => {
