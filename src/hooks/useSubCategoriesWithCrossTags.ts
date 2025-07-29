@@ -77,6 +77,19 @@ export const useSubCategoriesWithCrossTags = (
 
       console.log('🔍 Loading subcategories for main categories:', displayNames);
 
+      // Build OR conditions for PostgREST - use individual eq conditions instead of in()
+      const orConditions: string[] = [];
+      
+      // Add haupt_kategorie conditions
+      displayNames.forEach(name => {
+        orConditions.push(`haupt_kategorie.eq.${encodeURIComponent(name)}`);
+      });
+      
+      // Add cross-tags conditions
+      displayNames.forEach(name => {
+        orConditions.push(`category_cross_tags.target_main_category.eq.${encodeURIComponent(name)}`);
+      });
+
       // Query with LEFT JOIN to get cross-tags
       const { data, error } = await supabase
         .from('gmb_categories')
@@ -90,13 +103,9 @@ export const useSubCategoriesWithCrossTags = (
           is_popular,
           sort_order,
           haupt_kategorie,
-          category_cross_tags!inner(target_main_category)
+          category_cross_tags!left(target_main_category)
         `)
-        .or(
-          // Match by main category OR by cross-tags
-          `haupt_kategorie.in.(${displayNames.map(name => `"${name}"`).join(',')}),` +
-          `category_cross_tags.target_main_category.in.(${displayNames.map(name => `"${name}"`).join(',')})`
-        )
+        .or(orConditions.join(','))
         .order('is_popular', { ascending: false })
         .order('sort_order', { ascending: true });
 
