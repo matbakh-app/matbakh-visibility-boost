@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X, Cookie, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ const CookieConsentBanner: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [facebookPixelId, setFacebookPixelId] = useState<string | null>(null);
+  const facebookPixelInitialized = useRef(false);
 
   const isDebugMode = import.meta.env.DEV;
 
@@ -28,6 +29,12 @@ const CookieConsentBanner: React.FC = () => {
   }, []);
 
   const initializeFacebookPixel = async () => {
+    // Prevent multiple initializations
+    if (facebookPixelInitialized.current) {
+      console.log('🔄 Facebook Pixel bereits initialisiert - überspringe');
+      return;
+    }
+    
     // Get Facebook Pixel ID when needed
     const defaultPixelId = "9151671744940732"; // Your actual pixel ID
     setFacebookPixelId(defaultPixelId);
@@ -43,7 +50,8 @@ const CookieConsentBanner: React.FC = () => {
         autoPageView: true,
         debug: isDebugMode
       });
-      console.log('✅ Facebook Pixel erfolgreich initialisiert');
+      facebookPixelInitialized.current = true;
+      console.log('✅ Facebook Pixel erfolgreich initialisiert (einmalig)');
     } catch (error) {
       console.error('❌ Facebook Pixel Initialisierung fehlgeschlagen:', error);
     }
