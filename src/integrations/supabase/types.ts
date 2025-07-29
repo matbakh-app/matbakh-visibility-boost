@@ -177,6 +177,36 @@ export type Database = {
           },
         ]
       }
+      auto_tagging_jobs: {
+        Row: {
+          error_message: string | null
+          id: string
+          run_finished_at: string | null
+          run_started_at: string
+          status: string | null
+          total_categories_processed: number | null
+          total_tags_created: number | null
+        }
+        Insert: {
+          error_message?: string | null
+          id?: string
+          run_finished_at?: string | null
+          run_started_at?: string
+          status?: string | null
+          total_categories_processed?: number | null
+          total_tags_created?: number | null
+        }
+        Update: {
+          error_message?: string | null
+          id?: string
+          run_finished_at?: string | null
+          run_started_at?: string
+          status?: string | null
+          total_categories_processed?: number | null
+          total_tags_created?: number | null
+        }
+        Relationships: []
+      }
       billing_events: {
         Row: {
           created_at: string | null
@@ -395,6 +425,82 @@ export type Database = {
           },
         ]
       }
+      category_cross_tags: {
+        Row: {
+          category_id: string
+          confidence_score: number | null
+          created_at: string
+          id: string
+          source: string
+          target_main_category: string
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          confidence_score?: number | null
+          created_at?: string
+          id?: string
+          source: string
+          target_main_category: string
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          confidence_score?: number | null
+          created_at?: string
+          id?: string
+          source?: string
+          target_main_category?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_cross_tags_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "gmb_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      category_search_logs: {
+        Row: {
+          id: string
+          result_category_ids: string[] | null
+          search_term: string
+          search_timestamp: string
+          selected_category_id: string | null
+          selected_main_categories: string[]
+          user_id: string | null
+        }
+        Insert: {
+          id?: string
+          result_category_ids?: string[] | null
+          search_term: string
+          search_timestamp?: string
+          selected_category_id?: string | null
+          selected_main_categories: string[]
+          user_id?: string | null
+        }
+        Update: {
+          id?: string
+          result_category_ids?: string[] | null
+          search_term?: string
+          search_timestamp?: string
+          selected_category_id?: string | null
+          selected_main_categories?: string[]
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_search_logs_selected_category_id_fkey"
+            columns: ["selected_category_id"]
+            isOneToOne: false
+            referencedRelation: "gmb_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       category_specifics: {
         Row: {
           category_id: string | null
@@ -433,6 +539,53 @@ export type Database = {
             columns: ["partner_id"]
             isOneToOne: false
             referencedRelation: "business_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      category_tag_events: {
+        Row: {
+          category_cross_tag_id: string | null
+          change_type: string | null
+          changed_by: string | null
+          comment: string | null
+          event_timestamp: string
+          id: string
+          new_confidence: number | null
+          new_source: string | null
+          old_confidence: number | null
+          old_source: string | null
+        }
+        Insert: {
+          category_cross_tag_id?: string | null
+          change_type?: string | null
+          changed_by?: string | null
+          comment?: string | null
+          event_timestamp?: string
+          id?: string
+          new_confidence?: number | null
+          new_source?: string | null
+          old_confidence?: number | null
+          old_source?: string | null
+        }
+        Update: {
+          category_cross_tag_id?: string | null
+          change_type?: string | null
+          changed_by?: string | null
+          comment?: string | null
+          event_timestamp?: string
+          id?: string
+          new_confidence?: number | null
+          new_source?: string | null
+          old_confidence?: number | null
+          old_source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_tag_events_category_cross_tag_id_fkey"
+            columns: ["category_cross_tag_id"]
+            isOneToOne: false
+            referencedRelation: "category_cross_tags"
             referencedColumns: ["id"]
           },
         ]
