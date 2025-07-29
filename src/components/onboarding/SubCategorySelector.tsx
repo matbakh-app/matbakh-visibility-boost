@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { X, Sparkles, Search } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 
 interface RelatedCategory {
   id: string;
@@ -40,119 +39,82 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
   useEffect(() => {
     if (selectedMainCategories.length > 0) {
       loadRelatedCategories();
+    } else {
+      setAiSuggestions([]);
+      setAllSubCategories([]);
     }
   }, [selectedMainCategories, i18n.language]);
 
   const loadRelatedCategories = async () => {
     setIsLoadingSuggestions(true);
     try {
-      // For now, use simplified query since we need to set up related_categories table first
-      // This will load subcategories based on main category selection
-      const { data: relatedCats, error } = await supabase
-        .from('gmb_categories')
-        .select(`
-          id,
-          category_id,
-          name_de,
-          name_en,
-          description_de,
-          description_en,
-          keywords,
-          haupt_kategorie,
-          main_category
-        `)
-        .not('haupt_kategorie', 'is', null)
-        .limit(50);
-
-      if (error) {
-        console.error('Error loading related categories:', error);
-        // Fallback to mock data for demo
-        const mockSuggestions = generateMockSuggestions(selectedMainCategories);
-        setAiSuggestions(mockSuggestions);
-        setAllSubCategories(mockSuggestions);
-        setIsLoadingSuggestions(false);
-        return;
-      }
-
-      // Filter categories relevant to selected main categories
-      const filteredCats = (relatedCats || []).filter(cat => {
-        const mainCat = i18n.language === 'de' ? cat.haupt_kategorie : cat.main_category;
-        return selectedMainCategories.some(selected => 
-          mainCat?.toLowerCase().includes(selected.toLowerCase()) ||
-          selected.toLowerCase().includes(mainCat?.toLowerCase() || '')
-        );
-      });
-
-      const suggestions: RelatedCategory[] = filteredCats.map((cat, index) => ({
-        id: cat.category_id,
-        name: i18n.language === 'de' ? cat.name_de : cat.name_en,
-        description: i18n.language === 'de' ? cat.description_de : cat.description_en,
-        keywords: cat.keywords || [],
-        relationshipType: 'semantic',
-        strength: Math.random() * 0.5 + 0.5, // Mock strength for now
-        confidence: getConfidenceLevel(Math.random() * 0.5 + 0.5)
-      })).filter(cat => cat.name).slice(0, 20);
-
-      setAiSuggestions(suggestions);
-      setAllSubCategories(suggestions);
+      console.log('Loading related categories for:', selectedMainCategories);
+      
+      // Generate mock suggestions based on main categories
+      const mockSuggestions = generateMockSuggestions(selectedMainCategories);
+      
+      console.log('Loaded suggestions:', mockSuggestions);
+      setAiSuggestions(mockSuggestions);
+      setAllSubCategories(mockSuggestions);
       
     } catch (error) {
       console.error('Failed to load related categories:', error);
-      // Fallback to mock data
-      const mockSuggestions = generateMockSuggestions(selectedMainCategories);
-      setAiSuggestions(mockSuggestions);
-      setAllSubCategories(mockSuggestions);
+      // Fallback to basic mock data
+      const fallbackSuggestions = generateMockSuggestions(selectedMainCategories);
+      setAiSuggestions(fallbackSuggestions);
+      setAllSubCategories(fallbackSuggestions);
     } finally {
       setIsLoadingSuggestions(false);
     }
   };
 
   const generateMockSuggestions = (mainCategories: string[]): RelatedCategory[] => {
-    // Create a comprehensive mapping of main categories to subcategories
-    const mockCategories: Record<string, RelatedCategory[]> = {
-      // For "Essen & Trinken" category
-      'essen-trinken': [
-        { id: 'restaurant', name: 'Restaurant', description: 'Vollservice-Restaurant mit Bedienung', keywords: ['dining', 'food', 'service'], relationshipType: 'primary', strength: 0.9, confidence: 'high' },
-        { id: 'cafe', name: 'Café', description: 'Kaffee und leichte Speisen', keywords: ['coffee', 'breakfast', 'casual'], relationshipType: 'primary', strength: 0.8, confidence: 'high' },
-        { id: 'bar', name: 'Bar', description: 'Getränke und Cocktails', keywords: ['drinks', 'cocktails', 'evening'], relationshipType: 'primary', strength: 0.8, confidence: 'high' },
-        { id: 'biergarten', name: 'Biergarten', description: 'Outdoor-Gastronomie mit Bier', keywords: ['beer', 'outdoor', 'garden'], relationshipType: 'related', strength: 0.7, confidence: 'medium' },
-        { id: 'bakery', name: 'Bäckerei', description: 'Frisches Brot und Backwaren', keywords: ['bread', 'pastries', 'fresh'], relationshipType: 'related', strength: 0.6, confidence: 'medium' },
-        { id: 'pizzeria', name: 'Pizzeria', description: 'Italienische Pizza-Spezialitäten', keywords: ['pizza', 'italian', 'casual'], relationshipType: 'related', strength: 0.7, confidence: 'medium' }
+    const mockData: Record<string, RelatedCategory[]> = {
+      'restaurant': [
+        { id: 'fine_dining', name: i18n.language === 'de' ? 'Fine Dining Restaurant' : 'Fine Dining', description: i18n.language === 'de' ? 'Gehobene Küche mit exzellentem Service' : 'Upscale dining with excellent service', keywords: ['elegant', 'edel', 'fine'], confidence: 'high' },
+        { id: 'family_restaurant', name: i18n.language === 'de' ? 'Familienrestaurant' : 'Family Restaurant', description: i18n.language === 'de' ? 'Familienfreundliche Atmosphäre' : 'Family-friendly atmosphere', keywords: ['familie', 'family'], confidence: 'high' },
+        { id: 'casual_dining', name: i18n.language === 'de' ? 'Casual Dining' : 'Casual Dining', description: i18n.language === 'de' ? 'Zwanglose, entspannte Atmosphäre' : 'Relaxed, informal atmosphere', keywords: ['entspannt', 'casual'], confidence: 'medium' },
+        { id: 'steakhouse', name: i18n.language === 'de' ? 'Steakhouse' : 'Steakhouse', description: i18n.language === 'de' ? 'Spezialisiert auf Fleischgerichte' : 'Specialized in meat dishes', keywords: ['steak', 'fleisch', 'meat'], confidence: 'medium' },
+        { id: 'italian_restaurant', name: i18n.language === 'de' ? 'Italienisches Restaurant' : 'Italian Restaurant', description: i18n.language === 'de' ? 'Authentische italienische Küche' : 'Authentic Italian cuisine', keywords: ['italienisch', 'pasta', 'pizza'], confidence: 'high' }
       ],
-      // For "Unterhaltung & Kultur" category  
-      'unterhaltung-kultur': [
-        { id: 'theater', name: 'Theater', description: 'Aufführungen und Shows', keywords: ['shows', 'performance', 'culture'], relationshipType: 'primary', strength: 0.9, confidence: 'high' },
-        { id: 'museum', name: 'Museum', description: 'Kunst und kulturelle Ausstellungen', keywords: ['art', 'culture', 'exhibition'], relationshipType: 'primary', strength: 0.8, confidence: 'high' },
-        { id: 'cinema', name: 'Kino', description: 'Filme und Kinovorstellungen', keywords: ['movies', 'films', 'entertainment'], relationshipType: 'primary', strength: 0.8, confidence: 'high' },
-        { id: 'nightclub', name: 'Nachtclub', description: 'Nachtleben und Tanzen', keywords: ['nightlife', 'dancing', 'music'], relationshipType: 'related', strength: 0.7, confidence: 'medium' },
-        { id: 'concert-hall', name: 'Konzerthalle', description: 'Live-Musik und Konzerte', keywords: ['music', 'concert', 'live'], relationshipType: 'related', strength: 0.7, confidence: 'medium' }
+      'cafe': [
+        { id: 'coffee_shop', name: i18n.language === 'de' ? 'Coffee Shop' : 'Coffee Shop', description: i18n.language === 'de' ? 'Spezialisiert auf Kaffeespezialitäten' : 'Specialized in coffee specialties', keywords: ['kaffee', 'coffee'], confidence: 'high' },
+        { id: 'bistro', name: i18n.language === 'de' ? 'Bistro' : 'Bistro', description: i18n.language === 'de' ? 'Kleine Gerichte und gemütliche Atmosphäre' : 'Small dishes and cozy atmosphere', keywords: ['bistro', 'gemütlich'], confidence: 'high' },
+        { id: 'bakery_cafe', name: i18n.language === 'de' ? 'Bäckerei-Café' : 'Bakery Café', description: i18n.language === 'de' ? 'Frische Backwaren und Kaffee' : 'Fresh baked goods and coffee', keywords: ['bäckerei', 'bakery'], confidence: 'medium' },
+        { id: 'breakfast_cafe', name: i18n.language === 'de' ? 'Frühstückscafé' : 'Breakfast Café', description: i18n.language === 'de' ? 'Spezialisiert auf Frühstück und Brunch' : 'Specialized in breakfast and brunch', keywords: ['frühstück', 'breakfast'], confidence: 'medium' },
+        { id: 'tea_house', name: i18n.language === 'de' ? 'Teehaus' : 'Tea House', description: i18n.language === 'de' ? 'Große Auswahl an Tees und leichten Snacks' : 'Wide selection of teas and light snacks', keywords: ['tee', 'tea'], confidence: 'low' }
       ],
-      // For "Weitere Dienstleistungen" category
-      'weitere-dienstleistungen': [
-        { id: 'event-service', name: 'Event-Service', description: 'Veranstaltungsorganisation', keywords: ['events', 'planning', 'service'], relationshipType: 'primary', strength: 0.9, confidence: 'high' },
-        { id: 'catering', name: 'Catering', description: 'Außer-Haus-Verpflegung', keywords: ['catering', 'delivery', 'events'], relationshipType: 'primary', strength: 0.8, confidence: 'high' },
-        { id: 'consulting', name: 'Beratung', description: 'Fachberatung und Consulting', keywords: ['consulting', 'advice', 'business'], relationshipType: 'related', strength: 0.7, confidence: 'medium' },
-        { id: 'cleaning', name: 'Reinigungsservice', description: 'Professionelle Reinigung', keywords: ['cleaning', 'maintenance', 'service'], relationshipType: 'related', strength: 0.6, confidence: 'medium' }
+      'bar': [
+        { id: 'cocktail_bar', name: i18n.language === 'de' ? 'Cocktailbar' : 'Cocktail Bar', description: i18n.language === 'de' ? 'Kreative Cocktails und stilvolles Ambiente' : 'Creative cocktails and stylish ambiance', keywords: ['cocktail', 'drinks'], confidence: 'high' },
+        { id: 'wine_bar', name: i18n.language === 'de' ? 'Weinbar' : 'Wine Bar', description: i18n.language === 'de' ? 'Ausgewählte Weine und kleine Gerichte' : 'Selected wines and small dishes', keywords: ['wein', 'wine'], confidence: 'high' },
+        { id: 'sports_bar', name: i18n.language === 'de' ? 'Sportsbar' : 'Sports Bar', description: i18n.language === 'de' ? 'Live-Sport und kalte Getränke' : 'Live sports and cold drinks', keywords: ['sport', 'fußball'], confidence: 'medium' },
+        { id: 'pub', name: i18n.language === 'de' ? 'Pub/Kneipe' : 'Pub', description: i18n.language === 'de' ? 'Traditionelle Atmosphäre und lokale Biere' : 'Traditional atmosphere and local beers', keywords: ['pub', 'kneipe', 'bier'], confidence: 'medium' },
+        { id: 'rooftop_bar', name: i18n.language === 'de' ? 'Rooftop Bar' : 'Rooftop Bar', description: i18n.language === 'de' ? 'Bar mit Aussicht und besonderer Atmosphäre' : 'Bar with view and special atmosphere', keywords: ['rooftop', 'aussicht'], confidence: 'low' }
+      ],
+      'hotel': [
+        { id: 'hotel_restaurant', name: i18n.language === 'de' ? 'Hotelrestaurant' : 'Hotel Restaurant', description: i18n.language === 'de' ? 'Restaurant in einem Hotel' : 'Restaurant within a hotel', keywords: ['hotel', 'gäste'], confidence: 'high' },
+        { id: 'hotel_bar', name: i18n.language === 'de' ? 'Hotelbar' : 'Hotel Bar', description: i18n.language === 'de' ? 'Bar in einem Hotel' : 'Bar within a hotel', keywords: ['hotel', 'lobby'], confidence: 'medium' }
       ]
     };
 
-    // Map the displayed category names to our mock category keys
-    const categoryMapping: Record<string, string> = {
-      'Essen & Trinken': 'essen-trinken',
-      'Unterhaltung & Kultur': 'unterhaltung-kultur', 
-      'Weitere Dienstleistungen': 'weitere-dienstleistungen',
-      'Food & Drink': 'essen-trinken',
-      'Entertainment & Culture': 'unterhaltung-kultur',
-      'Additional Services': 'weitere-dienstleistungen'
-    };
-
-    // Get all subcategories for the selected main categories
-    const allSuggestions = mainCategories.flatMap(cat => {
-      const mappedKey = categoryMapping[cat] || cat.toLowerCase().replace(/\s+/g, '-');
-      return mockCategories[mappedKey] || [];
+    let suggestions: RelatedCategory[] = [];
+    mainCategories.forEach(category => {
+      if (mockData[category]) {
+        suggestions = suggestions.concat(mockData[category]);
+      }
     });
-
-    return allSuggestions;
+    
+    // Add some additional suggestions if we don't have many
+    if (suggestions.length < 3) {
+      const additionalSuggestions: RelatedCategory[] = [
+        { id: 'delivery_service', name: i18n.language === 'de' ? 'Lieferservice' : 'Delivery Service', description: i18n.language === 'de' ? 'Lieferung nach Hause' : 'Home delivery service', keywords: ['lieferung', 'delivery'], confidence: 'medium' },
+        { id: 'takeaway', name: i18n.language === 'de' ? 'Abholung' : 'Takeaway', description: i18n.language === 'de' ? 'Essen zum Mitnehmen' : 'Food to go', keywords: ['abholen', 'takeaway'], confidence: 'medium' },
+        { id: 'catering', name: i18n.language === 'de' ? 'Catering' : 'Catering', description: i18n.language === 'de' ? 'Catering für Events' : 'Event catering service', keywords: ['catering', 'events'], confidence: 'low' }
+      ];
+      suggestions = suggestions.concat(additionalSuggestions);
+    }
+    
+    return suggestions;
   };
 
   const getConfidenceLevel = (strength: number): 'high' | 'medium' | 'low' => {
@@ -162,6 +124,7 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
   };
 
   const handleSubCategoryToggle = (categoryId: string) => {
+    console.log('Toggling subcategory:', categoryId);
     if (selectedSubCategories.includes(categoryId)) {
       // Remove category
       onSubCategoryChange(selectedSubCategories.filter(id => id !== categoryId));
@@ -299,12 +262,16 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
 
       {/* Search Input */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
         <Input
-          placeholder={t('categorySelector.subCategory.searchPlaceholder', 'Kategorie suchen...')}
+          placeholder={t('categorySelector.subCategory.searchPlaceholder', 'Suche Unterkategorien...')}
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => {
+            console.log('Search term changed:', e.target.value);
+            setSearchTerm(e.target.value);
+          }}
           className="pl-10"
+          disabled={selectedMainCategories.length === 0}
         />
       </div>
 
@@ -348,7 +315,7 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
         ) : (
           <div className="text-center py-4 border-2 border-dashed border-muted rounded-lg">
             <p className="text-sm text-muted-foreground">
-              {t('categorySelector.subCategory.noSelection', 'Noch keine Unterkategorien ausgewählt')}
+              {t('categorySelector.subCategory.selectMainFirst', 'Wählen Sie zuerst Hauptkategorien aus, um Vorschläge zu erhalten.')}
             </p>
           </div>
         )}
