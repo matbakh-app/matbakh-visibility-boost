@@ -45,7 +45,7 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
       console.log('Triggering updateSuggestions, categories:', allSubCategories.length, 'main cats:', selectedMainCategories);
       updateSuggestions();
     }
-  }, [allSubCategories, selectedSubCategories, selectedMainCategories]);
+  }, [allSubCategories, selectedMainCategories]); // Removed selectedSubCategories to prevent infinite loop
 
   const shuffleArray = (array: RelatedCategory[]) => {
     const shuffled = [...array];
