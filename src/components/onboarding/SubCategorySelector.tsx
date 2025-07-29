@@ -50,7 +50,17 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
     'religious-places': 'Religiöse Stätten',
     'professional-services': 'Professionelle Dienstleistungen',
     'real-estate': 'Immobilien & Bauwesen',
-    'government-public': 'Behörden & Öffentliche Dienste'
+    'government-public': 'Behörden & Öffentliche Dienste',
+    // Fehlende Kategorien hinzugefügt
+    'beauty-personal-care': 'Schönheit & Körperpflege',
+    'retail-shopping': 'Einzelhandel & Shopping',
+    'entertainment-culture': 'Unterhaltung & Kultur',
+    'health-wellness': 'Gesundheit und Wellness',
+    'home-garden': 'Haus & Garten',
+    'sports-fitness': 'Sport & Fitness',
+    'other-services': 'Weitere Dienstleistungen (Sonstiges)',
+    'technology-electronics': 'Technologie & Elektronik',
+    'religion-spirituality': 'Religion & Spiritualität'
   };
 
   useEffect(() => {
