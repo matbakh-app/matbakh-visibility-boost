@@ -139,6 +139,8 @@ export const useSubCategoriesWithCrossTags = (
             : []
           : [];
 
+        console.log(`🔍 Processing subcategory: ${item.name_de}, haupt_kategorie: ${item.haupt_kategorie}`);
+        
         return {
           id: item.id,
           name: language === 'de' ? item.name_de : item.name_en,
