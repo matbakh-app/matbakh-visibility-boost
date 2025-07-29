@@ -40,9 +40,10 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
   }, [allSubCategories, selectedSubCategories, searchTerm]);
 
   const updateSuggestions = () => {
-    // For suggestion cards: show first 7 available categories, no search term required
+    // For suggestion cards: show more available categories when fewer are selected
     const available = allSubCategories.filter(c => !selectedSubCategories.includes(c.id));
-    setSuggestions(available.slice(0, 7));
+    const maxSuggestions = Math.min(15, maxSelections - selectedSubCategories.length);
+    setSuggestions(available.slice(0, maxSuggestions));
   };
 
   // Handle category selection with logging
@@ -202,9 +203,12 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
         )}
       </div>
 
-      {/* Progress indicator */}
+      {/* Progress indicator with minimum requirement */}
       <div className="text-sm text-gray-500">
         {selectedSubCategories.length} / {maxSelections} {t('categorySelector.subCategory.selected', 'ausgewählt')}
+        {selectedSubCategories.length < 5 && (
+          <span className="text-amber-600 ml-2">(Mindestens 5 empfohlen)</span>
+        )}
       </div>
     </div>
   );
