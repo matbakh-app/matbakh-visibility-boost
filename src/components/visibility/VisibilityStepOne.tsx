@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -46,6 +46,10 @@ const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
   });
 
   const isValid = form.formState.isValid;
+
+  // FIX: Memoize the watched mainCategories to prevent infinite loops in SubCategorySelector
+  const watchedMainCategories = form.watch('mainCategories');
+  const stableMainCategories = useMemo(() => watchedMainCategories || [], [JSON.stringify(watchedMainCategories)]);
 
   const renderTooltip = (text: string) => (
     <TooltipProvider>
@@ -158,8 +162,8 @@ const VisibilityStepOne: React.FC<Props> = ({ onNext, defaultValues }) => {
                 name="subCategories"
                 render={({ field }) => (
                   <FormItem>
-                    <SubCategorySelector 
-                      selectedMainCategories={form.watch('mainCategories') || []}
+                     <SubCategorySelector 
+                       selectedMainCategories={stableMainCategories}
                       selectedSubCategories={field.value || []} 
                       onSubCategoryChange={field.onChange} 
                       maxSelectionsPerMainCategory={7}
