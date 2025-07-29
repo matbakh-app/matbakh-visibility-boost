@@ -286,7 +286,7 @@ const PlatformProfileCard: React.FC<{ platform: PlatformData }> = ({ platform })
         )}
         
         {/* Completed Features */}
-        {platform.completedFeatures.length > 0 && (
+        {platform.completedFeatures?.length > 0 && (
           <div>
             <h4 className="font-medium text-green-700 mb-2 flex items-center gap-1 text-sm">
               <CheckCircle2 className="w-4 h-4" />
@@ -301,7 +301,7 @@ const PlatformProfileCard: React.FC<{ platform: PlatformData }> = ({ platform })
         )}
 
         {/* Missing Features */}
-        {platform.missingFeatures.length > 0 && (
+        {platform.missingFeatures?.length > 0 && (
           <div>
             <h4 className="font-medium text-red-700 mb-2 flex items-center gap-1 text-sm">
               <AlertCircle className="w-4 h-4" />
@@ -316,7 +316,7 @@ const PlatformProfileCard: React.FC<{ platform: PlatformData }> = ({ platform })
         )}
 
         {/* Top Recommendations */}
-        {platform.recommendations.length > 0 && (
+        {platform.recommendations?.length > 0 && (
           <div>
             <h4 className="font-medium text-blue-700 mb-2 text-sm">Top Empfehlungen</h4>
             <ul className="text-xs space-y-1">
