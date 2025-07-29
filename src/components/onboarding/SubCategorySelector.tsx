@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { supabase } from '@/integrations/supabase/client';
 
 interface RelatedCategory {
   id: string;
@@ -58,11 +59,33 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
     try {
       console.log('Loading categories pool for:', selectedMainCategories);
       
-      // Generate comprehensive mock data
-      const mockPool = generateComprehensiveMockData(selectedMainCategories);
-      console.log('Loaded categories pool:', mockPool);
+      // Try to load from real database first
+      const { data, error } = await supabase
+        .from('gmb_categories')
+        .select('category_id, name_de, name_en, description_de, description_en, keywords, main_category, haupt_kategorie, is_popular, sort_order')
+        .in('main_category', selectedMainCategories)
+        .order('is_popular', { ascending: false })
+        .order('sort_order', { ascending: true });
+
+      let pool: RelatedCategory[] = [];
       
-      setAllSubCategories(mockPool);
+      if (data && !error && data.length > 0) {
+        pool = data.map(item => ({
+          id: item.category_id,
+          name: i18n.language === 'de' ? (item.name_de || item.name_en) : (item.name_en || item.name_de),
+          description: i18n.language === 'de' ? (item.description_de || item.description_en || '') : (item.description_en || item.description_de || ''),
+          keywords: item.keywords || [],
+          confidence: item.is_popular ? 'high' : 'medium',
+          strength: item.is_popular ? 0.9 : 0.6
+        }));
+        console.log('Loaded real categories from database:', pool.length);
+      } else {
+        console.log('No data from database, using mock data');
+        pool = generateComprehensiveMockData(selectedMainCategories);
+      }
+      
+      console.log('Final categories pool:', pool.length, 'categories');
+      setAllSubCategories(pool);
       
     } catch (error) {
       console.error('Failed to load categories:', error);
@@ -80,11 +103,16 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
       !selectedSubCategories.includes(cat.id)
     );
     
-    // Show up to 20 suggestions that aren't selected
-    const newDisplayed = available.slice(0, 20);
+    // Show up to 20 suggestions that aren't selected, prioritize by confidence
+    const sortedAvailable = available.sort((a, b) => {
+      const confidenceOrder = { 'high': 3, 'medium': 2, 'low': 1 };
+      return confidenceOrder[b.confidence] - confidenceOrder[a.confidence];
+    });
+    
+    const newDisplayed = sortedAvailable.slice(0, Math.min(20, maxSelections));
     setDisplayedSuggestions(newDisplayed);
     
-    console.log('Updated displayed suggestions:', newDisplayed.length, 'available');
+    console.log('Updated displayed suggestions:', newDisplayed.length, 'available from', available.length, 'total pool');
   };
 
   const generateComprehensiveMockData = (mainCategories: string[]): RelatedCategory[] => {
@@ -166,11 +194,15 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
     // Remove from displayed suggestions and replace with next available
     setDisplayedSuggestions(prev => {
       const filtered = prev.filter(cat => cat.id !== categoryId);
-      const nextAvailable = allSubCategories.find(cat => 
-        !filtered.some(f => f.id === cat.id) && 
-        !selectedSubCategories.includes(cat.id) &&
-        cat.id !== categoryId
-      );
+      
+      // Get next best available category from pool
+      const usedIds = new Set([...filtered.map(c => c.id), ...selectedSubCategories, categoryId]);
+      const nextAvailable = allSubCategories
+        .filter(cat => !usedIds.has(cat.id))
+        .sort((a, b) => {
+          const confidenceOrder = { 'high': 3, 'medium': 2, 'low': 1 };
+          return confidenceOrder[b.confidence] - confidenceOrder[a.confidence];
+        })[0];
       
       return nextAvailable ? [...filtered, nextAvailable] : filtered;
     });
