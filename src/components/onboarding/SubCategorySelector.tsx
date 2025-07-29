@@ -308,18 +308,18 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
         />
       </div>
 
-      {/* Selected Categories */}
-      {selectedSubCategories.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h4 className="font-medium text-sm">
-              {t('categorySelector.subCategory.selected', 'Ausgewählte Unterkategorien')}
-            </h4>
-            <span className="text-xs text-muted-foreground">
-              {selectedSubCategories.length} / {maxSelections}
-            </span>
-          </div>
-          
+      {/* Selected Categories - Always Show */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h4 className="font-medium text-sm">
+            {t('categorySelector.subCategory.selected', 'Ausgewählte Unterkategorien')}
+          </h4>
+          <span className="text-xs text-muted-foreground">
+            {selectedSubCategories.length} / {maxSelections}
+          </span>
+        </div>
+        
+        {selectedSubCategories.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {selectedSubCategories.map(categoryId => {
               const category = allSubCategories.find(c => c.id === categoryId);
@@ -345,8 +345,14 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
               ) : null;
             })}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="text-center py-4 border-2 border-dashed border-muted rounded-lg">
+            <p className="text-sm text-muted-foreground">
+              {t('categorySelector.subCategory.noSelection', 'Noch keine Unterkategorien ausgewählt')}
+            </p>
+          </div>
+        )}
+      </div>
 
       {/* AI Suggestions */}
       {isLoadingSuggestions ? (
