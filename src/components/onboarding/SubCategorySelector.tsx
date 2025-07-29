@@ -37,7 +37,7 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
   // Map main category slugs to exact DB values in 'haupt_kategorie'
   const slugToDisplay: Record<string,string> = {
     'food-drink': 'Essen & Trinken',
-    'travel-tourism': 'Gastgewerbe und Tourismus',
+    'travel-tourism': 'Gastgewerbe und Tourismus', 
     'events-venues': 'Kunst, Unterhaltung & Freizeit',
     'education-training': 'Bildung & Ausbildung',
     'health-medical': 'Gesundheit & Medizinische Dienstleistungen',
@@ -51,15 +51,20 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
     'professional-services': 'Professionelle Dienstleistungen',
     'real-estate': 'Immobilien & Bauwesen',
     'government-public': 'Behörden & Öffentliche Dienste',
-    'beauty-personal-care': 'Schönheit & Körperpflege',
-    'retail-shopping': 'Einzelhandel & Shopping',
-    'entertainment-culture': 'Unterhaltung & Kultur',
-    'health-wellness': 'Gesundheit und Wellness',
-    'home-garden': 'Haus & Garten',
-    'sports-fitness': 'Sport & Fitness',
-    'other-services': 'Weitere Dienstleistungen (Sonstiges)',
-    'technology-electronics': 'Technologie & Elektronik',
-    'religion-spirituality': 'Religion & Spiritualität'
+    'aviation': 'Luftfahrt',
+    'sports': 'Sport',
+    'other': 'Sonstige',
+    'fashion-lifestyle': 'Mode & Lifestyle',
+    // Fallback mappings for MainCategorySelector display names
+    'beauty-bodycare': 'Mode & Lifestyle',
+    'retail-shopping': 'Einzelhandel & Verbraucherdienstleistungen', 
+    'entertainment-culture': 'Kunst, Unterhaltung & Freizeit',
+    'health-wellness': 'Gesundheit & Medizinische Dienstleistungen',
+    'home-garden': 'Immobilien & Bauwesen',
+    'sports-fitness': 'Sport',
+    'other-services': 'Sonstige',
+    'technology-electronics': 'Sonstige',
+    'religion-spirituality': 'Religiöse Stätten'
   };
 
   useEffect(() => {
