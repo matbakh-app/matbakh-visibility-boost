@@ -54,16 +54,45 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
     updateDisplayedSuggestions();
   }, [allSubCategories, selectedSubCategories]);
 
+  // Map slugs to display names for database filtering
+  const mapSlugsToDisplayNames = (slugs: string[]): string[] => {
+    const mapping: Record<string, string> = {
+      'food-drink': 'Essen & Trinken',
+      'travel-tourism': 'Gastgewerbe und Tourismus', 
+      'events-venues': 'Kunst, Unterhaltung & Freizeit',
+      'education-training': 'Bildung & Ausbildung',
+      'health-medical': 'Gesundheit & Medizinische Dienstleistungen',
+      'retail-consumer': 'Einzelhandel & Verbraucherdienstleistungen',
+      'automotive-transport': 'Automobil & Transport',
+      'hospitality-tourism': 'Gastgewerbe und Tourismus',
+      'arts-entertainment': 'Kunst, Unterhaltung & Freizeit',
+      'finance-insurance': 'Finanzdienstleistungen',
+      'manufacturing-industrial': 'Fertigung & Industrie',
+      'agriculture-natural': 'Land- und Forstwirtschaft, natürliche Ressourcen',
+      'religious-places': 'Religiöse Stätten'
+    };
+    return slugs.map(slug => mapping[slug]).filter(Boolean);
+  };
+
   const loadCategoriesPool = async () => {
     setIsLoadingSuggestions(true);
     try {
-      console.log('Loading FULL categories pool for:', selectedMainCategories);
+      console.log('Loading subcategories for slugs:', selectedMainCategories);
+      const displayNames = mapSlugsToDisplayNames(selectedMainCategories);
+      console.log('Mapped to display names:', displayNames);
       
+      if (!displayNames.length) {
+        console.warn('No valid display names mapped from slugs');
+        setAllSubCategories([]);
+        setIsLoadingSuggestions(false);
+        return;
+      }
+
       // Load ALL subcategories from database without limit
       const { data, error } = await supabase
         .from('gmb_categories')
         .select('id, name_de, name_en, description_de, description_en, keywords, haupt_kategorie, is_popular, sort_order')
-        .in('haupt_kategorie', selectedMainCategories)
+        .in('haupt_kategorie', displayNames)
         .order('is_popular', { ascending: false })
         .order('sort_order', { ascending: true });
 
@@ -81,8 +110,7 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
         }));
         console.log('✅ Loaded ALL categories from database:', pool.length, 'total categories');
       } else {
-        console.log('⚠️ No data from database, generating extensive mock data');
-        pool = generateExtensiveMockData(selectedMainCategories);
+        console.warn('❌ No subcategories found in DB for display names:', displayNames);
       }
       
       console.log('📊 Final pool size:', pool.length, 'categories available');
@@ -90,9 +118,7 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
       
     } catch (error) {
       console.error('❌ Failed to load categories:', error);
-      const fallbackPool = generateExtensiveMockData(selectedMainCategories);
-      console.log('🔄 Using fallback pool with', fallbackPool.length, 'categories');
-      setAllSubCategories(fallbackPool);
+      setAllSubCategories([]);
     } finally {
       setIsLoadingSuggestions(false);
     }
