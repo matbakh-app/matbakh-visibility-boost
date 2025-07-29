@@ -4,16 +4,9 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { ChevronDown } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { useSubCategoriesWithCrossTags, type RelatedCategory } from '@/hooks/useSubCategoriesWithCrossTags';
 
-interface RelatedCategory {
-  id: string;
-  name: string;
-  description?: string;
-  keywords: string[];
-  confidence: 'high' | 'medium' | 'low';
-  strength?: number;
-}
+// RelatedCategory interface is now imported from the hook
 
 interface SubCategorySelectorProps {
   selectedMainCategories: string[];     // slugs
@@ -30,103 +23,36 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
 }) => {
   const { t, i18n } = useTranslation('onboarding');
   const [searchTerm, setSearchTerm] = useState('');
-  const [allSubCategories, setAllSubCategories] = useState<RelatedCategory[]>([]);
   const [suggestions, setSuggestions] = useState<RelatedCategory[]>([]);
-  const [loading, setLoading] = useState(false);
+  
+  // Use the new hook for cross-tags support
+  const { 
+    allSubCategories, 
+    loading, 
+    error, 
+    filterCategories, 
+    logSearch 
+  } = useSubCategoriesWithCrossTags(selectedMainCategories, i18n.language as 'de' | 'en');
 
-  // Map main category slugs to exact DB values in 'haupt_kategorie'
-  const slugToDisplay: Record<string,string> = {
-    // Direct mappings to DB haupt_kategorie values
-    'food-drink': 'Essen & Trinken',
-    'entertainment-culture': 'Kunst, Unterhaltung & Freizeit',
-    'retail-shopping': 'Einzelhandel & Verbraucherdienstleistungen',
-    'health-wellness': 'Gesundheit & Medizinische Dienstleistungen',
-    'automotive': 'Automobil & Transport',
-    'beauty-personal-care': 'Mode & Lifestyle',
-    'sports-fitness': 'Sport',
-    'home-garden': 'Immobilien & Bauwesen',
-    'professional-services': 'Professionelle Dienstleistungen',
-    'education-training': 'Bildung & Ausbildung',
-    'technology-electronics': 'Sonstige',
-    'travel-tourism': 'Gastgewerbe und Tourismus',
-    'finance-insurance': 'Finanzdienstleistungen',
-    'real-estate': 'Immobilien & Bauwesen',
-    'pets-animals': 'Sonstige',
-    'events-venues': 'Kunst, Unterhaltung & Freizeit',
-    'government-public': 'Behörden & Öffentliche Dienste',
-    'religious-spiritual': 'Religiöse Stätten',
-    'other-services': 'Sonstige'
-  };
-
+  // Update suggestions when data changes
   useEffect(() => {
-    if (!selectedMainCategories.length) {
-      setAllSubCategories([]);
-      setSuggestions([]);
-      return;
-    }
-    loadSubCategories();
-  }, [selectedMainCategories, i18n.language]);
-
-  const loadSubCategories = async () => {
-    setLoading(true);
-    const displayNames = selectedMainCategories
-      .map(slug => slugToDisplay[slug])
-      .filter(Boolean);
-      
-    console.log('Loading subcategories for:', displayNames);
-    
-    try {
-      const { data, error } = await supabase
-        .from('gmb_categories')
-        .select('id, name_de, name_en, description_de, description_en, keywords, is_popular, sort_order')
-        .in('haupt_kategorie', displayNames)
-        .order('is_popular', { ascending: false })
-        .order('sort_order', { ascending: true });
-        
-      if (error) throw error;
-      
-      const pool = data.map(item => ({
-        id: item.id,
-        name: i18n.language === 'de' ? item.name_de : item.name_en,
-        description: i18n.language === 'de' ? item.description_de : item.description_en,
-        keywords: item.keywords || [],
-        confidence: (item.is_popular ? 'high' : 'medium') as 'high' | 'medium' | 'low',
-        strength: item.sort_order || 0
-      }));
-      
-      console.log('✅ Loaded', pool.length, 'subcategories from DB');
-      setAllSubCategories(pool);
-      setSuggestions(pool.slice(0, 7)); // Show up to 7 suggestion cards
-    } catch (error) {
-      console.error('Failed to load subcategories:', error);
-      setAllSubCategories([]);
-      setSuggestions([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Update suggestions on selection change or search
-  useEffect(() => {
-    filterSuggestions();
+    updateSuggestions();
   }, [allSubCategories, selectedSubCategories, searchTerm]);
 
-  const filterSuggestions = () => {
-    const term = searchTerm.toLowerCase();
+  const updateSuggestions = () => {
+    // For suggestion cards: show first 7 available categories, no search term required
     const available = allSubCategories.filter(c => !selectedSubCategories.includes(c.id));
-    const filtered = term
-      ? available.filter(c =>
-          c.name.toLowerCase().includes(term) || 
-          c.keywords.some(k => k.toLowerCase().includes(term)) ||
-          (c.description && c.description.toLowerCase().includes(term))
-        )
-      : available;
-    setSuggestions(filtered.slice(0, 7)); // Show up to 7 suggestion cards
+    setSuggestions(available.slice(0, 7));
   };
 
-  const selectCategory = (cat: RelatedCategory) => {
+  // Handle category selection with logging
+  const selectCategory = async (cat: RelatedCategory) => {
     if (selectedSubCategories.length < maxSelections) {
       onSubCategoryChange([...selectedSubCategories, cat.id]);
+      
+      // Log the selection for analytics
+      const allFiltered = filterCategories(searchTerm, selectedSubCategories);
+      await logSearch(searchTerm, allFiltered.map(c => c.id), cat.id);
     }
   };
 
@@ -134,18 +60,16 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
     onSubCategoryChange(selectedSubCategories.filter(x => x !== id));
   };
 
+  // Filtered options for the dropdown - only show results if search term is provided
   const filteredOptions = useMemo(() => {
     const term = searchTerm.toLowerCase().trim();
-    if (!term) return allSubCategories.filter(c => !selectedSubCategories.includes(c.id));
     
-    return allSubCategories
-      .filter(c => !selectedSubCategories.includes(c.id))
-      .filter(c =>
-        c.name.toLowerCase().includes(term) || 
-        c.keywords.some(k => k.toLowerCase().includes(term)) ||
-        (c.description && c.description.toLowerCase().includes(term))
-      );
-  }, [searchTerm, allSubCategories, selectedSubCategories]);
+    // CRITICAL: Only show dropdown results if user has typed at least 1 character
+    if (!term) return [];
+    
+    // Use the hook's filter function which includes cross-tags search
+    return filterCategories(term, selectedSubCategories);
+  }, [searchTerm, filterCategories, selectedSubCategories]);
 
   return (
     <div className="space-y-4">
@@ -177,28 +101,38 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
             />
             <CommandList className="max-h-60">
               <CommandEmpty>
-                {loading 
-                  ? t('categorySelector.subCategory.loading', 'Lade Kategorien...')
-                  : t('categorySelector.subCategory.noResults', 'Keine Kategorien gefunden')
-                }
+                {!searchTerm ? (
+                  t('categorySelector.subCategory.typeToSearch', 'Geben Sie mindestens 1 Zeichen ein...')
+                ) : loading ? (
+                  t('categorySelector.subCategory.loading', 'Lade Kategorien...')
+                ) : (
+                  t('categorySelector.subCategory.noResults', 'Keine Kategorien gefunden')
+                )}
               </CommandEmpty>
-              <CommandGroup>
-                {filteredOptions.map(cat => (
-                  <CommandItem
-                    key={cat.id}
-                    value={cat.name}
-                    onSelect={() => selectCategory(cat)}
-                    className="cursor-pointer"
-                  >
-                    <div className="flex flex-col">
-                      <div className="font-medium">{cat.name}</div>
-                      {cat.description && (
-                        <div className="text-sm text-gray-500 mt-1">{cat.description}</div>
-                      )}
-                    </div>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
+              {searchTerm && (
+                <CommandGroup>
+                  {filteredOptions.map(cat => (
+                    <CommandItem
+                      key={cat.id}
+                      value={cat.name}
+                      onSelect={() => selectCategory(cat)}
+                      className="cursor-pointer"
+                    >
+                      <div className="flex flex-col">
+                        <div className="font-medium">{cat.name}</div>
+                        {cat.description && (
+                          <div className="text-sm text-gray-500 mt-1">{cat.description}</div>
+                        )}
+                        {cat.crossTags && cat.crossTags.length > 0 && (
+                          <div className="text-xs text-blue-600 mt-1">
+                            Cross-Tags: {cat.crossTags.join(', ')}
+                          </div>
+                        )}
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
             </CommandList>
           </Command>
         </PopoverContent>
