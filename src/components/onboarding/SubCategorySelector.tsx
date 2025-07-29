@@ -5,6 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Button } from '@/components/ui/button';
 import { ChevronDown } from 'lucide-react';
 import { useSubCategoriesWithCrossTags, type RelatedCategory } from '@/hooks/useSubCategoriesWithCrossTags';
+import { useMainCategoryMapping, slugToDisplay } from '@/hooks/useMainCategoryMapping';
 
 // RelatedCategory interface is now imported from the hook
 
@@ -25,6 +26,10 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestionsByMainCategory, setSuggestionsByMainCategory] = useState<Record<string, RelatedCategory[]>>({});
   
+  // Map slugs to canonical names for the hook
+  const { slugsToIds, getCanonicalNameBySlug } = useMainCategoryMapping();
+  const selectedMainCategoryNames = slugsToIds(selectedMainCategories);
+  
   // Use the new hook for cross-tags support
   const { 
     allSubCategories, 
@@ -32,7 +37,7 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
     error, 
     filterCategories, 
     logSearch 
-  } = useSubCategoriesWithCrossTags(selectedMainCategories, i18n.language as 'de' | 'en');
+  } = useSubCategoriesWithCrossTags(selectedMainCategoryNames, i18n.language as 'de' | 'en');
 
   // Update suggestions when data changes or main categories change
   useEffect(() => {
@@ -62,30 +67,7 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
     selectedMainCategories.forEach(mainCategorySlug => {
       console.log(`🔍 Processing main category slug: "${mainCategorySlug}"`);
       
-      // Convert slug to display name for matching
-      const slugToDisplay: Record<string, string> = {
-        'food-drink': 'Essen & Trinken',
-        'entertainment-culture': 'Kunst, Unterhaltung & Freizeit',
-        'retail-shopping': 'Einzelhandel & Verbraucherdienstleistungen',
-        'health-wellness': 'Gesundheit & Medizinische Dienstleistungen',
-        'automotive': 'Automobil & Transport',
-        'beauty-personal-care': 'Mode & Lifestyle',
-        'sports-fitness': 'Sport',
-        'home-garden': 'Immobilien & Bauwesen',
-        'professional-services': 'Professionelle Dienstleistungen',
-        'education-training': 'Bildung & Ausbildung',
-        'technology-electronics': 'Sonstige',
-        'travel-tourism': 'Gastgewerbe und Tourismus',
-        'finance-insurance': 'Finanzdienstleistungen',
-        'real-estate': 'Immobilien & Bauwesen',
-        'pets-animals': 'Sonstige',
-        'events-venues': 'Kunst, Unterhaltung & Freizeit',
-        'government-public': 'Behörden & Öffentliche Dienste',
-        'religious-spiritual': 'Religiöse Stätten',
-        'other-services': 'Sonstige'
-      };
-      
-      const displayName = slugToDisplay[mainCategorySlug] || mainCategorySlug;
+      const displayName = getCanonicalNameBySlug(mainCategorySlug);
       console.log(`🔍 Converted slug "${mainCategorySlug}" to display name "${displayName}"`);
       
       // Get all available subcategories for this main category
@@ -95,8 +77,9 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
         }
         
         // Check if this subcategory belongs to the main category
-        const belongsToMain = c.main_category === displayName;
-        const hasMainInCrossTags = c.crossTags && c.crossTags.includes(displayName);
+        const belongsToMain = c.haupt_kategorie_name === displayName;
+        // For cross-tags, check if any of the crossTagIds match our display name
+        const hasMainInCrossTags = c.crossTagIds && c.crossTagIds.includes(displayName);
         
         return belongsToMain || hasMainInCrossTags;
       });
@@ -120,36 +103,13 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
 
   // Check how many categories are selected per main category
   const getSelectedCountForMainCategory = (mainCategorySlug: string) => {
-    // Convert slug to display name for matching
-    const slugToDisplay: Record<string, string> = {
-      'food-drink': 'Essen & Trinken',
-      'entertainment-culture': 'Kunst, Unterhaltung & Freizeit',
-      'retail-shopping': 'Einzelhandel & Verbraucherdienstleistungen',
-      'health-wellness': 'Gesundheit & Medizinische Dienstleistungen',
-      'automotive': 'Automobil & Transport',
-      'beauty-personal-care': 'Mode & Lifestyle',
-      'sports-fitness': 'Sport',
-      'home-garden': 'Immobilien & Bauwesen',
-      'professional-services': 'Professionelle Dienstleistungen',
-      'education-training': 'Bildung & Ausbildung',
-      'technology-electronics': 'Sonstige',
-      'travel-tourism': 'Gastgewerbe und Tourismus',
-      'finance-insurance': 'Finanzdienstleistungen',
-      'real-estate': 'Immobilien & Bauwesen',
-      'pets-animals': 'Sonstige',
-      'events-venues': 'Kunst, Unterhaltung & Freizeit',
-      'government-public': 'Behörden & Öffentliche Dienste',
-      'religious-spiritual': 'Religiöse Stätten',
-      'other-services': 'Sonstige'
-    };
-    
-    const displayName = slugToDisplay[mainCategorySlug] || mainCategorySlug;
+    const displayName = getCanonicalNameBySlug(mainCategorySlug);
     
     return selectedSubCategories.filter(id => {
       const cat = allSubCategories.find(c => c.id === id);
       if (!cat) return false;
-      return cat.main_category === displayName || 
-             (cat.crossTags && cat.crossTags.includes(displayName));
+      return cat.haupt_kategorie_name === displayName || 
+             (cat.crossTagIds && cat.crossTagIds.includes(displayName));
     }).length;
   };
 
@@ -176,37 +136,15 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
 
   // Replace a selected card with a new one from the pool
   const replaceSelectedCard = (mainCategorySlug: string, selectedCardId: string) => {
-    const slugToDisplay: Record<string, string> = {
-      'food-drink': 'Essen & Trinken',
-      'entertainment-culture': 'Kunst, Unterhaltung & Freizeit',
-      'retail-shopping': 'Einzelhandel & Verbraucherdienstleistungen',
-      'health-wellness': 'Gesundheit & Medizinische Dienstleistungen',
-      'automotive': 'Automobil & Transport',
-      'beauty-personal-care': 'Mode & Lifestyle',
-      'sports-fitness': 'Sport',
-      'home-garden': 'Immobilien & Bauwesen',
-      'professional-services': 'Professionelle Dienstleistungen',
-      'education-training': 'Bildung & Ausbildung',
-      'technology-electronics': 'Sonstige',
-      'travel-tourism': 'Gastgewerbe und Tourismus',
-      'finance-insurance': 'Finanzdienstleistungen',
-      'real-estate': 'Immobilien & Bauwesen',
-      'pets-animals': 'Sonstige',
-      'events-venues': 'Kunst, Unterhaltung & Freizeit',
-      'government-public': 'Behörden & Öffentliche Dienste',
-      'religious-spiritual': 'Religiöse Stätten',
-      'other-services': 'Sonstige'
-    };
-    
-    const displayName = slugToDisplay[mainCategorySlug] || mainCategorySlug;
+    const displayName = getCanonicalNameBySlug(mainCategorySlug);
     
     // Find all available categories for this main category (exclude currently selected ones)
     const currentlySelected = [...selectedSubCategories, selectedCardId];
     const available = allSubCategories.filter(c => {
       if (currentlySelected.includes(c.id)) return false;
       
-      const belongsToMain = c.main_category === displayName;
-      const hasMainInCrossTags = c.crossTags && c.crossTags.includes(displayName);
+      const belongsToMain = c.haupt_kategorie_name === displayName;
+      const hasMainInCrossTags = c.crossTagIds && c.crossTagIds.includes(displayName);
       
       return belongsToMain || hasMainInCrossTags;
     });
@@ -306,7 +244,7 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
                     <CommandItem
                       key={cat.id}
                       value={cat.name}
-                      onSelect={() => selectCategory(cat, cat.main_category || '')}
+                      onSelect={() => selectCategory(cat, cat.haupt_kategorie_name || '')}
                       className="cursor-pointer"
                     >
                       <div className="flex flex-col">
@@ -314,9 +252,9 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
                         {cat.description && (
                           <div className="text-sm text-gray-500 mt-1">{cat.description}</div>
                         )}
-                        {cat.crossTags && cat.crossTags.length > 0 && (
+                        {cat.crossTagIds && cat.crossTagIds.length > 0 && (
                           <div className="text-xs text-blue-600 mt-1">
-                            Cross-Tags: {cat.crossTags.join(', ')}
+                            Cross-Tags: {cat.crossTagIds.length} verbunden
                           </div>
                         )}
                       </div>
