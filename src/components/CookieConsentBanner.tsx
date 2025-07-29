@@ -15,11 +15,6 @@ const CookieConsentBanner: React.FC = () => {
   const isDebugMode = import.meta.env.DEV;
 
   useEffect(() => {
-    // For now, use a hardcoded Facebook Pixel ID for the cookie banner
-    // In production, this should come from environment variables or admin settings
-    const defaultPixelId = "1234567890"; // Replace with actual global pixel ID
-    setFacebookPixelId(defaultPixelId);
-    
     // Check if consent has already been given
     const consent = localStorage.getItem('cookieConsent');
     if (!consent) {
@@ -28,23 +23,23 @@ const CookieConsentBanner: React.FC = () => {
         setIsVisible(true);
       }, 1500);
       return () => clearTimeout(timer);
-    } else if (consent === 'accepted') {
-      // Consent bereits erteilt - Facebook Pixel laden (when pixelId is available)
-      if (facebookPixelId) {
-        initializeFacebookPixel();
-      }
     }
-  }, [facebookPixelId]);
+    // Don't auto-initialize Facebook Pixel anymore - only on user action
+  }, []);
 
   const initializeFacebookPixel = async () => {
-    if (!facebookPixelId) {
+    // Get Facebook Pixel ID when needed
+    const defaultPixelId = "9151671744940732"; // Your actual pixel ID
+    setFacebookPixelId(defaultPixelId);
+    
+    if (!defaultPixelId) {
       console.warn('Facebook Pixel ID nicht verfügbar');
       return;
     }
 
     try {
       await loadFacebookPixel({
-        pixelId: facebookPixelId,
+        pixelId: defaultPixelId,
         autoPageView: true,
         debug: isDebugMode
       });
