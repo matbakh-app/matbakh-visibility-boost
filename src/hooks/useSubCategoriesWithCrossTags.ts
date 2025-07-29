@@ -77,21 +77,24 @@ export const useSubCategoriesWithCrossTags = (
 
       console.log('🔍 Loading subcategories for main categories:', displayNames);
 
-      // Build OR conditions for PostgREST - use individual eq conditions instead of in()
-      const orConditions: string[] = [];
-      
-      // Add haupt_kategorie conditions
-      displayNames.forEach(name => {
-        orConditions.push(`haupt_kategorie.eq.${encodeURIComponent(name)}`);
-      });
-      
-      // Add cross-tags conditions
-      displayNames.forEach(name => {
-        orConditions.push(`category_cross_tags.target_main_category.eq.${encodeURIComponent(name)}`);
-      });
+      // First get categories by main category
+      const mainCategoryQuery = supabase
+        .from('gmb_categories')
+        .select(`
+          id,
+          name_de,
+          name_en,
+          description_de,
+          description_en,
+          keywords,
+          is_popular,
+          sort_order,
+          haupt_kategorie
+        `)
+        .in('haupt_kategorie', displayNames);
 
-      // Query with LEFT JOIN to get cross-tags
-      const { data, error } = await supabase
+      // Then get categories by cross-tags
+      const crossTagQuery = supabase
         .from('gmb_categories')
         .select(`
           id,
@@ -103,22 +106,36 @@ export const useSubCategoriesWithCrossTags = (
           is_popular,
           sort_order,
           haupt_kategorie,
-          category_cross_tags!left(target_main_category)
+          category_cross_tags!inner(target_main_category)
         `)
-        .or(orConditions.join(','))
-        .order('is_popular', { ascending: false })
-        .order('sort_order', { ascending: true });
+        .in('category_cross_tags.target_main_category', displayNames);
 
-      if (error) {
-        console.error('❌ Error loading subcategories:', error);
-        throw error;
+      // Execute both queries
+      const [mainResult, crossResult] = await Promise.all([
+        mainCategoryQuery,
+        crossTagQuery
+      ]);
+
+      if (mainResult.error) {
+        console.error('❌ Error loading main categories:', mainResult.error);
+        throw mainResult.error;
       }
 
+      if (crossResult.error) {
+        console.error('❌ Error loading cross-tag categories:', crossResult.error);
+        throw crossResult.error;
+      }
+
+      // Combine and deduplicate results
+      const allCategories = [...(mainResult.data || []), ...(crossResult.data || [])];
+
       // Process and map the data
-      const processedCategories: RelatedCategory[] = (data || []).map(item => {
-        // Extract cross-tags from the joined data
-        const crossTags = Array.isArray(item.category_cross_tags) 
-          ? item.category_cross_tags.map((tag: any) => tag.target_main_category)
+      const processedCategories: RelatedCategory[] = allCategories.map(item => {
+        // Extract cross-tags from the joined data (only available in crossResult)
+        const crossTags = (item as any).category_cross_tags 
+          ? Array.isArray((item as any).category_cross_tags)
+            ? (item as any).category_cross_tags.map((tag: any) => tag.target_main_category)
+            : []
           : [];
 
         return {
