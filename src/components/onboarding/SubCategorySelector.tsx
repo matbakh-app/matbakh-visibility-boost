@@ -26,7 +26,7 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
   selectedMainCategories,
   selectedSubCategories,
   onSubCategoryChange,
-  maxSelections = 5
+  maxSelections = 20
 }) => {
   const { t, i18n } = useTranslation('onboarding');
   const [searchTerm, setSearchTerm] = useState('');
@@ -96,7 +96,7 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
       
       console.log('✅ Loaded', pool.length, 'subcategories from DB');
       setAllSubCategories(pool);
-      setSuggestions(pool.slice(0, maxSelections));
+      setSuggestions(pool.slice(0, 7)); // Show up to 7 suggestion cards
     } catch (error) {
       console.error('Failed to load subcategories:', error);
       setAllSubCategories([]);
@@ -121,7 +121,7 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
           (c.description && c.description.toLowerCase().includes(term))
         )
       : available;
-    setSuggestions(filtered.slice(0, maxSelections));
+    setSuggestions(filtered.slice(0, 7)); // Show up to 7 suggestion cards
   };
 
   const selectCategory = (cat: RelatedCategory) => {
@@ -136,7 +136,7 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
 
   const filteredOptions = useMemo(() => {
     const term = searchTerm.toLowerCase().trim();
-    if (!term) return suggestions.slice(0, 50);
+    if (!term) return allSubCategories.filter(c => !selectedSubCategories.includes(c.id));
     
     return allSubCategories
       .filter(c => !selectedSubCategories.includes(c.id))
@@ -144,9 +144,8 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
         c.name.toLowerCase().includes(term) || 
         c.keywords.some(k => k.toLowerCase().includes(term)) ||
         (c.description && c.description.toLowerCase().includes(term))
-      )
-      .slice(0, 50);
-  }, [searchTerm, allSubCategories, selectedSubCategories, suggestions]);
+      );
+  }, [searchTerm, allSubCategories, selectedSubCategories]);
 
   return (
     <div className="space-y-4">
@@ -154,7 +153,7 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
         {t('categorySelector.subCategory.title', 'Unterkategorien auswählen')}
       </h3>
       <p className="text-sm text-gray-600">
-        {t('categorySelector.subCategory.description', 'Verfeinern Sie Ihre Auswahl mit bis zu 5 spezifischen Unterkategorien.')}
+        {t('categorySelector.subCategory.description', 'Verfeinern Sie Ihre Auswahl mit bis zu 20 spezifischen Unterkategorien.')}
       </p>
 
       <Popover>
