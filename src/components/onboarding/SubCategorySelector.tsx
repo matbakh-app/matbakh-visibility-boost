@@ -36,35 +36,26 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
 
   // Map main category slugs to exact DB values in 'haupt_kategorie'
   const slugToDisplay: Record<string,string> = {
+    // Direct mappings to DB haupt_kategorie values
     'food-drink': 'Essen & Trinken',
-    'travel-tourism': 'Gastgewerbe und Tourismus', 
-    'events-venues': 'Kunst, Unterhaltung & Freizeit',
-    'education-training': 'Bildung & Ausbildung',
-    'health-medical': 'Gesundheit & Medizinische Dienstleistungen',
-    'retail-consumer': 'Einzelhandel & Verbraucherdienstleistungen',
-    'automotive-transport': 'Automobil & Transport',
-    'arts-entertainment': 'Kunst, Unterhaltung & Freizeit',
-    'finance-insurance': 'Finanzdienstleistungen',
-    'manufacturing-industrial': 'Fertigung & Industrie',
-    'agriculture-natural': 'Land- und Forstwirtschaft, natürliche Ressourcen',
-    'religious-places': 'Religiöse Stätten',
-    'professional-services': 'Professionelle Dienstleistungen',
-    'real-estate': 'Immobilien & Bauwesen',
-    'government-public': 'Behörden & Öffentliche Dienste',
-    'aviation': 'Luftfahrt',
-    'sports': 'Sport',
-    'other': 'Sonstige',
-    'fashion-lifestyle': 'Mode & Lifestyle',
-    // Fallback mappings for MainCategorySelector display names
-    'beauty-bodycare': 'Mode & Lifestyle',
-    'retail-shopping': 'Einzelhandel & Verbraucherdienstleistungen', 
     'entertainment-culture': 'Kunst, Unterhaltung & Freizeit',
+    'retail-shopping': 'Einzelhandel & Verbraucherdienstleistungen',
     'health-wellness': 'Gesundheit & Medizinische Dienstleistungen',
-    'home-garden': 'Immobilien & Bauwesen',
+    'automotive': 'Automobil & Transport',
+    'beauty-personal-care': 'Mode & Lifestyle',
     'sports-fitness': 'Sport',
-    'other-services': 'Sonstige',
+    'home-garden': 'Immobilien & Bauwesen',
+    'professional-services': 'Professionelle Dienstleistungen',
+    'education-training': 'Bildung & Ausbildung',
     'technology-electronics': 'Sonstige',
-    'religion-spirituality': 'Religiöse Stätten'
+    'travel-tourism': 'Gastgewerbe und Tourismus',
+    'finance-insurance': 'Finanzdienstleistungen',
+    'real-estate': 'Immobilien & Bauwesen',
+    'pets-animals': 'Sonstige',
+    'events-venues': 'Kunst, Unterhaltung & Freizeit',
+    'government-public': 'Behörden & Öffentliche Dienste',
+    'religious-spiritual': 'Religiöse Stätten',
+    'other-services': 'Sonstige'
   };
 
   useEffect(() => {
