@@ -70,10 +70,12 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
         }
         
         // Check if this subcategory belongs to the main category
+        // mainCategory is a slug like "food-drink", but c.main_category is display name like "Essen & Trinken"
+        // So we need to check both ways: slug->display and display->slug
         const belongsToMain = c.main_category === mainCategory;
         const hasMainInCrossTags = c.crossTags && c.crossTags.includes(mainCategory);
         
-        console.log(`🔍 Checking ${c.name}: main_category="${c.main_category}", belongsToMain=${belongsToMain}, hasMainInCrossTags=${hasMainInCrossTags}`);
+        console.log(`🔍 Checking ${c.name}: mainCategory="${mainCategory}", c.main_category="${c.main_category}", belongsToMain=${belongsToMain}, hasMainInCrossTags=${hasMainInCrossTags}`);
         
         return belongsToMain || hasMainInCrossTags;
       });

@@ -61,6 +61,11 @@ export const useSubCategoriesWithCrossTags = (
     'other-services': 'Sonstige'
   };
 
+  // Reverse mapping: Display names to slugs for filtering
+  const displayToSlug: Record<string, string> = Object.fromEntries(
+    Object.entries(slugToDisplay).map(([slug, display]) => [display, slug])
+  );
+
   const loadSubCategories = async () => {
     if (!selectedMainCategories.length) {
       setAllSubCategories([]);
