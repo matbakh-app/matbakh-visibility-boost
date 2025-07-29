@@ -62,8 +62,8 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
       // Load ALL subcategories from database without limit
       const { data, error } = await supabase
         .from('gmb_categories')
-        .select('category_id, name_de, name_en, description_de, description_en, keywords, main_category, haupt_kategorie, is_popular, sort_order')
-        .in('main_category', selectedMainCategories)
+        .select('category_id, name_de, name_en, description_de, description_en, keywords, haupt_kategorie, is_popular, sort_order')
+        .in('haupt_kategorie', selectedMainCategories)
         .order('is_popular', { ascending: false })
         .order('sort_order', { ascending: true });
 
