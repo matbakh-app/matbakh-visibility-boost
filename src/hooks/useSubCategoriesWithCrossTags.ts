@@ -31,7 +31,7 @@ export interface RelatedCategory {
  * Hook to load subcategories with cross-tags support using canonical categories system
  */
 export const useSubCategoriesWithCrossTags = (
-  selectedMainCategoryNames: string[], // Array of canonical names for now
+  selectedMainCategoryUUIDs: string[], // Array of main_category UUIDs
   language: 'de' | 'en' = 'de'
 ) => {
   const [allSubCategories, setAllSubCategories] = useState<RelatedCategory[]>([]);
@@ -39,7 +39,7 @@ export const useSubCategoriesWithCrossTags = (
   const [error, setError] = useState<string | null>(null);
 
   const loadSubCategories = async () => {
-    if (!selectedMainCategoryNames.length) {
+    if (!selectedMainCategoryUUIDs.length) {
       setAllSubCategories([]);
       return;
     }
@@ -48,9 +48,9 @@ export const useSubCategoriesWithCrossTags = (
     setError(null);
 
     try {
-      console.log('🔍 Loading subcategories for main categories:', selectedMainCategoryNames);
+      console.log('🔍 Loading subcategories for main category UUIDs:', selectedMainCategoryUUIDs);
 
-      // First get categories by main category
+      // First get categories by main category ID (UUID)
       const mainCategoryQuery = supabase
         .from('gmb_categories')
         .select(`
@@ -62,11 +62,12 @@ export const useSubCategoriesWithCrossTags = (
           keywords,
           is_popular,
           sort_order,
+          main_category_id,
           haupt_kategorie
         `)
-        .in('haupt_kategorie', selectedMainCategoryNames);
+        .in('main_category_id', selectedMainCategoryUUIDs);
 
-      // Then get categories by cross-tags
+      // Then get categories by cross-tags (using UUID)
       const crossTagQuery = supabase
         .from('gmb_categories')
         .select(`
@@ -78,10 +79,11 @@ export const useSubCategoriesWithCrossTags = (
           keywords,
           is_popular,
           sort_order,
+          main_category_id,
           haupt_kategorie,
-          category_cross_tags!inner(target_main_category)
+          category_cross_tags!inner(target_main_category_id)
         `)
-        .in('category_cross_tags.target_main_category', selectedMainCategoryNames);
+        .in('category_cross_tags.target_main_category_id', selectedMainCategoryUUIDs);
 
       // Execute both queries
       const [mainResult, crossResult] = await Promise.all([
@@ -121,7 +123,7 @@ export const useSubCategoriesWithCrossTags = (
           confidence: (item.is_popular ? 'high' : 'medium') as 'high' | 'medium' | 'low',
           strength: item.sort_order || 0,
           crossTagIds: crossTags,
-          haupt_kategorie_id: '', // Will be updated once canonical system is in place
+          haupt_kategorie_id: item.main_category_id || '', // Use the UUID from main_categories
           haupt_kategorie_name: item.haupt_kategorie
         };
       });
@@ -145,7 +147,7 @@ export const useSubCategoriesWithCrossTags = (
 
   useEffect(() => {
     loadSubCategories();
-  }, [selectedMainCategoryNames, language]);
+  }, [selectedMainCategoryUUIDs, language]);
 
   /**
    * Filter categories by search term
@@ -176,7 +178,7 @@ export const useSubCategoriesWithCrossTags = (
         .from('category_search_logs')
         .insert({
           search_term: searchTerm,
-          selected_main_categories: selectedMainCategoryNames, // Using display names for now
+          selected_main_categories: selectedMainCategoryUUIDs, // Using UUIDs now
           result_category_ids: resultCategoryIds,
           selected_category_id: selectedCategoryId || null
         });

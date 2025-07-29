@@ -33,17 +33,17 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
   const safeMainCategories = useMemo(() => selectedMainCategories, [JSON.stringify(selectedMainCategories)]);
   const safeSubCategories = useMemo(() => selectedSubCategories, [JSON.stringify(selectedSubCategories)]);
 
-  // Map slugs to canonical names for the hook
-  const { slugsToIds } = useMainCategoryMapping();
-  const selectedMainCategoryNames = slugsToIds(safeMainCategories);
-  
-  // Use the new hook for cross-tags support
+  // Map slugs to UUIDs for the new hook
+  const { uuidsBySlugs } = useMainCategoryMapping();
+  const selectedMainCategoryUUIDs = uuidsBySlugs(safeMainCategories);
+
+  // Use the updated hook with UUID support
   const { 
     allSubCategories, 
     loading, 
     filterCategories, 
     logSearch 
-  } = useSubCategoriesWithCrossTags(selectedMainCategoryNames, i18n.language as 'de' | 'en');
+  } = useSubCategoriesWithCrossTags(selectedMainCategoryUUIDs, i18n.language as 'de' | 'en');
 
   /**
    * Suggestions-Logik direkt, loop-proof im useEffect 
