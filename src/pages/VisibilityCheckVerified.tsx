@@ -155,7 +155,7 @@ const VisibilityCheckVerified: React.FC = () => {
     );
   }
 
-  // Show the full analysis results
+  // Show the full analysis results with download capability for verified email users
   return (
     <div className="min-h-screen bg-background">
       {token && (
@@ -178,6 +178,8 @@ const VisibilityCheckVerified: React.FC = () => {
         onNewAnalysis={handleNewAnalysis}
         reportRequested={false}
         email={leadData?.email}
+        leadId={leadId}
+        allowDownload={!!token} // Only allow download if accessed via email verification token
       />
     </div>
   );
