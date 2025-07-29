@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -25,100 +25,95 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
   const { t, i18n } = useTranslation('onboarding');
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestionsByMainCategory, setSuggestionsByMainCategory] = useState<Record<string, RelatedCategory[]>>({});
-  
+
+  /** 
+   * REFERENZ-PAUSCHALE: Stabile Arrays/Mappings
+   * Falls selectedMainCategories von Eltern als Spread/Array gebaut wird — memoisiere sie hier!
+   */
+  const safeMainCategories = useMemo(() => selectedMainCategories, [JSON.stringify(selectedMainCategories)]);
+  const safeSubCategories = useMemo(() => selectedSubCategories, [JSON.stringify(selectedSubCategories)]);
+
   // Map slugs to canonical names for the hook
-  const { slugsToIds, getCanonicalNameBySlug } = useMainCategoryMapping();
-  const selectedMainCategoryNames = slugsToIds(selectedMainCategories);
+  const { slugsToIds } = useMainCategoryMapping();
+  const selectedMainCategoryNames = slugsToIds(safeMainCategories);
   
   // Use the new hook for cross-tags support
   const { 
     allSubCategories, 
     loading, 
-    error, 
     filterCategories, 
     logSearch 
   } = useSubCategoriesWithCrossTags(selectedMainCategoryNames, i18n.language as 'de' | 'en');
 
-  // Update suggestions with ALL logic inside useEffect to prevent infinite loops
+  /**
+   * Suggestions-Logik direkt, loop-proof im useEffect 
+   */
   useEffect(() => {
-    // Local shuffle function - not extracted to prevent reference issues
-    function shuffleArray(array: RelatedCategory[]) {
-      const shuffled = [...array];
-      for (let i = shuffled.length - 1; i > 0; i--) {
+    // Lokales deterministic shuffle
+    function localShuffle<T>(arr: T[]) {
+      // Weil wir sonst in jeder render ein anderes Objekt kriegen!
+      const copy = arr.slice();
+      for (let i = copy.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        [copy[i], copy[j]] = [copy[j], copy[i]];
       }
-      return shuffled;
+      return copy;
     }
 
-    if (!allSubCategories.length || !selectedMainCategories.length) {
+    if (!allSubCategories.length || !safeMainCategories.length) {
       setSuggestionsByMainCategory({});
       return;
     }
 
-    console.log('🔍 Effect running, updating suggestions');
-    
     const newSuggestions: Record<string, RelatedCategory[]> = {};
-    
-    selectedMainCategories.forEach(mainCategorySlug => {
-      // Use the mapping directly here instead of through function call
+
+    for (const mainCategorySlug of safeMainCategories) {
       const displayName = slugToDisplay[mainCategorySlug] || mainCategorySlug;
-      
-      // Get all available subcategories for this main category
-      const available = allSubCategories.filter(c => {
-        if (selectedSubCategories.includes(c.id)) {
-          return false;
-        }
-        
-        // Check if this subcategory belongs to the main category
-        const belongsToMain = c.haupt_kategorie_name === displayName;
-        // For cross-tags, check if any of the crossTagIds match our display name
-        const hasMainInCrossTags = c.crossTagIds && c.crossTagIds.includes(displayName);
-        
-        return belongsToMain || hasMainInCrossTags;
-      });
-      
-      // Shuffle only ONCE per effect run and take 3
-      const shuffled = shuffleArray(available);
-      newSuggestions[mainCategorySlug] = shuffled.slice(0, 3);
-    });
-    
-    // Only update state if suggestions actually changed
-    setSuggestionsByMainCategory(prev => {
-      const hasChanged = JSON.stringify(prev) !== JSON.stringify(newSuggestions);
-      if (!hasChanged) return prev;
-      console.log('🔍 Suggestions updated');
-      return newSuggestions;
-    });
+      // Filter subcategories by selection + belonging/crossTag relation
+      const available = allSubCategories.filter(cat =>
+        !safeSubCategories.includes(cat.id) &&
+        (
+          cat.haupt_kategorie_name === displayName ||
+          (cat.crossTagIds && cat.crossTagIds.includes(displayName))
+        )
+      );
+      // Shuffle nur einmal pro run
+      newSuggestions[mainCategorySlug] = localShuffle(available).slice(0, 3);
+    }
+
+    // Nur setState, wenn wirklich Änderung
+    setSuggestionsByMainCategory(prev =>
+      JSON.stringify(prev) === JSON.stringify(newSuggestions) ? prev : newSuggestions
+    );
   }, [
     allSubCategories, 
-    selectedMainCategories, 
-    selectedSubCategories
-  ]); // Removed getCanonicalNameBySlug - using slugToDisplay directly instead
+    safeMainCategories, 
+    safeSubCategories
+  ]);
 
+  /**
+   * Reshuffle-Button: Explizit, kein State/Prop als Dependency
+   */
   const reshuffleSuggestions = () => {
-    // Trigger a re-shuffle by updating a key or forcing a re-run
+    // Gleiche lokale Shuffle-Logik wie oben (nur einmalig bei Klick)
     const newSuggestions: Record<string, RelatedCategory[]> = {};
-    
-    selectedMainCategories.forEach(mainCategorySlug => {
+    for (const mainCategorySlug of safeMainCategories) {
       const displayName = slugToDisplay[mainCategorySlug] || mainCategorySlug;
-      
-      const available = allSubCategories.filter(c => {
-        if (selectedSubCategories.includes(c.id)) return false;
-        const belongsToMain = c.haupt_kategorie_name === displayName;
-        const hasMainInCrossTags = c.crossTagIds && c.crossTagIds.includes(displayName);
-        return belongsToMain || hasMainInCrossTags;
-      });
-      
-      // Local shuffle function
-      const shuffled = [...available];
+      const available = allSubCategories.filter(cat =>
+        !safeSubCategories.includes(cat.id) &&
+        (
+          cat.haupt_kategorie_name === displayName ||
+          (cat.crossTagIds && cat.crossTagIds.includes(displayName))
+        )
+      );
+      // Shuffle nur einmal pro call
+      const shuffled = available.slice();
       for (let i = shuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
       }
       newSuggestions[mainCategorySlug] = shuffled.slice(0, 3);
-    });
-    
+    }
     setSuggestionsByMainCategory(newSuggestions);
   };
 
@@ -126,7 +121,7 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
   const getSelectedCountForMainCategory = (mainCategorySlug: string) => {
     const displayName = slugToDisplay[mainCategorySlug] || mainCategorySlug;
     
-    return selectedSubCategories.filter(id => {
+    return safeSubCategories.filter(id => {
       const cat = allSubCategories.find(c => c.id === id);
       if (!cat) return false;
       return cat.haupt_kategorie_name === displayName || 
@@ -139,10 +134,10 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
     const currentCountForMain = getSelectedCountForMainCategory(fromMainCategory);
     
     if (currentCountForMain < maxSelectionsPerMainCategory) {
-      onSubCategoryChange([...selectedSubCategories, cat.id]);
+      onSubCategoryChange([...safeSubCategories, cat.id]);
       
       // Log the selection for analytics
-      const allFiltered = filterCategories(searchTerm, selectedSubCategories);
+      const allFiltered = filterCategories(searchTerm, safeSubCategories);
       await logSearch(searchTerm, allFiltered.map(c => c.id), cat.id);
       
       // Clear search term after selection for better UX
@@ -160,7 +155,7 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
     const displayName = slugToDisplay[mainCategorySlug] || mainCategorySlug;
     
     // Find all available categories for this main category (exclude currently selected ones)
-    const currentlySelected = [...selectedSubCategories, selectedCardId];
+    const currentlySelected = [...safeSubCategories, selectedCardId];
     const available = allSubCategories.filter(c => {
       if (currentlySelected.includes(c.id)) return false;
       
@@ -211,7 +206,7 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
   };
 
   const removeBadge = (id: string) => {
-    onSubCategoryChange(selectedSubCategories.filter(x => x !== id));
+    onSubCategoryChange(safeSubCategories.filter(x => x !== id));
   };
 
   // Filtered options for the dropdown - only show results if search term is provided
@@ -222,8 +217,8 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
     if (!term) return [];
     
     // Use the hook's filter function which includes cross-tags search
-    return filterCategories(term, selectedSubCategories);
-  }, [searchTerm, filterCategories, selectedSubCategories]);
+    return filterCategories(term, safeSubCategories);
+  }, [searchTerm, filterCategories, safeSubCategories]);
 
   return (
     <div className="space-y-4">
