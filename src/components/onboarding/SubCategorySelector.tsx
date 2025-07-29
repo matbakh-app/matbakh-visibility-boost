@@ -51,7 +51,6 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
     'professional-services': 'Professionelle Dienstleistungen',
     'real-estate': 'Immobilien & Bauwesen',
     'government-public': 'Behörden & Öffentliche Dienste',
-    // Fehlende Kategorien hinzugefügt
     'beauty-personal-care': 'Schönheit & Körperpflege',
     'retail-shopping': 'Einzelhandel & Shopping',
     'entertainment-culture': 'Unterhaltung & Kultur',
@@ -167,14 +166,14 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
           <Button
             variant="outline"
             role="combobox"
-            disabled={!allSubCategories.length}
+            disabled={!selectedMainCategories.length || loading}
             className="w-full justify-between"
           >
             {t('categorySelector.subCategory.searchPlaceholder', 'Unterkategorie suchen...')}
             <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-full p-0" align="start">
+        <PopoverContent className="w-[var(--radix-popover-trigger-width)] max-w-md p-0" align="start">
           <Command>
             <CommandInput 
               placeholder={t('categorySelector.subCategory.searchPlaceholder', 'Unterkategorie suchen...')}
