@@ -12,18 +12,18 @@ interface SubCategorySelectorProps {
   selectedMainCategories: string[];     // slugs
   selectedSubCategories: string[];   // ids
   onSubCategoryChange: (ids: string[]) => void;
-  maxSelections?: number;
+  maxSelectionsPerMainCategory?: number;
 }
 
 export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
   selectedMainCategories,
   selectedSubCategories,
   onSubCategoryChange,
-  maxSelections = 20
+  maxSelectionsPerMainCategory = 7
 }) => {
   const { t, i18n } = useTranslation('onboarding');
   const [searchTerm, setSearchTerm] = useState('');
-  const [suggestions, setSuggestions] = useState<RelatedCategory[]>([]);
+  const [suggestionsByMainCategory, setSuggestionsByMainCategory] = useState<Record<string, RelatedCategory[]>>({});
   
   // Use the new hook for cross-tags support
   const { 
@@ -37,18 +37,52 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
   // Update suggestions when data changes
   useEffect(() => {
     updateSuggestions();
-  }, [allSubCategories, selectedSubCategories, searchTerm]);
+  }, [allSubCategories, selectedSubCategories, selectedMainCategories]);
+
+  const shuffleArray = (array: RelatedCategory[]) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
 
   const updateSuggestions = () => {
-    // For suggestion cards: show more available categories when fewer are selected
-    const available = allSubCategories.filter(c => !selectedSubCategories.includes(c.id));
-    const maxSuggestions = Math.min(15, maxSelections - selectedSubCategories.length);
-    setSuggestions(available.slice(0, maxSuggestions));
+    const newSuggestions: Record<string, RelatedCategory[]> = {};
+    
+    selectedMainCategories.forEach(mainCategory => {
+      // Get all available subcategories for this main category
+      const available = allSubCategories.filter(c => 
+        !selectedSubCategories.includes(c.id) && 
+        (c.main_category === mainCategory || (c.crossTags && c.crossTags.includes(mainCategory)))
+      );
+      
+      // Show up to 7 suggestions per main category
+      const shuffled = shuffleArray(available);
+      newSuggestions[mainCategory] = shuffled.slice(0, 7);
+    });
+    
+    setSuggestionsByMainCategory(newSuggestions);
+  };
+
+  const reshuffleSuggestions = () => {
+    updateSuggestions();
+  };
+
+  // Check how many categories are selected per main category
+  const getSelectedCountForMainCategory = (mainCategory: string) => {
+    return selectedSubCategories.filter(id => {
+      const cat = allSubCategories.find(c => c.id === id);
+      return cat && (cat.main_category === mainCategory || (cat.crossTags && cat.crossTags.includes(mainCategory)));
+    }).length;
   };
 
   // Handle category selection with logging
-  const selectCategory = async (cat: RelatedCategory) => {
-    if (selectedSubCategories.length < maxSelections) {
+  const selectCategory = async (cat: RelatedCategory, fromMainCategory: string) => {
+    const currentCountForMain = getSelectedCountForMainCategory(fromMainCategory);
+    
+    if (currentCountForMain < maxSelectionsPerMainCategory) {
       onSubCategoryChange([...selectedSubCategories, cat.id]);
       
       // Log the selection for analytics
@@ -81,7 +115,7 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
         {t('categorySelector.subCategory.title', 'Unterkategorien auswählen')}
       </h3>
       <p className="text-sm text-gray-600">
-        {t('categorySelector.subCategory.description', 'Verfeinern Sie Ihre Auswahl mit bis zu 20 spezifischen Unterkategorien.')}
+        {t('categorySelector.subCategory.description', 'Verfeinern Sie Ihre Auswahl mit bis zu 7 Unterkategorien pro Hauptkategorie.')}
       </p>
 
       <Popover>
@@ -119,7 +153,7 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
                     <CommandItem
                       key={cat.id}
                       value={cat.name}
-                      onSelect={() => selectCategory(cat)}
+                      onSelect={() => selectCategory(cat, cat.main_category || '')}
                       className="cursor-pointer"
                     >
                       <div className="flex flex-col">
@@ -169,43 +203,85 @@ export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
         })}
       </div>
 
-      {/* Suggestion cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {suggestions.map(cat => (
-          <div 
-            key={cat.id} 
-            className="border rounded-lg p-4 hover:border-blue-300 hover:shadow-sm cursor-pointer transition-all"
-            onClick={() => selectCategory(cat)}
-          >
-            <h4 className="font-medium text-gray-900">{cat.name}</h4>
-            {cat.description && (
-              <p className="text-sm text-gray-600 mt-1 line-clamp-2">{cat.description}</p>
-            )}
-            <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-2 ${
-              cat.confidence === 'high' ? 'bg-green-100 text-green-800' :
-              cat.confidence === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-              'bg-gray-100 text-gray-800'
-            }`}>
-              {cat.confidence === 'high' ? 'Empfohlen' : 
-               cat.confidence === 'medium' ? 'Relevant' : 'Optional'}
+      {/* Suggestion cards grouped by main category */}
+      {selectedMainCategories.length > 0 && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h4 className="text-md font-medium text-gray-900">
+              {t('categorySelector.subCategory.suggestions', 'Empfehlungen')}
+            </h4>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={reshuffleSuggestions}
+              className="text-sm"
+            >
+              🎲 {t('categorySelector.subCategory.reshuffle', 'Neu mischen')}
+            </Button>
+          </div>
+
+          {selectedMainCategories.map(mainCategory => {
+            const suggestions = suggestionsByMainCategory[mainCategory] || [];
+            const selectedCount = getSelectedCountForMainCategory(mainCategory);
+            const maxReached = selectedCount >= maxSelectionsPerMainCategory;
+
+            return (
+              <div key={mainCategory} className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h5 className="text-sm font-medium text-gray-700">
+                    {mainCategory} ({selectedCount}/{maxSelectionsPerMainCategory})
+                  </h5>
+                  {maxReached && (
+                    <span className="text-xs text-amber-600">Maximum erreicht</span>
+                  )}
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {suggestions.map(cat => (
+                    <div 
+                      key={cat.id} 
+                      className={`border rounded-lg p-3 transition-all ${
+                        maxReached 
+                          ? 'opacity-50 cursor-not-allowed border-gray-200' 
+                          : 'hover:border-blue-300 hover:shadow-sm cursor-pointer'
+                      }`}
+                      onClick={() => !maxReached && selectCategory(cat, mainCategory)}
+                    >
+                      <h6 className="font-medium text-gray-900 text-sm">{cat.name}</h6>
+                      {cat.description && (
+                        <p className="text-xs text-gray-600 mt-1 line-clamp-2">{cat.description}</p>
+                      )}
+                      <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-2 ${
+                        cat.confidence === 'high' ? 'bg-green-100 text-green-800' :
+                        cat.confidence === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {cat.confidence === 'high' ? 'Empfohlen' : 
+                         cat.confidence === 'medium' ? 'Relevant' : 'Optional'}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+
+          {!loading && !allSubCategories.length && (
+            <div className="text-center text-sm text-gray-500 py-8">
+              {t('categorySelector.subCategory.selectMainFirst', 'Wählen Sie zuerst Hauptkategorien aus')}
             </div>
-          </div>
-        ))}
-        {!loading && !allSubCategories.length && (
-          <div className="col-span-full text-center text-sm text-gray-500 py-8">
-            {t('categorySelector.subCategory.selectMainFirst', 'Wählen Sie zuerst Hauptkategorien aus')}
-          </div>
-        )}
-        {!loading && allSubCategories.length && !suggestions.length && selectedSubCategories.length < maxSelections && (
-          <div className="col-span-full text-center text-sm text-gray-500 py-8">
-            {t('categorySelector.subCategory.searchHint', 'Nutzen Sie die Suche, um weitere Kategorien zu finden')}
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       {/* Progress indicator with minimum requirement */}
       <div className="text-sm text-gray-500">
-        {selectedSubCategories.length} / {maxSelections} {t('categorySelector.subCategory.selected', 'ausgewählt')}
+        {selectedSubCategories.length} {t('categorySelector.subCategory.selected', 'ausgewählt')}
+        {selectedMainCategories.length > 0 && (
+          <span className="ml-2">
+            (max. {selectedMainCategories.length * maxSelectionsPerMainCategory} möglich)
+          </span>
+        )}
         {selectedSubCategories.length < 5 && (
           <span className="text-amber-600 ml-2">(Mindestens 5 empfohlen)</span>
         )}

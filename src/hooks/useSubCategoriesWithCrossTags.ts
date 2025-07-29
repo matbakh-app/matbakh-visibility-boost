@@ -22,6 +22,7 @@ export interface RelatedCategory {
   confidence: 'high' | 'medium' | 'low';
   strength?: number;
   crossTags?: string[];
+  main_category?: string; // Added for main category reference
 }
 
 /**
@@ -145,7 +146,8 @@ export const useSubCategoriesWithCrossTags = (
           keywords: item.keywords || [],
           confidence: (item.is_popular ? 'high' : 'medium') as 'high' | 'medium' | 'low',
           strength: item.sort_order || 0,
-          crossTags
+          crossTags,
+          main_category: item.haupt_kategorie
         };
       });
 
