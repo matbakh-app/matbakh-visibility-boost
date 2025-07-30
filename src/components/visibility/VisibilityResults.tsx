@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Download, Star, Users, TrendingUp, BarChart3, MousePointer, Eye } from 'lucide-react';
 import type { AnalysisResult } from '@/types/visibility';
 import PlatformProfileCard from './PlatformProfileCard';
+import SmartActionButtons from './SmartActionButtons';
 
 interface VisibilityResultsProps {
   businessName: string;
@@ -447,27 +448,17 @@ const VisibilityResults: React.FC<VisibilityResultsProps> = ({
         </Card>
       )}
 
-      {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-center">
-        {email && !reportRequested && (
-          <Button onClick={onRequestDetailedReport} className="flex items-center gap-2">
-            <Download className="w-4 h-4" />
-            Detaillierten PDF-Report anfordern
-          </Button>
-        )}
-        
-        {reportRequested && (
-          <div className="text-center p-4 bg-green-50 rounded-lg">
-            <p className="text-green-700 font-medium">
-              ✅ Detaillierter Report wurde an {email} gesendet!
-            </p>
-          </div>
-        )}
-        
-        <Button variant="outline" onClick={onNewAnalysis}>
-          Neue Analyse starten
-        </Button>
-      </div>
+      {/* Smart Action Buttons - User-Context aware */}
+      <SmartActionButtons 
+        email={email}
+        leadId={leadId}
+        allowDownload={allowDownload}
+        reportRequested={reportRequested}
+        analysisResult={analysisResult}
+        businessName={businessName}
+        onRequestDetailedReport={onRequestDetailedReport}
+        onNewAnalysis={onNewAnalysis}
+      />
     </div>
   );
 };
