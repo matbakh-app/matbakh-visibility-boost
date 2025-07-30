@@ -11,6 +11,7 @@ import { MapPin, Phone, Globe, Info, Users, TrendingUp, Clock, HelpCircle } from
 import { CategorySelector } from './CategorySelector';
 import { MainCategorySelector } from './MainCategorySelector';
 import { SubCategorySelector } from './SubCategorySelector';
+import { SmartCategorySelector } from './SmartCategorySelector';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface BusinessBasicsStepProps {
@@ -379,16 +380,18 @@ export const BusinessBasicsStep: React.FC<BusinessBasicsStepProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <MainCategorySelector 
-              selectedCategories={data.mainCategories || []} 
-              onCategoryChange={handleMainCategoryChange} 
-              maxSelections={3}
-            />
-            {errors.mainCategories && (
-              <p className="text-sm text-red-500 mt-2">{errors.mainCategories}</p>
-            )}
-          </div>
+          {/* KI-gestützte Kategorieauswahl */}
+          <SmartCategorySelector
+            businessDescription={data.description || ''}
+            businessName={data.companyName || ''}
+            selectedCategories={data.mainCategories || []}
+            onCategoryChange={handleMainCategoryChange}
+            maxSelections={3}
+            defaultMode="guided"
+          />
+          {errors.mainCategories && (
+            <p className="text-sm text-red-500 mt-2">{errors.mainCategories}</p>
+          )}
 
           <div>
             <SubCategorySelector 
