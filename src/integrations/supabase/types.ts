@@ -225,6 +225,83 @@ export type Database = {
         }
         Relationships: []
       }
+      business_contact_data: {
+        Row: {
+          address_line1: string
+          address_line2: string | null
+          city: string
+          company_name: string
+          competitors: Json | null
+          contact_email: string
+          contact_phone: string
+          contact_website: string | null
+          country: string
+          created_at: string
+          customer_id: string
+          data_source: string
+          house_number: string
+          id: string
+          last_enriched_at: string | null
+          postal_code: string
+          region: string | null
+          socials: Json | null
+          updated_at: string
+          verified: boolean
+        }
+        Insert: {
+          address_line1: string
+          address_line2?: string | null
+          city: string
+          company_name: string
+          competitors?: Json | null
+          contact_email: string
+          contact_phone: string
+          contact_website?: string | null
+          country: string
+          created_at?: string
+          customer_id: string
+          data_source?: string
+          house_number: string
+          id?: string
+          last_enriched_at?: string | null
+          postal_code: string
+          region?: string | null
+          socials?: Json | null
+          updated_at?: string
+          verified?: boolean
+        }
+        Update: {
+          address_line1?: string
+          address_line2?: string | null
+          city?: string
+          company_name?: string
+          competitors?: Json | null
+          contact_email?: string
+          contact_phone?: string
+          contact_website?: string | null
+          country?: string
+          created_at?: string
+          customer_id?: string
+          data_source?: string
+          house_number?: string
+          id?: string
+          last_enriched_at?: string | null
+          postal_code?: string
+          region?: string | null
+          socials?: Json | null
+          updated_at?: string
+          verified?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_contact_data_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "business_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_partners: {
         Row: {
           address: string | null
@@ -1966,6 +2043,47 @@ export type Database = {
           {
             foreignKeyName: "partner_onboarding_steps_partner_id_fkey"
             columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "business_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_private_contacts: {
+        Row: {
+          contact_email: string
+          contact_phone: string
+          created_at: string
+          customer_id: string
+          first_name: string
+          id: string
+          last_name: string
+          updated_at: string
+        }
+        Insert: {
+          contact_email: string
+          contact_phone: string
+          created_at?: string
+          customer_id: string
+          first_name: string
+          id?: string
+          last_name: string
+          updated_at?: string
+        }
+        Update: {
+          contact_email?: string
+          contact_phone?: string
+          created_at?: string
+          customer_id?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_private_contacts_customer_id_fkey"
+            columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "business_partners"
             referencedColumns: ["id"]
