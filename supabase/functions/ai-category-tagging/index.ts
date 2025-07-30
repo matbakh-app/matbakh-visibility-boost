@@ -275,7 +275,10 @@ async function processWithBedrock(
   return parseTagSuggestions(aiResponse, categories);
 }
 
-function createGastronomyPrompt(categories: CategoryToTag[]): string {
+function createDiversifiedCategoryPrompt(
+  categories: CategoryToTag[], 
+  userContext?: { businessName?: string; businessDescription?: string; lastSuggestions?: string[] }
+): string {
   const mainCategories = [
     'Essen & Trinken',
     'Kunst, Unterhaltung & Freizeit', 
@@ -294,7 +297,19 @@ function createGastronomyPrompt(categories: CategoryToTag[]): string {
     'Religiöse Stätten'
   ];
 
-  const categoriesText = categories.map(cat => 
+  // Diversifikations-Logik: Shuffle categories und priorisiere weniger häufige
+  const shuffledCategories = [...categories]
+    .sort(() => Math.random() - 0.5) // Randomize order
+    .filter(cat => {
+      // Filter out recently suggested categories if provided
+      if (userContext?.lastSuggestions?.length) {
+        return !userContext.lastSuggestions.includes(cat.name_de);
+      }
+      return true;
+    })
+    .slice(0, Math.min(categories.length, 15)); // Limit to 15 for diversity
+
+  const categoriesText = shuffledCategories.map(cat => 
     `ID: ${cat.id}
 Name: ${cat.name_de}
 Aktuelle Hauptkategorie: ${cat.haupt_kategorie}
@@ -302,9 +317,19 @@ Beschreibung: ${cat.description_de || 'Keine'}
 Keywords: ${cat.keywords?.join(', ') || 'Keine'}`
   ).join('\n\n');
 
-  return `Du bist ein Experte für deutsche Gastronomie und Google My Business Kategorisierung.
+  const contextualHint = userContext?.businessDescription 
+    ? `\nKONTEXT: Das Unternehmen "${userContext.businessName || 'Unbekannt'}" beschreibt sich als: "${userContext.businessDescription}"`
+    : '';
 
-AUFGABE: Analysiere die folgenden Kategorien und schlage Cross-Category-Tags vor, wenn eine Kategorie auch zu anderen Hauptkategorien gehören könnte.
+  const diversityHint = userContext?.lastSuggestions?.length 
+    ? `\nDIVERSITÄT: Vermeide diese kürzlich vorgeschlagenen Kategorien: ${userContext.lastSuggestions.join(', ')}`
+    : '\nDIVERSITÄT: Priorisiere kreative, weniger offensichtliche aber relevante Kategorievorschläge.';
+
+  return `Du bist ein Experte für deutsche Gastronomie und Google My Business Kategorisierung mit Fokus auf DIVERSITÄT und KREATIVITÄT.
+
+AUFGABE: Analysiere die folgenden Kategorien und wähle VIELFÄLTIGE, interessante Vorschläge aus allen 4000+ verfügbaren Unterkategorien. Vermeide monotone Wiederholungen!
+${contextualHint}
+${diversityHint}
 
 VERFÜGBARE HAUPTKATEGORIEN:
 ${mainCategories.map(cat => `- ${cat}`).join('\n')}
@@ -312,19 +337,22 @@ ${mainCategories.map(cat => `- ${cat}`).join('\n')}
 KATEGORIEN ZU ANALYSIEREN:
 ${categoriesText}
 
-REGELN:
-1. Nur Vorschläge machen, wenn die Kategorie WIRKLICH auch zu einer anderen Hauptkategorie passt
-2. Fokus auf deutsche Gastronomie-Realitäten (Biergarten gehört zu "Essen & Trinken")
-3. Confidence-Score: 0.9-1.0 = sehr sicher, 0.7-0.8 = wahrscheinlich, <0.7 = nicht vorschlagen
-4. Berücksichtige kulturelle Besonderheiten (deutsche Ess- und Trinkkultur)
+REGELN FÜR DIVERSITÄT:
+1. Wähle aus der GESAMTEN Breite der verfügbaren Kategorien (nicht nur die Top 20!)
+2. Mische bekannte UND nischige Kategorien intelligent
+3. Berücksichtige Regionalität und kulturelle Besonderheiten
+4. Confidence-Score: 0.8-1.0 = sehr relevant, 0.6-0.8 = interessante Alternative, <0.6 = nicht vorschlagen  
+5. Pro Hauptkategorie max. 3-5 vielfältige Vorschläge
+6. Denke außerhalb der Box: "Kaffeerösterei" statt nur "Café", "Kochschule" statt nur "Restaurant"
 
-ANTWORT-FORMAT (JSON):
+ANTWORT-FORMAT (JSON) - IMMER 8-12 DIVERSE VORSCHLÄGE:
 [
   {
     "category_id": "uuid",
-    "target_main_category": "Essen & Trinken",
-    "confidence_score": 0.95,
-    "reasoning": "Biergarten ist primär ein Ort zum Essen und Trinken"
+    "target_main_category": "Essen & Trinken", 
+    "confidence_score": 0.85,
+    "reasoning": "Spezielle Nische mit hohem Potenzial",
+    "rarity_score": 0.7
   }
 ]
 

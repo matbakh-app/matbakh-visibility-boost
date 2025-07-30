@@ -6,6 +6,7 @@ import type { BusinessContactFormData } from '@/components/onboarding/BusinessCo
 interface BusinessContactData {
   id: string;
   customer_id: string;
+  company_name: string; // Required field in database
   address_line1: string;
   house_number: string;
   address_line2?: string;
@@ -64,7 +65,10 @@ export function useBusinessContactData() {
         .maybeSingle();
 
       if (error) throw error;
-      return data as BusinessContactData | null;
+      return data ? {
+        ...data,
+        competitors: (data.competitors as any) || []
+      } as BusinessContactData : null;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -75,10 +79,10 @@ export function useBusinessContactData() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No authenticated user');
 
-      // Get or create business partner
+      // Get business partner with company name
       const { data: partner, error: partnerError } = await supabase
         .from('business_partners')
-        .select('id')
+        .select('id, company_name')
         .eq('user_id', user.id)
         .single();
 
@@ -89,8 +93,9 @@ export function useBusinessContactData() {
       // Prepare data for insertion/update
       const contactDataToSave = {
         customer_id: partner.id,
+        company_name: partner.company_name || 'Unbekannt', // Get from business_partners table
         address_line1: formData.address.addressLine1,
-        house_number: formData.address.houseNumber,
+        house_number: formData.address.houseNumber || '',
         address_line2: formData.address.addressLine2 || null,
         postal_code: formData.address.postalCode,
         city: formData.address.city,
