@@ -76,14 +76,22 @@ export default function GoogleEnhancedOnboarding() {
   };
 
   const handleSaveProfile = async () => {
+    console.log('[DEBUG] handleSaveProfile called');
+    console.log('[DEBUG] formData:', formData);
+    
+    // Quick validation check
+    if (!formData.businessName.trim()) {
+      alert('Bitte Firmenname eingeben!');
+      console.log('[DEBUG] Validation failed: no business name');
+      return;
+    }
+    
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      console.log('[DEBUG] User:', user?.email);
+      
       if (!user) {
-        toast({
-          title: 'Fehler',
-          description: 'Benutzer nicht authentifiziert',
-          variant: 'destructive'
-        });
+        alert('Fehler: Benutzer nicht authentifiziert');
         return;
       }
 
@@ -107,14 +115,12 @@ export default function GoogleEnhancedOnboarding() {
         .single();
 
       if (partnerError) {
-        console.error('Partner creation error:', partnerError);
-        toast({
-          title: 'Fehler',
-          description: 'Business Partner konnte nicht erstellt werden: ' + partnerError.message,
-          variant: 'destructive'
-        });
+        console.error('[DEBUG] Partner creation error:', partnerError);
+        alert('Fehler: Business Partner konnte nicht erstellt werden: ' + partnerError.message);
         return;
       }
+      
+      console.log('[DEBUG] Partner created successfully:', partner);
 
       // Then create business profile using partner_id
       const profileData = {
@@ -133,34 +139,27 @@ export default function GoogleEnhancedOnboarding() {
         profile_verified: gmbData?.verified || false
       };
 
+      console.log('[DEBUG] Creating business profile with data:', profileData);
+      
       const { error } = await supabase
         .from('business_profiles')
         .insert(profileData);
 
       if (error) {
-        toast({
-          title: 'Fehler',
-          description: 'Profil konnte nicht gespeichert werden: ' + error.message,
-          variant: 'destructive'
-        });
+        console.error('[DEBUG] Profile creation error:', error);
+        alert('Fehler: Profil konnte nicht gespeichert werden: ' + error.message);
         return;
       }
 
-      toast({
-        title: 'Profil erstellt!',
-        description: 'Ihr Geschäftsprofil wurde erfolgreich angelegt.',
-      });
+      console.log('[DEBUG] Profile created successfully!');
+      alert('Profil erfolgreich erstellt! Weiterleitung zu Dashboard...');
 
-      // Redirect to visibility check
-      navigate('/visibility-check');
+      // Redirect to dashboard instead of visibility check for now
+      navigate('/dashboard');
 
     } catch (error) {
-      console.error('Profile creation error:', error);
-      toast({
-        title: 'Fehler',
-        description: 'Ein unerwarteter Fehler ist aufgetreten.',
-        variant: 'destructive'
-      });
+      console.error('[DEBUG] Unexpected error:', error);
+      alert('Unerwarteter Fehler: ' + (error as Error).message);
     }
   };
 
@@ -335,7 +334,7 @@ export default function GoogleEnhancedOnboarding() {
             size="lg"
           >
             <BarChart3 className="w-5 h-5 mr-2" />
-            Profil erstellen & Visibility Check starten
+            [DEBUG] Profil erstellen
           </Button>
           
           <Button 
