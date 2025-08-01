@@ -3984,6 +3984,15 @@ export type Database = {
           created_at: string
         }[]
       }
+      redeem_promo_code_transaction: {
+        Args: {
+          p_promo_code_id: string
+          p_user_id: string
+          p_granted_features: Json
+          p_granted_role: string
+        }
+        Returns: undefined
+      }
       refresh_restaurant_match_scores: {
         Args: Record<PropertyKey, never>
         Returns: undefined
