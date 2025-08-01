@@ -69,6 +69,15 @@ const BusinessLogin: React.FC = () => {
 
   useEffect(() => {
     if (user && !loading) {
+      // Check for test parameter
+      const urlParams = new URLSearchParams(location.search);
+      const testMode = urlParams.get('test');
+      
+      if (testMode === '1') {
+        navigate('/quick-verify', { replace: true });
+        return;
+      }
+      
       const from = location.state?.from?.pathname || '/partner/dashboard';
       navigate(from, { replace: true });
     }
