@@ -7,7 +7,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { SmartOnboardingWizard } from '@/components/onboarding/SmartOnboardingWizard';
+import { SimpleOnboardingForm } from '@/components/onboarding/SimpleOnboardingForm';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -127,7 +127,7 @@ const PartnerOnboarding: React.FC = () => {
   };
 
   return (
-    <SmartOnboardingWizard onComplete={handleOnboardingComplete} />
+    <SimpleOnboardingForm onComplete={handleOnboardingComplete} />
   );
 };
 
