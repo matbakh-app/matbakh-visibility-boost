@@ -47,7 +47,7 @@ i18n
     },
     
     // Updated namespace list to include all required namespaces
-    ns: ['common', 'navigation', 'services', 'packages', 'hero', 'landing', 'trust', 'auth', 'adminPanel', 'onboarding', 'dashboard', 'cookieConsent', 'legal-kontakt', 'legal-contact'],
+    ns: ['common', 'navigation', 'services', 'packages', 'hero', 'landing', 'trust', 'auth', 'adminPanel', 'onboarding', 'dashboard', 'cookieConsent', 'legal-kontakt', 'legal-contact', 'facebook-data-deletion'],
     defaultNS: 'common'
   });
 
