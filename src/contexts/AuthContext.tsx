@@ -145,16 +145,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // Defer data fetching to prevent deadlocks
           setTimeout(async () => {
             try {
-              // Check admin role
+              // Check admin role from profiles table
               const { data: profile } = await supabase
                 .from('profiles')
                 .select('role')
                 .eq('id', session.user.id)
-                .single();
+                .maybeSingle();
               
               setIsAdmin(profile?.role === 'admin');
               
-               // Check if onboarding is completed
+              // Check if business profile exists and onboarding is completed
               const { data: partner } = await supabase
                 .from('business_partners')
                 .select('id, onboarding_completed')
@@ -189,7 +189,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   navigate('/quick-verify', { replace: true });
                 } else if (!partner?.onboarding_completed) {
                   console.log('AuthProvider: Redirecting to onboarding');
-                  navigate('/partner/onboarding', { replace: true });
+                  
+                  // Route based on provider
+                  const provider = session.user.app_metadata?.provider || 'email';
+                  if (provider === 'google') {
+                    navigate('/onboarding/google', { replace: true });
+                  } else {
+                    navigate('/onboarding/standard', { replace: true });
+                  }
                 } else {
                   console.log('AuthProvider: Redirecting to dashboard');
                   navigate('/dashboard', { replace: true });
