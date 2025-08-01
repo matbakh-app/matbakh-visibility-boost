@@ -2175,29 +2175,124 @@ export type Database = {
         Row: {
           allergies: string[] | null
           created_at: string
+          feature_access_until: string | null
+          granted_features: Json | null
           id: string
           language: string
           name: string
           role: string
+          subscription_status: string | null
           updated_at: string
         }
         Insert: {
           allergies?: string[] | null
           created_at?: string
+          feature_access_until?: string | null
+          granted_features?: Json | null
           id: string
           language?: string
           name: string
           role?: string
+          subscription_status?: string | null
           updated_at?: string
         }
         Update: {
           allergies?: string[] | null
           created_at?: string
+          feature_access_until?: string | null
+          granted_features?: Json | null
           id?: string
           language?: string
           name?: string
           role?: string
+          subscription_status?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      promo_code_usage: {
+        Row: {
+          id: string
+          promo_code_id: string | null
+          used_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          id?: string
+          promo_code_id?: string | null
+          used_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          id?: string
+          promo_code_id?: string | null
+          used_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_code_usage_promo_code_id_fkey"
+            columns: ["promo_code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      promo_codes: {
+        Row: {
+          code: string
+          created_at: string | null
+          created_by: string | null
+          current_uses: number | null
+          description: string | null
+          discount_type: string | null
+          discount_value: number | null
+          granted_features: Json | null
+          granted_role: string | null
+          id: string
+          is_review_code: boolean | null
+          max_uses: number | null
+          status: string | null
+          updated_at: string | null
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          created_by?: string | null
+          current_uses?: number | null
+          description?: string | null
+          discount_type?: string | null
+          discount_value?: number | null
+          granted_features?: Json | null
+          granted_role?: string | null
+          id?: string
+          is_review_code?: boolean | null
+          max_uses?: number | null
+          status?: string | null
+          updated_at?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          created_by?: string | null
+          current_uses?: number | null
+          description?: string | null
+          discount_type?: string | null
+          discount_value?: number | null
+          granted_features?: Json | null
+          granted_role?: string | null
+          id?: string
+          is_review_code?: boolean | null
+          max_uses?: number | null
+          status?: string | null
+          updated_at?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
         }
         Relationships: []
       }
