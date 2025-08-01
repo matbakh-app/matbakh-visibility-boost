@@ -318,17 +318,39 @@ const VisibilityCheckForm: React.FC = () => {
 
             <div className="flex justify-end space-x-2">
               {/* NOTFALL DEBUG BUTTON */}
-              <Button 
-                onClick={() => {
+               <Button 
+                onClick={async () => {
                   console.log('[DEBUG] NOTFALL Button clicked!');
                   console.log('[DEBUG] Current formData:', formData);
-                  alert('NOTFALL Button wurde geklickt! Prüfe Console...');
-                  setStep(2);
+                  
+                   // Complete form data for analysis
+                  const completeFormData = {
+                    businessName: formData.businessName || 'matbakh-app',
+                    location: formData.location || 'München',
+                    mainCategory: formData.mainCategory || 'restaurant',
+                    subCategory: formData.subCategory || '',
+                    matbakhTags: formData.matbakhTags.length > 0 ? formData.matbakhTags : ['restaurant'],
+                    website: 'https://matbakh.app',
+                    facebookName: '',
+                    instagramName: '',
+                    benchmarks: ['', '', ''],
+                    email: 'mail@matbakh.app'
+                  };
+                  
+                  console.log('[DEBUG] Running complete analysis with email...');
+                  
+                  // Update the form data and trigger the analysis
+                  setFormData(completeFormData);
+                  
+                  // Directly trigger submit instead of relying on onSubmit
+                  setTimeout(() => {
+                    handleSubmit();
+                  }, 100);
                 }}
                 variant="destructive"
                 className="mr-2"
               >
-                🚨 NOTFALL WEITER
+                🚨 NOTFALL: Analyse + Email
               </Button>
               
               <Button 
