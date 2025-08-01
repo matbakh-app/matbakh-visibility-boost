@@ -89,6 +89,11 @@ function App() {
                 <Route path="quick-verify" element={<QuickVerifyMode />} />
                 <Route path="notes" element={<NotesPage />} />
                 
+                {/* New Registration Flow */}
+                <Route path="register" element={<RegistrationOptions />} />
+                <Route path="register/email" element={<EmailRegistration />} />
+                <Route path="onboarding/standard" element={<StandardOnboarding />} />
+                
               {/* Legal pages - German */}
               <Route path="impressum" element={<Impressum />} />
               <Route path="datenschutz" element={<Datenschutz />} />
