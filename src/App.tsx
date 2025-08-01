@@ -20,6 +20,9 @@ import PartnerCalendar from '@/pages/PartnerCalendar';
 import RegistrationOptions from '@/pages/RegistrationOptions';
 import EmailRegistration from '@/pages/EmailRegistration';
 import StandardOnboarding from '@/pages/StandardOnboarding';
+import GoogleOAuth from '@/pages/GoogleOAuth';
+import GoogleCallback from '@/pages/GoogleCallback';
+import GoogleEnhancedOnboarding from '@/pages/GoogleEnhancedOnboarding';
 import Dashboard from '@/pages/Dashboard';
 import DashboardOverview from '@/pages/DashboardOverview';
 import DashboardProfile from '@/pages/DashboardProfile';
@@ -96,6 +99,11 @@ function App() {
                 <Route path="register" element={<RegistrationOptions />} />
                 <Route path="register/email" element={<EmailRegistration />} />
                 <Route path="onboarding/standard" element={<StandardOnboarding />} />
+                
+                {/* Google OAuth Flow */}
+                <Route path="auth/google" element={<GoogleOAuth />} />
+                <Route path="auth/callback" element={<GoogleCallback />} />
+                <Route path="onboarding/google" element={<GoogleEnhancedOnboarding />} />
                 
               {/* Legal pages - German */}
               <Route path="impressum" element={<Impressum />} />
