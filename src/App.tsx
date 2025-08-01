@@ -51,6 +51,7 @@ import Privacy from '@/pages/legal/Privacy';
 import Terms from '@/pages/legal/Terms';
 import Usage from '@/pages/legal/Usage';
 import Contact from '@/pages/legal/Contact';
+import FacebookDataDeletion from '@/pages/FacebookDataDeletion';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -99,6 +100,9 @@ function App() {
               <Route path="terms" element={<Terms />} />
               <Route path="usage" element={<Usage />} />
               <Route path="contact" element={<Contact />} />
+              
+              {/* Facebook Data Deletion - Required for Facebook App Verification */}
+              <Route path="facebook-data-deletion" element={<FacebookDataDeletion />} />
               </Route>
 
               {/* Partner/Business routes */}
