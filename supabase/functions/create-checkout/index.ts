@@ -47,9 +47,9 @@ serve(async (req) => {
     // Get partner ID from business_partners table
     const { data: partnerData, error: partnerError } = await supabaseClient
       .from('business_partners')
-      .select('id')
+      .select('*')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (partnerError || !partnerData) {
       throw new Error("Partner profile not found");

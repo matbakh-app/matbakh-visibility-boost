@@ -27,10 +27,13 @@ const stepTwoSchema = z.object({
   benchmarkTwo: z.string().optional(),
   benchmarkThree: z.string().optional(),
   email: z.string().email('Gültige E-Mail-Adresse erforderlich'),
-  gdprConsent: z.boolean().refine(val => val === true, {
-    message: 'Datenschutz-Einverständnis ist erforderlich'
-  }),
-  marketingConsent: z.boolean().optional(),
+              gdprConsent: z.boolean().refine(val => val === true, {
+                message: 'Datenschutz-Einverständnis ist erforderlich'
+              }),
+              marketingConsent: z.boolean().optional(),
+              emailConsent: z.boolean().refine(val => val === true, {
+                message: 'E-Mail-Einverständnis ist für den Report erforderlich'
+              }),
 }).superRefine((data, ctx) => {
   // Wenn "Ja" zu Social Media gewählt wurde, muss mindestens ein Feld ausgefüllt sein
   if (data.hasSocialMedia === 'yes') {
@@ -93,6 +96,7 @@ const VisibilityStepTwo: React.FC<Props> = ({
       email: '',
       gdprConsent: false,
       marketingConsent: false,
+      emailConsent: false,
       ...defaultValues,
     },
   });
@@ -461,6 +465,29 @@ const VisibilityStepTwo: React.FC<Props> = ({
                           <a href="/datenschutz" target="_blank" className="underline text-blue-600 ml-1">
                             Datenschutzerklärung
                           </a>
+                        </p>
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="emailConsent"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="cursor-pointer">
+                          E-Mail Report Einverständnis *
+                        </FormLabel>
+                        <p className="text-xs text-muted-foreground">
+                          Ich stimme zu, dass der PDF-Report an meine E-Mail-Adresse gesendet wird. 
+                          Double-Opt-In erforderlich.
                         </p>
                         <FormMessage />
                       </div>
