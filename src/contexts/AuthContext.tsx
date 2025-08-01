@@ -175,11 +175,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 }
               );
               
-              // Only redirect if not on login or landing pages
+              // Only redirect if not on login, landing, or visibility check pages
               const isOnLandingPage = location.pathname === '/' || 
                                      location.pathname.startsWith('/business/partner');
+              const isOnVisibilityCheck = location.pathname.startsWith('/visibility');
               
-              if (!isOnLandingPage || location.pathname === '/business/partner/login') {
+              console.log('AuthProvider: Current path:', location.pathname, 'isOnLandingPage:', isOnLandingPage, 'isOnVisibilityCheck:', isOnVisibilityCheck);
+              
+              if ((!isOnLandingPage && !isOnVisibilityCheck) || location.pathname === '/business/partner/login') {
                 // Check for test mode parameter
                 const urlParams = new URLSearchParams(location.search);
                 const testMode = urlParams.get('test');
