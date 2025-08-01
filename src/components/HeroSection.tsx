@@ -39,12 +39,12 @@ const HeroSection: React.FC = () => {
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-lg mx-auto">
             <Button 
-              onClick={scrollToVisibilityCheck}
+              onClick={() => window.location.href = '/register'}
               size="lg" 
               className="bg-primary hover:bg-primary/90 text-white flex-1"
             >
               <BarChart3 className="h-5 w-5 mr-2" />
-              {t('cta1')}
+              Jetzt kostenlos registrieren
             </Button>
             <Button 
               onClick={handleWhatsAppContact}

@@ -25,7 +25,7 @@ const UserMenu: React.FC = () => {
   };
 
   const handleLogin = () => {
-    navigate('/login');
+    navigate('/register');
   };
 
   if (!user) {
@@ -36,7 +36,7 @@ const UserMenu: React.FC = () => {
         size="sm"
         className="text-gray-700 hover:text-black"
       >
-        {t('login', 'Anmelden')}
+        {t('register', 'Registrieren')}
       </Button>
     );
   }
