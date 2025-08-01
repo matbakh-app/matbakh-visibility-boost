@@ -23,14 +23,7 @@ export default function GoogleOAuth() {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          scopes: [
-            'openid',
-            'email',
-            'profile',
-            'https://www.googleapis.com/auth/business.manage',
-            'https://www.googleapis.com/auth/business.manage.photos',
-            'https://www.googleapis.com/auth/business.manage.reviews'
-          ].join(' '),
+          scopes: 'openid email profile',
           redirectTo: `${window.location.origin}/auth/callback`,
           queryParams: {
             access_type: 'offline',
