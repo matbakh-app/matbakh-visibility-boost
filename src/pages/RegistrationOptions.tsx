@@ -25,7 +25,7 @@ export default function RegistrationOptions() {
       title: t('form.googleRegistration', 'Mit Google registrieren'),
       description: t('form.googleDescription', 'Schnelle Anmeldung mit automatischer GMB-Integration'),
       icon: Chrome,
-      route: '/register/google',
+      route: '/auth/google',
       color: 'bg-green-50 text-green-600 border-green-200'
     },
     {
