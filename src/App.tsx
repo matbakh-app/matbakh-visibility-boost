@@ -39,6 +39,7 @@ import VisibilityCheckPage from '@/components/visibility/VisibilityCheckPage';
 import CookieConsentBanner from '@/components/CookieConsentBanner';
 import { DashboardRedirect } from '@/components/DashboardRedirect';
 import { GoogleOAuthCallback } from '@/components/auth/GoogleOAuthCallback';
+import { QuickVerifyMode } from '@/components/onboarding/QuickVerifyMode';
 
 // Legal pages
 import Impressum from '@/pages/legal/Impressum';
@@ -85,6 +86,7 @@ function App() {
                 <Route path="visibility-check/verified/:leadId" element={<VisibilityCheckVerified />} />
                 <Route path="redeem" element={<RedeemPage />} />
                 <Route path="auth/google/callback" element={<GoogleOAuthCallback />} />
+                <Route path="quick-verify" element={<QuickVerifyMode />} />
                 <Route path="notes" element={<NotesPage />} />
                 
               {/* Legal pages - German */}
