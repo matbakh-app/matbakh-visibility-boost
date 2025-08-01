@@ -94,10 +94,10 @@ const BusinessLogin: React.FC = () => {
         <div className="w-full max-w-md space-y-6 p-6 border rounded-2xl shadow-sm bg-white">
           <div className="text-center space-y-2">
             <h1 className="text-2xl font-bold">
-              {t('businessLogin')}
+              {t('shared.businessLogin', 'Business Login')}
             </h1>
             <p className="text-sm text-gray-600">
-              {t('connectGoogleProfile')}
+              {t('shared.connectGoogleProfile', 'Verbinden Sie Ihr Unternehmensprofil')}
             </p>
           </div>
 
@@ -105,7 +105,7 @@ const BusinessLogin: React.FC = () => {
           {process.env.NODE_ENV === 'development' && (
             <div className="text-xs text-red-500 bg-red-50 p-2 rounded">
               Debug: ready={ready.toString()}, authLoaded={i18n.hasLoadedNamespace('auth').toString()}, 
-              lang={i18n.language}, businessLogin="{t('businessLogin')}"
+              lang={i18n.language}, businessLogin="{t('shared.businessLogin', 'Business Login')}"
             </div>
           )}
 

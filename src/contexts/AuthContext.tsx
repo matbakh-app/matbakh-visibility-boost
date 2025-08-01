@@ -180,7 +180,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                                      location.pathname.startsWith('/business/partner');
               
               if (!isOnLandingPage || location.pathname === '/business/partner/login') {
-                if (!partner?.onboarding_completed) {
+                // Check for test mode parameter
+                const urlParams = new URLSearchParams(location.search);
+                const testMode = urlParams.get('test');
+                
+                if (testMode === '1') {
+                  console.log('AuthProvider: Test mode detected, redirecting to quick-verify');
+                  navigate('/quick-verify', { replace: true });
+                } else if (!partner?.onboarding_completed) {
                   console.log('AuthProvider: Redirecting to onboarding');
                   navigate('/partner/onboarding', { replace: true });
                 } else {
