@@ -50,8 +50,6 @@ export default function GoogleEnhancedOnboarding() {
 
   const loadGMBData = async () => {
     try {
-      setLoadingState('loading');
-      
       // Get current user session
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
@@ -59,58 +57,13 @@ export default function GoogleEnhancedOnboarding() {
         return;
       }
 
-      // Simulate GMB API call (replace with actual GMB service)
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Mock GMB data - in production, this would come from GMB API
-      const mockGMBData: GMBData = {
-        businessName: "Restaurant Beispiel",
-        address: "Maximilianstraße 1, 80539 München",
-        phone: "+49 89 123456789",
-        website: "https://restaurant-beispiel.de",
-        description: "Authentische bayerische Küche im Herzen Münchens. Wir servieren traditionelle Gerichte mit regionalen Zutaten.",
-        categories: ["Restaurant", "Bayerische Küche", "Traditionell"],
-        rating: 4.2,
-        reviewCount: 156,
-        photos: [
-          "/placeholder-restaurant-1.jpg",
-          "/placeholder-restaurant-2.jpg",
-          "/placeholder-restaurant-3.jpg"
-        ],
-        hours: {
-          "Mo-Fr": "11:00-22:00",
-          "Sa-So": "12:00-23:00"
-        },
-        verified: true
-      };
-
-      // Check if user has GMB account (mock check)
-      const hasGMB = Math.random() > 0.3; // 70% chance of having GMB
-
-      if (hasGMB) {
-        setGmbData(mockGMBData);
-        setFormData({
-          businessName: mockGMBData.businessName,
-          address: mockGMBData.address,
-          phone: mockGMBData.phone,
-          website: mockGMBData.website,
-          description: mockGMBData.description,
-          categories: mockGMBData.categories
-        });
-        setLoadingState('loaded');
-      } else {
-        setLoadingState('no_gmb');
-        setEditMode(true);
-      }
+      // Skip GMB loading for now - go directly to manual input
+      setLoadingState('no_gmb');
+      setEditMode(true);
 
     } catch (error) {
-      console.error('GMB data loading error:', error);
+      console.error('Session check error:', error);
       setLoadingState('error');
-      toast({
-        title: 'Fehler beim Laden',
-        description: 'Google My Business Daten konnten nicht geladen werden. Sie können die Daten manuell eingeben.',
-        variant: 'destructive'
-      });
       setEditMode(true);
     }
   };
