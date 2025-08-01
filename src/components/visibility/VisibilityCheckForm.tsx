@@ -173,10 +173,19 @@ const VisibilityCheckForm: React.FC = () => {
   };
 
   const canProceed = () => {
+    // Debug logging
+    console.log('[DEBUG] canProceed check:', {
+      businessName: !!formData.businessName,
+      location: !!formData.location,
+      mainCategory: !!formData.mainCategory,
+      subCategory: !!formData.subCategory,
+      subcategoriesAvailable: subcategories.length
+    });
+    
     return formData.businessName && 
            formData.location && 
            formData.mainCategory && 
-           formData.subCategory;
+           (subcategories.length === 0 || formData.subCategory); // Allow proceed if no subcategories available
   };
 
   // Show results if analysis is complete
@@ -307,9 +316,27 @@ const VisibilityCheckForm: React.FC = () => {
               </div>
             )}
 
-            <div className="flex justify-end">
+            <div className="flex justify-end space-x-2">
+              {/* NOTFALL DEBUG BUTTON */}
               <Button 
-                onClick={() => setStep(2)}
+                onClick={() => {
+                  console.log('[DEBUG] NOTFALL Button clicked!');
+                  console.log('[DEBUG] Current formData:', formData);
+                  alert('NOTFALL Button wurde geklickt! Prüfe Console...');
+                  setStep(2);
+                }}
+                variant="destructive"
+                className="mr-2"
+              >
+                🚨 NOTFALL WEITER
+              </Button>
+              
+              <Button 
+                onClick={() => {
+                  console.log('[DEBUG] Normal button clicked!');
+                  console.log('[DEBUG] canProceed():', canProceed());
+                  setStep(2);
+                }}
                 disabled={!canProceed()}
               >
                 Weiter zu optionalen Angaben
