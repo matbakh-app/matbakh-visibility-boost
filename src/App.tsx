@@ -25,6 +25,7 @@ import GoogleCallback from '@/pages/GoogleCallback';
 import GoogleEnhancedOnboarding from '@/pages/GoogleEnhancedOnboarding';
 import Dashboard from '@/pages/Dashboard';
 import DashboardOverview from '@/pages/DashboardOverview';
+import DashboardMain from '@/pages/DashboardMain';
 import DashboardProfile from '@/pages/DashboardProfile';
 import DashboardGmb from '@/pages/DashboardGmb';
 import DashboardGa4 from '@/pages/DashboardGa4';
@@ -144,6 +145,7 @@ function App() {
                 </ProtectedRoute>
               }>
                 <Route index element={<DashboardRedirect />} />
+                <Route path="main" element={<DashboardMain />} />
                 <Route path="overview" element={<DashboardOverview />} />
                 <Route path="profile" element={<DashboardProfile />} />
                 <Route path="gmb" element={<DashboardGmb />} />
