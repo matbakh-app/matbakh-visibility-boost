@@ -20,13 +20,13 @@ export function usePartnerProfile() {
       const { data: profile, error: profileError } = await supabase
         .from('business_profiles')
         .select('*')
-        .eq('partner_id', partner.id)
+        .eq('user_id', user.id)
         .maybeSingle();
 
       return {
         partner,
         profile,
-        displayName: profile?.business_name || partner?.company_name || partner?.contact_email?.split('@')[0] || 'Partner'
+        displayName: profile?.company_name || partner?.company_name || partner?.contact_email?.split('@')[0] || 'Partner'
       };
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
