@@ -20,21 +20,21 @@ export function useKpiSummary() {
       // Get visibility score from business profile
       const { data: profile } = await supabase
         .from('business_profiles')
-        .select('rating, review_count, photos')
-        .eq('partner_id', partner.id)
+        .select('google_rating, google_reviews_count, google_photos')
+        .eq('user_id', user.id)
         .maybeSingle();
 
       // Dynamische Score-Berechnung basierend auf echten Daten
-      const ratingScore = (profile?.rating || 0) * 20; // max 100 for 5 stars
-      const reviewScore = Math.min((profile?.review_count || 0) * 2, 20); // max 20 for 10+ reviews
-      const photoScore = Math.min((profile?.photos?.length || 0) * 5, 20); // max 20 for 4+ photos
+      const ratingScore = (profile?.google_rating || 0) * 20; // max 100 for 5 stars
+      const reviewScore = Math.min((profile?.google_reviews_count || 0) * 2, 20); // max 20 for 10+ reviews
+      const photoScore = Math.min(Array.isArray(profile?.google_photos) ? profile.google_photos.length : 0 * 5, 20); // max 20 for 4+ photos
       
       const totalScore = Math.round(ratingScore + reviewScore + photoScore);
       
       // Realistische Trend-Simulation basierend auf aktuellen Daten
-      const hasGoodRating = (profile?.rating || 0) >= 4.0;
-      const hasEnoughReviews = (profile?.review_count || 0) >= 5;
-      const hasPhotos = (profile?.photos?.length || 0) > 0;
+      const hasGoodRating = (profile?.google_rating || 0) >= 4.0;
+      const hasEnoughReviews = (profile?.google_reviews_count || 0) >= 5;
+      const hasPhotos = Array.isArray(profile?.google_photos) && profile.google_photos.length > 0;
       
       // Generiere realistische Trends basierend auf Profil-Status
       const visibilityTrend = hasGoodRating && hasPhotos ? '+' : '';
@@ -51,7 +51,7 @@ export function useKpiSummary() {
         },
         {
           key: 'reviews',
-          value: profile?.review_count || 0,
+          value: profile?.google_reviews_count || 0,
           trend: hasEnoughReviews ? '+' : '+',
           type: 'reviews'
         }
