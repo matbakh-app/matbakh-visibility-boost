@@ -1,40 +1,26 @@
-name: Deploy Supabase Edge Functions
+name: Deploy Supabase CI/CD v2
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    env:
-      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      PROJECT_REF: uheksobnyedarrpgxhju
-
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
       - name: Setup Supabase CLI
-        uses: supabase/setup-cli@v1
-        with:
-          version: '2.31.8'
+        run: npm install -g supabase
 
       - name: Login to Supabase
-        run: supabase login --with-token $SUPABASE_ACCESS_TOKEN
+        run: supabase login --token "${{ secrets.SUPABASE_ACCESS_TOKEN }}"
 
-      - name: Deploy enhanced-visibility-check
-        run: |
-          supabase functions deploy enhanced-visibility-check \
-            --project-ref $PROJECT_REF
+      - name: Link to project
+        run: supabase link --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"
 
-      - name: Deploy log_uploader
-        run: |
-          supabase functions deploy log_uploader \
-            --project-ref $PROJECT_REF
+      - name: Run database migrations
+        run: supabase db push
 
-      - name: Deploy bedrock-integration
-        run: |
-          supabase functions deploy bedrock-integration \
-            --project-ref $PROJECT_REF
+      - name: Deploy Edge Functions
+        run: supabase functions deploy --all
