@@ -14,7 +14,6 @@ import AngeboteDE from '@/pages/AngeboteDE';
 import PackagesEN from '@/pages/PackagesEN';
 import BusinessLogin from '@/pages/BusinessLogin';
 import PartnerOnboarding from '@/pages/PartnerOnboarding';
-import PartnerDashboard from '@/pages/PartnerDashboard';
 import PartnerProfile from '@/pages/PartnerProfile';
 import PartnerCalendar from '@/pages/PartnerCalendar';
 import RegistrationOptions from '@/pages/RegistrationOptions';
@@ -23,14 +22,7 @@ import StandardOnboarding from '@/pages/StandardOnboarding';
 import GoogleOAuth from '@/pages/GoogleOAuth';
 import GoogleCallback from '@/pages/GoogleCallback';
 import GoogleEnhancedOnboarding from '@/pages/GoogleEnhancedOnboarding';
-import Dashboard from '@/pages/Dashboard';
-import DashboardOverview from '@/pages/DashboardOverview';
 import DashboardMain from '@/pages/DashboardMain';
-import DashboardProfile from '@/pages/DashboardProfile';
-import DashboardGmb from '@/pages/DashboardGmb';
-import DashboardGa4 from '@/pages/DashboardGa4';
-import DashboardSocial from '@/pages/DashboardSocial';
-import DashboardReports from '@/pages/DashboardReports';
 import AdminPanel from '@/pages/AdminPanel';
 import PasswordReset from '@/pages/PasswordReset';
 import NotFound from '@/pages/NotFound';
@@ -44,7 +36,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import AdminLayout from '@/components/layout/AdminLayout';
 import VisibilityCheckPage from '@/components/visibility/VisibilityCheckPage';
 import CookieConsentBanner from '@/components/CookieConsentBanner';
-import { DashboardRedirect } from '@/components/DashboardRedirect';
+
 import { GoogleOAuthCallback } from '@/components/auth/GoogleOAuthCallback';
 import { QuickVerifyMode } from '@/components/onboarding/QuickVerifyMode';
 
@@ -131,7 +123,7 @@ function App() {
                 </ProtectedRoute>
               }>
                 <Route path="onboarding" element={<PartnerOnboarding />} />
-                <Route path="dashboard" element={<PartnerDashboard />} />
+                <Route path="dashboard" element={<DashboardMain />} />
                 <Route path="profile" element={<PartnerProfile />} />
                 <Route path="calendar" element={<PartnerCalendar />} />
               </Route>
@@ -144,14 +136,8 @@ function App() {
                   </DashboardLayout>
                 </ProtectedRoute>
               }>
-                <Route index element={<DashboardRedirect />} />
+                <Route index element={<DashboardMain />} />
                 <Route path="main" element={<DashboardMain />} />
-                <Route path="overview" element={<DashboardOverview />} />
-                <Route path="profile" element={<DashboardProfile />} />
-                <Route path="gmb" element={<DashboardGmb />} />
-                <Route path="ga4" element={<DashboardGa4 />} />
-                <Route path="social" element={<DashboardSocial />} />
-                <Route path="reports" element={<DashboardReports />} />
               </Route>
 
               {/* Admin routes */}

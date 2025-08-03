@@ -60,14 +60,14 @@ const PartnerOnboarding: React.FC = () => {
       const { error: profileError } = await supabase
         .from('business_profiles')
         .upsert({
-          partner_id: partner.id,
-          business_name: answers.companyName,
+          user_id: user.id,
+          company_name: answers.companyName,
           address: answers.address,
           phone: answers.phone,
           website: answers.website,
           google_connected: answers.googleConnected || false
         }, {
-          onConflict: 'partner_id'
+          onConflict: 'user_id'
         });
 
       if (profileError) throw profileError;
