@@ -307,7 +307,7 @@ export type Database = {
           address: string | null
           billing_address: Json | null
           business_model: string[] | null
-          categories: string[] | null
+          categories: Json | null
           category_ids: string[] | null
           company_name: string
           contact_email: string | null
@@ -315,7 +315,9 @@ export type Database = {
           created_at: string | null
           description: string | null
           document_uploaded: boolean | null
+          go_live: boolean | null
           google_account_id: string | null
+          google_connected: boolean | null
           id: string
           location: unknown | null
           notes: string | null
@@ -337,7 +339,7 @@ export type Database = {
           address?: string | null
           billing_address?: Json | null
           business_model?: string[] | null
-          categories?: string[] | null
+          categories?: Json | null
           category_ids?: string[] | null
           company_name: string
           contact_email?: string | null
@@ -345,7 +347,9 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           document_uploaded?: boolean | null
+          go_live?: boolean | null
           google_account_id?: string | null
+          google_connected?: boolean | null
           id?: string
           location?: unknown | null
           notes?: string | null
@@ -367,7 +371,7 @@ export type Database = {
           address?: string | null
           billing_address?: Json | null
           business_model?: string[] | null
-          categories?: string[] | null
+          categories?: Json | null
           category_ids?: string[] | null
           company_name?: string
           contact_email?: string | null
@@ -375,7 +379,9 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           document_uploaded?: boolean | null
+          go_live?: boolean | null
           google_account_id?: string | null
+          google_connected?: boolean | null
           id?: string
           location?: unknown | null
           notes?: string | null
@@ -397,110 +403,132 @@ export type Database = {
       }
       business_profiles: {
         Row: {
-          address: string
-          ads_metrics: Json | null
-          business_name: string
+          address: string | null
+          business_hours: Json | null
+          categories: string[] | null
+          company_name: string
           created_at: string | null
+          data_sources: string[] | null
+          description: string | null
+          email: string | null
+          facebook_about: string | null
+          facebook_followers: number | null
+          facebook_page_category: string | null
           facebook_page_id: string | null
-          ga4_metrics: Json | null
-          gmb_connected: boolean | null
-          gmb_metrics: Json | null
-          go_live: boolean | null
-          google_connected: boolean | null
-          google_place_id: string | null
+          facebook_posts_count: number | null
+          gmb_attributes: Json | null
+          gmb_posts: Json | null
+          gmb_social_links: Json | null
+          gmb_verification_status: string | null
+          google_photos: Json | null
+          google_places_id: string | null
+          google_rating: number | null
+          google_reviews_count: number | null
           id: string
           instagram_business_id: string | null
-          kpi_metrics: Json | null
-          last_updated: string | null
-          meta_categories: string[] | null
-          meta_connected: boolean | null
-          meta_data: Json | null
-          meta_metrics: Json | null
-          opening_hours: Json | null
-          partner_id: string
+          instagram_followers: number | null
+          instagram_handle: string | null
+          messenger_integration: boolean | null
+          onboarding_completed: boolean | null
           phone: string | null
-          photos: string[] | null
-          platform: string | null
-          rating: number | null
-          review_count: number | null
-          social_handles: Json | null
-          ugc_ready: boolean | null
+          profile_verified: boolean | null
+          registration_type: string | null
+          services: string[] | null
+          target_audience: string[] | null
           updated_at: string | null
+          user_id: string
+          vc_completed: boolean | null
+          vc_last_run: string | null
+          vc_results: Json | null
+          vc_score: number | null
           website: string | null
+          whatsapp_number: string | null
         }
         Insert: {
-          address: string
-          ads_metrics?: Json | null
-          business_name: string
+          address?: string | null
+          business_hours?: Json | null
+          categories?: string[] | null
+          company_name: string
           created_at?: string | null
+          data_sources?: string[] | null
+          description?: string | null
+          email?: string | null
+          facebook_about?: string | null
+          facebook_followers?: number | null
+          facebook_page_category?: string | null
           facebook_page_id?: string | null
-          ga4_metrics?: Json | null
-          gmb_connected?: boolean | null
-          gmb_metrics?: Json | null
-          go_live?: boolean | null
-          google_connected?: boolean | null
-          google_place_id?: string | null
+          facebook_posts_count?: number | null
+          gmb_attributes?: Json | null
+          gmb_posts?: Json | null
+          gmb_social_links?: Json | null
+          gmb_verification_status?: string | null
+          google_photos?: Json | null
+          google_places_id?: string | null
+          google_rating?: number | null
+          google_reviews_count?: number | null
           id?: string
           instagram_business_id?: string | null
-          kpi_metrics?: Json | null
-          last_updated?: string | null
-          meta_categories?: string[] | null
-          meta_connected?: boolean | null
-          meta_data?: Json | null
-          meta_metrics?: Json | null
-          opening_hours?: Json | null
-          partner_id: string
+          instagram_followers?: number | null
+          instagram_handle?: string | null
+          messenger_integration?: boolean | null
+          onboarding_completed?: boolean | null
           phone?: string | null
-          photos?: string[] | null
-          platform?: string | null
-          rating?: number | null
-          review_count?: number | null
-          social_handles?: Json | null
-          ugc_ready?: boolean | null
+          profile_verified?: boolean | null
+          registration_type?: string | null
+          services?: string[] | null
+          target_audience?: string[] | null
           updated_at?: string | null
+          user_id: string
+          vc_completed?: boolean | null
+          vc_last_run?: string | null
+          vc_results?: Json | null
+          vc_score?: number | null
           website?: string | null
+          whatsapp_number?: string | null
         }
         Update: {
-          address?: string
-          ads_metrics?: Json | null
-          business_name?: string
+          address?: string | null
+          business_hours?: Json | null
+          categories?: string[] | null
+          company_name?: string
           created_at?: string | null
+          data_sources?: string[] | null
+          description?: string | null
+          email?: string | null
+          facebook_about?: string | null
+          facebook_followers?: number | null
+          facebook_page_category?: string | null
           facebook_page_id?: string | null
-          ga4_metrics?: Json | null
-          gmb_connected?: boolean | null
-          gmb_metrics?: Json | null
-          go_live?: boolean | null
-          google_connected?: boolean | null
-          google_place_id?: string | null
+          facebook_posts_count?: number | null
+          gmb_attributes?: Json | null
+          gmb_posts?: Json | null
+          gmb_social_links?: Json | null
+          gmb_verification_status?: string | null
+          google_photos?: Json | null
+          google_places_id?: string | null
+          google_rating?: number | null
+          google_reviews_count?: number | null
           id?: string
           instagram_business_id?: string | null
-          kpi_metrics?: Json | null
-          last_updated?: string | null
-          meta_categories?: string[] | null
-          meta_connected?: boolean | null
-          meta_data?: Json | null
-          meta_metrics?: Json | null
-          opening_hours?: Json | null
-          partner_id?: string
+          instagram_followers?: number | null
+          instagram_handle?: string | null
+          messenger_integration?: boolean | null
+          onboarding_completed?: boolean | null
           phone?: string | null
-          photos?: string[] | null
-          platform?: string | null
-          rating?: number | null
-          review_count?: number | null
-          social_handles?: Json | null
-          ugc_ready?: boolean | null
+          profile_verified?: boolean | null
+          registration_type?: string | null
+          services?: string[] | null
+          target_audience?: string[] | null
           updated_at?: string | null
+          user_id?: string
+          vc_completed?: boolean | null
+          vc_last_run?: string | null
+          vc_results?: Json | null
+          vc_score?: number | null
           website?: string | null
+          whatsapp_number?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "business_profiles_partner_id_fkey"
-            columns: ["partner_id"]
-            isOneToOne: true
-            referencedRelation: "business_partners"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       category_cross_tags: {
         Row: {
@@ -725,13 +753,6 @@ export type Database = {
             referencedRelation: "visibility_check_leads"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "competitive_analysis_lead_id_fkey"
-            columns: ["lead_id"]
-            isOneToOne: false
-            referencedRelation: "visibility_full_results"
-            referencedColumns: ["lead_id"]
-          },
         ]
       }
       consultation_requests: {
@@ -943,6 +964,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      facebook_data_cache: {
+        Row: {
+          api_calls_count: number | null
+          cache_expires_at: string | null
+          created_at: string | null
+          facebook_page_id: string | null
+          facebook_user_id: string | null
+          fetch_errors: Json | null
+          followers_data: Json | null
+          id: string
+          insights_data: Json | null
+          instagram_business_id: string | null
+          instagram_data: Json | null
+          last_fetched: string | null
+          page_data: Json | null
+          posts_data: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          api_calls_count?: number | null
+          cache_expires_at?: string | null
+          created_at?: string | null
+          facebook_page_id?: string | null
+          facebook_user_id?: string | null
+          fetch_errors?: Json | null
+          followers_data?: Json | null
+          id?: string
+          insights_data?: Json | null
+          instagram_business_id?: string | null
+          instagram_data?: Json | null
+          last_fetched?: string | null
+          page_data?: Json | null
+          posts_data?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          api_calls_count?: number | null
+          cache_expires_at?: string | null
+          created_at?: string | null
+          facebook_page_id?: string | null
+          facebook_user_id?: string | null
+          fetch_errors?: Json | null
+          followers_data?: Json | null
+          id?: string
+          insights_data?: Json | null
+          instagram_business_id?: string | null
+          instagram_data?: Json | null
+          last_fetched?: string | null
+          page_data?: Json | null
+          posts_data?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       facebook_oauth_tokens: {
         Row: {
@@ -1260,6 +1338,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      gmb_data_cache: {
+        Row: {
+          api_calls_count: number | null
+          attributes_data: Json | null
+          business_data: Json | null
+          cache_expires_at: string | null
+          created_at: string | null
+          fetch_errors: Json | null
+          google_places_id: string | null
+          google_user_id: string | null
+          id: string
+          insights_data: Json | null
+          last_fetched: string | null
+          photos_data: Json | null
+          posts_data: Json | null
+          reviews_data: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          api_calls_count?: number | null
+          attributes_data?: Json | null
+          business_data?: Json | null
+          cache_expires_at?: string | null
+          created_at?: string | null
+          fetch_errors?: Json | null
+          google_places_id?: string | null
+          google_user_id?: string | null
+          id?: string
+          insights_data?: Json | null
+          last_fetched?: string | null
+          photos_data?: Json | null
+          posts_data?: Json | null
+          reviews_data?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          api_calls_count?: number | null
+          attributes_data?: Json | null
+          business_data?: Json | null
+          cache_expires_at?: string | null
+          created_at?: string | null
+          fetch_errors?: Json | null
+          google_places_id?: string | null
+          google_user_id?: string | null
+          id?: string
+          insights_data?: Json | null
+          last_fetched?: string | null
+          photos_data?: Json | null
+          posts_data?: Json | null
+          reviews_data?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       gmb_profiles: {
         Row: {
@@ -2090,6 +2225,33 @@ export type Database = {
           },
         ]
       }
+      partner_profile_draft: {
+        Row: {
+          created_at: string | null
+          id: string
+          profile_data: Json
+          test_mode: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          profile_data?: Json
+          test_mode?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          profile_data?: Json
+          test_mode?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       partner_upload_quota: {
         Row: {
           month_start: string
@@ -2161,13 +2323,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "visibility_check_leads"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "platform_recommendations_lead_id_fkey"
-            columns: ["lead_id"]
-            isOneToOne: false
-            referencedRelation: "visibility_full_results"
-            referencedColumns: ["lead_id"]
           },
         ]
       }
@@ -3035,13 +3190,6 @@ export type Database = {
             referencedRelation: "visibility_check_leads"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "swot_analysis_lead_id_fkey"
-            columns: ["lead_id"]
-            isOneToOne: false
-            referencedRelation: "visibility_full_results"
-            referencedColumns: ["lead_id"]
-          },
         ]
       }
       unclaimed_business_profiles: {
@@ -3140,13 +3288,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "visibility_check_leads"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "unclaimed_business_profiles_lead_id_fkey"
-            columns: ["lead_id"]
-            isOneToOne: false
-            referencedRelation: "visibility_full_results"
-            referencedColumns: ["lead_id"]
           },
         ]
       }
@@ -3424,13 +3565,6 @@ export type Database = {
             referencedRelation: "visibility_check_leads"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "visibility_check_actions_lead_id_fkey"
-            columns: ["lead_id"]
-            isOneToOne: false
-            referencedRelation: "visibility_full_results"
-            referencedColumns: ["lead_id"]
-          },
         ]
       }
       visibility_check_leads: {
@@ -3591,121 +3725,62 @@ export type Database = {
       }
       visibility_check_results: {
         Row: {
-          action_recommendations: Json | null
-          ads_metrics: Json | null
-          analysis_results: Json | null
-          benchmark_insights: string | null
-          benchmarks: Json | null
-          category_insights: Json | null
-          competitive_analysis: Json
-          competitor_benchmark: Json | null
+          analysis_duration_ms: number | null
+          api_calls_made: Json | null
+          business_profile_id: string
+          category_scores: Json | null
+          check_type: string | null
+          competitive_analysis: Json | null
           created_at: string | null
-          ga4_metrics: Json | null
-          gmb_metrics: Json | null
+          dashboard_widgets: Json | null
+          data_sources_used: string[] | null
           id: string
-          instagram_candidates: Json | null
-          lead_id: string | null
-          lead_potential: string | null
-          market_insights: Json
-          monetization_score: number
+          missing_elements: string[] | null
           overall_score: number | null
-          partner_id: string | null
-          platform_analyses: Json | null
-          provider: string | null
-          quick_wins: Json | null
-          seasonal_data: Json
-          swot_analysis: Json | null
-          swot_opportunities: Json | null
-          swot_strengths: Json | null
-          swot_threats: Json | null
-          swot_weaknesses: Json | null
-          updated_at: string | null
-          visibility_score: number | null
+          pdf_export_data: Json | null
+          recommendations: Json | null
+          strengths: string[] | null
         }
         Insert: {
-          action_recommendations?: Json | null
-          ads_metrics?: Json | null
-          analysis_results?: Json | null
-          benchmark_insights?: string | null
-          benchmarks?: Json | null
-          category_insights?: Json | null
-          competitive_analysis?: Json
-          competitor_benchmark?: Json | null
+          analysis_duration_ms?: number | null
+          api_calls_made?: Json | null
+          business_profile_id: string
+          category_scores?: Json | null
+          check_type?: string | null
+          competitive_analysis?: Json | null
           created_at?: string | null
-          ga4_metrics?: Json | null
-          gmb_metrics?: Json | null
+          dashboard_widgets?: Json | null
+          data_sources_used?: string[] | null
           id?: string
-          instagram_candidates?: Json | null
-          lead_id?: string | null
-          lead_potential?: string | null
-          market_insights?: Json
-          monetization_score?: number
+          missing_elements?: string[] | null
           overall_score?: number | null
-          partner_id?: string | null
-          platform_analyses?: Json | null
-          provider?: string | null
-          quick_wins?: Json | null
-          seasonal_data?: Json
-          swot_analysis?: Json | null
-          swot_opportunities?: Json | null
-          swot_strengths?: Json | null
-          swot_threats?: Json | null
-          swot_weaknesses?: Json | null
-          updated_at?: string | null
-          visibility_score?: number | null
+          pdf_export_data?: Json | null
+          recommendations?: Json | null
+          strengths?: string[] | null
         }
         Update: {
-          action_recommendations?: Json | null
-          ads_metrics?: Json | null
-          analysis_results?: Json | null
-          benchmark_insights?: string | null
-          benchmarks?: Json | null
-          category_insights?: Json | null
-          competitive_analysis?: Json
-          competitor_benchmark?: Json | null
+          analysis_duration_ms?: number | null
+          api_calls_made?: Json | null
+          business_profile_id?: string
+          category_scores?: Json | null
+          check_type?: string | null
+          competitive_analysis?: Json | null
           created_at?: string | null
-          ga4_metrics?: Json | null
-          gmb_metrics?: Json | null
+          dashboard_widgets?: Json | null
+          data_sources_used?: string[] | null
           id?: string
-          instagram_candidates?: Json | null
-          lead_id?: string | null
-          lead_potential?: string | null
-          market_insights?: Json
-          monetization_score?: number
+          missing_elements?: string[] | null
           overall_score?: number | null
-          partner_id?: string | null
-          platform_analyses?: Json | null
-          provider?: string | null
-          quick_wins?: Json | null
-          seasonal_data?: Json
-          swot_analysis?: Json | null
-          swot_opportunities?: Json | null
-          swot_strengths?: Json | null
-          swot_threats?: Json | null
-          swot_weaknesses?: Json | null
-          updated_at?: string | null
-          visibility_score?: number | null
+          pdf_export_data?: Json | null
+          recommendations?: Json | null
+          strengths?: string[] | null
         }
         Relationships: [
           {
-            foreignKeyName: "visibility_check_results_lead_id_fkey"
-            columns: ["lead_id"]
+            foreignKeyName: "visibility_check_results_business_profile_id_fkey"
+            columns: ["business_profile_id"]
             isOneToOne: false
-            referencedRelation: "visibility_check_leads"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "visibility_check_results_lead_id_fkey"
-            columns: ["lead_id"]
-            isOneToOne: false
-            referencedRelation: "visibility_full_results"
-            referencedColumns: ["lead_id"]
-          },
-          {
-            foreignKeyName: "visibility_check_results_partner_id_fkey"
-            columns: ["partner_id"]
-            isOneToOne: false
-            referencedRelation: "business_partners"
+            referencedRelation: "business_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -3879,24 +3954,6 @@ export type Database = {
         }
         Relationships: []
       }
-      visibility_full_results: {
-        Row: {
-          analysis_date: string | null
-          analysis_results: Json | null
-          benchmark_insights: string | null
-          business_name: string | null
-          category_insights: Json | null
-          email: string | null
-          lead_id: string | null
-          overall_score: number | null
-          platform_analyses: Json | null
-          quick_wins: Json | null
-          report_url: string | null
-          status: string | null
-          swot_analysis: Json | null
-        }
-        Relationships: []
-      }
       visibility_health_monitor: {
         Row: {
           analyzing_leads: number | null
@@ -4000,51 +4057,6 @@ export type Database = {
       resolve_security_alert: {
         Args: { p_alert_id: string; p_resolved_by?: string }
         Returns: boolean
-      }
-      upsert_business_profile: {
-        Args: {
-          p_partner_id: string
-          p_business_name: string
-          p_address: string
-          p_phone?: string
-          p_website?: string
-          p_rating?: number
-          p_review_count?: number
-          p_photos?: string[]
-          p_opening_hours?: Json
-        }
-        Returns: {
-          address: string
-          ads_metrics: Json | null
-          business_name: string
-          created_at: string | null
-          facebook_page_id: string | null
-          ga4_metrics: Json | null
-          gmb_connected: boolean | null
-          gmb_metrics: Json | null
-          go_live: boolean | null
-          google_connected: boolean | null
-          google_place_id: string | null
-          id: string
-          instagram_business_id: string | null
-          kpi_metrics: Json | null
-          last_updated: string | null
-          meta_categories: string[] | null
-          meta_connected: boolean | null
-          meta_data: Json | null
-          meta_metrics: Json | null
-          opening_hours: Json | null
-          partner_id: string
-          phone: string | null
-          photos: string[] | null
-          platform: string | null
-          rating: number | null
-          review_count: number | null
-          social_handles: Json | null
-          ugc_ready: boolean | null
-          updated_at: string | null
-          website: string | null
-        }[]
       }
       validate_additional_kpis: {
         Args: { kpis: Json }
