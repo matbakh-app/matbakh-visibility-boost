@@ -8,36 +8,39 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      # 1) Code auschecken
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # 2) Git-User für alle Bot-Commits setzen
+      - name: Configure git user
+        run: |
+          git config user.name "matbakh-app"
+          git config user.email "ci@matbakh.app"
+
+      # 3) Supabase CLI herunterladen und installieren
       - name: Download Supabase CLI
         run: |
-          # 1) Alte CLI-Reste entfernen
           rm -rf supabase supabase_linux_amd64.tar.gz
-
-          # 2) Archiv herunterladen
           curl -L https://github.com/supabase/cli/releases/latest/download/supabase_linux_amd64.tar.gz \
             -o supabase_linux_amd64.tar.gz
-
-          # 3) Archiv entpacken
           tar xzf supabase_linux_amd64.tar.gz
-
-          # 4) Binary ausführbar machen und ins PATH verschieben
-          chmod +x supabase
           sudo mv supabase /usr/local/bin
-
-          # 5) Versionstest
           supabase version
 
+      # 4) Login
       - name: Login to Supabase
         run: supabase login --token "${{ secrets.SUPABASE_ACCESS_TOKEN }}"
 
+      # 5) Projekt verknüpfen
       - name: Link to project
         run: supabase link --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"
 
+      # 6) Datenbank-Migrationen anwenden
       - name: Run database migrations
         run: supabase db push
 
+      # 7) Edge-Functions deployen
       - name: Deploy Edge Functions
         run: supabase functions deploy --all
+
