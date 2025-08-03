@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { realtimeManager } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface UseRealtimeConnectionOptions {
@@ -47,7 +47,7 @@ export function useRealtimeConnection({
 
     // Create channel
     try {
-      channelRef.current = realtimeManager.createChannel(channelName);
+      channelRef.current = supabase.channel(channelName);
       
       if (channelRef.current) {
         channelRef.current.subscribe((status: string) => {
@@ -103,7 +103,7 @@ export function useRealtimeConnection({
       if (channelRef.current) {
         channelRef.current.unsubscribe();
       }
-      channelRef.current = realtimeManager.createChannel(channelName);
+      channelRef.current = supabase.channel(channelName);
       return channelRef.current;
     }
   };

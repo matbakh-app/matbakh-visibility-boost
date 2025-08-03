@@ -1,188 +1,229 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import VisibilityResults from '@/components/visibility/VisibilityResults';
-import { Card, CardContent } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Badge } from '@/components/ui/badge';
+import { CheckCircle, AlertCircle, TrendingUp, Star, Globe } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
-const VisibilityCheckVerified: React.FC = () => {
+interface VerificationData {
+  id: string;
+  email: string;
+  business_name: string;
+  status: string;
+  created_at: string;
+}
+
+interface AnalysisResult {
+  id: string;
+  overall_score: number;
+  strengths: string[];
+  recommendations: string[];
+}
+
+export default function VisibilityCheckVerified() {
   const { leadId } = useParams<{ leadId: string }>();
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const token = searchParams.get('token');
-  
   const [verificationStatus, setVerificationStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [leadData, setLeadData] = useState<any>(null);
-  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [leadData, setLeadData] = useState<VerificationData | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
 
   useEffect(() => {
-    if (leadId) {
-      verifyAndLoadResults();
+    if (!leadId) {
+      setErrorMessage('Ungültige Verification-ID');
+      setVerificationStatus('error');
+      return;
     }
-  }, [leadId, token]);
 
-  const verifyAndLoadResults = async () => {
+    verifyLead();
+  }, [leadId]);
+
+  const verifyLead = async () => {
     try {
-      setVerificationStatus('loading');
-
-      // If there's a token, verify it first
-      if (token) {
-        const { error: verifyError } = await supabase
-          .from('visibility_check_leads')
-          .update({ 
-            email_verified: true,
-            verification_token: null,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', leadId)
-          .eq('verification_token', token);
-
-        if (verifyError) {
-          console.error('Token verification failed:', verifyError);
-          setErrorMessage('Ungültiger oder abgelaufener Verifikationslink.');
-          setVerificationStatus('error');
-          return;
-        }
-      }
-
-      // Load lead data and results
+      // Get lead data
       const { data: lead, error: leadError } = await supabase
         .from('visibility_check_leads')
-        .select('*')
+        .select('id, email, business_name, status, created_at')
         .eq('id', leadId)
-        .single();
+        .maybeSingle();
 
       if (leadError || !lead) {
-        setErrorMessage('Lead-Daten konnten nicht gefunden werden.');
+        setErrorMessage('Lead nicht gefunden oder bereits verifiziert.');
         setVerificationStatus('error');
         return;
       }
 
-      // Load analysis results
+      // Get analysis results
       const { data: results, error: resultsError } = await supabase
         .from('visibility_check_results')
-        .select('*')
+        .select('id, overall_score, strengths, recommendations')
         .eq('lead_id', leadId)
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
 
       if (resultsError) {
-        console.error('Error loading results:', resultsError);
+        console.error('Error fetching results:', resultsError);
         setErrorMessage('Analyseergebnisse konnten nicht geladen werden.');
         setVerificationStatus('error');
         return;
       }
 
       setLeadData(lead);
-      setAnalysisResult(results?.analysis_results || null);
+      // Type-safe conversion for results
+      if (results) {
+        const safeResult: AnalysisResult = {
+          id: results.id,
+          overall_score: results.overall_score,
+          strengths: Array.isArray(results.strengths) ? results.strengths.map(String) : [],
+          recommendations: Array.isArray(results.recommendations) ? results.recommendations.map(String) : []
+        };
+        setAnalysisResult(safeResult);
+      } else {
+        setAnalysisResult(null);
+      }
       setVerificationStatus('success');
 
     } catch (error) {
       console.error('Verification error:', error);
-      setErrorMessage('Ein unerwarteter Fehler ist aufgetreten.');
+      setErrorMessage('Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.');
       setVerificationStatus('error');
     }
   };
 
-  const handleNewAnalysis = () => {
-    navigate('/');
-  };
-
-  const handleRequestDetailedReport = () => {
-    console.log('Detailed report requested for verified lead');
-    // This could trigger a more detailed report generation
-  };
-
   if (verificationStatus === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6">
-            <div className="text-center space-y-4">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-              <h2 className="text-xl font-semibold">Verifikation läuft...</h2>
-              <p className="text-muted-foreground">
-                Ihre E-Mail wird verifiziert und die Ergebnisse werden geladen.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-lg">Verifizierung wird durchgeführt...</p>
+        </div>
       </div>
     );
   }
 
   if (verificationStatus === 'error') {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Card className="w-full max-w-md">
-          <CardContent className="pt-6">
-            <div className="text-center space-y-4">
-              <AlertCircle className="h-8 w-8 mx-auto text-red-500" />
-              <h2 className="text-xl font-semibold text-red-600">Verifikation fehlgeschlagen</h2>
-              <p className="text-muted-foreground">{errorMessage}</p>
-              <Button onClick={handleNewAnalysis} className="w-full">
-                Neue Analyse starten
-              </Button>
-            </div>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-red-600">
+              <AlertCircle className="w-5 h-5" />
+              Verifizierung fehlgeschlagen
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-600 mb-4">{errorMessage}</p>
+            <Button onClick={() => navigate('/')} className="w-full">
+              Zur Startseite
+            </Button>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  if (!analysisResult) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6">
-            <div className="text-center space-y-4">
-              <CheckCircle className="h-8 w-8 mx-auto text-green-500" />
-              <h2 className="text-xl font-semibold">E-Mail bestätigt!</h2>
-              <p className="text-muted-foreground">
-                Ihre E-Mail wurde erfolgreich bestätigt, aber die Analyse ist noch nicht abgeschlossen.
-              </p>
-              <Button onClick={handleNewAnalysis} className="w-full">
-                Neue Analyse starten
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  // Show the full analysis results with download capability for verified email users
   return (
-    <div className="min-h-screen bg-background">
-      {token && (
-        <div className="bg-green-50 border-b border-green-200 py-3">
-          <div className="max-w-6xl mx-auto px-6">
-            <div className="flex items-center gap-2 text-green-800">
-              <CheckCircle className="h-5 w-5" />
-              <span className="text-sm font-medium">
-                E-Mail erfolgreich bestätigt! Hier sind Ihre vollständigen Analyseergebnisse.
-              </span>
-            </div>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-4xl mx-auto px-4">
+        {/* Success Header */}
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <CheckCircle className="w-16 h-16 text-green-500" />
           </div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Sichtbarkeitsanalyse erfolgreich abgeschlossen!
+          </h1>
+          <p className="text-lg text-gray-600">
+            Hier sind die Ergebnisse für <strong>{leadData?.business_name}</strong>
+          </p>
         </div>
-      )}
-      
-      <VisibilityResults
-        businessName={leadData?.business_name || ''}
-        analysisResult={analysisResult}
-        onRequestDetailedReport={handleRequestDetailedReport}
-        onNewAnalysis={handleNewAnalysis}
-        reportRequested={false}
-        email={leadData?.email}
-        leadId={leadId}
-        allowDownload={!!token} // Only allow download if accessed via email verification token
-      />
+
+        {/* Analysis Results */}
+        {analysisResult && (
+          <div className="grid gap-6 mb-8">
+            {/* Overall Score */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Star className="w-5 h-5 text-yellow-500" />
+                  Gesamtscore
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-4">
+                  <div className="text-4xl font-bold text-primary">
+                    {analysisResult.overall_score}/100
+                  </div>
+                  <div className="flex-1">
+                    <div className="w-full bg-gray-200 rounded-full h-3">
+                      <div 
+                        className="bg-primary h-3 rounded-full" 
+                        style={{ width: `${analysisResult.overall_score}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Strengths */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-green-600">Stärken</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2">
+                  {analysisResult.strengths?.map((strength, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm">{strength}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* Recommendations */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Empfehlungen</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {analysisResult.recommendations?.map((recommendation, index) => (
+                    <div key={index} className="p-3 bg-blue-50 rounded-lg">
+                      <p className="text-sm">{recommendation}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* CTA Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Nächste Schritte</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-gray-600">
+              Möchten Sie Ihre Online-Sichtbarkeit verbessern? Wir helfen Ihnen dabei!
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button onClick={() => navigate('/business')} className="flex-1">
+                Kostenlose Beratung anfragen
+              </Button>
+              <Button variant="outline" onClick={() => navigate('/')} className="flex-1">
+                Zur Startseite
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
-};
-
-export default VisibilityCheckVerified;
+}
