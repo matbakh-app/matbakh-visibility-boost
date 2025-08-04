@@ -22,6 +22,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   isAdmin: boolean;
+  hasCompletedUserProfile: boolean;
   signInWithGoogle: () => Promise<void>;
   signInWithFacebook: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
@@ -36,6 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [hasCompletedUserProfile, setHasCompletedUserProfile] = useState(false);
   const [oauthError, setOauthError] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -151,8 +153,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 .select('role')
                 .eq('id', session.user.id)
                 .maybeSingle();
-              
-              setIsAdmin(profile?.role === 'admin');
+               
+               setIsAdmin(profile?.role === 'admin');
+               
+               // Check if user profile is completed
+               setHasCompletedUserProfile(!!profile && !!profile.role);
               
               // Check if business profile exists and onboarding is completed
               const { data: partner } = await supabase
@@ -351,6 +356,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     session,
     loading,
     isAdmin,
+    hasCompletedUserProfile,
     signInWithGoogle,
     signInWithFacebook,
     signIn,
