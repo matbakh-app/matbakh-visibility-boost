@@ -19,14 +19,32 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { useI18n } from '../contexts/i18nContext';
+import { useNavigate } from 'react-router-dom';
 
 interface MyProfileProps {
-  onNavigateToCompanyProfile: () => void;
-  onBack: () => void;
+  onNavigateToCompanyProfile?: () => void;
+  onBack?: () => void;
 }
 
 export function MyProfile({ onNavigateToCompanyProfile, onBack }: MyProfileProps) {
   const { language } = useI18n();
+  const navigate = useNavigate();
+
+  const handleNavigateToCompanyProfile = () => {
+    if (onNavigateToCompanyProfile) {
+      onNavigateToCompanyProfile();
+    } else {
+      navigate('/company-profile');
+    }
+  };
+
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else {
+      navigate(-1); // Go back to previous page in history
+    }
+  };
 
   // Mock user data - in real app this would come from props or context
   const userData = {
@@ -116,7 +134,7 @@ export function MyProfile({ onNavigateToCompanyProfile, onBack }: MyProfileProps
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" onClick={onBack} className="btn-hover-enhanced">
+              <Button variant="ghost" onClick={handleBack} className="btn-hover-enhanced">
                 <ChevronRight className="w-4 h-4 mr-2 rotate-180" />
                 {t.backToDashboard}
               </Button>
@@ -286,7 +304,7 @@ export function MyProfile({ onNavigateToCompanyProfile, onBack }: MyProfileProps
             </div>
             
             <Button 
-              onClick={onNavigateToCompanyProfile}
+              onClick={handleNavigateToCompanyProfile}
               className="w-full mt-4 bg-primary hover:bg-primary/90 text-primary-foreground btn-hover-enhanced"
               size="lg"
             >
