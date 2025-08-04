@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -20,14 +21,15 @@ import {
 } from 'lucide-react';
 
 interface MyProfileProps {
-  onNavigateToCompanyProfile: () => void;
-  onBack: () => void;
+  onNavigateToCompanyProfile?: () => void;
+  onBack?: () => void;
 }
 
 export const MyProfile: React.FC<MyProfileProps> = ({ 
   onNavigateToCompanyProfile, 
   onBack 
 }) => {
+  const navigate = useNavigate();
   const { data, isLoading, isError, save } = useProfile();
   const [formData, setFormData] = useState({
     first_name: '',
@@ -55,8 +57,12 @@ export const MyProfile: React.FC<MyProfileProps> = ({
   const handleSave = async () => {
     const success = await save(formData);
     if (success) {
-      onNavigateToCompanyProfile();
+      navigate('/company-profile');
     }
+  };
+
+  const handleBack = () => {
+    navigate('/dashboard');
   };
 
   const userData = {
@@ -75,7 +81,7 @@ export const MyProfile: React.FC<MyProfileProps> = ({
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" onClick={onBack}>
+              <Button variant="ghost" onClick={handleBack}>
                 <ChevronRight className="w-4 h-4 mr-2 rotate-180" />
                 Zurück zum Dashboard
               </Button>
