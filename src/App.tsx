@@ -105,7 +105,7 @@ function App() {
                   </ProtectedRoute>
                 } />
                 <Route path="company-profile" element={
-                  <ProtectedRoute requireCompleteProfile>
+                  <ProtectedRoute>
                     <CompanyProfile 
                       onSave={(data) => console.log('Company profile saved:', data)}
                       onBack={() => window.location.href = '/profile'}
