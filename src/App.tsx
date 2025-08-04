@@ -31,11 +31,15 @@ import CheckoutSuccess from '@/pages/CheckoutSuccess';
 import VisibilityCheckVerified from '@/pages/VisibilityCheckVerified';
 import RedeemPage from '@/pages/RedeemPage';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import { MyProfile } from '@/components/Profile/MyProfile';
+import { CompanyProfile } from '@/components/Profile/CompanyProfile';
 import AppLayout from '@/components/layout/AppLayout';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import AdminLayout from '@/components/layout/AdminLayout';
 import VisibilityCheckPage from '@/components/visibility/VisibilityCheckPage';
 import CookieConsentBanner from '@/components/CookieConsentBanner';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import LoginPage from '@/pages/LoginPage';
 
 import { GoogleOAuthCallback } from '@/components/auth/GoogleOAuthCallback';
 import { QuickVerifyMode } from '@/components/onboarding/QuickVerifyMode';
@@ -64,8 +68,9 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
         <div className="min-h-screen bg-background">
           <Suspense fallback={<div>Loading...</div>}>
             <Routes>
@@ -79,6 +84,7 @@ function App() {
                 <Route path="angebote-de" element={<AngeboteDE />} />
                 <Route path="packages" element={<PackagesEN />} />
                 <Route path="login" element={<BusinessLogin />} />
+                <Route path="auth/login" element={<LoginPage />} />
                 <Route path="password-reset" element={<PasswordReset />} />
                 <Route path="checkout-success" element={<CheckoutSuccess />} />
                 <Route path="visibility-check" element={<VisibilityCheckPage />} />
@@ -87,6 +93,24 @@ function App() {
                 <Route path="auth/google/callback" element={<GoogleOAuthCallback />} />
                 <Route path="quick-verify" element={<QuickVerifyMode />} />
                 <Route path="notes" element={<NotesPage />} />
+                
+                {/* Profile Routes */}
+                <Route path="profile" element={
+                  <ProtectedRoute>
+                    <MyProfile 
+                      onNavigateToCompanyProfile={() => window.location.href = '/company-profile'}
+                      onBack={() => window.location.href = '/dashboard'}
+                    />
+                  </ProtectedRoute>
+                } />
+                <Route path="company-profile" element={
+                  <ProtectedRoute requireCompleteProfile>
+                    <CompanyProfile 
+                      onSave={(data) => console.log('Company profile saved:', data)}
+                      onBack={() => window.location.href = '/profile'}
+                    />
+                  </ProtectedRoute>
+                } />
                 
                 {/* New Registration Flow */}
                 <Route path="register" element={<RegistrationOptions />} />
@@ -162,6 +186,7 @@ function App() {
         </div>
       </ThemeProvider>
     </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 
