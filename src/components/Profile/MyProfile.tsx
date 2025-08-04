@@ -55,9 +55,14 @@ export const MyProfile: React.FC<MyProfileProps> = ({
   if (isError) return <ErrorBanner message="Profil konnte nicht geladen werden" />;
 
   const handleSave = async () => {
+    console.log('Saving form data:', formData);
     const success = await save(formData);
+    console.log('Save result:', success);
     if (success) {
+      console.log('Navigating to company-profile');
       navigate('/company-profile');
+    } else {
+      console.error('Failed to save profile data');
     }
   };
 
