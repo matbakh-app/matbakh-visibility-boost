@@ -33,6 +33,10 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  console.log('AuthProvider: Starting component render');
+  console.log('AuthProvider: React available:', typeof React);
+  console.log('AuthProvider: useState available:', typeof useState);
+  
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
