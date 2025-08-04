@@ -4,12 +4,13 @@ import { supabase } from '@/integrations/supabase/client'
 
 interface UserProfile {
   id: string
-  first_name?: string
-  last_name?: string
-  email?: string
-  phone?: string
-  avatar_url?: string
+  name?: string
+  language?: string
   role?: string
+  allergies?: string[]
+  granted_features?: any
+  feature_access_until?: string
+  subscription_status?: string
   created_at?: string
   updated_at?: string
 }
