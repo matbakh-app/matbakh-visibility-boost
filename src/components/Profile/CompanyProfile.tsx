@@ -92,7 +92,7 @@ export const CompanyProfile: React.FC<CompanyProfileProps> = ({
   };
 
   const handleBack = () => {
-    navigate('/profile');
+    navigate(-1); // Go back to previous page in history
   };
 
   const updateFormData = (field: keyof CompanyProfileData, value: any) => {

@@ -98,18 +98,12 @@ function App() {
                 {/* Profile Routes */}
                 <Route path="profile" element={
                   <ProtectedRoute>
-                    <MyProfile 
-                      onNavigateToCompanyProfile={() => window.location.href = '/company-profile'}
-                      onBack={() => window.location.href = '/dashboard'}
-                    />
+                    <MyProfile />
                   </ProtectedRoute>
                 } />
                 <Route path="company-profile" element={
                   <ProtectedRoute>
-                    <CompanyProfile 
-                      onSave={(data) => console.log('Company profile saved:', data)}
-                      onBack={() => window.location.href = '/profile'}
-                    />
+                    <CompanyProfile />
                   </ProtectedRoute>
                 } />
                 
