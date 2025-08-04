@@ -5,11 +5,13 @@ import { useAuth } from '@/contexts/AuthContext';
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requirePartner?: boolean;
+  requireCompleteProfile?: boolean;
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
   children, 
-  requirePartner = false 
+  requirePartner = false,
+  requireCompleteProfile = false
 }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
