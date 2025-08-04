@@ -28,7 +28,7 @@ export function useGoogleConnection() {
         const { data: businessProfile } = await supabase
           .from('business_profiles')
           .select('*')
-          .eq('partner_id', partner.id)
+          .eq('user_id', user.id)
           .maybeSingle();
         profile = businessProfile;
       }
