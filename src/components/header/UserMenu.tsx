@@ -64,7 +64,7 @@ const UserMenu: React.FC = () => {
           <User className="mr-2 h-4 w-4" />
           <span>{t('dashboard', 'Dashboard')}</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate('/dashboard/profile')}>
+        <DropdownMenuItem onClick={() => navigate('/profile')}>
           <Settings className="mr-2 h-4 w-4" />
           <span>{t('profile', 'Profil')}</span>
         </DropdownMenuItem>

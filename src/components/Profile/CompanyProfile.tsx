@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,8 +29,8 @@ import {
 } from 'lucide-react';
 
 interface CompanyProfileProps {
-  onSave: (data: any) => void;
-  onBack: () => void;
+  onSave?: (data: any) => void;
+  onBack?: () => void;
   initialData?: any;
 }
 
@@ -48,6 +49,7 @@ export const CompanyProfile: React.FC<CompanyProfileProps> = ({
   onBack, 
   initialData 
 }) => {
+  const navigate = useNavigate();
   const { data, isLoading, isError, save } = useCompanyProfile();
   const [formData, setFormData] = useState<CompanyProfileData>({
     company_name: '',
@@ -83,9 +85,14 @@ export const CompanyProfile: React.FC<CompanyProfileProps> = ({
     setIsSaving(true);
     const success = await save(formData);
     if (success) {
-      onSave(formData);
+      if (onSave) onSave(formData);
+      // Optionally redirect back to profile or dashboard
     }
     setIsSaving(false);
+  };
+
+  const handleBack = () => {
+    navigate('/profile');
   };
 
   const updateFormData = (field: keyof CompanyProfileData, value: any) => {
@@ -99,7 +106,7 @@ export const CompanyProfile: React.FC<CompanyProfileProps> = ({
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" onClick={onBack}>
+              <Button variant="ghost" onClick={handleBack}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Zurück zu Mein Profil
               </Button>
