@@ -84,6 +84,7 @@ function App() {
                 <Route path="angebote-de" element={<AngeboteDE />} />
                 <Route path="packages" element={<PackagesEN />} />
                 <Route path="login" element={<BusinessLogin />} />
+                <Route path="business/partner/login" element={<BusinessLogin />} />
                 <Route path="auth/login" element={<LoginPage />} />
                 <Route path="password-reset" element={<PasswordReset />} />
                 <Route path="checkout-success" element={<CheckoutSuccess />} />
