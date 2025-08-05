@@ -1,18 +1,39 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Building, MapPin, Phone, Globe, FileText } from 'lucide-react';
 import { useUserJourney } from '@/services/UserJourneyManager';
 
 // Step 1: Geschäftsinformationen (matching the uploaded image)
 const BusinessInfoStep: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('onboarding');
   const { getVCData, getOnboardingPrefillData } = useUserJourney();
+  
+  // Form state
+  const [formData, setFormData] = useState({
+    firmenname: '',
+    street: '',
+    houseNumber: '',
+    postalCode: '',
+    city: '',
+    country: 'Deutschland',
+    phone: '',
+    website: '',
+    description: '',
+    categories: {
+      essenTrinken: false,
+      unterhaltungKultur: false,
+      einzelhandelShopping: false
+    }
+  });
   
   // Get prefill data from UserJourneyManager
   const vcData = getVCData();
@@ -74,47 +95,113 @@ const BusinessInfoStep: React.FC = () => {
             <div className="space-y-2">
               <Label htmlFor="firmennameInput" className="flex items-center gap-2">
                 <Building className="w-4 h-4" />
-                Firmenname *
+                {t('businessContact.contact.title')} *
               </Label>
               <Input 
                 id="firmennameInput"
                 placeholder="z. B. Restaurant München"
+                value={formData.firmenname}
+                onChange={(e) => setFormData(prev => ({...prev, firmenname: e.target.value}))}
                 defaultValue={vcData?.businessName || prefillData?.businessName || ''}
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="adresseInput" className="flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
-                Adresse *
-              </Label>
-              <Input 
-                id="adresseInput"
-                placeholder="Straße, PLZ, Stadt"
-                defaultValue={prefillData?.businessLocation || ''}
-              />
+            {/* Separate Address Fields */}
+            <div className="space-y-4">
+              {/* Street and House Number */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="md:col-span-2 space-y-2">
+                  <Label htmlFor="streetInput" className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4" />
+                    {t('businessContact.address.street')} *
+                  </Label>
+                  <Input 
+                    id="streetInput"
+                    placeholder={t('businessContact.address.streetPlaceholder')}
+                    value={formData.street}
+                    onChange={(e) => setFormData(prev => ({...prev, street: e.target.value}))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="houseNumberInput">
+                    {t('businessContact.address.houseNumber')} *
+                  </Label>
+                  <Input 
+                    id="houseNumberInput"
+                    placeholder={t('businessContact.address.houseNumberPlaceholder')}
+                    value={formData.houseNumber}
+                    onChange={(e) => setFormData(prev => ({...prev, houseNumber: e.target.value}))}
+                  />
+                </div>
+              </div>
+
+              {/* PLZ, City, Country */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="postalCodeInput">
+                    {t('businessContact.address.postalCode')} *
+                  </Label>
+                  <Input 
+                    id="postalCodeInput"
+                    placeholder={t('businessContact.address.postalCodePlaceholder')}
+                    value={formData.postalCode}
+                    onChange={(e) => setFormData(prev => ({...prev, postalCode: e.target.value}))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cityInput">
+                    {t('businessContact.address.city')} *
+                  </Label>
+                  <Input 
+                    id="cityInput"
+                    placeholder={t('businessContact.address.cityPlaceholder')}
+                    value={formData.city}
+                    onChange={(e) => setFormData(prev => ({...prev, city: e.target.value}))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="countrySelect">
+                    {t('businessContact.address.country')} *
+                  </Label>
+                  <Select value={formData.country} onValueChange={(value) => setFormData(prev => ({...prev, country: value}))}>
+                    <SelectTrigger id="countrySelect">
+                      <SelectValue placeholder={t('businessContact.address.countryPlaceholder')} />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white">
+                      <SelectItem value="Deutschland">Deutschland</SelectItem>
+                      <SelectItem value="Österreich">Österreich</SelectItem>
+                      <SelectItem value="Schweiz">Schweiz</SelectItem>
+                      <SelectItem value="Andere">Andere</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="telefonInput" className="flex items-center gap-2">
                   <Phone className="w-4 h-4" />
-                  Telefon *
+                  {t('businessContact.contact.phone')} *
                 </Label>
                 <Input 
                   id="telefonInput"
                   placeholder="+49 89 123456"
+                  value={formData.phone}
+                  onChange={(e) => setFormData(prev => ({...prev, phone: e.target.value}))}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="websiteInput" className="flex items-center gap-2">
                   <Globe className="w-4 h-4" />
-                  Website (Optional)
+                  {t('businessContact.contact.website')} ({t('businessContact.optional')})
                 </Label>
                 <Input 
                   id="websiteInput"
                   placeholder="https://ihr-restaurant.de"
+                  value={formData.website}
+                  onChange={(e) => setFormData(prev => ({...prev, website: e.target.value}))}
                   defaultValue={vcData?.website || prefillData?.websiteUrl || ''}
                 />
               </div>
@@ -123,12 +210,14 @@ const BusinessInfoStep: React.FC = () => {
             <div className="space-y-2">
               <Label htmlFor="beschreibungInput" className="flex items-center gap-2">
                 <FileText className="w-4 h-4" />
-                Beschreibung (Optional)
+                {t('description')} ({t('businessContact.optional')})
               </Label>
               <Textarea 
                 id="beschreibungInput"
-                placeholder="Beschreiben Sie Ihr Unternehmen..."
+                placeholder={t('descriptionPlaceholder')}
                 className="min-h-20"
+                value={formData.description}
+                onChange={(e) => setFormData(prev => ({...prev, description: e.target.value}))}
               />
             </div>
           </div>
