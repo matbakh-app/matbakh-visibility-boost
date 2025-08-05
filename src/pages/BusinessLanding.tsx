@@ -27,8 +27,8 @@ const BusinessLanding: React.FC = () => {
     if (!user) {
       openAuthModal('register', formData);
     } else {
-      // direkt zum Onboarding weiter
-      window.location.href = '/onboarding/standard';
+      // direkt zum Figma VC-Onboarding weiter
+      window.location.href = '/visibilitycheck/onboarding/step1';
     }
   };
 

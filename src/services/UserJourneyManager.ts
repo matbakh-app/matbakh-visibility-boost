@@ -92,8 +92,8 @@ class UserJourneyManager {
     // Based on entry point, determine next step
     switch (this.entryPoint) {
       case 'vc':
-        // From visibility check, go to onboarding with VC data
-        return '/onboarding/standard';
+        // From visibility check, go to Figma-based VC onboarding
+        return '/visibilitycheck/onboarding/step1';
       
       case 'subscription':
         // From subscription selection, go to onboarding first, then checkout

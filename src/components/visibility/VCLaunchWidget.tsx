@@ -12,27 +12,18 @@ interface VCLaunchWidgetProps {
 }
 
 export const VCLaunchWidget: React.FC<VCLaunchWidgetProps> = ({ onStart }) => {
-  const [businessName, setBusinessName] = useState('');
-  const [website, setWebsite] = useState('');
-  
   // UserJourneyManager & Auth hooks
   const { setEntryPoint, setVCData } = useUserJourney();
   const { user, openAuthModal } = useAuth();
   const navigate = useNavigate();
 
   const handleStart = () => {
-    const formData: VCData = {
-      businessName: businessName || undefined,
-      website: website || undefined,
-    };
-
-    // 1. Entry Point tracken
-    setEntryPoint('vc', formData);
-    setVCData(formData);
+    // 1. Entry Point tracken (ohne Form-Daten im Widget)
+    setEntryPoint('vc');
 
     // 2. Wenn nicht eingeloggt → AuthModal öffnen
     if (!user) {
-      openAuthModal('register', formData);
+      openAuthModal('register');
       return;
     }
 
@@ -40,7 +31,7 @@ export const VCLaunchWidget: React.FC<VCLaunchWidgetProps> = ({ onStart }) => {
     navigate('/visibilitycheck/onboarding/step1');
 
     // 4. Optional: Legacy onStart callback
-    onStart?.(formData);
+    onStart?.({});
   };
 
   return (
@@ -68,21 +59,6 @@ export const VCLaunchWidget: React.FC<VCLaunchWidgetProps> = ({ onStart }) => {
             Basis-Analyse mit eingeschränkten Features
           </p>
           
-          {/* Quick Form */}
-          <div className="max-w-md mx-auto space-y-4 mb-8">
-            <Input
-              placeholder="Restaurant-Name (optional)"
-              value={businessName}
-              onChange={(e) => setBusinessName(e.target.value)}
-              className="text-center"
-            />
-            <Input
-              placeholder="Website (optional)"
-              value={website}
-              onChange={(e) => setWebsite(e.target.value)}
-              className="text-center"
-            />
-          </div>
 
           <Button 
             onClick={handleStart}
