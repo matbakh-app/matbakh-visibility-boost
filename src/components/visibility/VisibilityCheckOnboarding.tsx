@@ -334,15 +334,9 @@ const SocialMediaStep: React.FC = () => {
   );
 };
 
-// Main Onboarding Router
+// Export BusinessInfoStep as the main Step 1 component
 const VisibilityCheckOnboarding: React.FC = () => {
-  return (
-    <Routes>
-      <Route path="step1" element={<BusinessInfoStep />} />
-      <Route path="step2" element={<SocialMediaStep />} />
-      <Route index element={<BusinessInfoStep />} />
-    </Routes>
-  );
+  return <BusinessInfoStep />;
 };
 
 export default VisibilityCheckOnboarding;

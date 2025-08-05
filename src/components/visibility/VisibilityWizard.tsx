@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import VisibilityStepOne from './VisibilityStepOne';
 import VisibilityStepTwo from './VisibilityStepTwo';
 import VisibilityStepThree from './VisibilityStepThree';
@@ -341,12 +342,20 @@ const VisibilityWizard: React.FC = () => {
       )}
       
       {step === 2 && (
-        <VisibilityStepTwo 
-          onNext={handleStepTwo}
-          onBack={() => setStep(1)}
-          defaultValues={stepTwoData}
-          instagramCandidates={instagramCandidates}
-        />
+        <div className="text-center p-8">
+          <h3 className="text-lg font-semibold mb-4">Social Media & Website</h3>
+          <p className="text-muted-foreground mb-6">
+            Diese Seite wird in der nächsten Phase implementiert.
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Button variant="outline" onClick={() => setStep(1)}>
+              Zurück
+            </Button>
+            <Button onClick={() => setStep(3)}>
+              Weiter zur Analyse
+            </Button>
+          </div>
+        </div>
       )}
       
       {step === 3 && (
