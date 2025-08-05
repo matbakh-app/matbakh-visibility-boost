@@ -38,6 +38,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import AdminLayout from '@/components/layout/AdminLayout';
 import VisibilityCheckPage from '@/components/visibility/VisibilityCheckPage';
 import VisibilityCheckOnboarding from '@/components/visibility/VisibilityCheckOnboarding';
+import { FigmaMainRouter } from '@/components/FigmaMainRouter';
 import VisibilityCheckDashboard from '@/components/visibility/VisibilityCheckDashboard';
 import CookieConsentBanner from '@/components/CookieConsentBanner';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -95,7 +96,7 @@ function App() {
                 <Route path="visibility-check/verified/:leadId" element={<VisibilityCheckVerified />} />
                 
                 {/* New Figma-based Visibility Check Routes */}
-                {/* Figma components route temporarily disabled */}
+                <Route path="visibilitycheck/*" element={<FigmaMainRouter />} />
                 
                 <Route path="redeem" element={<RedeemPage />} />
                 <Route path="auth/google/callback" element={<GoogleOAuthCallback />} />
