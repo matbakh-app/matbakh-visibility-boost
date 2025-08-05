@@ -95,7 +95,7 @@ function App() {
                 <Route path="visibility-check/verified/:leadId" element={<VisibilityCheckVerified />} />
                 
                 {/* New Figma-based Visibility Check Routes */}
-                <Route path="visibilitycheck/*" element={<FigmaMainRouter />} />
+                {/* Figma components route temporarily disabled */}
                 
                 <Route path="redeem" element={<RedeemPage />} />
                 <Route path="auth/google/callback" element={<GoogleOAuthCallback />} />
