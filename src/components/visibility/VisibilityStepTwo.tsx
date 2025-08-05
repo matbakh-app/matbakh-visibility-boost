@@ -23,7 +23,7 @@ const VisibilityStepTwo: React.FC = () => {
         <Button 
           variant="ghost" 
           size="sm" 
-          onClick={() => navigate('/')}
+          onClick={() => window.location.href = '/'}
           className="flex items-center gap-2"
         >
           ← Startseite
@@ -34,7 +34,7 @@ const VisibilityStepTwo: React.FC = () => {
           onClick={handleBack}
           className="flex items-center gap-2"
         >
-          ← Zurück
+          ← Zurück zu Step 1
         </Button>
       </div>
 
