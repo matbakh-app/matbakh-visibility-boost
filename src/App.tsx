@@ -40,6 +40,7 @@ import VisibilityCheckPage from '@/components/visibility/VisibilityCheckPage';
 import CookieConsentBanner from '@/components/CookieConsentBanner';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import LoginPage from '@/pages/LoginPage';
+import { AuthModal } from '@/components/auth/AuthModal';
 
 import { GoogleOAuthCallback } from '@/components/auth/GoogleOAuthCallback';
 import { QuickVerifyMode } from '@/components/onboarding/QuickVerifyMode';
@@ -176,6 +177,7 @@ function App() {
           
           {/* Global components - properly nested within ThemeProvider */}
           <CookieConsentBanner />
+          <AuthModal />
           <Toaster />
           <SonnerToaster />
         </div>
