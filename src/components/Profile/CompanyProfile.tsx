@@ -28,12 +28,6 @@ import {
   TrendingUp
 } from 'lucide-react';
 
-interface CompanyProfileProps {
-  onSave?: (data: any) => void;
-  onBack?: () => void;
-  initialData?: any;
-}
-
 interface CompanyProfileData {
   company_name: string;
   email: string;
@@ -44,11 +38,7 @@ interface CompanyProfileData {
   categories: string[];
 }
 
-export const CompanyProfile: React.FC<CompanyProfileProps> = ({ 
-  onSave, 
-  onBack, 
-  initialData 
-}) => {
+export const CompanyProfile: React.FC = () => {
   const navigate = useNavigate();
   const { data, isLoading, isError, save } = useCompanyProfile();
   const [formData, setFormData] = useState<CompanyProfileData>({
@@ -73,10 +63,8 @@ export const CompanyProfile: React.FC<CompanyProfileProps> = ({
         description: data.description || '',
         categories: data.categories || []
       });
-    } else if (initialData) {
-      setFormData(prev => ({ ...prev, ...initialData }));
     }
-  }, [data, initialData]);
+  }, [data]);
 
   if (isLoading) return <Spinner />;
   if (isError) return <ErrorBanner message="Unternehmensprofil konnte nicht geladen werden" />;
@@ -85,8 +73,8 @@ export const CompanyProfile: React.FC<CompanyProfileProps> = ({
     setIsSaving(true);
     const success = await save(formData);
     if (success) {
-      if (onSave) onSave(formData);
-      // Optionally redirect back to profile or dashboard
+      console.log('Company profile saved successfully');
+      // Could navigate to dashboard or show success message
     }
     setIsSaving(false);
   };

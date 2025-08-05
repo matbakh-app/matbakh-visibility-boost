@@ -20,15 +20,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 
-interface MyProfileProps {
-  onNavigateToCompanyProfile?: () => void;
-  onBack?: () => void;
-}
-
-export const MyProfile: React.FC<MyProfileProps> = ({ 
-  onNavigateToCompanyProfile, 
-  onBack 
-}) => {
+export const MyProfile: React.FC = () => {
   const navigate = useNavigate();
   const { data, isLoading, isError, save } = useProfile();
   const [formData, setFormData] = useState({
@@ -61,7 +53,7 @@ export const MyProfile: React.FC<MyProfileProps> = ({
   };
 
   const handleBack = () => {
-    navigate('/dashboard');
+    navigate(-1); // Go back to previous page in history
   };
 
   if (isLoading) return <Spinner />;

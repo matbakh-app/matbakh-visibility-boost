@@ -40,10 +40,7 @@ export const UserProfileStory = () => (
     <h1 style={{ marginBottom: '20px', fontSize: '24px', fontWeight: 'bold' }}>
       MyProfile Component Demo
     </h1>
-    <MyProfile
-      onNavigateToCompanyProfile={() => alert('Navigiere zum Company Profile')}
-      onBack={() => alert('Zurück zum Dashboard')}
-    />
+    <MyProfile />
   </div>
 )
 
@@ -52,14 +49,7 @@ export const CompanyProfileStory = () => (
     <h1 style={{ marginBottom: '20px', fontSize: '24px', fontWeight: 'bold' }}>
       CompanyProfile Component Demo
     </h1>
-    <CompanyProfile
-      onSave={(data) => {
-        console.log('Speichern mit:', data)
-        alert('Profil gespeichert!')
-      }}
-      onBack={() => alert('Zurück zum User Profile')}
-      initialData={mockCompanyProfile}
-    />
+    <CompanyProfile />
   </div>
 )
 
@@ -68,23 +58,6 @@ export const CompanyProfileEmptyStory = () => (
     <h1 style={{ marginBottom: '20px', fontSize: '24px', fontWeight: 'bold' }}>
       CompanyProfile Component Demo (Empty State)
     </h1>
-    <CompanyProfile
-      onSave={(data) => {
-        console.log('Speichern mit:', data)
-        alert('Profil gespeichert!')
-      }}
-      onBack={() => alert('Zurück zum User Profile')}
-      initialData={{
-        id: '',
-        user_id: '',
-        company_name: '',
-        email: '',
-        phone: '',
-        address: '',
-        website: '',
-        description: '',
-        categories: [],
-      }}
-    />
+    <CompanyProfile />
   </div>
 )
