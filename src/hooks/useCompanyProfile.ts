@@ -12,6 +12,12 @@ interface CompanyProfile {
   website?: string
   description?: string
   categories?: string[]
+  tax_id?: string
+  legal_entity?: string
+  commercial_register?: string
+  bank_account?: string
+  owner_name?: string
+  business_license?: string
   created_at?: string
   updated_at?: string
 }

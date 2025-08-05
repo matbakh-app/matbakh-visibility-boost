@@ -19,7 +19,7 @@ import {
   ProfileContent,
   ProfileSection
 } from './ProfileLayout';
-import { InputField, SelectField } from './ProfileFields';
+import { InputField, SelectField, TextAreaField } from './ProfileFields';
 import { 
   User, 
   Mail, 
@@ -37,11 +37,14 @@ const ProfileSchema = z.object({
     .min(2, 'Name muss mindestens 2 Zeichen lang sein')
     .max(100, 'Name darf maximal 100 Zeichen lang sein'),
   role: z.enum(['user', 'admin', 'manager']),
-  language: z.enum(['de', 'en']),
+  private_email: z.string()
+    .email('Bitte geben Sie eine gültige E-Mail-Adresse ein'),
+  phone: z.string()
+    .min(5, 'Telefonnummer muss mindestens 5 Zeichen lang sein'),
+  address: z.string()
+    .min(5, 'Adresse muss mindestens 5 Zeichen lang sein'),
   notifications: z.object({
-    email: z.boolean(),
-    push: z.boolean(),
-    darkMode: z.boolean()
+    email: z.boolean()
   }).optional()
 });
 
@@ -61,12 +64,12 @@ export const MyProfile: React.FC = () => {
     resolver: zodResolver(ProfileSchema),
     defaultValues: {
       name: '',
-      language: 'de',
       role: 'user',
+      private_email: '',
+      phone: '',
+      address: '',
       notifications: {
-        email: true,
-        push: false,
-        darkMode: false
+        email: true
       }
     }
   });
@@ -76,12 +79,12 @@ export const MyProfile: React.FC = () => {
     if (data) {
       reset({
         name: data.name || '',
-        language: (data.language as 'de' | 'en') || 'de',
         role: (data.role as 'user' | 'admin' | 'manager') || 'user',
+        private_email: data.private_email || '',
+        phone: data.phone || '',
+        address: data.address || '',
         notifications: {
-          email: true,
-          push: false,
-          darkMode: false
+          email: true
         }
       });
     }
@@ -92,8 +95,10 @@ export const MyProfile: React.FC = () => {
       console.log('Submitting profile data:', values);
       const result = await save({
         name: values.name,
-        language: values.language,
-        role: values.role
+        role: values.role,
+        private_email: values.private_email,
+        phone: values.phone,
+        address: values.address
       });
       
       if (result) {
@@ -101,7 +106,15 @@ export const MyProfile: React.FC = () => {
           title: "Profil gespeichert",
           description: "Ihre Änderungen wurden erfolgreich gespeichert.",
         });
-        navigate('/company-profile');
+        
+        // Route based on role
+        if (values.role === 'admin') {
+          navigate('/admin-panel');
+        } else if (values.role === 'manager') {
+          navigate('/company-profile');
+        } else {
+          navigate('/company-profile');
+        }
       } else {
         throw new Error('Speichern fehlgeschlagen');
       }
@@ -130,11 +143,6 @@ export const MyProfile: React.FC = () => {
     dateJoined: "15. März 2024",
     lastLogin: "Heute, 14:30"
   };
-
-  const languageOptions = [
-    { value: 'de', label: 'Deutsch' },
-    { value: 'en', label: 'English' }
-  ];
 
   const roleOptions = [
     { value: 'user', label: 'Benutzer' },
@@ -202,17 +210,51 @@ export const MyProfile: React.FC = () => {
                     />
                   </div>
 
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Controller
+                      name="private_email"
+                      control={control}
+                      render={({ field }) => (
+                        <InputField
+                          label="E-Mail privat"
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="max@example.com"
+                          type="email"
+                          error={errors.private_email?.message}
+                          required
+                        />
+                      )}
+                    />
+                    
+                    <Controller
+                      name="phone"
+                      control={control}
+                      render={({ field }) => (
+                        <InputField
+                          label="Telefonnummer"
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="+49 89 12345678"
+                          type="tel"
+                          error={errors.phone?.message}
+                          required
+                        />
+                      )}
+                    />
+                  </div>
+
                   <Controller
-                    name="language"
+                    name="address"
                     control={control}
                     render={({ field }) => (
-                      <SelectField
-                        label="Sprache"
+                      <TextAreaField
+                        label="Privatadresse"
                         value={field.value}
                         onChange={field.onChange}
-                        options={languageOptions}
-                        description="Wählen Sie Ihre bevorzugte Sprache für die Benutzeroberfläche"
-                        error={errors.language?.message}
+                        placeholder="Musterstraße 123, 80331 München"
+                        rows={2}
+                        error={errors.address?.message}
                         required
                       />
                     )}
@@ -220,27 +262,12 @@ export const MyProfile: React.FC = () => {
                 </ProfileSection>
               </Card>
 
-            {/* Settings Card */}
-            <Card className="p-6">
-              <ProfileSection
-                title="Benachrichtigungseinstellungen"
-                description="Verwalten Sie Ihre Benachrichtigungspräferenzen"
-              >
-                <div className="space-y-4">
-                  {/* Dark Mode Setting */}
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <Label htmlFor="dark-mode" className="text-base font-medium">
-                        Dark Mode
-                      </Label>
-                      <p className="text-sm text-muted-foreground">
-                        Dunkles Design für bessere Sichtbarkeit
-                      </p>
-                    </div>
-                    <Switch id="dark-mode" />
-                  </div>
-
-                  {/* Email Notifications */}
+              {/* Benachrichtigungen Card - Only Email */}
+              <Card className="p-6">
+                <ProfileSection
+                  title="Benachrichtigungseinstellungen"
+                  description="E-Mail Benachrichtigungen verwalten"
+                >
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
                       <Label htmlFor="email-notifications" className="text-base font-medium">
@@ -252,28 +279,13 @@ export const MyProfile: React.FC = () => {
                     </div>
                     <Switch id="email-notifications" defaultChecked />
                   </div>
+                </ProfileSection>
+              </Card>
+            </div>
 
-                  {/* Push Notifications */}
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <Label htmlFor="push-notifications" className="text-base font-medium">
-                        Push Benachrichtigungen
-                      </Label>
-                      <p className="text-sm text-muted-foreground">
-                        Browser-Benachrichtigungen für wichtige Updates
-                      </p>
-                    </div>
-                    <Switch id="push-notifications" defaultChecked={false} />
-                  </div>
-                </div>
-              </ProfileSection>
-            </Card>
-          </div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* User Info Card */}
+            {/* Sidebar */}
+            <div className="space-y-6">
+              {/* User Info Card */}
             <Card className="p-6">
               <div className="text-center space-y-4">
                 <Avatar className="w-24 h-24 mx-auto">
@@ -357,27 +369,19 @@ export const MyProfile: React.FC = () => {
                     </p>
                   </div>
                   <Button 
-                    type="submit"
-                    disabled={!isDirty || isSubmitting}
-                    variant="default"
+                    type="button"
+                    onClick={() => navigate('/company-profile')}
+                    variant="outline"
                     className="w-full"
                     size="sm"
                   >
-                    {isSubmitting ? (
-                      <>
-                        <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-background border-t-transparent" />
-                        Speichern...
-                      </>
-                    ) : (
-                      <>
-                        <Building className="w-4 h-4 mr-2" />
-                        Zum Firmenprofil
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </>
-                    )}
+                    <Building className="w-4 h-4 mr-2" />
+                    Zum Firmenprofil
+                    <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </div>
               </Card>
+            </div>
             </div>
           </div>
         </form>

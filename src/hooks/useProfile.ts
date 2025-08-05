@@ -7,6 +7,9 @@ interface UserProfile {
   name?: string
   language?: string
   role?: string
+  private_email?: string
+  phone?: string
+  address?: string
   allergies?: string[]
   granted_features?: any
   feature_access_until?: string

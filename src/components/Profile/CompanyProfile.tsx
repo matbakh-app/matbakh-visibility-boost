@@ -55,7 +55,17 @@ const CompanySchema = z.object({
     .optional(),
   categories: z.array(z.string())
     .min(1, 'Bitte wählen Sie mindestens eine Kategorie aus'),
-  cuisines: z.array(z.string()).optional()
+  cuisines: z.array(z.string()).optional(),
+  // Neue Steuer- und rechtliche Felder
+  tax_id: z.string()
+    .min(5, 'USt-ID muss mindestens 5 Zeichen lang sein'),
+  legal_entity: z.string()
+    .min(3, 'Rechtsform muss mindestens 3 Zeichen lang sein'),
+  commercial_register: z.string().optional(),
+  bank_account: z.string().optional(),
+  owner_name: z.string()
+    .min(2, 'Name des Inhabers muss mindestens 2 Zeichen lang sein'),
+  business_license: z.string().optional()
 });
 
 type CompanyFormData = z.infer<typeof CompanySchema>;
@@ -81,7 +91,13 @@ export const CompanyProfile: React.FC = () => {
       website: '',
       description: '',
       categories: [],
-      cuisines: []
+      cuisines: [],
+      tax_id: '',
+      legal_entity: '',
+      commercial_register: '',
+      bank_account: '',
+      owner_name: '',
+      business_license: ''
     }
   });
 
@@ -96,7 +112,13 @@ export const CompanyProfile: React.FC = () => {
         website: data.website || '',
         description: data.description || '',
         categories: data.categories || [],
-        cuisines: []
+        cuisines: [],
+        tax_id: data.tax_id || '',
+        legal_entity: data.legal_entity || '',
+        commercial_register: data.commercial_register || '',
+        bank_account: data.bank_account || '',
+        owner_name: data.owner_name || '',
+        business_license: data.business_license || ''
       });
     }
   }, [data, reset]);
@@ -129,7 +151,7 @@ export const CompanyProfile: React.FC = () => {
   };
 
   const handleBack = () => {
-    navigate(-1); // Go back to previous page in history
+    navigate('/profile'); // Explicit navigation to profile
   };
 
   // Watch company name for avatar fallback
@@ -312,6 +334,104 @@ export const CompanyProfile: React.FC = () => {
                       />
                     )}
                   />
+                </ProfileSection>
+              </Card>
+
+              {/* Steuer- und Rechtsdaten */}
+              <Card className="p-6">
+                <ProfileSection
+                  title="Steuer- und Rechtsdaten"
+                  description="Erforderliche Angaben für Stripe und Abrechnung"
+                >
+                  <ProfileGrid columns={2}>
+                    <Controller
+                      name="tax_id"
+                      control={control}
+                      render={({ field }) => (
+                        <InputField
+                          label="USt-ID (Umsatzsteuer-ID)"
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="DE123456789"
+                          error={errors.tax_id?.message}
+                          required
+                        />
+                      )}
+                    />
+                    <Controller
+                      name="legal_entity"
+                      control={control}
+                      render={({ field }) => (
+                        <InputField
+                          label="Rechtsform"
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="GmbH, UG, GbR, Einzelunternehmen"
+                          error={errors.legal_entity?.message}
+                          required
+                        />
+                      )}
+                    />
+                  </ProfileGrid>
+
+                  <ProfileGrid columns={2}>
+                    <Controller
+                      name="owner_name"
+                      control={control}
+                      render={({ field }) => (
+                        <InputField
+                          label="Name des Inhabers/Geschäftsführers"
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="Max Mustermann"
+                          error={errors.owner_name?.message}
+                          required
+                        />
+                      )}
+                    />
+                    <Controller
+                      name="commercial_register"
+                      control={control}
+                      render={({ field }) => (
+                        <InputField
+                          label="Handelsregisternummer (optional)"
+                          value={field.value || ''}
+                          onChange={field.onChange}
+                          placeholder="HRB 123456"
+                          error={errors.commercial_register?.message}
+                        />
+                      )}
+                    />
+                  </ProfileGrid>
+
+                  <ProfileGrid columns={2}>
+                    <Controller
+                      name="bank_account"
+                      control={control}
+                      render={({ field }) => (
+                        <InputField
+                          label="IBAN (optional)"
+                          value={field.value || ''}
+                          onChange={field.onChange}
+                          placeholder="DE89 3704 0044 0532 0130 00"
+                          error={errors.bank_account?.message}
+                        />
+                      )}
+                    />
+                    <Controller
+                      name="business_license"
+                      control={control}
+                      render={({ field }) => (
+                        <InputField
+                          label="Gewerbeschein/Lizenz (optional)"
+                          value={field.value || ''}
+                          onChange={field.onChange}
+                          placeholder="Gewerbe-Nr. oder Lizenz-Nr."
+                          error={errors.business_license?.message}
+                        />
+                      )}
+                    />
+                  </ProfileGrid>
                 </ProfileSection>
               </Card>
 
