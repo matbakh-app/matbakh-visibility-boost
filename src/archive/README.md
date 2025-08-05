@@ -1,33 +1,51 @@
-# 📦 Archiv
+# 📦 Archivierter Code
 
-In diesem Ordner liegen alle bisherigen Versionen der Visibility-Check- und Profile-Flows, die 
-mittlerweile durch die neuen React-Router-basierten Komponenten ersetzt wurden.
+In diesem Ordner liegen veraltete Komponenten und Flows, die durch React Router Navigation 
+und neue Profile-/Onboarding-Komponenten ersetzt wurden.
 
-## Ordner
+## Enthaltene Ordner
 
-- `old-visibility-onboarding/`  
-  Alte Onboarding-Steps für Visibility Check (Version 1).
-- `old-visibility-dashboard/`  
-  Alte Dashboard-Views und Widgets (Version 1).
-- `old-profile-flow/`  
-  Alte Profile-Routing- und Navigations-Implementierungen.
+- **old-flows/**  
+  - `useAppNavigation-v1.ts` – alter Hook für `activeView`-Navigation  
+  - `ProfileRoutes-v1.tsx` – ehem. Profile-Routing  
+  - Ordner `Figma_Make/` mit alten Prototyp-Komponenten
+  - Detaillierte Migration-Dokumentation in `old-flows/README.md`
+- **old-visibility-onboarding/**  
+  Alte Onboarding-Steps für Visibility Check (Version 1)
+- **old-visibility-dashboard/**  
+  Alte Dashboard-Views und Widgets (Version 1)
+- **old-profile-flow/**  
+  Alte Profile-Routing- und Navigations-Implementierungen
 
-## Was wurde archiviert?
+## Migration Status: ✅ ABGESCHLOSSEN
 
-### Profile Flow (Archiviert am: 2025-01-04)
-- `ProfileRoutes-v1.tsx` - Alte Route-Definitionen mit props-basierten Callbacks
-- Grund: Ersetzt durch React Router Navigation in App.tsx
+**Was wurde entfernt:**
+- Alle `useAppNavigation` Hooks
+- `activeView`-basierte Navigation
+- `navigateToView` Funktionen
+- Veraltete Onboarding-/Dashboard-Flows
+- Props-basierte Navigation-Callbacks
 
-### Visibility Check Components
-- Alte Step-basierte Onboarding-Komponenten
-- Alte Dashboard-Implementierungen mit proprietärer Navigation
-- Grund: Ersetzt durch neue modulare Architektur
+**Was wurde eingeführt:**
+- React Router v6 Navigation (`useNavigate`, `Link`)
+- Geschützte Routen mit `ProtectedRoute`
+- Browser-History-kompatible Navigation (`navigate(-1)`)
+- Saubere Komponenten-Trennung ohne Props-Drilling
 
-> **Hinweis:** Diese Dateien werden nicht mehr build- oder runtime-mäßig genutzt. Sie sind hier 
-> nur zur Referenz und können nach endgültiger Abnahme gelöscht werden.
+## Aktuelle Navigation
 
-## Migration Notes
+```
+/profile           → MyProfile (geschützt)
+/company-profile   → CompanyProfile (geschützt)
+/dashboard/*       → Dashboard-Layout (geschützt)
+/onboarding/*      → Neue Onboarding-Flows
+```
 
-- Alle Callbacks (`onNavigateToCompanyProfile`, `onBack`) wurden durch `useNavigate` ersetzt
-- Route-Definitionen wurden von komponenten-internen Zuständen zu zentralen App.tsx-Routen verschoben
-- `window.location.href` Assignments wurden durch React Router Navigation ersetzt
+> Diese Dateien sind nicht build-relevant und dienen nur als Referenz.  
+> Nach finaler Abnahme können wir den gesamten `archive/`-Ordner löschen.
+
+## Migration Timeline
+
+- **2025-01-04:** Profile Flow archiviert und durch React Router ersetzt
+- **2025-01-05:** Vollständiger Cleanup - `activeView`/`useAppNavigation` entfernt
+- **Status:** **Production Ready** ✅
