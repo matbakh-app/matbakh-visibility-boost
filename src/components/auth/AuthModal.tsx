@@ -7,6 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserJourney } from '@/services/UserJourneyManager';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Mail, Eye, EyeOff, ArrowLeft } from 'lucide-react';
@@ -27,6 +29,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ defaultMode }) => {
     oauthError 
   } = useAuth();
 
+  // UserJourneyManager hooks
+  const { getNextStepAfterAuth, isFromVisibilityCheck } = useUserJourney();
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -38,6 +44,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({ defaultMode }) => {
   const [forgotPassword, setForgotPassword] = useState(false);
 
   const mode = defaultMode || authModalMode;
+
+  // Success handler for navigation
+  const handleAuthSuccess = () => {
+    closeAuthModal();
+    resetForm();
+    
+    // Navigate based on UserJourneyManager
+    if (isFromVisibilityCheck()) {
+      navigate('/visibilitycheck/onboarding/step1');
+    } else {
+      const nextStep = getNextStepAfterAuth();
+      navigate(nextStep);
+    }
+  };
 
   const handleEmailAuth = async () => {
     if (!email || !password) {
@@ -86,13 +106,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({ defaultMode }) => {
           title: "Erfolgreich angemeldet",
           description: "Willkommen zurück!"
         });
+        handleAuthSuccess();
       } else {
-        // Register
+        // Register - for VC flow, redirect to proper onboarding
+        const redirectUrl = isFromVisibilityCheck() 
+          ? `${window.location.origin}/visibilitycheck/onboarding/step1`
+          : `${window.location.origin}/onboarding/standard`;
+          
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/onboarding/standard`,
+            emailRedirectTo: redirectUrl,
             data: {
               gdpr_consent: gdprConsent,
               marketing_consent: marketingConsent,
@@ -120,11 +145,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ defaultMode }) => {
             title: "Erfolgreich registriert",
             description: "Willkommen bei matbakh.app!"
           });
+          handleAuthSuccess();
         }
       }
 
-      closeAuthModal();
-      resetForm();
+      // Don't call navigation here - handleAuthSuccess does it
 
     } catch (error) {
       console.error('Auth error:', error);
