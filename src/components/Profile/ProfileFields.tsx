@@ -90,7 +90,10 @@ export const InputField = React.forwardRef<HTMLInputElement, InputFieldProps>(
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         disabled={disabled}
-        className={cn(error && "border-destructive")}
+        className={cn(
+          error && "border-destructive focus-visible:ring-destructive",
+          className
+        )}
         {...props}
       />
     </FieldWrapper>
@@ -115,7 +118,10 @@ export const TextAreaField = React.forwardRef<HTMLTextAreaElement, TextAreaField
         placeholder={placeholder}
         rows={rows}
         disabled={disabled}
-        className={cn(error && "border-destructive")}
+        className={cn(
+          error && "border-destructive focus-visible:ring-destructive",
+          className
+        )}
         {...props}
       />
     </FieldWrapper>
@@ -144,10 +150,13 @@ export const SelectField: React.FC<SelectFieldProps> = ({
     className={className}
   >
     <Select value={value} onValueChange={onChange} disabled={disabled}>
-      <SelectTrigger className={cn(error && "border-destructive")}>
+      <SelectTrigger className={cn(
+        error && "border-destructive focus:ring-destructive",
+        className
+      )}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="bg-background border shadow-md z-50">
         {options.map((option) => (
           <SelectItem key={option.value} value={option.value}>
             {option.label}

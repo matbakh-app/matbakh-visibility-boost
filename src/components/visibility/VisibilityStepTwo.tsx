@@ -15,8 +15,8 @@ import { HelpCircle } from 'lucide-react';
 import InstagramCandidatePicker from './InstagramCandidatePicker';
 
 const stepTwoSchema = z.object({
-  hasSocialMedia: z.enum(['yes', 'no'], {
-    required_error: 'Bitte wählen Sie eine Option aus'
+  hasSocialMedia: z.enum(['yes', 'no']).refine(val => val !== undefined, {
+    message: 'Bitte wählen Sie eine Option aus'
   }),
   website: z.string().url('Bitte gültige URL eingeben').optional().or(z.literal('')),
   instagram: z.string().optional(),
