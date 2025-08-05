@@ -28,6 +28,12 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   oauthError: string | null;
+  // Modal functionality
+  showAuthModal: boolean;
+  authModalMode: 'login' | 'register';
+  vcData: any | null;
+  openAuthModal: (mode: 'login' | 'register', vcData?: any) => void;
+  closeAuthModal: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -43,6 +49,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAdmin, setIsAdmin] = useState(false);
   const [hasCompletedUserProfile, setHasCompletedUserProfile] = useState(false);
   const [oauthError, setOauthError] = useState<string | null>(null);
+  // Modal state
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
+  const [vcData, setVcData] = useState<any | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -357,6 +367,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Modal functions
+  const openAuthModal = (mode: 'login' | 'register', vcData?: any) => {
+    setAuthModalMode(mode);
+    setVcData(vcData || null);
+    setShowAuthModal(true);
+  };
+
+  const closeAuthModal = () => {
+    setShowAuthModal(false);
+    setVcData(null);
+  };
+
   const value = {
     user,
     session,
@@ -367,7 +389,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signInWithFacebook,
     signIn,
     signOut,
-    oauthError
+    oauthError,
+    // Modal values
+    showAuthModal,
+    authModalMode,
+    vcData,
+    openAuthModal,
+    closeAuthModal
   };
 
   return (
