@@ -17,16 +17,23 @@ const BusinessInfoStep: React.FC = () => {
   const { t } = useTranslation('onboarding');
   const { getVCData, getOnboardingPrefillData } = useUserJourney();
   
-  // Form state
+  // Get prefill data from UserJourneyManager
+  const vcData = getVCData();
+  const prefillData = getOnboardingPrefillData();
+  
+  console.log('🔍 VC Data:', vcData);
+  console.log('🔍 Prefill Data:', prefillData);
+  
+  // Form state with prefill data
   const [formData, setFormData] = useState({
-    firmenname: '',
+    firmenname: vcData?.businessName || prefillData?.businessName || '',
     street: '',
     houseNumber: '',
-    postalCode: '',
-    city: '',
+    postalCode: vcData?.postalCode || '',
+    city: vcData?.location || '',
     country: 'Deutschland',
     phone: '',
-    website: '',
+    website: vcData?.website || prefillData?.websiteUrl || '',
     description: '',
     categories: {
       essenTrinken: false,
@@ -34,10 +41,6 @@ const BusinessInfoStep: React.FC = () => {
       einzelhandelShopping: false
     }
   });
-  
-  // Get prefill data from UserJourneyManager
-  const vcData = getVCData();
-  const prefillData = getOnboardingPrefillData();
 
   const handleNext = () => {
     navigate('/visibilitycheck/onboarding/step2');
@@ -102,7 +105,6 @@ const BusinessInfoStep: React.FC = () => {
                 placeholder="z. B. Restaurant München"
                 value={formData.firmenname}
                 onChange={(e) => setFormData(prev => ({...prev, firmenname: e.target.value}))}
-                defaultValue={vcData?.businessName || prefillData?.businessName || ''}
               />
             </div>
 
@@ -202,7 +204,6 @@ const BusinessInfoStep: React.FC = () => {
                   placeholder="https://ihr-restaurant.de"
                   value={formData.website}
                   onChange={(e) => setFormData(prev => ({...prev, website: e.target.value}))}
-                  defaultValue={vcData?.website || prefillData?.websiteUrl || ''}
                 />
               </div>
             </div>
