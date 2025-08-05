@@ -37,6 +37,8 @@ import AppLayout from '@/components/layout/AppLayout';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import AdminLayout from '@/components/layout/AdminLayout';
 import VisibilityCheckPage from '@/components/visibility/VisibilityCheckPage';
+import VisibilityCheckOnboarding from '@/components/visibility/VisibilityCheckOnboarding';
+import VisibilityCheckDashboard from '@/components/visibility/VisibilityCheckDashboard';
 import CookieConsentBanner from '@/components/CookieConsentBanner';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import LoginPage from '@/pages/LoginPage';
@@ -91,6 +93,11 @@ function App() {
                 <Route path="checkout-success" element={<CheckoutSuccess />} />
                 <Route path="visibility-check" element={<VisibilityCheckPage />} />
                 <Route path="visibility-check/verified/:leadId" element={<VisibilityCheckVerified />} />
+                
+                {/* New Figma-based Visibility Check Routes */}
+                <Route path="visibilitycheck/onboarding/*" element={<VisibilityCheckOnboarding />} />
+                <Route path="visibilitycheck/dashboard/*" element={<VisibilityCheckDashboard />} />
+                
                 <Route path="redeem" element={<RedeemPage />} />
                 <Route path="auth/google/callback" element={<GoogleOAuthCallback />} />
                 <Route path="quick-verify" element={<QuickVerifyMode />} />
