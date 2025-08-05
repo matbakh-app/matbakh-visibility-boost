@@ -1,24 +1,46 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { BarChart, TrendingUp, Target, Play } from 'lucide-react';
-import { VCData } from '@/services/UserJourneyManager';
+import { VCData, useUserJourney } from '@/services/UserJourneyManager';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface VCLaunchWidgetProps {
-  onStart: (formData: VCData) => void;
+  onStart?: (formData: VCData) => void;
 }
 
 export const VCLaunchWidget: React.FC<VCLaunchWidgetProps> = ({ onStart }) => {
   const [businessName, setBusinessName] = useState('');
   const [website, setWebsite] = useState('');
+  
+  // UserJourneyManager & Auth hooks
+  const { setEntryPoint, setVCData } = useUserJourney();
+  const { user, openAuthModal } = useAuth();
+  const navigate = useNavigate();
 
   const handleStart = () => {
     const formData: VCData = {
       businessName: businessName || undefined,
       website: website || undefined,
     };
-    onStart(formData);
+
+    // 1. Entry Point tracken
+    setEntryPoint('vc', formData);
+    setVCData(formData);
+
+    // 2. Wenn nicht eingeloggt → AuthModal öffnen
+    if (!user) {
+      openAuthModal('register', formData);
+      return;
+    }
+
+    // 3. Eingeloggter User → direkt zum Figma-Onboarding routen
+    navigate('/visibilitycheck/onboarding/step1');
+
+    // 4. Optional: Legacy onStart callback
+    onStart?.(formData);
   };
 
   return (
