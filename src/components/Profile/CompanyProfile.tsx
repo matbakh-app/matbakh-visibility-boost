@@ -56,16 +56,23 @@ const CompanySchema = z.object({
   categories: z.array(z.string())
     .min(1, 'Bitte wählen Sie mindestens eine Kategorie aus'),
   cuisines: z.array(z.string()).optional(),
-  // Neue Steuer- und rechtliche Felder
-  tax_id: z.string()
-    .min(5, 'USt-ID muss mindestens 5 Zeichen lang sein'),
+  // Steuer- und rechtliche Felder
+  tax_number: z.string()
+    .min(3, 'Steuernummer ist ein Pflichtfeld'),
+  tax_id: z.string().optional(),
   legal_entity: z.string()
     .min(3, 'Rechtsform muss mindestens 3 Zeichen lang sein'),
   commercial_register: z.string().optional(),
   bank_account: z.string().optional(),
   owner_name: z.string()
     .min(2, 'Name des Inhabers muss mindestens 2 Zeichen lang sein'),
-  business_license: z.string().optional()
+  business_license: z.string().optional(),
+  // Zahlungsdaten
+  payment_methods: z.array(z.enum(['IBAN', 'PayPal', 'Stripe', 'Sonstiges'])).optional(),
+  paypal_email: z.string().optional(),
+  stripe_account: z.string().optional(),
+  // Subscription
+  subscription: z.enum(['free', 'pro', 'enterprise']).default('free')
 });
 
 type CompanyFormData = z.infer<typeof CompanySchema>;
@@ -92,12 +99,17 @@ export const CompanyProfile: React.FC = () => {
       description: '',
       categories: [],
       cuisines: [],
+      tax_number: '',
       tax_id: '',
       legal_entity: '',
       commercial_register: '',
       bank_account: '',
       owner_name: '',
-      business_license: ''
+      business_license: '',
+      payment_methods: [],
+      paypal_email: '',
+      stripe_account: '',
+      subscription: 'free'
     }
   });
 
@@ -113,12 +125,17 @@ export const CompanyProfile: React.FC = () => {
         description: data.description || '',
         categories: data.categories || [],
         cuisines: [],
+        tax_number: data.tax_number || '',
         tax_id: data.tax_id || '',
         legal_entity: data.legal_entity || '',
         commercial_register: data.commercial_register || '',
         bank_account: data.bank_account || '',
         owner_name: data.owner_name || '',
-        business_license: data.business_license || ''
+        business_license: data.business_license || '',
+        payment_methods: (data.payment_methods as any) || [],
+        paypal_email: data.paypal_email || '',
+        stripe_account: data.stripe_account || '',
+        subscription: (data.subscription as any) || 'free'
       });
     }
   }, [data, reset]);
@@ -156,6 +173,8 @@ export const CompanyProfile: React.FC = () => {
 
   // Watch company name for avatar fallback
   const companyName = watch('company_name');
+  const paymentMethods = watch('payment_methods') || [];
+  const subscription = watch('subscription');
 
   // Options for various selects
   const categoryOptions = [
@@ -176,6 +195,19 @@ export const CompanyProfile: React.FC = () => {
     { value: 'vegan', label: 'Vegan' },
     { value: 'asiatisch', label: 'Asiatisch' },
     { value: 'mediterran', label: 'Mediterran' }
+  ];
+
+  const paymentMethodOptions = [
+    { value: 'IBAN', label: 'IBAN' },
+    { value: 'PayPal', label: 'PayPal' },
+    { value: 'Stripe', label: 'Stripe' },
+    { value: 'Sonstiges', label: 'Sonstiges' }
+  ];
+
+  const subscriptionOptions = [
+    { value: 'free', label: 'Kostenlos' },
+    { value: 'pro', label: 'Pro (49 €/Monat)' },
+    { value: 'enterprise', label: 'Enterprise (auf Anfrage)' }
   ];
 
   return (
@@ -343,97 +375,210 @@ export const CompanyProfile: React.FC = () => {
                   title="Steuer- und Rechtsdaten"
                   description="Erforderliche Angaben für Stripe und Abrechnung"
                 >
-                  <ProfileGrid columns={2}>
-                    <Controller
-                      name="tax_id"
-                      control={control}
-                      render={({ field }) => (
-                        <InputField
-                          label="USt-ID (Umsatzsteuer-ID)"
-                          value={field.value}
-                          onChange={field.onChange}
-                          placeholder="DE123456789"
-                          error={errors.tax_id?.message}
-                          required
-                        />
-                      )}
-                    />
-                    <Controller
-                      name="legal_entity"
-                      control={control}
-                      render={({ field }) => (
-                        <InputField
-                          label="Rechtsform"
-                          value={field.value}
-                          onChange={field.onChange}
-                          placeholder="GmbH, UG, GbR, Einzelunternehmen"
-                          error={errors.legal_entity?.message}
-                          required
-                        />
-                      )}
-                    />
-                  </ProfileGrid>
+                   <ProfileGrid columns={2}>
+                     <Controller
+                       name="tax_number"
+                       control={control}
+                       render={({ field }) => (
+                         <InputField
+                           label="Steuernummer"
+                           value={field.value}
+                           onChange={field.onChange}
+                           placeholder="12345/67890"
+                           error={errors.tax_number?.message}
+                           required
+                         />
+                       )}
+                     />
+                     <Controller
+                       name="tax_id"
+                       control={control}
+                       render={({ field }) => (
+                         <InputField
+                           label="USt-ID (optional)"
+                           value={field.value || ''}
+                           onChange={field.onChange}
+                           placeholder="DE123456789"
+                           error={errors.tax_id?.message}
+                         />
+                       )}
+                     />
+                   </ProfileGrid>
 
-                  <ProfileGrid columns={2}>
-                    <Controller
-                      name="owner_name"
-                      control={control}
-                      render={({ field }) => (
-                        <InputField
-                          label="Name des Inhabers/Geschäftsführers"
-                          value={field.value}
-                          onChange={field.onChange}
-                          placeholder="Max Mustermann"
-                          error={errors.owner_name?.message}
-                          required
-                        />
-                      )}
-                    />
-                    <Controller
-                      name="commercial_register"
-                      control={control}
-                      render={({ field }) => (
-                        <InputField
-                          label="Handelsregisternummer (optional)"
-                          value={field.value || ''}
-                          onChange={field.onChange}
-                          placeholder="HRB 123456"
-                          error={errors.commercial_register?.message}
-                        />
-                      )}
-                    />
-                  </ProfileGrid>
+                   <ProfileGrid columns={2}>
+                     <Controller
+                       name="legal_entity"
+                       control={control}
+                       render={({ field }) => (
+                         <InputField
+                           label="Rechtsform"
+                           value={field.value}
+                           onChange={field.onChange}
+                           placeholder="GmbH, UG, GbR, Einzelunternehmen"
+                           error={errors.legal_entity?.message}
+                           required
+                         />
+                       )}
+                     />
+                     <Controller
+                       name="owner_name"
+                       control={control}
+                       render={({ field }) => (
+                         <InputField
+                           label="Name des Inhabers/Geschäftsführers"
+                           value={field.value}
+                           onChange={field.onChange}
+                           placeholder="Max Mustermann"
+                           error={errors.owner_name?.message}
+                           required
+                         />
+                       )}
+                     />
+                   </ProfileGrid>
 
-                  <ProfileGrid columns={2}>
-                    <Controller
-                      name="bank_account"
-                      control={control}
-                      render={({ field }) => (
-                        <InputField
-                          label="IBAN (optional)"
-                          value={field.value || ''}
-                          onChange={field.onChange}
-                          placeholder="DE89 3704 0044 0532 0130 00"
-                          error={errors.bank_account?.message}
-                        />
-                      )}
-                    />
-                    <Controller
-                      name="business_license"
-                      control={control}
-                      render={({ field }) => (
-                        <InputField
-                          label="Gewerbeschein/Lizenz (optional)"
-                          value={field.value || ''}
-                          onChange={field.onChange}
-                          placeholder="Gewerbe-Nr. oder Lizenz-Nr."
-                          error={errors.business_license?.message}
-                        />
-                      )}
-                    />
-                  </ProfileGrid>
-                </ProfileSection>
-              </Card>
+                   <ProfileGrid columns={2}>
+                     <Controller
+                       name="commercial_register"
+                       control={control}
+                       render={({ field }) => (
+                         <InputField
+                           label="Handelsregisternummer (optional)"
+                           value={field.value || ''}
+                           onChange={field.onChange}
+                           placeholder="HRB 123456"
+                           error={errors.commercial_register?.message}
+                         />
+                       )}
+                     />
+                     <Controller
+                       name="business_license"
+                       control={control}
+                       render={({ field }) => (
+                         <InputField
+                           label="Gewerbeschein/Lizenz (optional)"
+                           value={field.value || ''}
+                           onChange={field.onChange}
+                           placeholder="Gewerbe-Nr. oder Lizenz-Nr."
+                           error={errors.business_license?.message}
+                         />
+                       )}
+                     />
+                   </ProfileGrid>
+                 </ProfileSection>
+               </Card>
+
+               {/* Zahlungsdaten */}
+               <Card className="p-6">
+                 <ProfileSection
+                   title="Zahlungsdaten"
+                   description="Ihre bevorzugten Zahlungsmethoden"
+                 >
+                   <Controller
+                     name="payment_methods"
+                     control={control}
+                     render={({ field }) => (
+                       <MultiSelectField
+                         label="Zahlungsmethoden"
+                         value={field.value || []}
+                         onChange={field.onChange}
+                         options={paymentMethodOptions}
+                         placeholder="Wählen Sie Zahlungsmethoden"
+                         maxItems={4}
+                         description="Bis zu 4 Zahlungsmethoden auswählen"
+                         error={errors.payment_methods?.message}
+                       />
+                     )}
+                   />
+
+                   {paymentMethods.includes('IBAN') && (
+                     <Controller
+                       name="bank_account"
+                       control={control}
+                       render={({ field }) => (
+                         <InputField
+                           label="IBAN"
+                           value={field.value || ''}
+                           onChange={field.onChange}
+                           placeholder="DE89 3704 0044 0532 0130 00"
+                           error={errors.bank_account?.message}
+                         />
+                       )}
+                     />
+                   )}
+
+                   {paymentMethods.includes('PayPal') && (
+                     <Controller
+                       name="paypal_email"
+                       control={control}
+                       render={({ field }) => (
+                         <InputField
+                           label="PayPal E-Mail"
+                           value={field.value || ''}
+                           onChange={field.onChange}
+                           placeholder="paypal@bellavista.de"
+                           type="email"
+                           error={errors.paypal_email?.message}
+                         />
+                       )}
+                     />
+                   )}
+
+                   {paymentMethods.includes('Stripe') && (
+                     <Controller
+                       name="stripe_account"
+                       control={control}
+                       render={({ field }) => (
+                         <InputField
+                           label="Stripe Konto-ID"
+                           value={field.value || ''}
+                           onChange={field.onChange}
+                           placeholder="acct_1234567890"
+                           error={errors.stripe_account?.message}
+                         />
+                       )}
+                     />
+                   )}
+                 </ProfileSection>
+               </Card>
+
+               {/* Subscription */}
+               <Card className="p-6">
+                 <ProfileSection
+                   title="Abo-Typ & Upgrade"
+                   description="Ihr aktueller Plan und Upgrade-Optionen"
+                 >
+                   <Controller
+                     name="subscription"
+                     control={control}
+                     render={({ field }) => (
+                       <SelectField
+                         label="Aktueller Abo-Typ"
+                         value={field.value}
+                         onChange={field.onChange}
+                         options={subscriptionOptions}
+                         error={errors.subscription?.message}
+                         required
+                       />
+                     )}
+                   />
+
+                   {subscription === 'free' && (
+                     <div className="mt-4 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                       <h4 className="font-medium text-primary mb-2">Jetzt upgraden</h4>
+                       <p className="text-sm text-muted-foreground mb-3">
+                         Profitieren Sie von erweiterten Funktionen und besserer Sichtbarkeit.
+                       </p>
+                       <Button 
+                         type="button" 
+                         variant="default" 
+                         onClick={() => navigate('/billing/upgrade')}
+                       >
+                         Upgrade auf Pro
+                       </Button>
+                     </div>
+                   )}
+                  </ProfileSection>
+                </Card>
 
               {/* Action Buttons for mobile */}
               <div className="flex justify-between lg:hidden">

@@ -12,12 +12,17 @@ interface CompanyProfile {
   website?: string
   description?: string
   categories?: string[]
+  tax_number?: string
   tax_id?: string
   legal_entity?: string
   commercial_register?: string
   bank_account?: string
   owner_name?: string
   business_license?: string
+  payment_methods?: string[]
+  paypal_email?: string
+  stripe_account?: string
+  subscription?: string
   created_at?: string
   updated_at?: string
 }
