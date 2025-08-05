@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useForm, Controller } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -9,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/Spinner';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { useProfile } from '@/hooks/useProfile';
+import { useToast } from '@/hooks/use-toast';
 import {
   ProfileLayout,
   ProfileHeader,
@@ -27,35 +31,87 @@ import {
   Save
 } from 'lucide-react';
 
+// Form validation schema
+const ProfileSchema = z.object({
+  name: z.string()
+    .min(2, 'Name muss mindestens 2 Zeichen lang sein')
+    .max(100, 'Name darf maximal 100 Zeichen lang sein'),
+  role: z.enum(['user', 'admin', 'manager']),
+  language: z.enum(['de', 'en']),
+  notifications: z.object({
+    email: z.boolean(),
+    push: z.boolean(),
+    darkMode: z.boolean()
+  }).optional()
+});
+
+type ProfileFormData = z.infer<typeof ProfileSchema>;
+
 export const MyProfile: React.FC = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { data, isLoading, isError, save } = useProfile();
-  const [formData, setFormData] = useState({
-    name: '',
-    language: 'de',
-    role: 'user'
+  
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isDirty, isSubmitting },
+    reset
+  } = useForm<ProfileFormData>({
+    resolver: zodResolver(ProfileSchema),
+    defaultValues: {
+      name: '',
+      language: 'de',
+      role: 'user',
+      notifications: {
+        email: true,
+        push: false,
+        darkMode: false
+      }
+    }
   });
 
+  // Reset form when data loads
   useEffect(() => {
     if (data) {
-      setFormData({
+      reset({
         name: data.name || '',
-        language: data.language || 'de',
-        role: data.role || 'user'
+        language: (data.language as 'de' | 'en') || 'de',
+        role: (data.role as 'user' | 'admin' | 'manager') || 'user',
+        notifications: {
+          email: true,
+          push: false,
+          darkMode: false
+        }
       });
     }
-  }, [data]);
+  }, [data, reset]);
 
-  const handleSave = async () => {
-    console.log('Starting save with data:', formData);
-    const result = await save(formData);
-    console.log('Save result:', result);
-    if (result) {
-      console.log('Save successful, navigating to company profile');
-      navigate('/company-profile');
-    } else {
-      console.error('Save failed, but navigating anyway for testing');
-      navigate('/company-profile'); // Navigate anyway for testing
+  const onSubmit = async (values: ProfileFormData) => {
+    try {
+      console.log('Submitting profile data:', values);
+      const result = await save({
+        name: values.name,
+        language: values.language,
+        role: values.role
+      });
+      
+      if (result) {
+        toast({
+          title: "Profil gespeichert",
+          description: "Ihre Änderungen wurden erfolgreich gespeichert.",
+        });
+        navigate('/company-profile');
+      } else {
+        throw new Error('Speichern fehlgeschlagen');
+      }
+    } catch (error) {
+      console.error('Save error:', error);
+      toast({
+        title: "Fehler beim Speichern",
+        description: "Ihre Änderungen konnten nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -67,9 +123,9 @@ export const MyProfile: React.FC = () => {
   if (isError) return <ErrorBanner message="Profil konnte nicht geladen werden" />;
 
   const userData = {
-    name: formData.name || "Max Mustermann",
+    name: data?.name || "Max Mustermann",
     email: "max.mustermann@restaurant.de", // Email kommt von auth.user, nicht profiles
-    role: formData.role || "Restaurant Manager",
+    role: data?.role || "Restaurant Manager",
     avatar: "",
     dateJoined: "15. März 2024",
     lastLogin: "Heute, 14:30"
@@ -105,42 +161,64 @@ export const MyProfile: React.FC = () => {
       />
 
       <ProfileContent>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Profile Form */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card className="p-6">
-              <ProfileSection
-                title="Persönliche Informationen"
-                description="Aktualisieren Sie Ihre persönlichen Daten"
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <InputField
-                    label="Vollständiger Name"
-                    value={formData.name}
-                    onChange={(value) => setFormData({ ...formData, name: value })}
-                    placeholder="z.B. Max Mustermann"
-                    required
-                  />
-                  
-                  <SelectField
-                    label="Rolle"
-                    value={formData.role}
-                    onChange={(value) => setFormData({ ...formData, role: value })}
-                    options={roleOptions}
-                    required
-                  />
-                </div>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Main Profile Form */}
+            <div className="lg:col-span-2 space-y-6">
+              <Card className="p-6">
+                <ProfileSection
+                  title="Persönliche Informationen"
+                  description="Aktualisieren Sie Ihre persönlichen Daten"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Controller
+                      name="name"
+                      control={control}
+                      render={({ field }) => (
+                        <InputField
+                          label="Vollständiger Name"
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="z.B. Max Mustermann"
+                          error={errors.name?.message}
+                          required
+                        />
+                      )}
+                    />
+                    
+                    <Controller
+                      name="role"
+                      control={control}
+                      render={({ field }) => (
+                        <SelectField
+                          label="Rolle"
+                          value={field.value}
+                          onChange={field.onChange}
+                          options={roleOptions}
+                          error={errors.role?.message}
+                          required
+                        />
+                      )}
+                    />
+                  </div>
 
-                <SelectField
-                  label="Sprache"
-                  value={formData.language}
-                  onChange={(value) => setFormData({ ...formData, language: value })}
-                  options={languageOptions}
-                  description="Wählen Sie Ihre bevorzugte Sprache für die Benutzeroberfläche"
-                  required
-                />
-              </ProfileSection>
-            </Card>
+                  <Controller
+                    name="language"
+                    control={control}
+                    render={({ field }) => (
+                      <SelectField
+                        label="Sprache"
+                        value={field.value}
+                        onChange={field.onChange}
+                        options={languageOptions}
+                        description="Wählen Sie Ihre bevorzugte Sprache für die Benutzeroberfläche"
+                        error={errors.language?.message}
+                        required
+                      />
+                    )}
+                  />
+                </ProfileSection>
+              </Card>
 
             {/* Settings Card */}
             <Card className="p-6">
@@ -191,6 +269,7 @@ export const MyProfile: React.FC = () => {
               </ProfileSection>
             </Card>
           </div>
+          </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
@@ -238,12 +317,31 @@ export const MyProfile: React.FC = () => {
             {/* Action Buttons */}
             <div className="space-y-3">
               <Button 
-                onClick={handleSave}
+                type="submit"
+                disabled={!isDirty || isSubmitting}
                 className="w-full"
                 size="lg"
               >
-                <Save className="w-4 h-4 mr-2" />
-                Änderungen speichern
+                {isSubmitting ? (
+                  <>
+                    <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                    Speichern...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    Änderungen speichern
+                  </>
+                )}
+              </Button>
+
+              <Button 
+                type="button"
+                variant="outline"
+                onClick={handleBack}
+                className="w-full"
+              >
+                Zurück
               </Button>
 
               {/* Company Profile Navigation */}
@@ -259,20 +357,30 @@ export const MyProfile: React.FC = () => {
                     </p>
                   </div>
                   <Button 
-                    onClick={handleSave}
+                    type="submit"
+                    disabled={!isDirty || isSubmitting}
                     variant="default"
                     className="w-full"
                     size="sm"
                   >
-                    <Building className="w-4 h-4 mr-2" />
-                    Zum Firmenprofil
-                    <ArrowRight className="w-4 h-4 ml-2" />
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                        Speichern...
+                      </>
+                    ) : (
+                      <>
+                        <Building className="w-4 h-4 mr-2" />
+                        Zum Firmenprofil
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </>
+                    )}
                   </Button>
                 </div>
               </Card>
             </div>
           </div>
-        </div>
+        </form>
       </ProfileContent>
     </ProfileLayout>
   );

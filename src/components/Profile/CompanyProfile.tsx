@@ -1,12 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useForm, Controller } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Spinner } from '@/components/ui/Spinner';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { useCompanyProfile } from '@/hooks/useCompanyProfile';
+import { useToast } from '@/hooks/use-toast';
 import {
   ProfileLayout,
   ProfileHeader,
@@ -22,77 +26,114 @@ import {
 } from './ProfileFields';
 import { 
   Building, 
-  Globe, 
-  MapPin, 
-  Phone, 
-  Mail,
   Upload,
   Check,
-  Star,
-  Users,
-  Clock,
   TrendingUp,
   Save
 } from 'lucide-react';
 
-interface CompanyProfileData {
-  company_name: string;
-  email: string;
-  phone: string;
-  address: string;
-  website: string;
-  description: string;
-  categories: string[];
-}
+// Form validation schema
+const CompanySchema = z.object({
+  company_name: z.string()
+    .min(2, 'Firmenname muss mindestens 2 Zeichen lang sein')
+    .max(100, 'Firmenname darf maximal 100 Zeichen lang sein'),
+  phone: z.string().optional(),
+  address: z.string()
+    .min(5, 'Adresse muss mindestens 5 Zeichen lang sein')
+    .optional()
+    .or(z.literal('')),
+  email: z.string()
+    .email('Bitte geben Sie eine gültige E-Mail-Adresse ein')
+    .optional()
+    .or(z.literal('')),
+  website: z.string()
+    .url('Bitte geben Sie eine gültige URL ein')
+    .optional()
+    .or(z.literal('')),
+  description: z.string()
+    .max(500, 'Beschreibung darf maximal 500 Zeichen lang sein')
+    .optional(),
+  categories: z.array(z.string())
+    .min(1, 'Bitte wählen Sie mindestens eine Kategorie aus'),
+  cuisines: z.array(z.string()).optional()
+});
+
+type CompanyFormData = z.infer<typeof CompanySchema>;
 
 export const CompanyProfile: React.FC = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { data, isLoading, isError, save } = useCompanyProfile();
-  const [formData, setFormData] = useState<CompanyProfileData>({
-    company_name: '',
-    email: '',
-    phone: '',
-    address: '',
-    website: '',
-    description: '',
-    categories: []
+  
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isDirty, isSubmitting },
+    reset,
+    watch
+  } = useForm<CompanyFormData>({
+    resolver: zodResolver(CompanySchema),
+    defaultValues: {
+      company_name: '',
+      email: '',
+      phone: '',
+      address: '',
+      website: '',
+      description: '',
+      categories: [],
+      cuisines: []
+    }
   });
-  const [isSaving, setIsSaving] = useState(false);
 
+  // Reset form when data loads
   useEffect(() => {
     if (data) {
-      setFormData({
+      reset({
         company_name: data.company_name || '',
         email: data.email || '',
         phone: data.phone || '',
         address: data.address || '',
         website: data.website || '',
         description: data.description || '',
-        categories: data.categories || []
+        categories: data.categories || [],
+        cuisines: []
       });
     }
-  }, [data]);
+  }, [data, reset]);
 
   if (isLoading) return <Spinner />;
   if (isError) return <ErrorBanner message="Unternehmensprofil konnte nicht geladen werden" />;
 
-  const handleSave = async () => {
-    setIsSaving(true);
-    const success = await save(formData);
-    if (success) {
-      console.log('Company profile saved successfully');
-      // Could navigate to dashboard or show success message
+  const onSubmit = async (values: CompanyFormData) => {
+    try {
+      console.log('Submitting company profile data:', values);
+      const success = await save(values);
+      
+      if (success) {
+        toast({
+          title: "Firmenprofil gespeichert",
+          description: "Ihre Unternehmensangaben wurden erfolgreich gespeichert.",
+        });
+        navigate('/dashboard');
+      } else {
+        throw new Error('Speichern fehlgeschlagen');
+      }
+    } catch (error) {
+      console.error('Save error:', error);
+      toast({
+        title: "Fehler beim Speichern",
+        description: "Das Firmenprofil konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+        variant: "destructive",
+      });
     }
-    setIsSaving(false);
   };
 
   const handleBack = () => {
     navigate(-1); // Go back to previous page in history
   };
 
-  const updateFormData = (field: keyof CompanyProfileData, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
+  // Watch company name for avatar fallback
+  const companyName = watch('company_name');
 
   // Options for various selects
   const categoryOptions = [
@@ -129,217 +170,278 @@ export const CompanyProfile: React.FC = () => {
       />
 
       <ProfileContent>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Company Basic Info */}
-            <Card className="p-6">
-              <ProfileSection
-                title="Grundinformationen"
-                description="Basis-Unternehmensdaten für Ihr Profil"
-              >
-                <ProfileGrid columns={2}>
-                  <InputField
-                    label="Firmenname"
-                    value={formData.company_name}
-                    onChange={(value) => updateFormData('company_name', value)}
-                    placeholder="z.B. Bella Vista Restaurant"
-                    required
-                  />
-                  <InputField
-                    label="Telefon"
-                    value={formData.phone}
-                    onChange={(value) => updateFormData('phone', value)}
-                    placeholder="+49 89 12345678"
-                    type="tel"
-                  />
-                </ProfileGrid>
-
-                <InputField
-                  label="Adresse"
-                  value={formData.address}
-                  onChange={(value) => updateFormData('address', value)}
-                  placeholder="Musterstraße 123, 80331 München"
-                />
-
-                <ProfileGrid columns={2}>
-                  <InputField
-                    label="E-Mail"
-                    value={formData.email}
-                    onChange={(value) => updateFormData('email', value)}
-                    placeholder="info@bellavista.de"
-                    type="email"
-                  />
-                  <InputField
-                    label="Website"
-                    value={formData.website}
-                    onChange={(value) => updateFormData('website', value)}
-                    placeholder="https://www.bellavista.de"
-                    type="url"
-                  />
-                </ProfileGrid>
-
-                <TextAreaField
-                  label="Beschreibung"
-                  value={formData.description}
-                  onChange={(value) => updateFormData('description', value)}
-                  placeholder="Beschreiben Sie Ihr Restaurant..."
-                  rows={4}
-                  description="Eine kurze Beschreibung Ihres Unternehmens für Kunden"
-                />
-              </ProfileSection>
-            </Card>
-
-            {/* Categories & Specialization */}
-            <Card className="p-6">
-              <ProfileSection
-                title="Kategorien & Spezialisierung"
-                description="Definieren Sie Ihr Angebot und Ihre Küche"
-              >
-                <SelectField
-                  label="Hauptkategorie"
-                  value={formData.categories[0] || ''}
-                  onChange={(value) => updateFormData('categories', [value, ...formData.categories.slice(1)])}
-                  options={categoryOptions}
-                  placeholder="Wählen Sie eine Kategorie"
-                />
-
-                <MultiSelectField
-                  label="Küchenstil"
-                  value={formData.categories.slice(1)}
-                  onChange={(values) => updateFormData('categories', [formData.categories[0], ...values])}
-                  options={cuisineOptions}
-                  placeholder="Wählen Sie Küchenstile"
-                  maxItems={5}
-                  description="Bis zu 5 Küchenstile auswählen"
-                />
-              </ProfileSection>
-            </Card>
-
-            {/* Action Buttons for larger screens */}
-            <div className="flex justify-between lg:hidden">
-              <Button variant="outline" onClick={handleBack}>
-                Abbrechen
-              </Button>
-              <Button 
-                onClick={handleSave}
-                disabled={isSaving || !formData.company_name}
-                className="min-w-[120px]"
-              >
-                {isSaving ? (
-                  <>
-                    <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-background border-t-transparent" />
-                    Speichern...
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4 mr-2" />
-                    Speichern
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Logo Upload */}
-            <Card className="p-6">
-              <ProfileSection title="Logo">
-                <div className="text-center space-y-4">
-                  <Avatar className="w-24 h-24 mx-auto">
-                    <AvatarFallback className="text-2xl bg-primary/10 text-primary">
-                      {formData.company_name ? formData.company_name.charAt(0) : 'B'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <Button variant="outline" size="sm">
-                    <Upload className="w-4 h-4 mr-2" />
-                    Logo hochladen
-                  </Button>
-                  <p className="text-xs text-muted-foreground">
-                    JPG, PNG oder SVG. Max. 2MB
-                  </p>
-                </div>
-              </ProfileSection>
-            </Card>
-
-            {/* Profile Status */}
-            <Card className="p-6">
-              <ProfileSection title="Profil-Status">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Grunddaten</span>
-                    <div className="flex items-center gap-1">
-                      <Check className="w-4 h-4 text-green-600" />
-                      <span className="text-sm text-green-600">60%</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Google Business</span>
-                    <span className="text-sm text-muted-foreground">Ausstehend</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Social Media</span>
-                    <span className="text-sm text-muted-foreground">Nicht verknüpft</span>
-                  </div>
-                </div>
-              </ProfileSection>
-            </Card>
-
-            {/* Action Buttons for desktop */}
-            <div className="hidden lg:block space-y-3">
-              <Button 
-                onClick={handleSave}
-                disabled={isSaving || !formData.company_name}
-                className="w-full"
-                size="lg"
-              >
-                {isSaving ? (
-                  <>
-                    <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-background border-t-transparent" />
-                    Wird gespeichert...
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4 mr-2" />
-                    Firmenprofil speichern
-                  </>
-                )}
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                onClick={handleBack}
-                className="w-full"
-              >
-                Zurück zu Mein Profil
-              </Button>
-            </div>
-
-            {/* Next Steps */}
-            <Card className="p-4 border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
-              <div className="text-center space-y-3">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto">
-                  <TrendingUp className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold">Nächste Schritte</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Google Business & Social Media verknüpfen
-                  </p>
-                </div>
-                <Button 
-                  variant="outline"
-                  className="w-full"
-                  size="sm"
-                  disabled
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Main Content */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Company Basic Info */}
+              <Card className="p-6">
+                <ProfileSection
+                  title="Grundinformationen"
+                  description="Basis-Unternehmensdaten für Ihr Profil"
                 >
-                  Bald verfügbar
+                  <ProfileGrid columns={2}>
+                    <Controller
+                      name="company_name"
+                      control={control}
+                      render={({ field }) => (
+                        <InputField
+                          label="Firmenname"
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="z.B. Bella Vista Restaurant"
+                          error={errors.company_name?.message}
+                          required
+                        />
+                      )}
+                    />
+                    <Controller
+                      name="phone"
+                      control={control}
+                      render={({ field }) => (
+                        <InputField
+                          label="Telefon"
+                          value={field.value || ''}
+                          onChange={field.onChange}
+                          placeholder="+49 89 12345678"
+                          type="tel"
+                          error={errors.phone?.message}
+                        />
+                      )}
+                    />
+                  </ProfileGrid>
+
+                  <Controller
+                    name="address"
+                    control={control}
+                    render={({ field }) => (
+                      <InputField
+                        label="Adresse"
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        placeholder="Musterstraße 123, 80331 München"
+                        error={errors.address?.message}
+                      />
+                    )}
+                  />
+
+                  <ProfileGrid columns={2}>
+                    <Controller
+                      name="email"
+                      control={control}
+                      render={({ field }) => (
+                        <InputField
+                          label="E-Mail"
+                          value={field.value || ''}
+                          onChange={field.onChange}
+                          placeholder="info@bellavista.de"
+                          type="email"
+                          error={errors.email?.message}
+                        />
+                      )}
+                    />
+                    <Controller
+                      name="website"
+                      control={control}
+                      render={({ field }) => (
+                        <InputField
+                          label="Website"
+                          value={field.value || ''}
+                          onChange={field.onChange}
+                          placeholder="https://www.bellavista.de"
+                          type="url"
+                          error={errors.website?.message}
+                        />
+                      )}
+                    />
+                  </ProfileGrid>
+
+                  <Controller
+                    name="description"
+                    control={control}
+                    render={({ field }) => (
+                      <TextAreaField
+                        label="Beschreibung"
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        placeholder="Beschreiben Sie Ihr Restaurant..."
+                        rows={4}
+                        description="Eine kurze Beschreibung Ihres Unternehmens für Kunden"
+                        error={errors.description?.message}
+                      />
+                    )}
+                  />
+                </ProfileSection>
+              </Card>
+
+              {/* Categories & Specialization */}
+              <Card className="p-6">
+                <ProfileSection
+                  title="Kategorien & Spezialisierung"
+                  description="Definieren Sie Ihr Angebot und Ihre Küche"
+                >
+                  <Controller
+                    name="categories"
+                    control={control}
+                    render={({ field }) => (
+                      <SelectField
+                        label="Hauptkategorie"
+                        value={field.value[0] || ''}
+                        onChange={(value) => field.onChange([value, ...field.value.slice(1)])}
+                        options={categoryOptions}
+                        placeholder="Wählen Sie eine Kategorie"
+                        error={errors.categories?.message}
+                        required
+                      />
+                    )}
+                  />
+
+                  <Controller
+                    name="cuisines"
+                    control={control}
+                    render={({ field }) => (
+                      <MultiSelectField
+                        label="Küchenstil"
+                        value={field.value || []}
+                        onChange={field.onChange}
+                        options={cuisineOptions}
+                        placeholder="Wählen Sie Küchenstile"
+                        maxItems={5}
+                        description="Bis zu 5 Küchenstile auswählen"
+                        error={errors.cuisines?.message}
+                      />
+                    )}
+                  />
+                </ProfileSection>
+              </Card>
+
+              {/* Action Buttons for mobile */}
+              <div className="flex justify-between lg:hidden">
+                <Button type="button" variant="outline" onClick={handleBack}>
+                  Abbrechen
+                </Button>
+                <Button 
+                  type="submit"
+                  disabled={!isDirty || isSubmitting}
+                  className="min-w-[120px]"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                      Speichern...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Speichern
+                    </>
+                  )}
                 </Button>
               </div>
-            </Card>
+            </div>
+
+            {/* Sidebar */}
+            <div className="space-y-6">
+              {/* Logo Upload */}
+              <Card className="p-6">
+                <ProfileSection title="Logo">
+                  <div className="text-center space-y-4">
+                    <Avatar className="w-24 h-24 mx-auto">
+                      <AvatarFallback className="text-2xl bg-primary/10 text-primary">
+                        {companyName ? companyName.charAt(0) : 'B'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <Button variant="outline" size="sm">
+                      <Upload className="w-4 h-4 mr-2" />
+                      Logo hochladen
+                    </Button>
+                    <p className="text-xs text-muted-foreground">
+                      JPG, PNG oder SVG. Max. 2MB
+                    </p>
+                  </div>
+                </ProfileSection>
+              </Card>
+
+              {/* Profile Status */}
+              <Card className="p-6">
+                <ProfileSection title="Profil-Status">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Grunddaten</span>
+                      <div className="flex items-center gap-1">
+                        <Check className="w-4 h-4 text-green-600" />
+                        <span className="text-sm text-green-600">60%</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Google Business</span>
+                      <span className="text-sm text-muted-foreground">Ausstehend</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Social Media</span>
+                      <span className="text-sm text-muted-foreground">Nicht verknüpft</span>
+                    </div>
+                  </div>
+                </ProfileSection>
+              </Card>
+
+              {/* Action Buttons for desktop */}
+              <div className="hidden lg:block space-y-3">
+                <Button 
+                  type="submit"
+                  disabled={!isDirty || isSubmitting}
+                  className="w-full"
+                  size="lg"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                      Wird gespeichert...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Firmenprofil speichern
+                    </>
+                  )}
+                </Button>
+                
+                <Button 
+                  type="button"
+                  variant="outline" 
+                  onClick={handleBack}
+                  className="w-full"
+                >
+                  Zurück zu Mein Profil
+                </Button>
+              </div>
+
+              {/* Next Steps */}
+              <Card className="p-4 border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+                <div className="text-center space-y-3">
+                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto">
+                    <TrendingUp className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Nächste Schritte</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Google Business & Social Media verknüpfen
+                    </p>
+                  </div>
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    size="sm"
+                    disabled
+                  >
+                    Bald verfügbar
+                  </Button>
+                </div>
+              </Card>
+            </div>
           </div>
-        </div>
+        </form>
       </ProfileContent>
     </ProfileLayout>
   );
