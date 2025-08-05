@@ -1,3 +1,7 @@
+// ARCHIVED: Old Profile Routes - kept for reference only
+// This file is no longer used and has been replaced by react-router-dom routes in App.tsx
+
+/*
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { MyProfile } from '@/components/Profile/MyProfile';
@@ -34,3 +38,4 @@ const ProfileRoutes: React.FC = () => {
 };
 
 export default ProfileRoutes;
+*/
