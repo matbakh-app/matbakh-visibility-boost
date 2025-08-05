@@ -404,9 +404,18 @@ export type Database = {
       business_profiles: {
         Row: {
           address: string | null
+          address_line2: string | null
+          bank_account: string | null
           business_hours: Json | null
+          business_license: string | null
+          card_cvc: string | null
+          card_expiry: string | null
+          card_number: string | null
           categories: string[] | null
+          city: string | null
+          commercial_register: string | null
           company_name: string
+          country: string | null
           created_at: string | null
           data_sources: string[] | null
           description: string | null
@@ -424,19 +433,30 @@ export type Database = {
           google_places_id: string | null
           google_rating: number | null
           google_reviews_count: number | null
+          house_number: string | null
           id: string
           instagram_business_id: string | null
           instagram_followers: number | null
           instagram_handle: string | null
+          legal_entity: string | null
           messenger_integration: boolean | null
           onboarding_completed: boolean | null
+          owner_name: string | null
+          payment_methods: string[] | null
+          paypal_email: string | null
           phone: string | null
+          postal_code: string | null
           profile_verified: boolean | null
           registration_type: string | null
           services: string[] | null
+          street: string | null
+          stripe_account: string | null
+          subscription: string | null
           target_audience: string[] | null
+          tax_number: string | null
           updated_at: string | null
           user_id: string
+          vat_id: string | null
           vc_completed: boolean | null
           vc_last_run: string | null
           vc_results: Json | null
@@ -446,9 +466,18 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          address_line2?: string | null
+          bank_account?: string | null
           business_hours?: Json | null
+          business_license?: string | null
+          card_cvc?: string | null
+          card_expiry?: string | null
+          card_number?: string | null
           categories?: string[] | null
+          city?: string | null
+          commercial_register?: string | null
           company_name: string
+          country?: string | null
           created_at?: string | null
           data_sources?: string[] | null
           description?: string | null
@@ -466,19 +495,30 @@ export type Database = {
           google_places_id?: string | null
           google_rating?: number | null
           google_reviews_count?: number | null
+          house_number?: string | null
           id?: string
           instagram_business_id?: string | null
           instagram_followers?: number | null
           instagram_handle?: string | null
+          legal_entity?: string | null
           messenger_integration?: boolean | null
           onboarding_completed?: boolean | null
+          owner_name?: string | null
+          payment_methods?: string[] | null
+          paypal_email?: string | null
           phone?: string | null
+          postal_code?: string | null
           profile_verified?: boolean | null
           registration_type?: string | null
           services?: string[] | null
+          street?: string | null
+          stripe_account?: string | null
+          subscription?: string | null
           target_audience?: string[] | null
+          tax_number?: string | null
           updated_at?: string | null
           user_id: string
+          vat_id?: string | null
           vc_completed?: boolean | null
           vc_last_run?: string | null
           vc_results?: Json | null
@@ -488,9 +528,18 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          address_line2?: string | null
+          bank_account?: string | null
           business_hours?: Json | null
+          business_license?: string | null
+          card_cvc?: string | null
+          card_expiry?: string | null
+          card_number?: string | null
           categories?: string[] | null
+          city?: string | null
+          commercial_register?: string | null
           company_name?: string
+          country?: string | null
           created_at?: string | null
           data_sources?: string[] | null
           description?: string | null
@@ -508,19 +557,30 @@ export type Database = {
           google_places_id?: string | null
           google_rating?: number | null
           google_reviews_count?: number | null
+          house_number?: string | null
           id?: string
           instagram_business_id?: string | null
           instagram_followers?: number | null
           instagram_handle?: string | null
+          legal_entity?: string | null
           messenger_integration?: boolean | null
           onboarding_completed?: boolean | null
+          owner_name?: string | null
+          payment_methods?: string[] | null
+          paypal_email?: string | null
           phone?: string | null
+          postal_code?: string | null
           profile_verified?: boolean | null
           registration_type?: string | null
           services?: string[] | null
+          street?: string | null
+          stripe_account?: string | null
+          subscription?: string | null
           target_audience?: string[] | null
+          tax_number?: string | null
           updated_at?: string | null
           user_id?: string
+          vat_id?: string | null
           vc_completed?: boolean | null
           vc_last_run?: string | null
           vc_results?: Json | null

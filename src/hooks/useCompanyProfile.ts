@@ -8,21 +8,38 @@ interface CompanyProfile {
   company_name: string
   email?: string
   phone?: string
-  address?: string
   website?: string
   description?: string
   categories?: string[]
+  
+  // Address fields
+  street?: string
+  house_number?: string
+  address_line2?: string
+  postal_code?: string
+  city?: string
+  country?: string
+  
+  // Tax and legal fields
   tax_number?: string
-  tax_id?: string
+  vat_id?: string
   legal_entity?: string
   commercial_register?: string
-  bank_account?: string
   owner_name?: string
   business_license?: string
+  
+  // Payment fields
   payment_methods?: string[]
+  bank_account?: string
   paypal_email?: string
   stripe_account?: string
+  card_number?: string
+  card_expiry?: string
+  card_cvc?: string
+  
+  // Subscription
   subscription?: string
+  
   created_at?: string
   updated_at?: string
 }

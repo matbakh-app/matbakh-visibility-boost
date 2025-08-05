@@ -1,0 +1,22 @@
+-- Add new columns to business_profiles table for enhanced company profile
+ALTER TABLE public.business_profiles 
+  ADD COLUMN IF NOT EXISTS tax_number TEXT,
+  ADD COLUMN IF NOT EXISTS vat_id TEXT,
+  ADD COLUMN IF NOT EXISTS legal_entity TEXT,
+  ADD COLUMN IF NOT EXISTS commercial_register TEXT,
+  ADD COLUMN IF NOT EXISTS bank_account TEXT,
+  ADD COLUMN IF NOT EXISTS owner_name TEXT,
+  ADD COLUMN IF NOT EXISTS business_license TEXT,
+  ADD COLUMN IF NOT EXISTS payment_methods TEXT[],
+  ADD COLUMN IF NOT EXISTS paypal_email TEXT,
+  ADD COLUMN IF NOT EXISTS stripe_account TEXT,
+  ADD COLUMN IF NOT EXISTS subscription TEXT DEFAULT 'free',
+  ADD COLUMN IF NOT EXISTS street TEXT,
+  ADD COLUMN IF NOT EXISTS house_number TEXT,
+  ADD COLUMN IF NOT EXISTS address_line2 TEXT,
+  ADD COLUMN IF NOT EXISTS postal_code TEXT,
+  ADD COLUMN IF NOT EXISTS city TEXT,
+  ADD COLUMN IF NOT EXISTS country TEXT DEFAULT 'Deutschland',
+  ADD COLUMN IF NOT EXISTS card_number TEXT,
+  ADD COLUMN IF NOT EXISTS card_expiry TEXT,
+  ADD COLUMN IF NOT EXISTS card_cvc TEXT;
