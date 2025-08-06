@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { formatDate, formatTime, formatDateTime, formatRelativeTime, formatCurrency, formatCompactCurrency, formatNumber, formatPercentage, formatDuration, getDayNames, getMonthNames, capitalizeFirst, formatBusinessHours } from '../utils/formatters';
 
 export type Language = 'de' | 'en';
