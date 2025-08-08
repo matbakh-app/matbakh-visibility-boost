@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
-import { Button } from './ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Alert, AlertDescription } from './ui/alert';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   Calendar, 
   Clock, 
@@ -20,8 +20,8 @@ import {
   Eye,
   MapPin
 } from 'lucide-react';
-import { useLanguage } from '../hooks/useLanguage';
-import { formatDate, formatTime, formatNumber } from '../utils/formatters';
+import { useLanguage } from '@/hooks/useLanguage';
+import { formatDate, formatTime, formatNumber } from '@/utils/formatters';
 import ReportPreviewModal from './ReportPreviewModal';
 import RestrictedWidget from './RestrictedWidget';
 

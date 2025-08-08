@@ -43,3 +43,21 @@ export const formatCurrency = (amount: number, currency: string = 'EUR'): string
     currency: currency
   }).format(amount);
 };
+
+export const formatDate = (date: Date, language: 'de' | 'en' = 'de'): string => {
+  const locale = language === 'de' ? 'de-DE' : 'en-US';
+  return new Intl.DateTimeFormat(locale, {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).format(date);
+};
+
+export const formatTime = (date: Date, language: 'de' | 'en' = 'de'): string => {
+  const locale = language === 'de' ? 'de-DE' : 'en-US';
+  return new Intl.DateTimeFormat(locale, {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  }).format(date);
+};
