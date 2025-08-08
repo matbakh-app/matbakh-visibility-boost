@@ -1,12 +1,12 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
-import { Button } from './ui/button';
-import { Progress } from './ui/progress';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { BarChart3, TrendingUp, Users, Eye, MousePointer, Clock, ArrowUp, ArrowDown, ExternalLink, Download } from 'lucide-react';
-import { useLanguage } from '../hooks/useLanguage';
-import { formatNumber, formatPercentage, formatDuration, getDayNames } from '../utils/formatters';
+import { useLanguage } from '@/hooks/useLanguage';
+import { formatNumber, formatPercentage, formatDuration, getDayNames } from '@/utils/formatters';
 
 const AnalyticsWidget: React.FC = () => {
   const { language } = useLanguage();
@@ -190,7 +190,7 @@ const AnalyticsWidget: React.FC = () => {
     {
       icon: Users,
       label: getText('totalVisitors'),
-      value: formatNumber(12847, language),
+      value: formatNumber(12847),
       change: '+18%',
       positive: true,
       color: 'text-blue-600'
@@ -198,7 +198,7 @@ const AnalyticsWidget: React.FC = () => {
     {
       icon: Eye,
       label: getText('pageViews'),
-      value: formatNumber(45623, language),
+      value: formatNumber(45623),
       change: '+23%',
       positive: true,
       color: 'text-green-600'
@@ -206,7 +206,7 @@ const AnalyticsWidget: React.FC = () => {
     {
       icon: MousePointer,
       label: getText('bounceRate'),
-      value: formatPercentage(34.5, language),
+      value: formatPercentage(34.5),
       change: '-12%',
       positive: true,
       color: 'text-orange-600'
@@ -214,7 +214,7 @@ const AnalyticsWidget: React.FC = () => {
     {
       icon: Clock,
       label: getText('avgSessionDuration'),
-      value: formatDuration(187, language),
+                value: formatDuration(187, language),
       change: '+8%',
       positive: true,
       color: 'text-purple-600'
@@ -228,7 +228,7 @@ const AnalyticsWidget: React.FC = () => {
           <p className="body-md font-medium text-foreground mb-2">{label}</p>
           {payload.map((entry: any, index: number) => (
             <p key={index} className="text-sm" style={{ color: entry.color }}>
-              {entry.dataKey === 'visitors' ? getText('visitors') : getText('pageViews')}: {formatNumber(entry.value, language)}
+              {entry.dataKey === 'visitors' ? getText('visitors') : getText('pageViews')}: {formatNumber(entry.value)}
             </p>
           ))}
         </div>
@@ -254,7 +254,7 @@ const AnalyticsWidget: React.FC = () => {
         dominantBaseline="central"
         className="text-xs font-medium"
       >
-        {formatPercentage(percent * 100, language, 0)}
+        {formatPercentage(percent * 100)}
       </text>
     );
   };
@@ -425,7 +425,7 @@ const AnalyticsWidget: React.FC = () => {
                       </span>
                     </div>
                     <span className="text-sm font-medium text-foreground">
-                      {formatPercentage(source.value, language, 0)}
+                      {formatPercentage(source.value)}
                     </span>
                   </div>
                 ))}
@@ -448,7 +448,7 @@ const AnalyticsWidget: React.FC = () => {
                   <div className="flex-1">
                     <p className="text-sm font-medium text-foreground">{page.page}</p>
                     <p className="text-xs text-muted-foreground">
-                      {formatNumber(page.views, language)} {getText('pageViews').toLowerCase()}
+                      {formatNumber(page.views)} {getText('pageViews').toLowerCase()}
                     </p>
                   </div>
                   <div className={`flex items-center gap-1 text-xs font-medium ${
@@ -473,7 +473,7 @@ const AnalyticsWidget: React.FC = () => {
                 {getText('conversionRate')}
               </h4>
               <span className="text-lg font-medium text-success">
-                {formatPercentage(4.2, language)}
+                {formatPercentage(4.2)}
               </span>
             </div>
             <div className="text-xs text-muted-foreground mb-2">
