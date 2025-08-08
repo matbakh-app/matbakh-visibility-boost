@@ -1,6 +1,6 @@
 import React from 'react';
 import { TrendingUp, TrendingDown, AlertTriangle, CheckCircle, ExternalLink } from 'lucide-react';
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
 
 interface AnalysisCardProps {
   title: string;

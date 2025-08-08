@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { Card } from './ui/card';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Switch } from './ui/switch';
-import { Badge } from './ui/badge';
-import { Separator } from './ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Settings, 
   Plus, 
@@ -208,12 +208,12 @@ export function AdminPromoConsole({ onClose }: AdminPromoConsoleProps) {
 
   const getCodeColor = (type: PromoCode['type']) => {
     switch (type) {
-      case 'welcome': return 'success';
-      case 'business': return 'default';
-      case 'marketing': return 'secondary';
-      case 'referral': return 'outline';
-      case 'custom': return 'destructive';
-      default: return 'secondary';
+      case 'welcome': return 'default' as const;
+      case 'business': return 'default' as const;
+      case 'marketing': return 'secondary' as const;
+      case 'referral': return 'outline' as const;
+      case 'custom': return 'destructive' as const;
+      default: return 'secondary' as const;
     }
   };
 
@@ -451,10 +451,10 @@ export function AdminPromoConsole({ onClose }: AdminPromoConsoleProps) {
                   <Label>Verwendungs-Limit</Label>
                   <Select 
                     value={newCode.maxUses.toString()} 
-                    onValueChange={(value) => setNewCode(prev => ({ 
-                      ...prev, 
-                      maxUses: value === 'unlimited' ? 'unlimited' : 'custom'
-                    }))}
+    onValueChange={(value) => setNewCode(prev => ({ 
+      ...prev, 
+      maxUses: value === 'unlimited' ? 'unlimited' : prev.customMaxUses
+    }))}
                   >
                     <SelectTrigger>
                       <SelectValue />
