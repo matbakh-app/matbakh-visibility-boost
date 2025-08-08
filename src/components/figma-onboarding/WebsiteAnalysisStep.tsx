@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import LanguageToggle from '@/components/header/LanguageToggle';
+import { Card } from './ui/card';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Checkbox } from './ui/checkbox';
+import { Alert, AlertDescription } from './ui/alert';
+import { Badge } from './ui/badge';
+import { LanguageSwitch } from './LanguageSwitch';
+import { ThemeToggle } from './ThemeToggle';
 import { 
   ArrowLeft, 
   Globe, 
@@ -20,29 +21,8 @@ import {
   Crown,
   Sparkles
 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-
-type WebsiteAnalysisFormData = {
-  website: string;
-  hasGoogleMyBusiness: boolean;
-  hasSocialMedia: boolean;
-  hasOnlineBooking: boolean;
-  email: string;
-  privacyAccepted: boolean;
-  emailReportAccepted: boolean;
-  emailConfirmed: boolean;
-  marketingAccepted: boolean;
-  benchmarks: string[];
-};
-
-type GuestCodeInfo = {
-  code: string;
-  features: string[];
-  referrerName?: string;
-  referrerEmail?: string;
-  validUntil?: string;
-  isValid?: boolean;
-};
+import { WebsiteAnalysisFormData, GuestCodeInfo } from '../types/app';
+import { useI18n } from '../contexts/i18nContext';
 
 interface WebsiteAnalysisStepProps {
   onNext: (data: WebsiteAnalysisFormData) => void;
@@ -57,7 +37,7 @@ const PROMO_CODES: Record<string, GuestCodeInfo> = {
     code: 'OLIVIA2024XYZ',
     referrerName: 'Olivia Martinez',
     referrerEmail: 'o.martinez@restaurant-group.com',
-    validUntil: '2024-12-31',
+    validUntil: new Date('2024-12-31'),
     isValid: true,
     features: ['premium_analysis', 'competitor_tracking', 'email_reports', 'priority_support']
   },
@@ -65,7 +45,7 @@ const PROMO_CODES: Record<string, GuestCodeInfo> = {
     code: 'MARCO2024ABC',
     referrerName: 'Marco Schmidt',
     referrerEmail: 'm.schmidt@gastro-consulting.de',
-    validUntil: '2024-11-30',
+    validUntil: new Date('2024-11-30'),
     isValid: true,
     features: ['premium_analysis', 'email_reports']
   },
@@ -73,7 +53,7 @@ const PROMO_CODES: Record<string, GuestCodeInfo> = {
     code: 'SARAH2024DEF',
     referrerName: 'Sarah Weber',
     referrerEmail: 's.weber@marketing-agentur.com',
-    validUntil: '2024-10-31',
+    validUntil: new Date('2024-10-31'),
     isValid: true,
     features: ['premium_analysis', 'competitor_tracking', 'priority_support']
   }
@@ -85,14 +65,14 @@ export function WebsiteAnalysisStep({
   guestCodeInfo = null,
   emailConfirmed = false
 }: WebsiteAnalysisStepProps) {
-  const { i18n } = useTranslation();
-  const language = i18n.language as 'de' | 'en';
+  const { language } = useI18n();
   const [formData, setFormData] = useState<WebsiteAnalysisFormData>({
     website: '',
-    hasGoogleMyBusiness: false,
-    hasSocialMedia: false,
-    hasOnlineBooking: false,
-    benchmarks: ['', '', ''],
+    benchmarks: {
+      benchmark1: '',
+      benchmark2: '',
+      benchmark3: ''
+    },
     email: '',
     privacyAccepted: false,
     emailReportAccepted: false,
@@ -231,10 +211,12 @@ export function WebsiteAnalysisStep({
 
   const handleInputChange = (field: keyof WebsiteAnalysisFormData | string, value: string | boolean) => {
     if (field.startsWith('benchmark')) {
-      const index = parseInt(field.replace('benchmark', '')) - 1;
       setFormData(prev => ({
         ...prev,
-        benchmarks: prev.benchmarks.map((item, i) => i === index ? value as string : item)
+        benchmarks: {
+          ...prev.benchmarks,
+          [field]: value as string
+        }
       }));
     } else {
       setFormData(prev => ({
@@ -281,7 +263,7 @@ export function WebsiteAnalysisStep({
         return;
       }
 
-      if (new Date() > new Date(codeInfo.validUntil || '')) {
+      if (new Date() > codeInfo.validUntil) {
         setCodeValidationState('expired');
         return;
       }
@@ -364,7 +346,8 @@ export function WebsiteAnalysisStep({
                   Premium-Code aktiv
                 </Badge>
               )}
-              <LanguageToggle />
+              <LanguageSwitch variant="compact" />
+              <ThemeToggle variant="icon-only" size="sm" />
             </div>
           </div>
         </div>
@@ -452,7 +435,7 @@ export function WebsiteAnalysisStep({
                         {t.codeSuccessConfirm}
                       </h4>
                       <p className="text-sm text-muted-foreground">
-                        {t.codeValidUntil}: {new Date(validatedCodeInfo.validUntil || '').toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US')}
+                        {t.codeValidUntil}: {validatedCodeInfo.validUntil.toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US')}
                       </p>
                     </div>
 
@@ -521,7 +504,7 @@ export function WebsiteAnalysisStep({
                     <Input
                       key={num}
                       placeholder={num === 1 ? t.benchmark1Placeholder : t.benchmark2Placeholder}
-                      value={formData.benchmarks[num - 1] || ''}
+                      value={formData.benchmarks[`benchmark${num}` as keyof typeof formData.benchmarks]}
                       onChange={(e) => handleInputChange(`benchmark${num}`, e.target.value)}
                       className="input-dark-enhanced"
                     />
