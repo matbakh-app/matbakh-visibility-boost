@@ -36,14 +36,14 @@ const themes = [
 
 interface ThemeToggleProps {
   variant?: 'default' | 'compact' | 'icon-only';
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'default' | 'lg';
   className?: string;
   showLabel?: boolean;
 }
 
 export function ThemeToggle({ 
   variant = 'default', 
-  size = 'md',
+  size = 'default',
   className,
   showLabel = true 
 }: ThemeToggleProps) {
@@ -65,7 +65,7 @@ export function ThemeToggle({
           "hover:bg-muted/50 hover:scale-105 active:scale-95",
           "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
           size === 'sm' && "h-8 w-8",
-          size === 'md' && "h-9 w-9", 
+          size === 'default' && "h-9 w-9", 
           size === 'lg' && "h-10 w-10",
           className
         )}
@@ -109,12 +109,12 @@ export function ThemeToggle({
         <PopoverTrigger asChild>
           <Button
             variant="ghost"
-            size={size}
+            size={size === 'default' ? 'default' : size}
             className={cn(
               "gap-2 transition-all duration-200",
               "hover:bg-muted/50",
               size === 'sm' && "h-8 px-2",
-              size === 'md' && "h-9 px-3",
+              size === 'default' && "h-9 px-3",
               size === 'lg' && "h-10 px-4",
               className
             )}
@@ -188,7 +188,7 @@ export function ThemeToggle({
             "hover:bg-muted/50 hover:border-muted-foreground/25",
             "focus-visible:ring-2 focus-visible:ring-ring",
             size === 'sm' && "h-8 px-3 text-xs",
-            size === 'md' && "h-9 px-4 text-sm",
+            size === 'default' && "h-9 px-4 text-sm",
             size === 'lg' && "h-10 px-5 text-base",
             className
           )}
