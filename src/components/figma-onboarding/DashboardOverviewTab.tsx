@@ -131,8 +131,22 @@ export function DashboardOverviewTab({
       />
 
       <FormDebugCard 
-        restaurantData={restaurantData || null}
-        websiteAnalysisData={websiteAnalysisData || null}
+        restaurantData={{
+          restaurantName: 'Sample Restaurant',
+          address: 'Sample Address',
+          mainCategory: 'Restaurant',
+          priceRange: '€€'
+        }}
+        websiteAnalysisData={{
+          website: 'https://example.com',
+          email: 'test@example.com',
+          emailConfirmed: false,
+          benchmarks: {
+            local: false,
+            regional: false,
+            national: false
+          }
+        }}
         onNavigateToView={onNavigateToView}
         onStartAnalysis={onStartAnalysis}
       />

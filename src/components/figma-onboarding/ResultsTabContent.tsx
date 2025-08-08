@@ -1,10 +1,10 @@
 import React from 'react';
-import { TabsContent } from './ui/tabs';
-import { Button } from './ui/button';
-import { Card } from './ui/card';
+import { TabsContent } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { FileText } from 'lucide-react';
-import { UserPlan } from '../types/app';
-import { AI_FEATURES_BY_PLAN } from '../constants/mockData';
+import { UserPlan } from '@/types/app';
+import { AI_FEATURES_BY_PLAN } from '@/constants/mockData';
 
 interface ResultsTabContentProps {
   userPlan: UserPlan;

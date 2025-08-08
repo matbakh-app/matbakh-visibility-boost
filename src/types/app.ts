@@ -64,6 +64,9 @@ export interface RestaurantFormData {
   address: string;
   mainCategory: string;
   priceRange: string;
+  phoneNumber?: string;
+  website?: string;
+  additionalServices?: string[];
 }
 
 export interface WebsiteAnalysisFormData {
@@ -75,6 +78,9 @@ export interface WebsiteAnalysisFormData {
     regional: boolean;
     national: boolean;
   };
+  privacyAccepted?: boolean;
+  emailReportAccepted?: boolean;
+  marketingAccepted?: boolean;
 }
 
 export type UserType = 'guest' | 'registered';
@@ -84,4 +90,7 @@ export interface GuestCodeInfo {
   planType: 'basic' | 'premium';
   referrerName: string;
   isValid: boolean;
+  validUntil?: Date;
+  features?: string[];
+  referrerEmail?: string;
 }

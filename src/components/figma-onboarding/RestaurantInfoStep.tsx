@@ -20,8 +20,8 @@ import {
   Gift,
   BarChart3
 } from 'lucide-react';
-import { RestaurantFormData, GuestCodeInfo } from '../types/app';
-import { useI18n } from '../contexts/i18nContext';
+import { RestaurantFormData, GuestCodeInfo } from '@/types/app';
+import { useI18n } from '@/contexts/i18nContext';
 
 interface RestaurantInfoStepProps {
   onNext: (data: RestaurantFormData) => void;

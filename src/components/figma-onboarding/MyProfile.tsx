@@ -216,7 +216,7 @@ export function MyProfile({ onNavigateToCompanyProfile, onBack }: MyProfileProps
                     {t.darkModeDesc}
                   </p>
                 </div>
-                <ThemeToggle variant="switch" />
+                <ThemeToggle variant="icon-only" />
               </div>
 
               {/* Language Setting */}
@@ -229,7 +229,7 @@ export function MyProfile({ onNavigateToCompanyProfile, onBack }: MyProfileProps
                     {t.languageDesc}
                   </p>
                 </div>
-                <LanguageSwitch variant="select" />
+                <LanguageSwitch variant="compact" />
               </div>
 
               <div className="border-t pt-6">

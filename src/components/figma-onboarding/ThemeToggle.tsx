@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Button } from './ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
-import { Command, CommandGroup, CommandItem } from './ui/command';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandGroup, CommandItem } from '@/components/ui/command';
 import { 
   Sun, 
   Moon, 
@@ -10,24 +10,24 @@ import {
   ChevronDown,
   Palette
 } from 'lucide-react';
-import { cn } from './ui/utils';
-import { useTheme, Theme } from '../contexts/themeContext';
+import { cn } from '@/lib/utils';
+import { useTheme } from 'next-themes';
 
 const themes = [
   {
-    value: 'light' as Theme,
+    value: 'light',
     label: 'Light',
     icon: Sun,
     description: 'Heller Modus'
   },
   {
-    value: 'dark' as Theme,
+    value: 'dark',
     label: 'Dark',
     icon: Moon,
     description: 'Dunkler Modus'
   },
   {
-    value: 'system' as Theme,
+    value: 'system',
     label: 'System',
     icon: Monitor,
     description: 'System-Einstellung'
@@ -47,7 +47,7 @@ export function ThemeToggle({
   className,
   showLabel = true 
 }: ThemeToggleProps) {
-  const { theme, setTheme, actualTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
 
   const currentTheme = themes.find(t => t.value === theme);
@@ -59,7 +59,7 @@ export function ThemeToggle({
       <Button
         variant="ghost"
         size={size === 'sm' ? 'sm' : size === 'lg' ? 'lg' : 'icon'}
-        onClick={() => setTheme(actualTheme === 'dark' ? 'light' : 'dark')}
+        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
         className={cn(
           "relative group transition-all duration-300",
           "hover:bg-muted/50 hover:scale-105 active:scale-95",
@@ -69,14 +69,14 @@ export function ThemeToggle({
           size === 'lg' && "h-10 w-10",
           className
         )}
-        aria-label={`Switch to ${actualTheme === 'dark' ? 'light' : 'dark'} theme`}
+        aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
       >
         <div className="relative w-4 h-4">
           {/* Sun Icon */}
           <Sun 
             className={cn(
               "absolute inset-0 transition-all duration-300 transform-gpu",
-              actualTheme === 'dark' 
+              theme === 'dark' 
                 ? "scale-0 rotate-90 opacity-0" 
                 : "scale-100 rotate-0 opacity-100"
             )} 
@@ -86,10 +86,10 @@ export function ThemeToggle({
           <Moon 
             className={cn(
               "absolute inset-0 transition-all duration-300 transform-gpu",
-              actualTheme === 'dark' 
+              theme === 'dark' 
                 ? "scale-100 rotate-0 opacity-100" 
                 : "scale-0 -rotate-90 opacity-0"
-            )} 
+            )}
           />
         </div>
         
