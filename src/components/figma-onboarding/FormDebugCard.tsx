@@ -1,8 +1,9 @@
 import React from 'react';
-import { Card } from './ui/card';
-import { Button } from './ui/button';
-import { RestaurantFormData, WebsiteAnalysisFormData } from '../types/app';
-import { ViewType } from '../hooks/useAppNavigation';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { RestaurantFormData, WebsiteAnalysisFormData } from '@/types/app';
+
+type ViewType = 'dashboard' | 'step1' | 'step2' | 'loading' | 'results';
 
 interface FormDebugCardProps {
   restaurantData: RestaurantFormData | null;
