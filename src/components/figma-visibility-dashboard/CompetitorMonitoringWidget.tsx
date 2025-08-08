@@ -1,11 +1,11 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
-import { Button } from './ui/button';
-import { Progress } from './ui/progress';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { Target, TrendingUp, Star, Users, ArrowUp, ArrowDown, Eye, ExternalLink } from 'lucide-react';
-import { useLanguage } from '../hooks/useLanguage';
-import { formatNumber, formatCurrency } from '../utils/formatters';
+import { useLanguage } from '@/hooks/useLanguage';
+import { formatNumber, formatCurrency } from '@/utils/formatters';
 
 const CompetitorMonitoringWidget: React.FC = () => {
   const { language } = useLanguage();
