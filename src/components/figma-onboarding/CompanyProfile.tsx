@@ -209,7 +209,7 @@ export function CompanyProfile({ onSave, onBack, initialData }: CompanyProfilePr
       setFormData(prev => ({
         ...prev,
         [parent]: {
-          ...prev[parent as keyof CompanyProfileData],
+          ...(prev[parent as keyof CompanyProfileData] as object),
           [child]: value
         }
       }));

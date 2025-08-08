@@ -1,4 +1,5 @@
 export type UserPlan = 'basic' | 'business' | 'premium';
+export type AIStatus = 'ready' | 'busy' | 'error' | 'maintenance';
 
 export interface User {
   id: string;
@@ -7,6 +8,11 @@ export interface User {
   plan: UserPlan;
   usedAnalyses: number;
   totalAnalyses: number | 'unlimited';
+}
+
+export interface UsageData {
+  used: number;
+  total: number | 'unlimited';
 }
 
 export interface Restaurant {
