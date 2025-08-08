@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Button } from './ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
-import { Command, CommandEmpty, CommandGroup, CommandItem } from './ui/command';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
 import { Check, ChevronDown, Globe } from 'lucide-react';
-import { cn } from './ui/utils';
-import { useI18n, Language } from '../contexts/i18nContext';
+import { cn } from '@/lib/utils';
+import { useI18n, Language } from '@/contexts/i18nContext';
 
 const languages = [
   {
