@@ -1,575 +1,375 @@
 import React, { useState } from 'react';
 import { I18nProvider } from '@/contexts/i18nContext';
 import { ThemeProvider } from '@/contexts/themeContext';
-import { UsageLimitManager } from './UsageLimitManager';
-import { PromoCodeSystem } from './PromoCodeSystem';
+import { AILoadingScreen } from './AILoadingScreen';
+import { AIResultsScreen } from './AIResultsScreen';
+import { AnalysisCard } from './AnalysisCard';
 import { AdminPromoConsole } from './AdminPromoConsole';
 import { BusinessIntelligenceDashboard } from './BusinessIntelligenceDashboard';
 import { CompetitiveIntelligenceDashboard } from './CompetitiveIntelligenceDashboard';
-import { FinancialAnalyticsDashboard } from './FinancialAnalyticsDashboard';
 import { CustomerDemographicsDashboard } from './CustomerDemographicsDashboard';
-import { AILoadingScreen } from './AILoadingScreen';
-import { AIResultsScreen } from './AIResultsScreen';
-import { GuestLandingPage } from './components/GuestLandingPage';
-import { GuestResultsScreen } from './components/GuestResultsScreen';
-import { SmartSchedulingInterface } from './components/SmartSchedulingInterface';
-import { AnalysisCard, MetricCard } from './components/AnalysisCard';
-import { PaywallOverlay } from './components/PaywallOverlay';
-import { ScoreCard, MultiScoreCard } from './components/ProgressRing';
-import { RestaurantInfoStep } from './components/RestaurantInfoStep';
-import { WebsiteAnalysisStep } from './components/WebsiteAnalysisStep';
-import { DashboardHeader } from './components/DashboardHeader';
-import { DashboardTabs } from './components/DashboardTabs';
-import { ResultsTabContent } from './components/ResultsTabContent';
-import { DashboardOverviewTab } from './components/DashboardOverviewTab';
-import { MyProfile } from './components/MyProfile';
-import { CompanyProfile } from './components/CompanyProfile';
+import { CompanyProfile } from './CompanyProfile';
 import { LanguageSwitch } from './LanguageSwitch';
 import { ThemeToggle } from './ThemeToggle';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Tabs, TabsContent } from '@/components/ui/tabs';
-
-// Import types and utilities
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserPlan } from '@/types/app';
 import { useI18n } from '@/contexts/i18nContext';
 
-// Company Profile Data Type
-interface CompanyProfileData {
-  companyName: string;
-  logo: string;
-  address: {
-    street: string;
-    zipCode: string;
-    city: string;
-  };
-  taxId: string;
-  vatNumber: string;
-  legalForm: string;
-  website: string;
-  socialMedia: {
-    twitter: string;
-    facebook: string;
-    instagram: string;
-  };
-  competitors: string[];
-}
+type ViewType = 'dashboard' | 'loading' | 'results' | 'admin' | 'business-intelligence' | 'competitive-intelligence' | 'customer-demographics' | 'company-profile';
 
 function AppContent() {
-  // Core state
-  const [currentStep, setCurrentStep] = useState(1);
-  const [showPaywall, setShowPaywall] = useState(false);
-  const [restaurantData, setRestaurantData] = useState<RestaurantFormData | null>(null);
-  const [websiteAnalysisData, setWebsiteAnalysisData] = useState<WebsiteAnalysisFormData | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  // Profile state
-  const [companyProfileData, setCompanyProfileData] = useState<CompanyProfileData | null>(null);
-
-  // User type and guest state - Reset to original guest state
-  const [userType, setUserType] = useState<UserType>('guest');
-  const [guestCodeInfo, setGuestCodeInfo] = useState<GuestCodeInfo | null>(null);
-
-  // AI and Usage state
-  const [aiStatus, setAiStatus] = useState<AIStatus>('ready');
+  const [activeView, setActiveView] = useState<ViewType>('dashboard');
   const [userPlan, setUserPlan] = useState<UserPlan>('business');
-  const [isAnalysisRunning, setIsAnalysisRunning] = useState(false);
-  const [analysisQueue, setAnalysisQueue] = useState<number | null>(null);
-  const [dateRange, setDateRange] = useState('30d');
-
-  // Scheduling state
-  const [scheduleSettings, setScheduleSettings] = useState<ScheduleSettings>({
-    enabled: false,
-    time: '08:00',
-    weekdays: ['mo', 'di', 'mi', 'do', 'fr'],
-    emailNotification: true
-  });
-
-  // Navigation hook - Back to original behavior (starts with 'landing')
-  const { activeView, navigateToView } = useAppNavigation();
+  const [isAdmin, setIsAdmin] = useState(false);
   const { language } = useI18n();
 
-  // Computed values
-  const usageData = getUsageData(userPlan);
-  const canStart = canStartAnalysis(userPlan, usageData, userType);
-  const showCostPreview = shouldShowCostPreview(canStart, userPlan, userType);
-
-  const resetFormData = () => {
-    setRestaurantData(null);
-    setWebsiteAnalysisData(null);
-    setCurrentStep(1);
+  const mockUsageData = {
+    used: 5,
+    total: 20
   };
 
-  // Event handlers
-  const eventHandlers = createAppEventHandlers(
-    setRestaurantData,
-    setWebsiteAnalysisData,
-    setCurrentStep,
-    setIsAnalysisRunning,
-    setAiStatus,
-    setAnalysisQueue,
-    setGuestCodeInfo,
-    setUserType,
-    setUserPlan,
-    setScheduleSettings,
-    userType,
-    userPlan,
-    canStart,
-    navigateToView,
-    resetFormData
-  );
-
-  // Profile event handlers
-  const handleCompanyProfileSave = (data: CompanyProfileData) => {
-    setCompanyProfileData(data);
-    console.log('Company profile saved:', data);
-    // In real app, this would be an API call
-    navigateToView('profile');
-  };
-
-  // Settings texts
-  const settingsTexts = {
-    de: {
-      title: "Account Einstellungen",
-      currentPlan: "Aktueller Plan",
-      changePlan: "Plan ändern",
-      language: "Sprache / Language",
-      languageDesc: "Interface language settings",
-      designTheme: "Design Theme",
-      themeDesc: "Light, dark or system preference",
-      userType: "User Type",
-      userTypeDesc: (type: UserType) => type === 'guest' ? 'Guest User (Code-basiert)' : 'Registered User',
-      guestMode: "Guest Mode",
-      adminMode: "Admin-Modus",
-      adminDesc: "Zugriff auf Admin-Features und Promo-Code-Management",
-      activate: "Aktivieren",
-      deactivate: "Deaktivieren",
-      activeScheduling: "Aktives Scheduling",
-      dailyTime: "Zeit: Täglich um",
-      weekdaysSelected: "Wochentage:",
-      emailStatus: "Email:",
-      profileSettings: "Profil Einstellungen",
-      profileDesc: "Persönliche und Firmen-Profile verwalten",
-      manageProfile: "Profil verwalten"
+  const mockCompanyData = {
+    companyName: 'Sample Restaurant',
+    logo: '',
+    address: {
+      street: 'Main Street 123',
+      zipCode: '12345',
+      city: 'Sample City'
     },
-    en: {
-      title: "Account Settings",
-      currentPlan: "Current Plan",
-      changePlan: "Change Plan",
-      language: "Language / Sprache",
-      languageDesc: "Interface language settings", 
-      designTheme: "Design Theme",
-      themeDesc: "Light, dark or system preference",
-      userType: "User Type",
-      userTypeDesc: (type: UserType) => type === 'guest' ? 'Guest User (Code-based)' : 'Registered User',
-      guestMode: "Guest Mode",
-      adminMode: "Admin Mode",
-      adminDesc: "Access to admin features and promo code management",
-      activate: "Activate",
-      deactivate: "Deactivate",
-      activeScheduling: "Active Scheduling",
-      dailyTime: "Time: Daily at",
-      weekdaysSelected: "Weekdays:",
-      emailStatus: "Email:",
-      profileSettings: "Profile Settings",
-      profileDesc: "Manage personal and company profiles",
-      manageProfile: "Manage Profile"
-    }
+    taxId: '123456789'
   };
 
-  const st = settingsTexts[language];
-
-  // View Rendering
-  if (activeView === 'landing') {
-    return (
-      <GuestLandingPage
-        onCodeValidated={eventHandlers.handleGuestCodeValidated}
-        onContinueWithoutCode={eventHandlers.handleContinueWithoutCode}
-        onLogin={eventHandlers.handleLogin}
-      />
-    );
-  }
-
-  if (activeView === 'profile') {
-    return (
-      <MyProfile
-        onNavigateToCompanyProfile={() => navigateToView('company-profile')}
-        onBack={() => navigateToView('dashboard')}
-      />
-    );
-  }
-
-  if (activeView === 'company-profile') {
-    return (
-      <CompanyProfile
-        onSave={handleCompanyProfileSave}
-        onBack={() => navigateToView('profile')}
-        initialData={companyProfileData || {
-          website: websiteAnalysisData?.website || '',
-          competitors: [
-            websiteAnalysisData?.benchmarks?.benchmark1,
-            websiteAnalysisData?.benchmarks?.benchmark2,
-            websiteAnalysisData?.benchmarks?.benchmark3
-          ].filter(Boolean) || []
-        }}
-      />
-    );
-  }
-
+  // Loading Screen
   if (activeView === 'loading') {
     return (
       <AILoadingScreen
         isVisible={true}
-        onComplete={eventHandlers.handleAnalysisComplete}
-        onCancel={eventHandlers.handleAnalysisCancel}
-        userPlan={userType === 'guest' ? 'premium' : userPlan}
-        usedAnalyses={usageData.used}
-        totalAnalyses={usageData.total}
+        onComplete={() => setActiveView('results')}
+        onCancel={() => setActiveView('dashboard')}
+        userPlan={userPlan}
+        usedAnalyses={mockUsageData.used}
+        totalAnalyses={mockUsageData.total}
       />
     );
   }
 
+  // Results Screen
   if (activeView === 'results') {
-    if (userType === 'guest' && guestCodeInfo) {
-      return (
-        <GuestResultsScreen
-          guestCodeInfo={guestCodeInfo}
-          onBack={eventHandlers.handleBackToVCLanding}
-          onCreateAccount={eventHandlers.handleGuestCreateAccount}
-          onEmailResults={eventHandlers.handleEmailResults}
-        />
-      );
-    }
-
     return (
       <AIResultsScreen
         userPlan={userPlan}
-        onBack={eventHandlers.handleBackToDashboard}
-        onUpgrade={() => setShowPaywall(true)}
-        onScheduleNext={eventHandlers.handleBackToDashboard}
+        onBack={() => setActiveView('dashboard')}
+        onUpgrade={() => setUserPlan('premium')}
+        onScheduleNext={() => setActiveView('dashboard')}
       />
     );
   }
 
-  if (activeView === 'step1') {
+  // Admin Console
+  if (activeView === 'admin') {
     return (
-      <RestaurantInfoStep
-        onNext={eventHandlers.handleStep1Complete}
-        onBack={eventHandlers.handleBackToVCLanding}
-        skipEmailGate={true}
-        guestCodeInfo={guestCodeInfo}
-      />
+      <div className="min-h-screen bg-background">
+        <header className="border-b bg-card">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <h1 className="text-xl font-bold">Admin Console</h1>
+              <div className="flex items-center gap-3">
+                <Button variant="outline" onClick={() => setActiveView('dashboard')}>
+                  Back to Dashboard
+                </Button>
+                <LanguageSwitch />
+                <ThemeToggle />
+              </div>
+            </div>
+          </div>
+        </header>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <AdminPromoConsole />
+        </div>
+      </div>
     );
   }
 
-  if (activeView === 'step2') {
+  // Business Intelligence
+  if (activeView === 'business-intelligence') {
     return (
-      <WebsiteAnalysisStep
-        onNext={eventHandlers.handleStep2Complete}
-        onBack={eventHandlers.handleBackToStep1}
-        guestCodeInfo={guestCodeInfo}
-        emailConfirmed={websiteAnalysisData?.emailConfirmed}
-      />
+      <div className="min-h-screen bg-background">
+        <header className="border-b bg-card">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <h1 className="text-xl font-bold">Business Intelligence</h1>
+              <div className="flex items-center gap-3">
+                <Button variant="outline" onClick={() => setActiveView('dashboard')}>
+                  Back to Dashboard
+                </Button>
+                <LanguageSwitch />
+                <ThemeToggle />
+              </div>
+            </div>
+          </div>
+        </header>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <BusinessIntelligenceDashboard 
+            userPlan={userPlan}
+            dateRange="30d"
+            onDateRangeChange={() => {}}
+          />
+        </div>
+      </div>
     );
   }
 
-  // Main dashboard (only for registered users)
+  // Competitive Intelligence
+  if (activeView === 'competitive-intelligence') {
+    return (
+      <div className="min-h-screen bg-background">
+        <header className="border-b bg-card">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <h1 className="text-xl font-bold">Competitive Intelligence</h1>
+              <div className="flex items-center gap-3">
+                <Button variant="outline" onClick={() => setActiveView('dashboard')}>
+                  Back to Dashboard
+                </Button>
+                <LanguageSwitch />
+                <ThemeToggle />
+              </div>
+            </div>
+          </div>
+        </header>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <CompetitiveIntelligenceDashboard 
+            userPlan={userPlan}
+            onUpgrade={() => setUserPlan('premium')}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Customer Demographics
+  if (activeView === 'customer-demographics') {
+    return (
+      <div className="min-h-screen bg-background">
+        <header className="border-b bg-card">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <h1 className="text-xl font-bold">Customer Demographics</h1>
+              <div className="flex items-center gap-3">
+                <Button variant="outline" onClick={() => setActiveView('dashboard')}>
+                  Back to Dashboard
+                </Button>
+                <LanguageSwitch />
+                <ThemeToggle />
+              </div>
+            </div>
+          </div>
+        </header>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <CustomerDemographicsDashboard 
+            userPlan={userPlan}
+            onUpgrade={() => setUserPlan('premium')}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Company Profile
+  if (activeView === 'company-profile') {
+    return (
+      <div className="min-h-screen bg-background">
+        <header className="border-b bg-card">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <h1 className="text-xl font-bold">Company Profile</h1>
+              <div className="flex items-center gap-3">
+                <Button variant="outline" onClick={() => setActiveView('dashboard')}>
+                  Back to Dashboard
+                </Button>
+                <LanguageSwitch />
+                <ThemeToggle />
+              </div>
+            </div>
+          </div>
+        </header>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <CompanyProfile
+            onSave={(data) => {
+              console.log('Company data saved:', data);
+              setActiveView('dashboard');
+            }}
+            onBack={() => setActiveView('dashboard')}
+            initialData={mockCompanyData}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Main Dashboard
   return (
-    <div className="min-h-screen bg-background theme-transition">
-      <DashboardHeader
-        aiStatus={aiStatus}
-        usageData={usageData}
-        userPlan={userPlan}
-        isAdmin={isAdmin}
-        onAdminToggle={() => setIsAdmin(!isAdmin)}
-        onUpgrade={() => setShowPaywall(true)}
-      />
+    <div className="min-h-screen bg-background">
+      <header className="border-b bg-card">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <h1 className="text-xl font-bold">Matbakh Analytics Dashboard</h1>
+            <div className="flex items-center gap-3">
+              {isAdmin && (
+                <Button variant="outline" onClick={() => setActiveView('admin')}>
+                  Admin Console
+                </Button>
+              )}
+              <Button variant="outline" onClick={() => setIsAdmin(!isAdmin)}>
+                {isAdmin ? 'Exit Admin' : 'Admin Mode'}
+              </Button>
+              <LanguageSwitch />
+              <ThemeToggle />
+            </div>
+          </div>
+        </div>
+      </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs defaultValue="dashboard" className="space-y-8">
-          <DashboardTabs isAdmin={isAdmin} />
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-6">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="analysis">Analysis</TabsTrigger>
+            <TabsTrigger value="business-intel">Business Intel</TabsTrigger>
+            <TabsTrigger value="competitive">Competitive</TabsTrigger>
+            <TabsTrigger value="customers">Customers</TabsTrigger>
+            <TabsTrigger value="profile">Profile</TabsTrigger>
+          </TabsList>
 
-          {/* Overview Tab */}
-          <TabsContent value="dashboard">
-            <DashboardOverviewTab
-              userPlan={userPlan}
-              userType={userType}
-              activeView={activeView}
-              usageData={usageData}
-              canStart={canStart}
-              showCostPreview={showCostPreview}
-              isAnalysisRunning={isAnalysisRunning}
-              analysisQueue={analysisQueue}
-              restaurantData={restaurantData}
-              websiteAnalysisData={websiteAnalysisData}
-              onUpgrade={() => setShowPaywall(true)}
-              onPurchaseAnalysis={eventHandlers.handlePurchaseAnalysis}
-              onStartAnalysis={eventHandlers.handleStartAnalysis}
-              onScheduleChange={eventHandlers.handleScheduleChange}
-              onNavigateToView={navigateToView}
-              onSetUserType={setUserType}
-              onBackToVCLanding={eventHandlers.handleBackToVCLanding}
-            />
-          </TabsContent>
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Restaurant Visibility Dashboard</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-muted-foreground">
+                    Analyze your restaurant's online visibility across multiple platforms.
+                  </p>
+                  <div className="flex gap-4">
+                    <Button onClick={() => setActiveView('loading')}>
+                      Start Analysis
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setActiveView('results')}
+                    >
+                      View Results
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
 
-          {/* Analytics Tab */}
-          <TabsContent value="analytics" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <ScoreCard
-                title="Overall Visibility Score"
-                score={78}
-                description="Ihre Gesamtsichtbarkeit im digitalen Raum"
-                trend="up"
-                trendValue={12}
-                size="lg"
-              />
-              <MultiScoreCard
-                title="Platform Breakdown"
-                description="Sichtbarkeit aufgeschlüsselt nach Plattformen"
-                scores={PLATFORM_SCORES}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {mockAnalysisData.map((analysis, index) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <AnalysisCard
-                  key={index}
-                  {...analysis}
-                  isLocked={analysis.title !== 'Google My Business Optimierung' && userPlan === 'basic'}
+                  title="Google Business Profile"
+                  score={85}
+                  status="success"
+                  platform="Google"
+                  description="Your Google Business Profile is well optimized with complete information."
+                  recommendations={[
+                    "Add more customer photos",
+                    "Respond to recent reviews",
+                    "Update business hours for holidays"
+                  ]}
                 />
-              ))}
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {METRIC_CARDS_DATA.map((metric, index) => (
-                <MetricCard key={index} {...metric} />
-              ))}
-            </div>
-          </TabsContent>
-
-          {/* Scheduling Tab */}
-          <TabsContent value="scheduling" className="space-y-6">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold mb-2">⏰ Intelligentes Scheduling</h2>
-              <p className="text-muted-foreground">
-                Automatisierte VC-Läufe mit KI-basierten Empfehlungen und flexibler Zeitplanung
-              </p>
-            </div>
-            <SmartSchedulingInterface
-              userPlan={userPlan}
-              usedAnalyses={usageData.used}
-              totalAnalyses={usageData.total}
-              canStartAnalysis={canStart}
-              onStartAnalysis={eventHandlers.handleStartAnalysis}
-              onScheduleChange={eventHandlers.handleSmartScheduleChange}
-              onUpgrade={() => setShowPaywall(true)}
-            />
-          </TabsContent>
-
-          {/* Results Tab */}
-          <ResultsTabContent
-            userPlan={userPlan}
-            onResultsView={() => navigateToView('results')}
-            onPlanChange={setUserPlan}
-          />
-
-          {/* Settings Tab - Enhanced with Profile Management */}
-          <TabsContent value="settings" className="space-y-6">
-            <Card className="p-6 card-dark-enhanced">
-              <h2 className="text-xl font-semibold mb-4">{st.title}</h2>
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">{st.currentPlan}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {getPlanDescription(userPlan)}
-                    </p>
-                  </div>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setShowPaywall(true)} 
-                    className="btn-hover-enhanced"
-                  >
-                    {st.changePlan}
-                  </Button>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">{st.profileSettings}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {st.profileDesc}
-                    </p>
-                  </div>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => navigateToView('profile')}
-                    className="btn-hover-enhanced"
-                  >
-                    {st.manageProfile}
-                  </Button>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">{st.language}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {st.languageDesc}
-                    </p>
-                  </div>
-                  <LanguageSwitch variant="compact" />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">{st.designTheme}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {st.themeDesc}
-                    </p>
-                  </div>
-                  <ThemeToggle variant="compact" />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">{st.userType}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {st.userTypeDesc(userType)}
-                    </p>
-                  </div>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => {
-                      setUserType('guest');
-                      navigateToView('landing');
-                    }}
-                    className="btn-hover-enhanced"
-                  >
-                    {st.guestMode}
-                  </Button>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">{st.adminMode}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {st.adminDesc}
-                    </p>
-                  </div>
-                  <Button 
-                    variant={isAdmin ? "default" : "outline"} 
-                    onClick={() => setIsAdmin(!isAdmin)}
-                    className="btn-hover-enhanced"
-                  >
-                    {isAdmin ? st.deactivate : st.activate}
-                  </Button>
-                </div>
-
-                {scheduleSettings.enabled && (
-                  <div className="p-4 bg-success/5 rounded-lg border border-success/20 theme-transition">
-                    <h4 className="font-medium mb-2">{st.activeScheduling}</h4>
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <p>{st.dailyTime} {scheduleSettings.time} Uhr</p>
-                      <p>{st.weekdaysSelected} {scheduleSettings.weekdays.length} ausgewählt</p>
-                      <p>{st.emailStatus} {scheduleSettings.emailNotification ? 'Aktiviert' : 'Deaktiviert'}</p>
-                    </div>
-                  </div>
-                )}
+                
+                <AnalysisCard
+                  title="Social Media Presence"
+                  score={65}
+                  status="warning"
+                  platform="Facebook & Instagram"
+                  description="Your social media presence needs improvement."
+                  recommendations={[
+                    "Post more regularly",
+                    "Engage with customer comments",
+                    "Use relevant hashtags"
+                  ]}
+                />
               </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="analysis">
+            <Card>
+              <CardHeader>
+                <CardTitle>Analysis Results</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Button onClick={() => setActiveView('results')}>
+                  View Detailed Analysis
+                </Button>
+              </CardContent>
             </Card>
           </TabsContent>
 
-          {/* Admin tabs */}
-          {isAdmin && (
-            <>
-              <TabsContent value="business-intelligence" className="space-y-6">
-                <BusinessIntelligenceDashboard
-                  userPlan={userPlan}
-                  dateRange={dateRange}
-                  onDateRangeChange={setDateRange}
-                />
-              </TabsContent>
+          <TabsContent value="business-intel">
+            <Card>
+              <CardHeader>
+                <CardTitle>Business Intelligence</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Button onClick={() => setActiveView('business-intelligence')}>
+                  Open Business Intelligence Dashboard
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-              <TabsContent value="financial" className="space-y-6">
-                <FinancialAnalyticsDashboard
-                  userPlan={userPlan}
-                  dateRange={dateRange}
-                  onDateRangeChange={setDateRange}
-                  onUpgrade={() => setShowPaywall(true)}
-                />
-              </TabsContent>
+          <TabsContent value="competitive">
+            <Card>
+              <CardHeader>
+                <CardTitle>Competitive Analysis</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Button onClick={() => setActiveView('competitive-intelligence')}>
+                  Open Competitive Intelligence Dashboard
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-              <TabsContent value="customers" className="space-y-6">
-                <CustomerDemographicsDashboard
-                  userPlan={userPlan}
-                  onUpgrade={() => setShowPaywall(true)}
-                />
-              </TabsContent>
+          <TabsContent value="customers">
+            <Card>
+              <CardHeader>
+                <CardTitle>Customer Demographics</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Button onClick={() => setActiveView('customer-demographics')}>
+                  Open Customer Demographics Dashboard
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-              <TabsContent value="competitive" className="space-y-6">
-                <CompetitiveIntelligenceDashboard
-                  userPlan={userPlan}
-                  onUpgrade={() => setShowPaywall(true)}
-                />
-              </TabsContent>
-
-              <TabsContent value="promo-codes" className="space-y-6">
-                <div className="mb-6">
-                  <h2 className="text-2xl font-bold mb-2">🎁 Promo-Code & Referral System</h2>
-                  <p className="text-muted-foreground">
-                    Promo-Codes einlösen, Freunde empfehlen und Gutschriften verdienen
-                  </p>
-                </div>
-                <PromoCodeSystem
-                  userPlan={userPlan}
-                  onUpgrade={() => setShowPaywall(true)}
-                  isAdmin={isAdmin}
-                />
-              </TabsContent>
-
-              <TabsContent value="admin" className="space-y-6">
-                <AdminPromoConsole />
-              </TabsContent>
-
-              <TabsContent value="usage-manager" className="space-y-6">
-                <div className="mb-6">
-                  <h2 className="text-2xl font-bold mb-2">💰 Usage-Limit Management</h2>
-                  <p className="text-muted-foreground">
-                    Dynamische Paywall-States, Pay-per-Use und Promo-Codes mit Analytics
-                  </p>
-                </div>
-                <UsageLimitManager
-                  userPlan={userPlan}
-                  usageData={usageData}
-                  onUpgrade={() => setShowPaywall(true)}
-                  onPurchaseAnalysis={eventHandlers.handlePurchaseAnalysis}
-                  onStartAnalysis={eventHandlers.handleStartAnalysis}
-                  canStartAnalysis={canStart}
-                />
-              </TabsContent>
-            </>
-          )}
+          <TabsContent value="profile">
+            <Card>
+              <CardHeader>
+                <CardTitle>Company Profile</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Button onClick={() => setActiveView('company-profile')}>
+                  Edit Company Profile
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
-
-      <PaywallOverlay
-        isVisible={showPaywall}
-        title={getUpgradeTitle(userPlan)}
-        features={getUpgradeFeatures(userPlan)}
-        onUpgrade={() => {
-          console.log('Upgrade clicked');
-          setShowPaywall(false);
-          setUserPlan(userPlan === 'basic' ? 'business' : 'premium');
-        }}
-        onClose={() => setShowPaywall(false)}
-      />
     </div>
   );
 }
 
 export default function App() {
   return (
-    <ThemeProvider defaultTheme="system" storageKey="vc-ui-theme">
+    <ThemeProvider>
       <I18nProvider>
         <AppContent />
       </I18nProvider>

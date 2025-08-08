@@ -1,11 +1,11 @@
 import React from 'react';
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
 import { LanguageSwitch } from './LanguageSwitch';
 import { ThemeToggle } from './ThemeToggle';
 import { BarChart3, Bell, Shield, Crown } from 'lucide-react';
 import { AIStatusIndicator, UsageCounter } from './AIStatusIndicator';
-import { UserPlan, AIStatus, UsageData } from '../types/app';
-import { useI18n } from '../contexts/i18nContext';
+import { UserPlan, AIStatus, UsageData } from '@/types/app';
+import { useI18n } from '@/contexts/i18nContext';
 
 interface DashboardHeaderProps {
   aiStatus: AIStatus;

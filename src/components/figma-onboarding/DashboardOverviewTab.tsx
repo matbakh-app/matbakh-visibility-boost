@@ -1,14 +1,30 @@
 import React from 'react';
-import { Card } from './ui/card';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Gift } from 'lucide-react';
 import { UsageLimitCard, CostPreviewCard } from './UsageLimitCard';
 import { AnalysisStartSection, AnalysisQueueStatus } from './AnalysisStartSection';
 import { DashboardQuickActions } from './DashboardQuickActions';
 import { FormDebugCard } from './FormDebugCard';
-import { UserPlan, UserType, RestaurantFormData, WebsiteAnalysisFormData } from '../types/app';
-import { ViewType } from '../hooks/useAppNavigation';
+import { UserPlan } from '@/types/app';
+
+type ViewType = 'step1' | 'step2' | 'dashboard' | 'results';
+type UserType = 'restaurant' | 'admin' | 'guest';
+
+interface RestaurantFormData {
+  restaurantName: string;
+  location: string;
+  website: string;
+  category: string;
+}
+
+interface WebsiteAnalysisFormData {
+  url: string;
+  competitor1: string;
+  competitor2: string;
+  targetAudience: string;
+}
 
 interface DashboardOverviewTabProps {
   // State

@@ -1,13 +1,14 @@
 import React from 'react';
-import { Card } from './ui/card';
-import { Button } from './ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { 
   UtensilsCrossed,
   Target,
   Globe
 } from 'lucide-react';
-import { UserPlan } from '../types/app';
-import { ViewType } from '../hooks/useAppNavigation';
+import { UserPlan } from '@/types/app';
+
+type ViewType = 'step1' | 'dashboard' | 'results';
 
 interface DashboardQuickActionsProps {
   userPlan: UserPlan;

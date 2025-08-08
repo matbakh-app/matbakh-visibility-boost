@@ -1,5 +1,5 @@
 import React from 'react';
-import { TabsList, TabsTrigger } from './ui/tabs';
+import { TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   BarChart2, 
   Zap, 
