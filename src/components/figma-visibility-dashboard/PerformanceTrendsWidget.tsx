@@ -1,15 +1,14 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
-import { Button } from './ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { TrendingUp, ArrowUp, ArrowDown, BarChart3, Target, Users, Euro, Clock, ExternalLink, Download } from 'lucide-react';
-import { useLanguage, useCommonTexts } from '../hooks/useLanguage';
-import { formatNumber, formatCurrency, formatPercentage, getDayNames } from '../utils/formatters';
+import { useLanguage } from '@/hooks/useLanguage';
+import { formatNumber, formatCurrency, formatPercentage, getDayNames } from '@/utils/formatters';
 
 const PerformanceTrendsWidget: React.FC = () => {
   const { language } = useLanguage();
-  const commonTexts = useCommonTexts();
 
   // Widget translations
   const translations = {
@@ -257,7 +256,7 @@ const PerformanceTrendsWidget: React.FC = () => {
       change: '+0.2',
       trend: 'up',
       color: 'text-purple-600',
-      status: commonTexts.excellent
+      status: language === 'de' ? 'Exzellent' : 'Excellent'
     },
     {
       icon: BarChart3,
@@ -555,11 +554,11 @@ const PerformanceTrendsWidget: React.FC = () => {
         <div className="flex gap-4 pt-4">
           <Button variant="outline" size="sm" className="flex-1 touch-target h-10 shadow-sm">
             <BarChart3 className="w-4 h-4 mr-2" />
-            {commonTexts.details}
+            {language === 'de' ? 'Details' : 'Details'}
           </Button>
           <Button size="sm" className="flex-1 touch-target h-10 shadow-sm">
             <Download className="w-4 h-4 mr-2" />
-            {commonTexts.reports}
+            {language === 'de' ? 'Berichte' : 'Reports'}
           </Button>
           <Button variant="secondary" size="sm" className="touch-target h-10 px-6 shadow-sm">
             <ExternalLink className="w-4 h-4 mr-2" />
