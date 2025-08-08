@@ -131,8 +131,8 @@ export function DashboardOverviewTab({
       />
 
       <FormDebugCard 
-        restaurantData={restaurantData}
-        websiteAnalysisData={websiteAnalysisData}
+        restaurantData={restaurantData || null}
+        websiteAnalysisData={websiteAnalysisData || null}
         onNavigateToView={onNavigateToView}
         onStartAnalysis={onStartAnalysis}
       />

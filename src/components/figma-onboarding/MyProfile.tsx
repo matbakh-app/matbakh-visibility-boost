@@ -1,10 +1,10 @@
 import React from 'react';
-import { Card } from './ui/card';
-import { Button } from './ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Switch } from './ui/switch';
-import { Label } from './ui/label';
-import { Badge } from './ui/badge';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { LanguageSwitch } from './LanguageSwitch';
 import { ThemeToggle } from './ThemeToggle';
 import { 
@@ -18,7 +18,7 @@ import {
   Settings,
   ChevronRight
 } from 'lucide-react';
-import { useI18n } from '../contexts/i18nContext';
+import { useI18n } from '@/contexts/i18nContext';
 
 interface MyProfileProps {
   onNavigateToCompanyProfile: () => void;
