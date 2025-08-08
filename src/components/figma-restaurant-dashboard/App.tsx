@@ -1,12 +1,34 @@
 import React from 'react';
-import ErrorBoundary from './components/ErrorBoundary';
-import OfflineProvider from './components/OfflineDetector';
-import FeatureTour from './components/FeatureTour';
-import DashboardHeader from './components/DashboardHeader';
-import DashboardGrid from './components/DashboardGrid';
-import LoadingSkeleton from './components/LoadingSkeleton';
-import { LanguageProvider, useLanguage } from './hooks/useLanguage';
-import { useAppState, useKeyboardShortcuts } from './hooks/useAppState';
+import ErrorBoundary from './ErrorBoundary';
+import OfflineProvider from './OfflineDetector';
+import FeatureTour from './FeatureTour';
+import DashboardHeader from './DashboardHeader';
+import DashboardGrid from './DashboardGrid';
+import ComingSoonWidget from './ComingSoonWidget';
+import { BarChart3 } from 'lucide-react';
+
+// Simplified hooks for basic functionality
+const useLanguage = () => ({
+  language: 'de' as const
+});
+
+const useAppState = () => ({
+  selectedLocation: 'Hauptfiliale München',
+  setSelectedLocation: () => {},
+  notificationCount: 3,
+  mobileMenuOpen: false,
+  setMobileMenuOpen: () => {},
+  isDarkMode: false,
+  dashboardSettings: {},
+  isLoading: false,
+  toggleTheme: () => {},
+  refreshDashboard: () => {},
+  exportDashboard: () => {},
+  isWidgetVisible: () => true,
+  getWidgetPriority: () => 'normal' as const
+});
+
+const useKeyboardShortcuts = () => {};
 
 function DashboardApp() {
   const { language } = useLanguage();
@@ -27,7 +49,7 @@ function DashboardApp() {
   } = useAppState();
 
   // Setup keyboard shortcuts
-  useKeyboardShortcuts(toggleTheme, refreshDashboard, exportDashboard, setMobileMenuOpen);
+  useKeyboardShortcuts();
 
   // Main content translations
   const mainTexts = {
@@ -47,7 +69,7 @@ function DashboardApp() {
 
   // Show loading skeleton while initializing
   if (isLoading) {
-    return <LoadingSkeleton />;
+    return <ComingSoonWidget icon={BarChart3} title="Dashboard wird geladen..." />;
   }
 
   return (
@@ -92,9 +114,5 @@ function DashboardApp() {
 }
 
 export default function App() {
-  return (
-    <LanguageProvider>
-      <DashboardApp />
-    </LanguageProvider>
-  );
+  return <DashboardApp />;
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { AlertTriangle, BarChart3, RefreshCw } from 'lucide-react';
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
 
 // Shimmer animation component with design tokens
 const Shimmer = ({ className = "" }: { className?: string }) => (
@@ -12,7 +12,7 @@ export const SkeletonChart = ({ height = "h-32" }: { height?: string }) => (
   <div className={`${height} flex items-end space-x-2 p-4`}>
     {Array.from({ length: 7 }, (_, i) => (
       <div key={i} className="flex-1 flex flex-col justify-end">
-        <Shimmer className={`w-full bg-muted rounded-sm`} style={{ height: `${Math.random() * 60 + 20}%` }} />
+        <div className={`w-full bg-muted rounded-sm animate-pulse`} style={{ height: `${Math.random() * 60 + 20}%` }} />
       </div>
     ))}
   </div>

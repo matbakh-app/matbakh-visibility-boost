@@ -1,11 +1,16 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
-import { Button } from './ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { TrendingUp, ArrowUp, ArrowDown, BarChart3, Target, Users, Euro, Clock, ExternalLink, Download } from 'lucide-react';
-import { useLanguage, useCommonTexts } from '../hooks/useLanguage';
-import { formatNumber, formatCurrency, formatPercentage, getDayNames } from '../utils/formatters';
+// Simplified hooks and formatters
+const useLanguage = () => ({ language: 'de' as const });
+const useCommonTexts = () => ({ excellent: 'Ausgezeichnet', details: 'Details', reports: 'Berichte' });
+const formatNumber = (num: number, _lang?: string) => num.toLocaleString('de-DE');
+const formatCurrency = (amount: number, _lang?: string) => `€${amount.toLocaleString('de-DE')}`;
+const formatPercentage = (value: number, _lang?: string, decimals = 1) => `${value.toFixed(decimals)}%`;
+const getDayNames = (_lang?: string) => ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
 
 const PerformanceTrendsWidget: React.FC = () => {
   const { language } = useLanguage();
