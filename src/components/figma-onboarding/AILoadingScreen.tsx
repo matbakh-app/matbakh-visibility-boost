@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Card } from './ui/card';
-import { Button } from './ui/button';
-import { Progress } from './ui/progress';
-import { Badge } from './ui/badge';
-import { LanguageSwitch } from './LanguageSwitch';
-import { ThemeToggle } from './ThemeToggle';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import LanguageToggle from '@/components/header/LanguageToggle';
 import { 
   Bot, 
   Zap, 
@@ -19,8 +18,9 @@ import {
   Sparkles,
   Crown
 } from 'lucide-react';
-import { UserPlan } from '../types/app';
-import { useI18n } from '../contexts/i18nContext';
+import { useTranslation } from 'react-i18next';
+
+type UserPlan = 'free' | 'basic' | 'premium';
 
 interface AILoadingScreenProps {
   isVisible: boolean;
@@ -39,7 +39,8 @@ export function AILoadingScreen({
   usedAnalyses,
   totalAnalyses 
 }: AILoadingScreenProps) {
-  const { language } = useI18n();
+  const { i18n } = useTranslation();
+  const language = i18n.language as 'de' | 'en';
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
@@ -152,8 +153,7 @@ export function AILoadingScreen({
                   {t.priority}
                 </Badge>
               )}
-              <LanguageSwitch variant="compact" />
-              <ThemeToggle variant="icon-only" size="sm" />
+              <LanguageToggle />
             </div>
           </div>
         </div>
