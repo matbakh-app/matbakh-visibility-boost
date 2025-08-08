@@ -1,11 +1,20 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
-import { Button } from './ui/button';
-import { Progress } from './ui/progress';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { MapPin, Clock, Users, Star, Wifi, Car, CreditCard, Utensils, ArrowUp, ArrowDown, ExternalLink, Edit, Phone, Globe } from 'lucide-react';
-import { useLanguage } from '../hooks/useLanguage';
-import { formatBusinessHours, formatNumber, formatPercentage } from '../utils/formatters';
+
+// Simple utilities and hooks
+type Language = 'de' | 'en';
+const useLanguage = () => {
+  const [language, setLanguage] = React.useState<Language>('de');
+  return { language, setLanguage };
+};
+
+const formatBusinessHours = (open: string, close: string, language: Language) => `${open} - ${close}`;
+const formatNumber = (num: number, language: Language) => num.toLocaleString(language === 'de' ? 'de-DE' : 'en-US');
+const formatPercentage = (num: number, language: Language) => `${num}%`;
 
 const LocationOverviewWidget: React.FC = () => {
   const { language } = useLanguage();

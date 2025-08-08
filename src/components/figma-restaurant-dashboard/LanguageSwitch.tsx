@@ -1,13 +1,19 @@
 import React from 'react';
-import { useLanguage, Language } from '../hooks/useLanguage';
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
 import { Globe } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from './ui/dropdown-menu';
+} from '@/components/ui/dropdown-menu';
+
+// Simple language hook replacement
+type Language = 'de' | 'en';
+const useLanguage = () => {
+  const [language, setLanguage] = React.useState<Language>('de');
+  return { language, setLanguage };
+};
 
 const LanguageSwitch: React.FC = () => {
   const { language, setLanguage } = useLanguage();
