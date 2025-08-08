@@ -1,24 +1,8 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, AlertCircle } from 'lucide-react';
-
-interface RestaurantFormData {
-  restaurantName: string;
-  location: string;
-  website: string;
-  category: string;
-}
-
-interface WebsiteAnalysisFormData {
-  url: string;
-  competitor1: string;
-  competitor2: string;
-  targetAudience: string;
-}
-
-type ViewType = 'step1' | 'step2' | 'dashboard' | 'results';
+import { Card } from './ui/card';
+import { Button } from './ui/button';
+import { RestaurantFormData, WebsiteAnalysisFormData } from '../types/app';
+import { ViewType } from '../hooks/useAppNavigation';
 
 interface FormDebugCardProps {
   restaurantData: RestaurantFormData | null;
@@ -30,101 +14,65 @@ interface FormDebugCardProps {
 export function FormDebugCard({ 
   restaurantData, 
   websiteAnalysisData, 
-  onNavigateToView,
+  onNavigateToView, 
   onStartAnalysis 
 }: FormDebugCardProps) {
-  const hasRestaurantData = restaurantData && Object.values(restaurantData).every(val => val?.trim());
-  const hasWebsiteData = websiteAnalysisData && Object.values(websiteAnalysisData).every(val => val?.trim());
-  const canStartAnalysis = hasRestaurantData && hasWebsiteData;
+  if (!restaurantData && !websiteAnalysisData) {
+    return null;
+  }
 
   return (
-    <Card className="border-dashed border-muted">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base flex items-center gap-2">
-          🔍 Formular-Status
-          {canStartAnalysis ? (
-            <Badge variant="default" className="bg-success text-white">
-              <CheckCircle className="w-3 h-3 mr-1" />
-              Bereit
-            </Badge>
-          ) : (
-            <Badge variant="secondary">
-              <AlertCircle className="w-3 h-3 mr-1" />
-              Unvollständig
-            </Badge>
-          )}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              {hasRestaurantData ? (
-                <CheckCircle className="w-4 h-4 text-success" />
-              ) : (
-                <XCircle className="w-4 h-4 text-error" />
-              )}
-              <span className="text-sm font-medium">Restaurant-Daten</span>
-            </div>
-            {restaurantData ? (
-              <div className="text-xs text-muted-foreground space-y-1">
-                <div>Name: {restaurantData.restaurantName || '❌'}</div>
-                <div>Ort: {restaurantData.location || '❌'}</div>
-                <div>Website: {restaurantData.website || '❌'}</div>
-                <div>Kategorie: {restaurantData.category || '❌'}</div>
-              </div>
-            ) : (
-              <p className="text-xs text-muted-foreground">Keine Daten eingegeben</p>
-            )}
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => onNavigateToView('step1')}
-              className="w-full mt-2"
-            >
-              {hasRestaurantData ? 'Bearbeiten' : 'Eingeben'}
-            </Button>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              {hasWebsiteData ? (
-                <CheckCircle className="w-4 h-4 text-success" />
-              ) : (
-                <XCircle className="w-4 h-4 text-error" />
-              )}
-              <span className="text-sm font-medium">Website-Analyse</span>
-            </div>
-            {websiteAnalysisData ? (
-              <div className="text-xs text-muted-foreground space-y-1">
-                <div>URL: {websiteAnalysisData.url || '❌'}</div>
-                <div>Konkurrent 1: {websiteAnalysisData.competitor1 || '❌'}</div>
-                <div>Konkurrent 2: {websiteAnalysisData.competitor2 || '❌'}</div>
-                <div>Zielgruppe: {websiteAnalysisData.targetAudience || '❌'}</div>
-              </div>
-            ) : (
-              <p className="text-xs text-muted-foreground">Keine Daten eingegeben</p>
-            )}
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => onNavigateToView('step2')}
-              className="w-full mt-2"
-            >
-              {hasWebsiteData ? 'Bearbeiten' : 'Eingeben'}
-            </Button>
-          </div>
-        </div>
-
-        {canStartAnalysis && (
-          <div className="border-t pt-4">
-            <Button onClick={onStartAnalysis} className="w-full btn-hover-enhanced">
-              <CheckCircle className="w-4 h-4 mr-2" />
-              Analyse starten
-            </Button>
+    <Card className="p-6 bg-muted/50 card-dark-enhanced">
+      <h3 className="font-semibold mb-4">📋 Erfasste Daten</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+        {restaurantData && (
+          <div>
+            <h4 className="font-medium mb-2">Restaurant Info</h4>
+            <ul className="space-y-1 text-muted-foreground">
+              <li>Name: {restaurantData.restaurantName}</li>
+              <li>Adresse: {restaurantData.address}</li>
+              <li>Kategorie: {restaurantData.mainCategory}</li>
+              <li>Preisklasse: {restaurantData.priceRange}</li>
+            </ul>
           </div>
         )}
-      </CardContent>
+        
+        {websiteAnalysisData && (
+          <div>
+            <h4 className="font-medium mb-2">Website & E-Mail</h4>
+            <ul className="space-y-1 text-muted-foreground">
+              <li>Website: {websiteAnalysisData.website || 'Nicht angegeben'}</li>
+              <li>E-Mail: {websiteAnalysisData.email}</li>
+              <li>E-Mail bestätigt: {websiteAnalysisData.emailConfirmed ? '✅' : '❌'}</li>
+              <li>Benchmarks: {Object.values(websiteAnalysisData.benchmarks).filter(b => b).length}/3</li>
+            </ul>
+          </div>
+        )}
+      </div>
+      
+      <div className="flex gap-2 mt-4">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => onNavigateToView('step1')} 
+          className="btn-hover-enhanced"
+        >
+          Step 1 bearbeiten
+        </Button>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => onNavigateToView('step2')} 
+          className="btn-hover-enhanced"
+        >
+          Step 2 bearbeiten
+        </Button>
+        {websiteAnalysisData?.emailConfirmed && (
+          <Button size="sm" onClick={onStartAnalysis} className="btn-hover-enhanced">
+            Analyse jetzt starten
+          </Button>
+        )}
+      </div>
     </Card>
   );
 }
