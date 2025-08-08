@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Globe, ChevronDown, Check } from 'lucide-react';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
   DropdownMenuTrigger,
   DropdownMenuItem 
-} from './ui/dropdown-menu';
-import { useLanguage, Language } from '../hooks/useLanguage';
+} from '@/components/ui/dropdown-menu';
+import { useLanguage, Language } from '@/hooks/useLanguage';
 
 interface LanguageSwitchProps {
   variant?: 'button' | 'dropdown' | 'toggle' | 'compact';
@@ -163,8 +163,8 @@ const LanguageSwitch: React.FC<LanguageSwitchProps> = ({
           {Object.values(languages).map((lang) => (
             <Button
               key={lang.code}
-              variant={language === lang.code ? "default" : "ghost"}
-              size={size}
+        variant={language === lang.code ? "default" : "ghost"}
+        size={size === 'md' ? 'default' : size}
               onClick={() => switchToLanguage(lang.code as Language)}
               disabled={disabled}
               className={`
