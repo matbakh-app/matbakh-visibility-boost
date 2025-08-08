@@ -26,9 +26,9 @@ import { MyProfile } from './components/MyProfile';
 import { CompanyProfile } from './components/CompanyProfile';
 import { LanguageSwitch } from './components/LanguageSwitch';
 import { ThemeToggle } from './components/ThemeToggle';
-import { Button } from './components/ui/button';
-import { Card } from './components/ui/card';
-import { Tabs, TabsContent } from './components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 
 // Import types and utilities
 import { UserPlan, AIStatus, RestaurantFormData, WebsiteAnalysisFormData, ScheduleSettings, UserType, GuestCodeInfo } from './types/app';

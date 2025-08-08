@@ -1,5 +1,5 @@
 import React from 'react';
-import { Badge } from './ui/badge';
+import { Badge } from '@/components/ui/badge';
 import { Bot, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 
 type AIStatus = 'ready' | 'busy' | 'error' | 'maintenance';
