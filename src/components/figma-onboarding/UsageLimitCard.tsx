@@ -1,8 +1,8 @@
 import React from 'react';
-import { Card } from './ui/card';
-import { Button } from './ui/button';
-import { Progress } from './ui/progress';
-import { Badge } from './ui/badge';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 import { Clock, Zap, Crown, AlertTriangle, CheckCircle, ArrowUp } from 'lucide-react';
 
 type PlanType = 'basic' | 'business' | 'premium';

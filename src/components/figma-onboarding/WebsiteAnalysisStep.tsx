@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Card } from './ui/card';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Checkbox } from './ui/checkbox';
-import { Alert, AlertDescription } from './ui/alert';
-import { Badge } from './ui/badge';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { LanguageSwitch } from './LanguageSwitch';
 import { ThemeToggle } from './ThemeToggle';
 import { 
@@ -21,8 +21,8 @@ import {
   Crown,
   Sparkles
 } from 'lucide-react';
-import { WebsiteAnalysisFormData, GuestCodeInfo } from '../types/app';
-import { useI18n } from '../contexts/i18nContext';
+import { WebsiteAnalysisFormData, GuestCodeInfo } from '@/types/app';
+import { useI18n } from '@/contexts/i18nContext';
 
 interface WebsiteAnalysisStepProps {
   onNext: (data: WebsiteAnalysisFormData) => void;
