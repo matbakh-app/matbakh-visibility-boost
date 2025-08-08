@@ -1,7 +1,7 @@
 import React from 'react';
-import { Card } from './ui/card';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { LanguageSwitch } from './LanguageSwitch';
 import { 
   BarChart3,
@@ -12,7 +12,7 @@ import {
   Gift,
   Globe
 } from 'lucide-react';
-import { useI18n } from '../contexts/i18nContext';
+import { useI18n } from '@/contexts/i18nContext';
 
 /**
  * Demo Component showing how actual text values should appear in Figma

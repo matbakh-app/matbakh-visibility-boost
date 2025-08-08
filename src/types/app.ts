@@ -58,3 +58,30 @@ export interface VisibilityData {
     trend: 'up' | 'down' | 'stable';
   };
 }
+
+export interface RestaurantFormData {
+  restaurantName: string;
+  address: string;
+  mainCategory: string;
+  priceRange: string;
+}
+
+export interface WebsiteAnalysisFormData {
+  website?: string;
+  email: string;
+  emailConfirmed: boolean;
+  benchmarks: {
+    local: boolean;
+    regional: boolean;
+    national: boolean;
+  };
+}
+
+export type UserType = 'guest' | 'registered';
+
+export interface GuestCodeInfo {
+  code: string;
+  planType: 'basic' | 'premium';
+  referrerName: string;
+  isValid: boolean;
+}

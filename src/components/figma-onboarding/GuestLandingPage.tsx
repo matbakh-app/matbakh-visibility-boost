@@ -1,6 +1,6 @@
 import React from 'react';
-import { Card } from './ui/card';
-import { Button } from './ui/button';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { LanguageSwitch } from './LanguageSwitch';
 import { ThemeToggle } from './ThemeToggle';
 import { 
@@ -10,8 +10,8 @@ import {
   PlayCircle,
   TrendingUp
 } from 'lucide-react';
-import { GuestCodeInfo } from '../types/app';
-import { useI18n } from '../contexts/i18nContext';
+import { GuestCodeInfo } from '@/types/app';
+import { useI18n } from '@/contexts/i18nContext';
 
 interface GuestLandingPageProps {
   onCodeValidated: (codeInfo: GuestCodeInfo) => void;
