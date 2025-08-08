@@ -1,10 +1,11 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
-import { Button } from './ui/button';
-import { Progress } from './ui/progress';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { TrendingUp, Eye, ArrowUp, ArrowDown, ExternalLink, MapPin, Clock, Users } from 'lucide-react';
-import { useLanguage } from '../hooks/useLanguage';
+// Simplified hook
+const useLanguage = () => ({ language: 'de' as const });
 
 const VisibilityScoreWidget: React.FC = () => {
   const { language } = useLanguage();

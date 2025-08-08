@@ -1,11 +1,11 @@
 import React from 'react';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from './ui/sheet';
-import { Button } from './ui/button';
-import { Label } from './ui/label';
-import { Switch } from './ui/switch';
-import { Separator } from './ui/separator';
-import { Badge } from './ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   Settings, 
   Palette, 
@@ -21,7 +21,8 @@ import {
   Trash2,
   Info
 } from 'lucide-react';
-import { useLanguage } from '../hooks/useLanguage';
+// Simplified hook
+const useLanguage = () => ({ language: 'de' as const });
 
 interface SettingsPanelProps {
   isOpen: boolean;
