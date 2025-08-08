@@ -1,11 +1,11 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
-import { Button } from './ui/button';
-import { Progress } from './ui/progress';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { MapPin, Clock, Users, Star, Wifi, Car, CreditCard, Utensils, ArrowUp, ArrowDown, ExternalLink, Edit, Phone, Globe } from 'lucide-react';
-import { useLanguage } from '../hooks/useLanguage';
-import { formatBusinessHours, formatNumber, formatPercentage } from '../utils/formatters';
+import { useLanguage } from '@/hooks/useLanguage';
+import { formatNumber, formatPercentage } from '@/utils/formatters';
 
 const LocationOverviewWidget: React.FC = () => {
   const { language } = useLanguage();

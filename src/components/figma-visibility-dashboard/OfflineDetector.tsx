@@ -1,8 +1,8 @@
 import React, { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { Wifi, WifiOff, CloudOff, AlertTriangle } from 'lucide-react';
-import { Badge } from './ui/badge';
-import { Button } from './ui/button';
-import { Card, CardContent } from './ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface NetworkState {
   isOnline: boolean;
