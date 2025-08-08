@@ -1,9 +1,9 @@
 import React from 'react';
-import { Button } from './ui/button';
-import { Card, CardContent } from './ui/card';
-import { Badge } from './ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Crown, TrendingUp, Users, ChevronRight, Sparkles, Target, BarChart3 } from 'lucide-react';
-import { useLanguage } from '../hooks/useLanguage';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface CallToActionBannerProps {
   variant?: 'primary' | 'upgrade' | 'feature' | 'widget-overlay' | 'footer' | 'sidebar';

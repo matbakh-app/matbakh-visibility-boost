@@ -1,13 +1,15 @@
 // Number formatting utilities
-export const formatNumber = (value: number): string => {
-  return new Intl.NumberFormat('de-DE').format(value);
+export const formatNumber = (value: number, language: 'de' | 'en' = 'de'): string => {
+  const locale = language === 'de' ? 'de-DE' : 'en-US';
+  return new Intl.NumberFormat(locale).format(value);
 };
 
-export const formatPercentage = (value: number): string => {
-  return new Intl.NumberFormat('de-DE', { 
+export const formatPercentage = (value: number, language: 'de' | 'en' = 'de', decimals: number = 1): string => {
+  const locale = language === 'de' ? 'de-DE' : 'en-US';
+  return new Intl.NumberFormat(locale, { 
     style: 'percent', 
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1 
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals 
   }).format(value / 100);
 };
 
