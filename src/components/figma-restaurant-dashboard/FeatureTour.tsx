@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
 import { ChevronRight, ChevronLeft, X, Lightbulb, Target, Users, TrendingUp, BarChart3 } from 'lucide-react';
-import { Card, CardContent } from './ui/card';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
-import { Progress } from './ui/progress';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 
 interface TourStep {
   id: string;
