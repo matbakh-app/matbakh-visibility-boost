@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Card } from './ui/card';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Checkbox } from './ui/checkbox';
-import { Badge } from './ui/badge';
-import { LanguageSwitch } from './LanguageSwitch';
-import { ThemeToggle } from './ThemeToggle';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import LanguageToggle from '@/components/header/LanguageToggle';
 import { 
   ArrowLeft, 
   UtensilsCrossed,
@@ -20,8 +19,21 @@ import {
   Gift,
   BarChart3
 } from 'lucide-react';
-import { RestaurantFormData, GuestCodeInfo } from '../types/app';
-import { useI18n } from '../contexts/i18nContext';
+import { useTranslation } from 'react-i18next';
+
+type RestaurantFormData = {
+  name: string;
+  address: string;
+  phone: string;
+  website: string;
+  category: string;
+  priceRange: string;
+};
+
+type GuestCodeInfo = {
+  code: string;
+  features: string[];
+};
 
 interface RestaurantInfoStepProps {
   onNext: (data: RestaurantFormData) => void;
@@ -36,16 +48,17 @@ export function RestaurantInfoStep({
   skipEmailGate = false, 
   guestCodeInfo = null 
 }: RestaurantInfoStepProps) {
-  const { language } = useI18n();
+  const { i18n } = useTranslation();
+  const language = i18n.language as 'de' | 'en';
   const [formData, setFormData] = useState<RestaurantFormData>({
-    restaurantName: '',
+    name: '',
     address: '',
-    phoneNumber: '',
+    phone: '',
     website: '',
-    mainCategory: '',
-    priceRange: '',
-    additionalServices: []
+    category: '',
+    priceRange: ''
   });
+  const [additionalServices, setAdditionalServices] = useState<string[]>([]);
 
   const texts = {
     de: {
@@ -172,18 +185,17 @@ export function RestaurantInfoStep({
   };
 
   const handleServiceToggle = (service: string) => {
-    setFormData(prev => ({
-      ...prev,
-      additionalServices: prev.additionalServices.includes(service)
-        ? prev.additionalServices.filter(s => s !== service)
-        : [...prev.additionalServices, service]
-    }));
+    setAdditionalServices(prev => 
+      prev.includes(service)
+        ? prev.filter(s => s !== service)
+        : [...prev, service]
+    );
   };
 
   const isFormValid = () => {
-    return formData.restaurantName.trim() && 
+    return formData.name.trim() && 
            formData.address.trim() && 
-           formData.mainCategory && 
+           formData.category && 
            formData.priceRange;
   };
 
@@ -259,8 +271,7 @@ export function RestaurantInfoStep({
                   Premium-Code aktiv
                 </Badge>
               )}
-              <LanguageSwitch variant="compact" />
-              <ThemeToggle variant="icon-only" size="sm" />
+              <LanguageToggle />
             </div>
           </div>
         </div>
@@ -276,7 +287,7 @@ export function RestaurantInfoStep({
                 <div>
                   <h3 className="font-semibold text-success">Premium-Analyse aktiviert</h3>
                   <p className="text-sm text-success/80">
-                    Empfohlen von {guestCodeInfo.referrerName}
+                    Premium Code aktiv
                   </p>
                 </div>
               </div>
@@ -322,8 +333,8 @@ export function RestaurantInfoStep({
                   <Input
                     id="restaurantName"
                     placeholder={currentTexts.namePlaceholder}
-                    value={formData.restaurantName}
-                    onChange={(e) => handleInputChange('restaurantName', e.target.value)}
+                     value={formData.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
                     className="input-dark-enhanced"
                     required
                   />
@@ -351,8 +362,8 @@ export function RestaurantInfoStep({
                       <Input
                         id="phoneNumber"
                         placeholder={currentTexts.phonePlaceholder}
-                        value={formData.phoneNumber}
-                        onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+                         value={formData.phone}
+                        onChange={(e) => handleInputChange('phone', e.target.value)}
                         className="pl-10 input-dark-enhanced"
                       />
                       <Phone className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
@@ -389,7 +400,7 @@ export function RestaurantInfoStep({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label>{currentTexts.categoryLabel} *</Label>
-                <Select value={formData.mainCategory} onValueChange={(value) => handleInputChange('mainCategory', value)}>
+                <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
                   <SelectTrigger className="input-dark-enhanced">
                     <SelectValue placeholder={currentTexts.categoryPlaceholder} />
                   </SelectTrigger>
@@ -435,7 +446,7 @@ export function RestaurantInfoStep({
                 <div key={service.value} className="flex items-center space-x-2">
                   <Checkbox
                     id={service.value}
-                    checked={formData.additionalServices.includes(service.value)}
+                    checked={additionalServices.includes(service.value)}
                     onCheckedChange={() => handleServiceToggle(service.value)}
                   />
                   <Label
