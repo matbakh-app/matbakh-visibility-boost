@@ -1,18 +1,19 @@
 import React from 'react';
 import { Menu, Bell, RotateCcw, Download, Settings } from 'lucide-react';
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-} from './ui/dropdown-menu';
-import { Badge } from './ui/badge';
-import ThemeToggle from './ThemeToggle';
-import LanguageSwitch from './LanguageSwitch';
-import SettingsPanel from './SettingsPanel';
-import { useLanguage } from '../hooks/useLanguage';
+} from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
+// Mock components and hooks for now
+const ThemeToggle = () => <div>Theme</div>;
+const LanguageSwitch = () => <div>Lang</div>;
+const SettingsPanel = () => <div>Settings</div>;
+const useLanguage = () => ({ language: 'de' });
 
 interface DashboardHeaderProps {
   selectedLocation: string;
@@ -139,7 +140,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           <LanguageSwitch />
           
           {/* Theme Toggle */}
-          <ThemeToggle isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
+          <ThemeToggle />
           
           {/* Actions Menu - Desktop */}
           <div className="hidden md:flex items-center gap-1">
@@ -245,10 +246,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       </div>
 
       {/* Settings Panel */}
-      <SettingsPanel 
-        isOpen={settingsOpen} 
-        onClose={() => setSettingsOpen(false)} 
-      />
+      <SettingsPanel />
     </header>
   );
 };

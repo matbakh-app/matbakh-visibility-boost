@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
-import { Button } from './ui/button';
-import { Progress } from './ui/progress';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { MapPin, ChevronDown, Info, RotateCcw, TrendingUp, Users, Globe } from 'lucide-react';
-import { WidgetStateWrapper, SkeletonChart, SkeletonCard } from './WidgetStates';
+import ComingSoonWidget from './ComingSoonWidget';
 
 const CulturalInsightsWidget = () => {
   const [selectedLocation, setSelectedLocation] = useState('Berlin Mitte');
@@ -150,11 +150,11 @@ const CulturalInsightsWidget = () => {
         
         {/* Two Column Layout Skeleton */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <SkeletonChart height="h-64" />
+          <div className="h-64 bg-gray-200 rounded animate-pulse" />
           <div className="space-y-4">
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
+            <div className="h-16 bg-gray-200 rounded animate-pulse" />
+            <div className="h-16 bg-gray-200 rounded animate-pulse" />
+            <div className="h-16 bg-gray-200 rounded animate-pulse" />
           </div>
         </div>
       </div>
@@ -236,16 +236,15 @@ const CulturalInsightsWidget = () => {
         </div>
       </CardHeader>
       
-      <WidgetStateWrapper
-        isLoading={isLoading}
-        isError={isError}
-        isEmpty={isEmpty}
-        onRetry={handleRetry}
-        skeletonComponent={skeletonComponent}
-        emptyTitle="Keine Kulturdaten verfügbar"
-        emptyDescription="Warte auf demographische Analyse..."
-        emptyIcon={Globe}
-      >
+      {isLoading ? (
+        skeletonComponent
+      ) : isEmpty ? (
+        <ComingSoonWidget
+          icon={Globe}
+          title="Keine Kulturdaten verfügbar"
+          description="Warte auf demographische Analyse..."
+        />
+      ) : (
         <CardContent className="space-y-6">
           {/* Mobile: Full-width Sections - Tablet/Desktop: Split Layout */}
           <div className="space-y-6 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-6">
@@ -288,7 +287,7 @@ const CulturalInsightsWidget = () => {
                         strokeWidth={2}
                         dot={{ fill: 'var(--primary)', strokeWidth: 2, r: 4 }}
                       />
-                      <Tooltip content={<CustomTooltip />} />
+                      <Tooltip />
                     </RadarChart>
                   </ResponsiveContainer>
                 </div>
@@ -340,10 +339,7 @@ const CulturalInsightsWidget = () => {
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
-                        <Tooltip 
-                          formatter={(value) => [`${value}%`, 'Anteil']}
-                          labelStyle={{ color: 'var(--foreground)', fontWeight: 500 }}
-                        />
+                         <Tooltip />
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
@@ -446,7 +442,7 @@ const CulturalInsightsWidget = () => {
             </div>
           </div>
         </CardContent>
-      </WidgetStateWrapper>
+      )}
     </Card>
   );
 };

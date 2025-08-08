@@ -1,12 +1,16 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
-import { Button } from './ui/button';
-import { Progress } from './ui/progress';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { BarChart3, TrendingUp, Users, Eye, MousePointer, Clock, ArrowUp, ArrowDown, ExternalLink, Download } from 'lucide-react';
-import { useLanguage } from '../hooks/useLanguage';
-import { formatNumber, formatPercentage, formatDuration, getDayNames } from '../utils/formatters';
+// Mock language hook and formatters
+const useLanguage = () => ({ language: 'de' as 'de' | 'en' });
+const formatNumber = (num: number, _?: any) => num.toLocaleString();
+const formatPercentage = (num: number, _?: any, decimals?: number) => `${decimals ? num.toFixed(decimals) : num}%`;
+const formatDuration = (seconds: number, _?: any) => `${Math.floor(seconds / 60)}:${(seconds % 60).toString().padStart(2, '0')}`;
+const getDayNames = (lang?: any) => ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 
 const AnalyticsWidget: React.FC = () => {
   const { language } = useLanguage();

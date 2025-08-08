@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
-import { Button } from './ui/button';
-import { Progress } from './ui/progress';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { Plus, TrendingUp, Trophy, Clock, Target, ArrowUp, Play, StopCircle, CheckCircle2, RotateCcw } from 'lucide-react';
-import { WidgetStateWrapper, SkeletonChart, SkeletonCard } from './WidgetStates';
+import ComingSoonWidget from './ComingSoonWidget';
 
 const ABTestingWidget = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -156,8 +156,8 @@ const ABTestingWidget = () => {
         
         {/* Active Tests Skeleton */}
         <div className="space-y-4">
-          <SkeletonCard />
-          <SkeletonCard />
+          <div className="h-24 bg-gray-200 rounded animate-pulse"></div>
+          <div className="h-24 bg-gray-200 rounded animate-pulse"></div>
         </div>
       </div>
     </CardContent>
@@ -200,16 +200,15 @@ const ABTestingWidget = () => {
         </div>
       </CardHeader>
       
-      <WidgetStateWrapper
-        isLoading={isLoading}
-        isError={isError}
-        isEmpty={isEmpty}
-        onRetry={handleRetry}
-        skeletonComponent={skeletonComponent}
-        emptyTitle="Keine A/B Tests aktiv"
-        emptyDescription="Starte deinen ersten Test..."
-        emptyIcon={Target}
-      >
+      {isLoading ? (
+        skeletonComponent
+      ) : isEmpty ? (
+        <ComingSoonWidget
+          icon={Target}
+          title="Keine A/B Tests aktiv"
+          description="Starte deinen ersten Test..."
+        />
+      ) : (
         <CardContent className="space-y-6">
           {/* Active Tests Section */}
           <div>
@@ -376,7 +375,7 @@ const ABTestingWidget = () => {
             </div>
           </div>
         </CardContent>
-      </WidgetStateWrapper>
+      )}
     </Card>
   );
 };
