@@ -1,8 +1,10 @@
 import { useTranslation } from 'react-i18next';
 
+export type Language = 'de' | 'en';
+
 export interface UseLanguageReturn {
-  language: 'de' | 'en';
-  setLanguage: (lang: 'de' | 'en') => void;
+  language: Language;
+  setLanguage: (lang: Language) => void;
   t: (key: string, fallback?: string) => string;
 }
 
@@ -11,7 +13,7 @@ export const useLanguage = (): UseLanguageReturn => {
   
   const language = (i18n.language === 'en' || i18n.language === 'de') ? i18n.language : 'de';
   
-  const setLanguage = (lang: 'de' | 'en') => {
+  const setLanguage = (lang: Language) => {
     i18n.changeLanguage(lang);
   };
 
