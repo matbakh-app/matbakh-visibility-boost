@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { RotateCcw, Download, TrendingUp, TrendingDown, ArrowRight, Target, Users, Star, MapPin } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
-import { WidgetStateWrapper, SkeletonText, SkeletonCard, SkeletonList } from './WidgetStates';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import ComingSoonWidget from './ComingSoonWidget';
 
 const CompetitorMonitoringWidget = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -182,13 +182,13 @@ const CompetitorMonitoringWidget = () => {
     <CardContent className="widget-padding">
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-3">
-          <SkeletonCard />
+          <div className="h-48 bg-gray-200 rounded animate-pulse" />
         </div>
         <div className="lg:col-span-2 space-y-4">
-          <SkeletonCard height="h-20" />
-          <SkeletonCard height="h-20" />
-          <SkeletonCard height="h-20" />
-          <SkeletonCard height="h-20" />
+          <div className="h-20 bg-gray-200 rounded animate-pulse" />
+          <div className="h-20 bg-gray-200 rounded animate-pulse" />
+          <div className="h-20 bg-gray-200 rounded animate-pulse" />
+          <div className="h-20 bg-gray-200 rounded animate-pulse" />
         </div>
       </div>
     </CardContent>
@@ -245,16 +245,15 @@ const CompetitorMonitoringWidget = () => {
         </div>
       </CardHeader>
       
-      <WidgetStateWrapper
-        isLoading={isLoading}
-        isError={isError}
-        isEmpty={isEmpty}
-        onRetry={handleRetry}
-        skeletonComponent={skeletonComponent}
-        emptyTitle="Keine Konkurrenz-Daten verfügbar"
-        emptyDescription="Wettbewerber-Analyse wird geladen..."
-        emptyIcon={Target}
-      >
+      {isLoading ? (
+        skeletonComponent
+      ) : isEmpty ? (
+        <ComingSoonWidget
+          icon={Target}
+          title="Keine Konkurrenz-Daten verfügbar"
+          description="Wettbewerber-Analyse wird geladen..."
+        />
+      ) : (
         <CardContent className="widget-padding pt-0">
           <div className="grid grid-cols-1 xl:grid-cols-5 gap-4 xl:gap-6 h-full">
             {/* Left Side - Competitor Table (60%) */}
@@ -532,7 +531,7 @@ const CompetitorMonitoringWidget = () => {
             </div>
           </div>
         </CardContent>
-      </WidgetStateWrapper>
+      )}
     </Card>
   );
 };
