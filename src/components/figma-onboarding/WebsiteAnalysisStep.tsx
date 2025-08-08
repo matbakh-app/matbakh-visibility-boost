@@ -39,7 +39,8 @@ const PROMO_CODES: Record<string, GuestCodeInfo> = {
     referrerEmail: 'o.martinez@restaurant-group.com',
     validUntil: new Date('2024-12-31'),
     isValid: true,
-    features: ['premium_analysis', 'competitor_tracking', 'email_reports', 'priority_support']
+    features: ['premium_analysis', 'competitor_tracking', 'email_reports', 'priority_support'],
+    planType: 'premium'
   },
   'MARCO2024ABC': {
     code: 'MARCO2024ABC',
@@ -47,7 +48,8 @@ const PROMO_CODES: Record<string, GuestCodeInfo> = {
     referrerEmail: 'm.schmidt@gastro-consulting.de',
     validUntil: new Date('2024-11-30'),
     isValid: true,
-    features: ['premium_analysis', 'email_reports']
+    features: ['premium_analysis', 'email_reports'],
+    planType: 'premium'
   },
   'SARAH2024DEF': {
     code: 'SARAH2024DEF',
@@ -55,7 +57,8 @@ const PROMO_CODES: Record<string, GuestCodeInfo> = {
     referrerEmail: 's.weber@marketing-agentur.com',
     validUntil: new Date('2024-10-31'),
     isValid: true,
-    features: ['premium_analysis', 'competitor_tracking', 'priority_support']
+    features: ['premium_analysis', 'competitor_tracking', 'priority_support'],
+    planType: 'premium'
   }
 };
 
@@ -71,7 +74,10 @@ export function WebsiteAnalysisStep({
     benchmarks: {
       benchmark1: '',
       benchmark2: '',
-      benchmark3: ''
+      benchmark3: '',
+      local: false,
+      regional: false,
+      national: false
     },
     email: '',
     privacyAccepted: false,
@@ -504,7 +510,7 @@ export function WebsiteAnalysisStep({
                     <Input
                       key={num}
                       placeholder={num === 1 ? t.benchmark1Placeholder : t.benchmark2Placeholder}
-                      value={formData.benchmarks[`benchmark${num}` as keyof typeof formData.benchmarks]}
+                      value={formData.benchmarks[`benchmark${num}` as 'benchmark1' | 'benchmark2' | 'benchmark3'] || ''}
                       onChange={(e) => handleInputChange(`benchmark${num}`, e.target.value)}
                       className="input-dark-enhanced"
                     />

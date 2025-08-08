@@ -74,9 +74,12 @@ export interface WebsiteAnalysisFormData {
   email: string;
   emailConfirmed: boolean;
   benchmarks: {
-    local: boolean;
-    regional: boolean;
-    national: boolean;
+    benchmark1?: string;
+    benchmark2?: string; 
+    benchmark3?: string;
+    local?: boolean;
+    regional?: boolean;
+    national?: boolean;
   };
   privacyAccepted?: boolean;
   emailReportAccepted?: boolean;
