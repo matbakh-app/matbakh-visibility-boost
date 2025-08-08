@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { I18nProvider } from './contexts/i18nContext';
-import { ThemeProvider } from './contexts/themeContext';
-import { UsageLimitManager } from './components/UsageLimitManager';
-import { PromoCodeSystem } from './components/PromoCodeSystem';
-import { AdminPromoConsole } from './components/AdminPromoConsole';
-import { BusinessIntelligenceDashboard } from './components/BusinessIntelligenceDashboard';
-import { CompetitiveIntelligenceDashboard } from './components/CompetitiveIntelligenceDashboard';
-import { FinancialAnalyticsDashboard } from './components/FinancialAnalyticsDashboard';
-import { CustomerDemographicsDashboard } from './components/CustomerDemographicsDashboard';
-import { AILoadingScreen } from './components/AILoadingScreen';
-import { AIResultsScreen } from './components/AIResultsScreen';
+import { I18nProvider } from '@/contexts/i18nContext';
+import { ThemeProvider } from '@/contexts/themeContext';
+import { UsageLimitManager } from './UsageLimitManager';
+import { PromoCodeSystem } from './PromoCodeSystem';
+import { AdminPromoConsole } from './AdminPromoConsole';
+import { BusinessIntelligenceDashboard } from './BusinessIntelligenceDashboard';
+import { CompetitiveIntelligenceDashboard } from './CompetitiveIntelligenceDashboard';
+import { FinancialAnalyticsDashboard } from './FinancialAnalyticsDashboard';
+import { CustomerDemographicsDashboard } from './CustomerDemographicsDashboard';
+import { AILoadingScreen } from './AILoadingScreen';
+import { AIResultsScreen } from './AIResultsScreen';
 import { GuestLandingPage } from './components/GuestLandingPage';
 import { GuestResultsScreen } from './components/GuestResultsScreen';
 import { SmartSchedulingInterface } from './components/SmartSchedulingInterface';
@@ -24,19 +24,15 @@ import { ResultsTabContent } from './components/ResultsTabContent';
 import { DashboardOverviewTab } from './components/DashboardOverviewTab';
 import { MyProfile } from './components/MyProfile';
 import { CompanyProfile } from './components/CompanyProfile';
-import { LanguageSwitch } from './components/LanguageSwitch';
-import { ThemeToggle } from './components/ThemeToggle';
+import { LanguageSwitch } from './LanguageSwitch';
+import { ThemeToggle } from './ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 
 // Import types and utilities
-import { UserPlan, AIStatus, RestaurantFormData, WebsiteAnalysisFormData, ScheduleSettings, UserType, GuestCodeInfo } from './types/app';
-import { getUsageData, canStartAnalysis, shouldShowCostPreview, getPlanDescription, getUpgradeFeatures, getUpgradeTitle } from './utils/appHelpers';
-import { mockAnalysisData, PLATFORM_SCORES, METRIC_CARDS_DATA } from './constants/mockData';
-import { useAppNavigation } from './hooks/useAppNavigation';
-import { createAppEventHandlers } from './utils/appEventHandlers';
-import { useI18n } from './contexts/i18nContext';
+import { UserPlan } from '@/types/app';
+import { useI18n } from '@/contexts/i18nContext';
 
 // Company Profile Data Type
 interface CompanyProfileData {

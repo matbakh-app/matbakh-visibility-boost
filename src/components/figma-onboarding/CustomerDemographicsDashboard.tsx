@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Card } from './ui/card';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
-import { Progress } from './ui/progress';
-import { Avatar, AvatarFallback } from './ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Users, 
   TrendingUp, 

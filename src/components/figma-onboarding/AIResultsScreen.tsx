@@ -20,8 +20,8 @@ import {
   Zap,
   Crown
 } from 'lucide-react';
-import { UserPlan } from '../types/app';
-import { useI18n } from '../contexts/i18nContext';
+import { UserPlan } from '@/types/app';
+import { useI18n } from '@/contexts/i18nContext';
 
 interface AIResultsScreenProps {
   userPlan: UserPlan;
