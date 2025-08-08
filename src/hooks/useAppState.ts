@@ -5,6 +5,7 @@ export interface AppState {
   isOffline: boolean;
   showFeatureTour: boolean;
   publicMode: boolean;
+  compactView: boolean;
   widgets: string[];
 }
 
@@ -14,6 +15,7 @@ export const useAppState = () => {
     isOffline: false,
     showFeatureTour: false,
     publicMode: false,
+    compactView: false,
     widgets: ['analytics', 'reviews', 'visibility-score']
   });
 

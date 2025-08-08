@@ -1,7 +1,7 @@
 import React from 'react';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
   Bell, 
   Settings, 
@@ -20,10 +20,8 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuLabel
-} from './ui/dropdown-menu';
-import { useLanguage } from '../hooks/useLanguage';
-import LanguageSwitch from './LanguageSwitch';
-import ThemeToggle from './ThemeToggle';
+} from '@/components/ui/dropdown-menu';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface DashboardHeaderProps {
   selectedLocation: string;
@@ -310,11 +308,10 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             )}
           </Button>
 
-          {/* Language Switch */}
-          <LanguageSwitch />
-
-          {/* Theme Toggle */}
-          <ThemeToggle isDarkMode={isDarkMode} onToggle={toggleTheme} />
+          {/* Language Switch - Coming Soon */}
+          <Button variant="ghost" size="sm" className="touch-target">
+            DE
+          </Button>
 
           {/* User Menu */}
           <DropdownMenu>

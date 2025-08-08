@@ -1,25 +1,22 @@
 import React, { Suspense, useState, useEffect } from 'react';
-import { DashboardSettings } from '../hooks/useAppState';
-import { useLanguage } from '../hooks/useLanguage';
-import LazyWidget from './LazyWidget';
-import LoadingSkeleton from './LoadingSkeleton';
+import { AppState } from '@/hooks/useAppState';
+import { useLanguage } from '@/hooks/useLanguage';
+import ComingSoonWidget from './ComingSoonWidget';
+import { Loader2 } from 'lucide-react';
 
 // Import all widgets
 import VisibilityScoreWidget from './VisibilityScoreWidget';
 import ReviewsWidget from './ReviewsWidget';
 import AnalyticsWidget from './AnalyticsWidget';
-import MarketingWidget from './MarketingWidget';
-import PerformanceTrendsWidget from './PerformanceTrendsWidget';
 import CompetitorMonitoringWidget from './CompetitorMonitoringWidget';
 import CulturalInsightsWidget from './CulturalInsightsWidget';
 import ABTestingWidget from './ABTestingWidget';
-import LoyaltyProgramWidget from './LoyaltyProgramWidget';
-import InstagramStoriesWidget from './InstagramStoriesWidget';
+import DeliveryTrackingWidget from './DeliveryTrackingWidget';
 
 interface DashboardGridProps {
   isWidgetVisible: (widgetId: string) => boolean;
   getWidgetPriority: (widgetId: string) => number;
-  dashboardSettings?: DashboardSettings;
+  dashboardSettings?: AppState;
   isPublicMode?: boolean;
   className?: string;
 }
@@ -50,21 +47,13 @@ const WIDGET_CONFIG = {
     title: { de: 'Website Analytics', en: 'Website Analytics' },
     description: { de: 'Besucher & Engagement', en: 'Visitors & Engagement' }
   },
-  'marketing': {
-    component: MarketingWidget,
-    defaultSize: 'xlarge',
-    category: 'marketing',
+  'delivery-tracking': {
+    component: DeliveryTrackingWidget,
+    defaultSize: 'medium',
+    category: 'logistics',
     priority: 6,
-    title: { de: 'Marketing Performance', en: 'Marketing Performance' },
-    description: { de: 'Kampagnen & ROI', en: 'Campaigns & ROI' }
-  },
-  'performance-trends': {
-    component: PerformanceTrendsWidget,
-    defaultSize: 'xlarge',
-    category: 'analytics',
-    priority: 8,
-    title: { de: 'Performance-Trends', en: 'Performance Trends' },
-    description: { de: 'KPI-Entwicklung', en: 'KPI Development' }
+    title: { de: 'Lieferzeit-Tracking', en: 'Delivery Tracking' },
+    description: { de: 'Lieferzeit-Optimierung', en: 'Delivery Optimization' }
   },
   'competitor-monitoring': {
     component: CompetitorMonitoringWidget,
@@ -90,22 +79,6 @@ const WIDGET_CONFIG = {
     title: { de: 'A/B Testing', en: 'A/B Testing' },
     description: { de: 'Experimentierung', en: 'Experimentation' }
   },
-  'loyalty-program': {
-    component: LoyaltyProgramWidget,
-    defaultSize: 'medium',
-    category: 'customer',
-    priority: 13,
-    title: { de: 'Treueprogramm', en: 'Loyalty Program' },
-    description: { de: 'Kundenbindung', en: 'Customer Retention' }
-  },
-  'instagram-stories': {
-    component: InstagramStoriesWidget,
-    defaultSize: 'small',
-    category: 'marketing',
-    priority: 15,
-    title: { de: 'Instagram Stories', en: 'Instagram Stories' },
-    description: { de: 'Social Media', en: 'Social Media' }
-  }
 } as const;
 
 type WidgetId = keyof typeof WIDGET_CONFIG;
@@ -225,18 +198,7 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
           </div>
         </div>
       }>
-        <LazyWidget
-          title={config.title[language]}
-          description={config.description[language]}
-          category={config.category}
-          isVisible={true}
-          onVisibilityChange={() => {}}
-        >
-          <WidgetComponent 
-            isPublicMode={isPublicMode}
-            onUpgrade={() => window.open('/pricing', '_blank')}
-          />
-        </LazyWidget>
+        <WidgetComponent />
       </Suspense>
     );
 
@@ -269,7 +231,11 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
   };
 
   if (isLoading) {
-    return <LoadingSkeleton />;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
 
   const visibleWidgets = getVisibleWidgets();
