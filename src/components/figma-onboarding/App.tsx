@@ -5,6 +5,7 @@ import { DashboardHeader } from './DashboardHeader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { BedrockTestConsole } from '../debug/BedrockTestConsole';
 
 // Mock components for missing imports
 const UsageLimitManager = ({ children }: any) => <div>{children}</div>;

@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { AlertCircle, Sparkles, ChevronRight, Info, X } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useSmartCategorySelection } from '@/hooks/useSmartCategorySelection';
+import { useBedrockCategorySuggestions } from '@/hooks/useBedrockCategorySuggestions';
 import { usePrimaryGmbCategories } from '@/hooks/useGmbCategories';
 import type { GmbCategory } from '@/hooks/useOnboardingQuestions';
 
@@ -35,19 +35,21 @@ export const SmartCategorySelector: React.FC<SmartCategorySelectorProps> = ({
   
   const { data: primaryCategories, isLoading: isPrimaryLoading } = usePrimaryGmbCategories();
   
-  const {
-    loading,
-    error,
-    aiSuggestions,
-    getMainCategorySuggestions,
-    getGuidedSuggestions
-  } = useSmartCategorySelection({
-    mode,
-    businessDescription,
-    businessName,
-    availableCategories: primaryCategories || [],
-    language: i18n.language as 'de' | 'en'
-  });
+  const bedrockMutation = useBedrockCategorySuggestions();
+  
+  // Trigger Bedrock analysis when switching to AI mode or when business data changes
+  useEffect(() => {
+    if (mode === 'ai-first' && businessDescription && businessName && !bedrockMutation.data) {
+      console.log('🧠 Triggering Bedrock analysis for:', { businessName, hasDescription: !!businessDescription });
+      
+      bedrockMutation.mutate({
+        businessDescription: `${businessName}: ${businessDescription}`,
+        mainCategories: [], // Let Bedrock suggest from scratch
+        language: i18n.language as 'de' | 'en',
+        userId: null // Add userId if available from auth context
+      });
+    }
+  }, [mode, businessDescription, businessName, i18n.language]);
 
   const getCategoryName = (category: GmbCategory) => {
     return i18n.language === 'de' ? category.name_de : category.name_en;
@@ -71,15 +73,48 @@ export const SmartCategorySelector: React.FC<SmartCategorySelectorProps> = ({
     category => !selectedCategories.includes(category.category_id)
   ) || [];
 
-  // KI-gestützte Vorschläge für den guided Mode
+  // Process Bedrock suggestions
+  const aiSuggestions = bedrockMutation.data?.suggestions || [];
+  const aiTags = bedrockMutation.data?.tags || [];
+  const aiReasoning = bedrockMutation.data?.reasoning || '';
+  const loading = bedrockMutation.isPending;
+  const error = bedrockMutation.error?.message;
+
+  // Convert Bedrock suggestions to our format
+  const processedSuggestions = aiSuggestions.map(suggestion => ({
+    categoryId: suggestion.id,
+    confidence: suggestion.score,
+    reason: `${suggestion.name} (${Math.round(suggestion.score * 100)}% Match)`
+  }));
+
+  // Guided mode fallback suggestions  
   const [guidedSuggestions, setGuidedSuggestions] = useState<string[]>([]);
   
   useEffect(() => {
-    if (mode === 'guided' && businessDescription) {
-      const suggestions = getGuidedSuggestions(businessDescription);
-      setGuidedSuggestions(suggestions);
+    if (mode === 'guided' && businessDescription && primaryCategories) {
+      // Simple keyword-based matching for fallback
+      const keywords = businessDescription.toLowerCase();
+      const relevant = primaryCategories
+        .filter(cat => {
+          const name = getCategoryName(cat).toLowerCase();
+          return keywords.includes(name) || name.includes('restaurant') || name.includes('essen');
+        })
+        .slice(0, 3)
+        .map(cat => cat.category_id);
+      setGuidedSuggestions(relevant);
     }
-  }, [mode, businessDescription, getGuidedSuggestions]);
+  }, [mode, businessDescription, primaryCategories]);
+
+  const triggerBedrockAnalysis = () => {
+    if (!businessDescription || !businessName) return;
+    
+    bedrockMutation.mutate({
+      businessDescription: `${businessName}: ${businessDescription}`,
+      mainCategories: [], // Let Bedrock suggest from scratch
+      language: i18n.language as 'de' | 'en',
+      userId: null // Add userId if available from auth context
+    });
+  };
 
   if (isPrimaryLoading) {
     return (
@@ -140,7 +175,7 @@ export const SmartCategorySelector: React.FC<SmartCategorySelectorProps> = ({
                 {businessDescription ? (
                   <>
                     <Button 
-                      onClick={getMainCategorySuggestions}
+                      onClick={triggerBedrockAnalysis}
                       disabled={loading}
                       className="w-full"
                     >
@@ -158,19 +193,44 @@ export const SmartCategorySelector: React.FC<SmartCategorySelectorProps> = ({
                       </Alert>
                     )}
 
-                    {aiSuggestions.length > 0 && (
+                    {bedrockMutation.data?.fallbackUsed && (
+                      <Alert>
+                        <Info className="h-4 w-4" />
+                        <AlertDescription>
+                          KI-Service temporär nicht verfügbar. Zeige Standard-Vorschläge.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
+                    {processedSuggestions.length > 0 && (
                       <div className="space-y-3">
                         <p className="text-sm text-gray-600">
                           {t('categorySelector.aiMode.suggestionsLabel', 'Die KI empfiehlt basierend auf Ihrer Beschreibung:')}
                         </p>
                         
+                        {aiReasoning && (
+                          <Alert className="bg-blue-50 border-blue-200">
+                            <Sparkles className="h-4 w-4 text-blue-500" />
+                            <AlertDescription className="text-blue-800">
+                              <strong>KI-Begründung:</strong> {aiReasoning}
+                            </AlertDescription>
+                          </Alert>
+                        )}
+                        
                         <div className="space-y-2">
-                          {aiSuggestions.map((suggestion) => {
-                            const category = findCategoryById(suggestion.categoryId);
-                            const isSelected = selectedCategories.includes(suggestion.categoryId);
+                          {processedSuggestions.slice(0, 8).map((suggestion) => {
+                            // Try to find matching category by name similarity
+                            const category = primaryCategories?.find(cat => 
+                              suggestion.categoryId.includes(cat.category_id) ||
+                              getCategoryName(cat).toLowerCase().includes(suggestion.reason.split('(')[0].toLowerCase().trim())
+                            );
+                            
+                            if (!category) return null;
+                            
+                            const isSelected = selectedCategories.includes(category.category_id);
                             const canSelect = !isSelected && selectedCategories.length < maxSelections;
                             
-                            return category ? (
+                            return (
                               <Card 
                                 key={suggestion.categoryId}
                                 className={`cursor-pointer transition-all ${
@@ -180,7 +240,7 @@ export const SmartCategorySelector: React.FC<SmartCategorySelectorProps> = ({
                                     ? 'hover:bg-gray-50' 
                                     : 'opacity-50 cursor-not-allowed'
                                 }`}
-                                onClick={() => canSelect && handleCategorySelect(suggestion.categoryId)}
+                                onClick={() => canSelect && handleCategorySelect(category.category_id)}
                               >
                                 <CardContent className="p-4">
                                   <div className="flex items-center justify-between">
@@ -207,7 +267,7 @@ export const SmartCategorySelector: React.FC<SmartCategorySelectorProps> = ({
                                         size="sm"
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          removeCategorySelection(suggestion.categoryId);
+                                          removeCategorySelection(category.category_id);
                                         }}
                                       >
                                         {t('categorySelector.remove', 'Entfernen')}
@@ -222,9 +282,22 @@ export const SmartCategorySelector: React.FC<SmartCategorySelectorProps> = ({
                                   </div>
                                 </CardContent>
                               </Card>
-                            ) : null;
+                            );
                           })}
                         </div>
+
+                        {aiTags.length > 0 && (
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium">Erkannte Eigenschaften:</p>
+                            <div className="flex flex-wrap gap-1">
+                              {aiTags.map(tag => (
+                                <Badge key={tag} variant="outline" className="text-xs">
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </>
