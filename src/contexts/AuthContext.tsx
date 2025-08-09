@@ -140,13 +140,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     console.log('AuthProvider: Initializing auth state');
     
-    // Set up auth state listener FIRST
+    let mounted = true;
+    
+    // Initialize session first
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (!mounted) return;
+      
+      if (error) {
+        console.error('AuthProvider: Error getting session:', error);
+      }
+      console.log('AuthProvider: Initial session:', session?.user?.email || 'No session');
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    // Set up auth state listener - only once
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!mounted) return;
+        
         console.log('AuthProvider: Auth state changed:', event, session?.user?.email || 'No session');
         setSession(session);
         setUser(session?.user ?? null);
-        setOauthError(null); // Reset error on state change
+        setOauthError(null);
         
         if (session?.user && event === 'SIGNED_IN') {
           console.log('AuthProvider: User signed in, checking profile and provider');
@@ -160,6 +177,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           
           // Defer data fetching to prevent deadlocks
           setTimeout(async () => {
+            if (!mounted) return;
+            
             try {
               // Check admin role from profiles table
               const { data: profile } = await supabase
@@ -194,16 +213,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 }
               );
               
-              // Only redirect if not on login, landing, profile, or visibility check pages
-              const isOnLandingPage = location.pathname === '/' || 
-                                     location.pathname.startsWith('/business/partner');
-              const isOnVisibilityCheck = location.pathname.startsWith('/visibility');
-              const isOnProfilePage = location.pathname === '/profile' || 
-                                     location.pathname === '/company-profile';
+              // Public routes that don't require redirects
+              const publicRoutes = [
+                '/',
+                '/business/partner',
+                '/visibility',
+                '/visibilitycheck',
+                '/profile',
+                '/company-profile'
+              ];
               
-              console.log('AuthProvider: Current path:', location.pathname, 'isOnLandingPage:', isOnLandingPage, 'isOnVisibilityCheck:', isOnVisibilityCheck);
+              const isOnPublicRoute = publicRoutes.some(route => 
+                location.pathname === route || location.pathname.startsWith(route + '/')
+              );
               
-              if ((!isOnLandingPage && !isOnVisibilityCheck && !isOnProfilePage) || location.pathname === '/business/partner/login') {
+              console.log('AuthProvider: Current path:', location.pathname, 'isOnPublicRoute:', isOnPublicRoute);
+              
+              // Only redirect from login page or private routes
+              if (location.pathname === '/business/partner/login' || (!isOnPublicRoute && location.pathname !== '/')) {
                 // Check for test mode parameter
                 const urlParams = new URLSearchParams(location.search);
                 const testMode = urlParams.get('test');
@@ -227,36 +254,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 }
               }
             } catch (error) {
-              console.log('AuthProvider: No partner record found, will redirect to onboarding on next navigation');
+              console.log('AuthProvider: Error checking partner record:', error);
               
               // Log auth event with error
               await logOAuthEvent(
-                'login_success',
+                'login_error',
                 session.user.app_metadata?.provider || 'email',
                 false,
-                'No partner record found'
+                'Partner record check failed'
               );
             }
-          }, 0);
+          }, 100);
         }
         
         setLoading(false);
       }
     );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      if (error) {
-        console.error('AuthProvider: Error getting session:', error);
-      }
-      console.log('AuthProvider: Initial session:', session?.user?.email || 'No session');
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate, location.pathname]);
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []); // Empty dependency array to prevent multiple subscriptions
 
   const signInWithGoogle = async () => {
     console.log('AuthProvider: Starting Google OAuth sign in');
