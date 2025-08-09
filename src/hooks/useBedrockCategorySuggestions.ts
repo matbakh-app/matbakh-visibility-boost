@@ -1,53 +1,70 @@
-import { useEffect, useState } from 'react';
-import { getBedrockSuggestions, CategorySuggestion } from '@/services/bedrock';
-import { VCData } from '@/services/UserJourneyManager';
+import { useMutation } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+
+export type CategorySuggestion = { 
+  id: string; 
+  name: string; 
+  score: number; 
+  source: string;
+};
+
+export type BedrockVCResponse = {
+  suggestions: CategorySuggestion[];
+  tags: string[];
+  reasoning: string;
+  usage: {
+    inputTokens: number;
+    outputTokens: number;
+    usd: number;
+  };
+  fallbackUsed: boolean;
+  requestId: string;
+};
+
+export type BedrockVCRequest = {
+  businessDescription?: string;
+  address?: {
+    street?: string;
+    houseNumber?: string;
+    postalCode?: string;
+    city?: string;
+    country?: string;
+  };
+  website?: string;
+  mainCategories?: string[];
+  language?: "de" | "en";
+  userId?: string | null;
+};
 
 /**
- * Hook to fetch category suggestions from Bedrock based on user journey data.
- * @param data - VCData from UserJourneyManager containing business info
+ * Hook to fetch category suggestions from Bedrock via Edge Function
  */
-export function useBedrockCategorySuggestions(
-  data: VCData | null
-): { suggestions: CategorySuggestion[]; loading: boolean; error: Error | null } {
-  const [suggestions, setSuggestions] = useState<CategorySuggestion[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+export function useBedrockCategorySuggestions() {
+  return useMutation({
+    mutationFn: async (input: BedrockVCRequest): Promise<BedrockVCResponse> => {
+      console.log('🧠 Calling Bedrock VC with input:', input);
+      
+      const { data, error } = await supabase.functions.invoke('enhanced-visibility-check', {
+        body: input
+      });
 
-  useEffect(() => {
-    if (!data) {
-      setSuggestions([]);
-      return;
-    }
-
-    const fetchSuggestions = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        // Call Bedrock service with VCData
-        const response = await getBedrockSuggestions({
-          description: data.businessName, // Using businessName as description for now
-          address: {
-            postalCode: data.postalCode,
-            city: data.location,
-          },
-          website: data.website,
-          mainCategories: data.mainCategory ? [data.mainCategory] : [],
-          language: 'de', // Default to German for now
-        });
-        // Expecting response: Array<{ value, label, score }>
-        setSuggestions(response);
-      } catch (err) {
-        console.error('Bedrock category suggestions error', err);
-        setError(err as Error);
-        // Fallback to empty array on error
-        setSuggestions([]);
-      } finally {
-        setLoading(false);
+      if (error) {
+        console.error('❌ Bedrock VC error:', error);
+        throw new Error(error.message || 'Bedrock API call failed');
       }
-    };
 
-    fetchSuggestions();
-  }, [data]);
-
-  return { suggestions, loading, error };
+      console.log('✅ Bedrock VC response:', data);
+      return data;
+    },
+    onSuccess: (data) => {
+      console.log('✅ Bedrock suggestions received:', {
+        suggestionsCount: data.suggestions.length,
+        fallbackUsed: data.fallbackUsed,
+        hasReasoning: !!data.reasoning
+      });
+    },
+    onError: (error) => {
+      console.error('❌ Bedrock suggestions failed:', error);
+    }
+  });
 }
