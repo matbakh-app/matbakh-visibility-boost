@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { AwsClient } from "https://deno.land/x/aws4fetch@v1.0.1/mod.ts";
+import { AwsClient } from "npm:aws4fetch@1.0.20";
 
 type VCRequest = {
   businessDescription?: string;
