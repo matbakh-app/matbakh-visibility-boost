@@ -11,6 +11,7 @@ export const FigmaMainRouter: React.FC = () => (
     <Route path="/visibilitycheck/onboarding/step2" element={<SimpleTestComponent />} />
     <Route path="/visibilitycheck/dashboard/public" element={<SimpleTestComponent />} />
     <Route path="/visibilitycheck/dashboard/member" element={<SimpleTestComponent />} />
-    <Route path="*" element={<Navigate to="/" replace />} />
+    {/* DEBUG: Temporarily disable wildcard redirect to identify issue */}
+    {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
   </Routes>
 )

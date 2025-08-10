@@ -48,6 +48,11 @@ import { AuthModal } from '@/components/auth/AuthModal';
 import { GoogleOAuthCallback } from '@/components/auth/GoogleOAuthCallback';
 import { QuickVerifyMode } from '@/components/onboarding/QuickVerifyMode';
 
+// DEBUG: Navigate tracing (DEV only)
+if (import.meta.env.DEV) {
+  const origNavigate = console.log; // Will be replaced in useNavigate hook
+}
+
 // Legal pages
 import Impressum from '@/pages/legal/Impressum';
 import Datenschutz from '@/pages/legal/Datenschutz';
