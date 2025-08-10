@@ -100,8 +100,12 @@ function App() {
                 <Route path="visibility-check" element={<VisibilityCheckPage />} />
                 <Route path="visibility-check/verified/:leadId" element={<VisibilityCheckVerified />} />
                 
-                {/* New Figma-based Visibility Check Routes */}
-                <Route path="visibilitycheck/*" element={<FigmaMainRouter />} />
+                {/* DEBUG: Direct visibility check routes for testing */}
+                <Route path="visibilitycheck/onboarding/step1" element={<div style={{padding:24, fontSize:24}}>🔥 Step 1 alive</div>} />
+                <Route path="visibilitycheck/onboarding/step2" element={<div style={{padding:24, fontSize:24}}>✅ Step 2 alive</div>} />
+                
+                {/* Temporarily disabled Figma Router */}
+                {/* <Route path="visibilitycheck/*" element={<FigmaMainRouter />} /> */}
                 
                 <Route path="redeem" element={<RedeemPage />} />
                 <Route path="auth/google/callback" element={<GoogleOAuthCallback />} />
