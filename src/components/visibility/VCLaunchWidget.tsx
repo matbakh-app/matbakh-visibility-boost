@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { BarChart, TrendingUp, Target, Play } from 'lucide-react';
 import { VCData, useUserJourney } from '@/services/UserJourneyManager';
-import { useAuth } from '@/contexts/AuthContext';
+
 
 interface VCLaunchWidgetProps {
   onStart?: (formData: VCData) => void;
@@ -13,24 +13,16 @@ interface VCLaunchWidgetProps {
 
 export const VCLaunchWidget: React.FC<VCLaunchWidgetProps> = ({ onStart }) => {
   // UserJourneyManager & Auth hooks
-  const { setEntryPoint, setVCData } = useUserJourney();
-  const { user, openAuthModal } = useAuth();
+  const { setEntryPoint } = useUserJourney();
+  
   const navigate = useNavigate();
 
   const handleStart = () => {
-    // 1. Entry Point tracken (ohne Form-Daten im Widget)
+    // Öffentlich: VC ohne Login starten
     setEntryPoint('vc');
-
-    // 2. Wenn nicht eingeloggt → AuthModal öffnen
-    if (!user) {
-      openAuthModal('register');
-      return;
-    }
-
-    // 3. Eingeloggter User → direkt zum Figma-Onboarding routen
+    // Direkt zur öffentlichen Onboarding-Strecke
     navigate('/visibilitycheck/onboarding/step1');
-
-    // 4. Optional: Legacy onStart callback
+    // Optionaler Callback
     onStart?.({});
   };
 
