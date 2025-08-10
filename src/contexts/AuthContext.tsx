@@ -213,14 +213,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 }
               );
               
-              // Public routes that don't require redirects
+              // Public routes that don't require redirects (expanded)
               const publicRoutes = [
                 '/',
                 '/business/partner',
                 '/visibility',
                 '/visibilitycheck',
+                '/visibilitycheck/onboarding',
+                '/visibilitycheck/onboarding/step1',
+                '/visibilitycheck/onboarding/step2',
+                '/visibilitycheck/confirm',
+                '/visibility-check',
                 '/profile',
-                '/company-profile'
+                '/company-profile',
+                '/impressum',
+                '/datenschutz',
+                '/agb'
               ];
               
               const isOnPublicRoute = publicRoutes.some(route => 
@@ -417,9 +425,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     closeAuthModal
   };
 
+  // Allow public pages to render even while auth is loading
+  const publicRoutesRender = [
+    '/',
+    '/business/partner',
+    '/visibility',
+    '/visibilitycheck',
+    '/visibilitycheck/onboarding',
+    '/visibilitycheck/onboarding/step1',
+    '/visibilitycheck/onboarding/step2',
+    '/visibilitycheck/confirm',
+    '/visibility-check',
+    '/profile',
+    '/company-profile',
+    '/impressum',
+    '/datenschutz',
+    '/agb'
+  ];
+  const isOnPublicRouteRender = publicRoutesRender.some(route =>
+    location.pathname === route || location.pathname.startsWith(route + '/')
+  );
+
   return (
     <AuthContext.Provider value={value}>
-      {loading ? (
+      {loading && !isOnPublicRouteRender ? (
         <div className="min-h-screen flex items-center justify-center bg-white">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto mb-4"></div>
