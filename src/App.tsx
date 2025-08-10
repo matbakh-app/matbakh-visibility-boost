@@ -47,6 +47,8 @@ import { AuthModal } from '@/components/auth/AuthModal';
 
 import { GoogleOAuthCallback } from '@/components/auth/GoogleOAuthCallback';
 import { QuickVerifyMode } from '@/components/onboarding/QuickVerifyMode';
+import { RestaurantInfoStep } from '@/components/figma-onboarding/RestaurantInfoStep';
+import { WebsiteAnalysisStep } from '@/components/figma-onboarding/WebsiteAnalysisStep';
 
 // DEBUG: Navigate tracing (DEV only)
 if (import.meta.env.DEV) {
@@ -100,9 +102,20 @@ function App() {
                 <Route path="visibility-check" element={<VisibilityCheckPage />} />
                 <Route path="visibility-check/verified/:leadId" element={<VisibilityCheckVerified />} />
                 
-                {/* DEBUG: Direct visibility check routes for testing */}
-                <Route path="visibilitycheck/onboarding/step1" element={<div style={{padding:24, fontSize:24}}>🔥 Step 1 alive</div>} />
-                <Route path="visibilitycheck/onboarding/step2" element={<div style={{padding:24, fontSize:24}}>✅ Step 2 alive</div>} />
+                {/* Figma-based Visibility Check Routes */}
+                <Route path="visibilitycheck/onboarding/step1" element={
+                  <RestaurantInfoStep 
+                    onNext={(data) => console.log('Step 1 data:', data)} 
+                    onBack={() => window.history.back()} 
+                    skipEmailGate={true}
+                  />
+                } />
+                <Route path="visibilitycheck/onboarding/step2" element={
+                  <WebsiteAnalysisStep 
+                    onNext={(data) => console.log('Step 2 data:', data)} 
+                    onBack={() => window.history.back()}
+                  />
+                } />
                 
                 {/* Temporarily disabled Figma Router */}
                 {/* <Route path="visibilitycheck/*" element={<FigmaMainRouter />} /> */}
