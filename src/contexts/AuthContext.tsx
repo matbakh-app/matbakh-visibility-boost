@@ -164,6 +164,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(session);
         setUser(session?.user ?? null);
         setOauthError(null);
+
+        // Public route guard (VC and other public pages)
+        const urlParams = new URLSearchParams(location.search);
+        const forcePublic = urlParams.get('guest') === '1';
+        const publicPrefixes = [
+          '/', '/visibility', '/visibilitycheck', '/visibilitycheck/onboarding',
+          '/visibility-check', '/profile', '/company-profile', '/impressum', '/datenschutz', '/agb'
+        ];
+        const isOnPublicRoute = publicPrefixes.some(r => location.pathname === r || location.pathname.startsWith(r + '/'));
+        if (isOnPublicRoute || forcePublic) {
+          console.log('AuthProvider: public/VC route – skip redirects');
+          setLoading(false);
+          return;
+        }
         
         if (session?.user && event === 'SIGNED_IN') {
           console.log('AuthProvider: User signed in, checking profile and provider');

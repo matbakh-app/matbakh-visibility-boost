@@ -11,8 +11,6 @@ import { ThemeToggle } from './ThemeToggle';
 import { 
   ArrowLeft, 
   UtensilsCrossed,
-  MapPin,
-  Phone,
   Globe,
   Tag,
   Euro,
@@ -49,6 +47,7 @@ export function RestaurantInfoStep({
   // Address fields (split for international support)
   const [street, setStreet] = useState('');
   const [houseNumber, setHouseNumber] = useState('');
+  const [addressAddition, setAddressAddition] = useState('');
   const [postalCode, setPostalCode] = useState('');
   const [city, setCity] = useState('');
   const [country, setCountry] = useState('Deutschland');
@@ -173,11 +172,13 @@ export function RestaurantInfoStep({
     section: 'Adresse',
     street: 'Straße',
     houseNumber: 'Hausnr.',
+    addition: 'Zusatz (optional)',
     postalCode: 'PLZ',
     city: 'Stadt',
     country: 'Land',
     streetPh: 'z. B. Lindwurmstraße',
     houseNumberPh: 'z. B. 32',
+    additionPh: 'z. B. Hinterhaus, 2. OG',
     postalCodePh: 'z. B. 80337',
     cityPh: 'z. B. München',
     countryPh: 'Deutschland'
@@ -185,11 +186,13 @@ export function RestaurantInfoStep({
     section: 'Address',
     street: 'Street',
     houseNumber: 'No.',
+    addition: 'Addition (optional)',
     postalCode: 'ZIP/Postal code',
     city: 'City',
     country: 'Country',
     streetPh: 'e.g. Market Street',
     houseNumberPh: 'e.g. 123',
+    additionPh: 'e.g. Apt 2B',
     postalCodePh: 'e.g. 10115',
     cityPh: 'e.g. Berlin',
     countryPh: 'Germany'
@@ -224,7 +227,8 @@ export function RestaurantInfoStep({
 
   const handleSubmit = () => {
     if (!isFormValid()) return;
-    const addressCombined = `${street} ${houseNumber}, ${postalCode} ${city}, ${country}`.trim();
+    const additionPart = addressAddition ? ` ${addressAddition}` : '';
+    const addressCombined = `${street} ${houseNumber}${additionPart}, ${postalCode} ${city}, ${country}`.trim();
     onNext({ ...formData, address: addressCombined });
   };
 
@@ -390,6 +394,16 @@ export function RestaurantInfoStep({
                       />
                       <div className="text-xs text-muted-foreground mt-1">{addressTexts.houseNumber}</div>
                     </div>
+                    <div className="md:col-span-6">
+                      <Input
+                        id="addressAddition"
+                        placeholder={addressTexts.additionPh}
+                        value={addressAddition}
+                        onChange={(e) => setAddressAddition(e.target.value)}
+                        className="input-dark-enhanced"
+                      />
+                      <div className="text-xs text-muted-foreground mt-1">{addressTexts.addition}</div>
+                    </div>
                     <div className="md:col-span-2">
                       <Input
                         id="postalCode"
@@ -426,33 +440,17 @@ export function RestaurantInfoStep({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="phoneNumber">{currentTexts.phoneLabel}</Label>
-                    <div className="relative">
-                      <Input
-                        id="phoneNumber"
-                        placeholder={currentTexts.phonePlaceholder}
-                        value={formData.phoneNumber}
-                        onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-                        className="pl-10 input-dark-enhanced"
-                      />
-                      <Phone className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="website">{currentTexts.websiteLabel}</Label>
-                    <div className="relative">
-                      <Input
-                        id="website"
-                        placeholder={currentTexts.websitePlaceholder}
-                        value={formData.website}
-                        onChange={(e) => handleInputChange('website', e.target.value)}
-                        className="pl-10 input-dark-enhanced"
-                      />
-                      <Globe className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-                    </div>
+                <div className="space-y-2">
+                  <Label htmlFor="website">{currentTexts.websiteLabel}</Label>
+                  <div className="relative">
+                    <Input
+                      id="website"
+                      placeholder={currentTexts.websitePlaceholder}
+                      value={formData.website}
+                      onChange={(e) => handleInputChange('website', e.target.value)}
+                      className="pl-10 input-dark-enhanced"
+                    />
+                    <Globe className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
                   </div>
                 </div>
               </div>
