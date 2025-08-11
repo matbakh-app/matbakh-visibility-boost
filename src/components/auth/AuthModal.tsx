@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserJourney } from '@/services/UserJourneyManager';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Mail, Eye, EyeOff, ArrowLeft } from 'lucide-react';
@@ -32,6 +32,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({ defaultMode }) => {
   // UserJourneyManager hooks
   const { getNextStepAfterAuth, isFromVisibilityCheck } = useUserJourney();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Auto-close modal on public VC routes to keep VC flow truly public
+  useEffect(() => {
+    const publicPrefixes = ['/visibilitycheck', '/visibility-check'];
+    const isVC = publicPrefixes.some(p => location.pathname === p || location.pathname.startsWith(p + '/'));
+    if (showAuthModal && isVC) {
+      closeAuthModal();
+    }
+  }, [location.pathname, showAuthModal, closeAuthModal]);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

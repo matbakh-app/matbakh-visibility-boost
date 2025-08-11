@@ -23,15 +23,9 @@ const BusinessLanding: React.FC = () => {
     setEntryPoint('vc', formData);
     setVCData(formData);
     
-    // 2) Auth-Modal öffnen (falls nicht eingeloggt)
-    if (!user) {
-      openAuthModal('register', formData);
-    } else {
-      // direkt zum Figma VC-Onboarding weiter
-      window.location.href = '/visibilitycheck/onboarding/step1';
-    }
+    // 2) Öffentlich: ohne Login direkt ins VC-Onboarding
+    window.location.href = '/visibilitycheck/onboarding/step1';
   };
-
   return (
     <>
       <SeoMeta 
