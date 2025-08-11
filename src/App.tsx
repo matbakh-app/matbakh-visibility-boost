@@ -1,6 +1,6 @@
 
 import { Suspense } from 'react';
-import { Routes, Route, Outlet } from 'react-router-dom';
+import { Routes, Route, Outlet, useNavigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/toaster';
@@ -77,6 +77,36 @@ const queryClient = new QueryClient({
   },
 });
 
+// VC Route wrappers to handle navigation and data persistence
+function VCStep1Route() {
+  const navigate = useNavigate();
+  return (
+    <RestaurantInfoStep
+      onNext={(data) => {
+        console.log('Step 1 data:', data);
+        try {
+          const prev = JSON.parse(localStorage.getItem('vc:data') || '{}');
+          localStorage.setItem('vc:data', JSON.stringify({ ...prev, ...data }));
+        } catch {}
+        navigate('/visibilitycheck/onboarding/step2');
+      }}
+      onBack={() => window.history.back()}
+      skipEmailGate={true}
+    />
+  );
+}
+
+function VCStep2Route() {
+  return (
+    <WebsiteAnalysisStep
+      onNext={(data) => {
+        console.log('Step 2 data:', data);
+      }}
+      onBack={() => window.history.back()}
+    />
+  );
+}
+
 function App() {
   return (
     <ErrorBoundary>
@@ -103,19 +133,8 @@ function App() {
                 <Route path="visibility-check/verified/:leadId" element={<VisibilityCheckVerified />} />
                 
                 {/* Figma-based Visibility Check Routes */}
-                <Route path="visibilitycheck/onboarding/step1" element={
-                  <RestaurantInfoStep 
-                    onNext={(data) => console.log('Step 1 data:', data)} 
-                    onBack={() => window.history.back()} 
-                    skipEmailGate={true}
-                  />
-                } />
-                <Route path="visibilitycheck/onboarding/step2" element={
-                  <WebsiteAnalysisStep 
-                    onNext={(data) => console.log('Step 2 data:', data)} 
-                    onBack={() => window.history.back()}
-                  />
-                } />
+                <Route path="visibilitycheck/onboarding/step1" element={<VCStep1Route />} />
+                <Route path="visibilitycheck/onboarding/step2" element={<VCStep2Route />} />
                 
                 {/* Temporarily disabled Figma Router */}
                 {/* <Route path="visibilitycheck/*" element={<FigmaMainRouter />} /> */}

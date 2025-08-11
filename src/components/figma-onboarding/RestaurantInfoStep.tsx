@@ -46,6 +46,12 @@ export function RestaurantInfoStep({
     priceRange: '',
     additionalServices: []
   });
+  // Address fields (split for international support)
+  const [street, setStreet] = useState('');
+  const [houseNumber, setHouseNumber] = useState('');
+  const [postalCode, setPostalCode] = useState('');
+  const [city, setCity] = useState('');
+  const [country, setCountry] = useState('Deutschland');
 
   const texts = {
     de: {
@@ -163,6 +169,31 @@ export function RestaurantInfoStep({
   };
 
   const currentTexts = texts[language];
+  const addressTexts = language === 'de' ? {
+    section: 'Adresse',
+    street: 'Straße',
+    houseNumber: 'Hausnr.',
+    postalCode: 'PLZ',
+    city: 'Stadt',
+    country: 'Land',
+    streetPh: 'z. B. Lindwurmstraße',
+    houseNumberPh: 'z. B. 32',
+    postalCodePh: 'z. B. 80337',
+    cityPh: 'z. B. München',
+    countryPh: 'Deutschland'
+  } : {
+    section: 'Address',
+    street: 'Street',
+    houseNumber: 'No.',
+    postalCode: 'ZIP/Postal code',
+    city: 'City',
+    country: 'Country',
+    streetPh: 'e.g. Market Street',
+    houseNumberPh: 'e.g. 123',
+    postalCodePh: 'e.g. 10115',
+    cityPh: 'e.g. Berlin',
+    countryPh: 'Germany'
+  };
 
   const handleInputChange = (field: keyof RestaurantFormData, value: string | string[]) => {
     setFormData(prev => ({
@@ -181,15 +212,20 @@ export function RestaurantInfoStep({
   };
 
   const isFormValid = () => {
-    return formData.restaurantName.trim() && 
-           formData.address.trim() && 
-           formData.mainCategory && 
+    return formData.restaurantName.trim() &&
+           street.trim() &&
+           houseNumber.trim() &&
+           postalCode.trim() &&
+           city.trim() &&
+           country.trim() &&
+           formData.mainCategory &&
            formData.priceRange;
   };
 
   const handleSubmit = () => {
     if (!isFormValid()) return;
-    onNext(formData);
+    const addressCombined = `${street} ${houseNumber}, ${postalCode} ${city}, ${country}`.trim();
+    onNext({ ...formData, address: addressCombined });
   };
 
   // Categories for restaurant selection
@@ -330,17 +366,63 @@ export function RestaurantInfoStep({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="address">{currentTexts.addressLabel} *</Label>
-                  <div className="relative">
-                    <Input
-                      id="address"
-                      placeholder={currentTexts.addressPlaceholder}
-                      value={formData.address}
-                      onChange={(e) => handleInputChange('address', e.target.value)}
-                      className="pl-10 input-dark-enhanced"
-                      required
-                    />
-                    <MapPin className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                  <Label>{addressTexts.section} *</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
+                    <div className="md:col-span-4">
+                      <Input
+                        id="street"
+                        placeholder={addressTexts.streetPh}
+                        value={street}
+                        onChange={(e) => setStreet(e.target.value)}
+                        className="input-dark-enhanced"
+                        required
+                      />
+                      <div className="text-xs text-muted-foreground mt-1">{addressTexts.street}</div>
+                    </div>
+                    <div className="md:col-span-2">
+                      <Input
+                        id="houseNumber"
+                        placeholder={addressTexts.houseNumberPh}
+                        value={houseNumber}
+                        onChange={(e) => setHouseNumber(e.target.value)}
+                        className="input-dark-enhanced"
+                        required
+                      />
+                      <div className="text-xs text-muted-foreground mt-1">{addressTexts.houseNumber}</div>
+                    </div>
+                    <div className="md:col-span-2">
+                      <Input
+                        id="postalCode"
+                        placeholder={addressTexts.postalCodePh}
+                        value={postalCode}
+                        onChange={(e) => setPostalCode(e.target.value)}
+                        className="input-dark-enhanced"
+                        required
+                      />
+                      <div className="text-xs text-muted-foreground mt-1">{addressTexts.postalCode}</div>
+                    </div>
+                    <div className="md:col-span-4">
+                      <Input
+                        id="city"
+                        placeholder={addressTexts.cityPh}
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                        className="input-dark-enhanced"
+                        required
+                      />
+                      <div className="text-xs text-muted-foreground mt-1">{addressTexts.city}</div>
+                    </div>
+                    <div className="md:col-span-6">
+                      <Input
+                        id="country"
+                        placeholder={addressTexts.countryPh}
+                        value={country}
+                        onChange={(e) => setCountry(e.target.value)}
+                        className="input-dark-enhanced"
+                        required
+                      />
+                      <div className="text-xs text-muted-foreground mt-1">{addressTexts.country}</div>
+                    </div>
                   </div>
                 </div>
 
