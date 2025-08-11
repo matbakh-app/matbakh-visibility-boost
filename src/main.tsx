@@ -5,6 +5,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from '@/contexts/AuthContext'; 
 import '@/lib/i18n';
 import App from './App.tsx';
+import { I18nProvider } from '@/contexts/i18nContext';
 import './index.css';
 import { clearExpiredData } from './utils/localStorage';
 
@@ -15,7 +16,9 @@ createRoot(document.getElementById("root")!).render(
   <HelmetProvider>
     <BrowserRouter>
       <AuthProvider>
-        <App />
+        <I18nProvider>
+          <App />
+        </I18nProvider>
       </AuthProvider>
     </BrowserRouter>
   </HelmetProvider>
