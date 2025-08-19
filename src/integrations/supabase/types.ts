@@ -3390,6 +3390,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "user_consent_partner_fk"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "business_partners"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "user_consent_tracking_partner_id_fkey"
             columns: ["partner_id"]
             isOneToOne: false
