@@ -91,8 +91,8 @@ export const AddonServiceEditModal: React.FC<AddonServiceEditModalProps> = ({
           compatible_packages: formData.compatible_packages.split(',').map(p => p.trim()).filter(p => p),
           is_active: formData.is_active,
           sort_order: formData.sort_order ? parseInt(formData.sort_order) : null
-        })
-        .eq('id', service.id);
+        } as any)
+        .eq('id', service.id as any);
 
       if (error) throw error;
 
