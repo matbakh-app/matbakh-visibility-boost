@@ -1662,6 +1662,59 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_events: {
+        Row: {
+          business_name: string | null
+          created_at: string
+          email: string | null
+          event_payload: Json | null
+          event_time: string
+          event_type: string
+          facebook_event_id: string | null
+          id: string
+          partner_id: string | null
+          response_status: number | null
+          success: boolean | null
+          user_id: string | null
+        }
+        Insert: {
+          business_name?: string | null
+          created_at?: string
+          email?: string | null
+          event_payload?: Json | null
+          event_time?: string
+          event_type: string
+          facebook_event_id?: string | null
+          id?: string
+          partner_id?: string | null
+          response_status?: number | null
+          success?: boolean | null
+          user_id?: string | null
+        }
+        Update: {
+          business_name?: string | null
+          created_at?: string
+          email?: string | null
+          event_payload?: Json | null
+          event_time?: string
+          event_type?: string
+          facebook_event_id?: string | null
+          id?: string
+          partner_id?: string | null
+          response_status?: number | null
+          success?: boolean | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_events_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "business_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       main_categories: {
         Row: {
           created_at: string

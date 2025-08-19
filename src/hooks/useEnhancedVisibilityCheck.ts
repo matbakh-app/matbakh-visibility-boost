@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
+import { Row, Insert } from '@/integrations/supabase/db-helpers';
 
 interface EnhancedLeadData {
   businessName: string;
@@ -70,27 +71,27 @@ export function useEnhancedVisibilityCheck() {
 export function useCreateVisibilityLead() {
   return useMutation({
     mutationFn: async (leadData: Partial<EnhancedLeadData>) => {
+      const payload: Insert<"visibility_check_leads"> = {
+        business_name: leadData.businessName || '',
+        location: leadData.location || '',
+        main_category: leadData.mainCategory || '',
+        sub_category: leadData.subCategory || '',
+        matbakh_category: leadData.matbakhTags?.[0] || '',
+        website: leadData.website || '',
+        facebook_handle: leadData.facebookName || '',
+        instagram_handle: leadData.instagramName || '',
+        benchmarks: leadData.benchmarks as any || [],
+        email: leadData.email || '',
+        phone_number: '',
+        gdpr_consent: leadData.gdprConsent || false,
+        marketing_consent: leadData.marketingConsent || false,
+        language: leadData.language || 'de',
+        analysis_status: 'pending'
+      };
+
       const { data, error } = await supabase
-        .from('visibility_check_leads' as any)
-        .insert({
-          business_name: leadData.businessName,
-          location: leadData.location,
-          main_category: leadData.mainCategory,
-          sub_category: leadData.subCategory,
-          matbakh_category: leadData.matbakhTags?.[0],
-          website: leadData.website,
-          facebook_handle: leadData.facebookName,
-          instagram_handle: leadData.instagramName,
-          benchmarks: leadData.benchmarks || [],
-          email: leadData.email,
-          gdpr_consent: leadData.gdprConsent || false,
-          marketing_consent: leadData.marketingConsent || false,
-          language: leadData.language || 'de',
-          location_data: leadData.locationData || null,
-          competitor_urls: leadData.competitorUrls || [],
-          social_links: leadData.socialLinks || {},
-          status: 'pending'
-        } as any)
+        .from('visibility_check_leads')
+        .insert([payload as any])
         .select()
         .single();
 

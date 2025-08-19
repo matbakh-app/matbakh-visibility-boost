@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { Row, Insert, Update } from '@/integrations/supabase/db-helpers';
 
 // Enhanced Lead Data Types
 interface EnhancedLeadData {
@@ -34,6 +35,8 @@ interface LeadAction {
   details?: Record<string, any>;
 }
 
+type LeadId = Row<"visibility_check_leads">["id"];
+
 export const useEnhancedLeadTracking = () => {
   const [loading, setLoading] = useState(false);
 
@@ -41,7 +44,7 @@ export const useEnhancedLeadTracking = () => {
     try {
       setLoading(true);
 
-      const leadPayload = {
+      const payload: Insert<"visibility_check_leads"> = {
         business_name: leadData.businessName,
         location: leadData.location,
         postal_code: leadData.postalCode || '',
@@ -51,7 +54,7 @@ export const useEnhancedLeadTracking = () => {
         website: leadData.website || '',
         facebook_handle: leadData.facebookName || '',
         instagram_handle: leadData.instagramName || '',
-        benchmarks: leadData.benchmarks || [],
+        benchmarks: leadData.benchmarks as any || [],
         email: leadData.email || '',
         phone_number: leadData.phoneNumber || '',
         gdpr_consent: leadData.gdprConsent || false,
@@ -61,8 +64,8 @@ export const useEnhancedLeadTracking = () => {
       };
 
       const { data: newLead, error } = await supabase
-        .from('visibility_check_leads' as any)
-        .insert([leadPayload] as any)
+        .from('visibility_check_leads')
+        .insert([payload as any])
         .select('id')
         .single();
 
@@ -74,7 +77,7 @@ export const useEnhancedLeadTracking = () => {
       // Log the lead creation action
       try {
         await trackLeadAction({
-          leadId: (newLead as any).id,
+          leadId: newLead.id as string,
           actionType: 'lead_created',
           platform: 'visibility_check',
           details: {
@@ -91,7 +94,7 @@ export const useEnhancedLeadTracking = () => {
         console.warn('Failed to log lead creation action:', actionError);
       }
 
-      return (newLead as any)?.id || null;
+      return newLead.id as string;
     } catch (error) {
       console.error('Error in createEnhancedLead:', error);
       throw error;
@@ -108,14 +111,16 @@ export const useEnhancedLeadTracking = () => {
     try {
       setLoading(true);
 
+      const changes: Update<"visibility_check_leads"> = {
+        analysis_data: analysisData,
+        analysis_status: status || 'completed',
+        analyzed_at: new Date().toISOString()
+      };
+
       const { error } = await supabase
-        .from('visibility_check_leads' as any)
-        .update({
-          analysis_data: analysisData,
-          analysis_status: status || 'completed',
-          analyzed_at: new Date().toISOString()
-        } as any)
-        .eq('id', leadId as any);
+        .from('visibility_check_leads')
+        .update(changes as any)
+        .eq('id', leadId);
 
       if (error) {
         console.error('Error updating lead analysis:', error);
@@ -140,16 +145,18 @@ export const useEnhancedLeadTracking = () => {
     try {
       setLoading(true);
 
+      const changes: Update<"visibility_check_leads"> = {
+        analysis_data: {
+          gdpr_consent: gdprConsent,
+          marketing_consent: marketingConsent || false,
+          consent_timestamp: new Date().toISOString()
+        } as any
+      };
+
       const { error } = await supabase
-        .from('visibility_check_leads' as any)
-        .update({
-          analysis_data: {
-            gdpr_consent: gdprConsent,
-            marketing_consent: marketingConsent || false,
-            consent_timestamp: new Date().toISOString()
-          }
-        } as any)
-        .eq('id', leadId as any);
+        .from('visibility_check_leads')
+        .update(changes as any)
+        .eq('id', leadId);
 
       if (error) {
         console.error('Error processing GDPR consent:', error);
@@ -185,17 +192,18 @@ export const useEnhancedLeadTracking = () => {
   const getLeadAnalysis = async (leadId: string): Promise<any | null> => {
     try {
       const { data, error } = await supabase
-        .from('visibility_check_leads' as any)
+        .from('visibility_check_leads')
         .select('analysis_data')
-        .eq('id', leadId as any)
-        .single();
+        .eq('id', leadId)
+        .single()
+        .returns<Row<"visibility_check_leads">>();
 
       if (error) {
         console.error('Error fetching lead analysis:', error);
         return null;
       }
 
-      return (data as any)?.analysis_data || null;
+      return data?.analysis_data || null;
     } catch (error) {
       console.error('Error in getLeadAnalysis:', error);
       return null;
@@ -205,17 +213,18 @@ export const useEnhancedLeadTracking = () => {
   const searchLeadsByEmail = async (email: string): Promise<any[]> => {
     try {
       const { data, error } = await supabase
-        .from('visibility_check_leads' as any)
+        .from('visibility_check_leads')
         .select('*')
-        .eq('email', email as any)
-        .order('created_at', { ascending: false });
+        .eq('email', email)
+        .order('created_at', { ascending: false })
+        .returns<Row<"visibility_check_leads">[]>();
 
       if (error) {
         console.error('Error searching leads by email:', error);
         return [];
       }
 
-      return (data as any) || [];
+      return data || [];
     } catch (error) {
       console.error('Error in searchLeadsByEmail:', error);
       return [];
@@ -224,11 +233,24 @@ export const useEnhancedLeadTracking = () => {
 
   const trackLeadAction = async (actionData: LeadAction): Promise<boolean> => {
     try {
-      // TODO: Implement lead action tracking
-      // This would typically insert into a lead_actions table
-      console.log('Tracking lead action:', actionData);
+      const payload: Insert<"lead_events"> = {
+        email: null,
+        business_name: null,
+        event_type: actionData.actionType,
+        event_time: new Date().toISOString(),
+        event_payload: actionData.details || {},
+        user_id: null,
+        partner_id: null,
+        facebook_event_id: null,
+        response_status: null,
+        success: true
+      };
       
-      // For now, just return true as we don't have the lead_actions table implemented yet
+      await supabase
+        .from('lead_events')
+        .insert([payload as any]);
+        
+      console.log('Tracking lead action:', actionData);
       return true;
     } catch (error) {
       console.error('Error in trackLeadAction:', error);
