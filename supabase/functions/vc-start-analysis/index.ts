@@ -56,27 +56,34 @@ serve(async (req) => {
     const tokenHash = await sha256Hex(token);
     const expires = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(); // 48h
 
-    // Insert lead
+    // Insert lead - minimal fields to avoid errors
+    const row = {
+      email,
+      business_name: restaurantName,
+      location_text: address,
+      locale,
+      analysis_status: "pending",
+      confirm_token_hash: tokenHash,
+      confirm_expires_at: expires,
+      marketing_consent: !!marketing_consent,
+      marketing_consent_at: marketing_consent ? new Date().toISOString() : null,
+    };
+
     const { data: lead, error: insertErr } = await supabase
       .from("visibility_check_leads")
-      .insert({
-        email,
-        business_name: restaurantName,
-        location_text: address,
-        locale,
-        gdpr_consent: true,
-        marketing_consent,
-        marketing_consent_at: marketing_consent ? new Date().toISOString() : null,
-        confirm_token_hash: tokenHash,
-        confirm_expires_at: expires,
-        analysis_status: "pending",
-      })
+      .insert(row)
       .select()
       .maybeSingle();
 
     if (insertErr || !lead) {
       console.error("vc-start-analysis: insert error", insertErr);
-      return new Response(JSON.stringify({ ok: false, error: "insert_failed" }), {
+      // Return detailed error for debugging
+      return new Response(JSON.stringify({ 
+        ok: false, 
+        error: "insert_failed", 
+        details: insertErr?.message || "No lead returned",
+        attempted_insert: row
+      }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
