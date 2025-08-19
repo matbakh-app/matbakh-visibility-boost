@@ -38,14 +38,14 @@ export function useProfile() {
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', user.id)
+          .eq('id', user.id as any)
           .maybeSingle()
         
         if (error) {
           console.error('Error loading profile:', error)
           setIsError(true)
         } else {
-          setData(data)
+          setData(data as any)
         }
       } catch (error) {
         console.error('Error loading profile:', error)
@@ -66,8 +66,8 @@ export function useProfile() {
     
     const { error } = await supabase
       .from('profiles')
-      .update(updates)
-      .eq('id', user.id)
+      .update(updates as any)
+      .eq('id', user.id as any)
     
     if (error) {
       console.error('Error saving profile:', error)
@@ -80,11 +80,11 @@ export function useProfile() {
     const { data: updatedData } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', user.id)
+      .eq('id', user.id as any)
       .maybeSingle()
     
     if (updatedData) {
-      setData(updatedData)
+      setData(updatedData as any)
     }
     
     setIsLoading(false)

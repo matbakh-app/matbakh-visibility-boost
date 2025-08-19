@@ -3673,6 +3673,7 @@ export type Database = {
           instagram_handle: string | null
           instagram_score: number | null
           ip_address: string | null
+          language: string | null
           linkedin_handle: string | null
           locale: string | null
           location: string | null
@@ -3684,6 +3685,7 @@ export type Database = {
           migrated_to_profile: boolean | null
           opening_hours: Json | null
           overall_score: number | null
+          phone_number: string | null
           postal_code: string | null
           report_generated_at: string | null
           report_sent_at: string | null
@@ -3731,6 +3733,7 @@ export type Database = {
           instagram_handle?: string | null
           instagram_score?: number | null
           ip_address?: string | null
+          language?: string | null
           linkedin_handle?: string | null
           locale?: string | null
           location?: string | null
@@ -3742,6 +3745,7 @@ export type Database = {
           migrated_to_profile?: boolean | null
           opening_hours?: Json | null
           overall_score?: number | null
+          phone_number?: string | null
           postal_code?: string | null
           report_generated_at?: string | null
           report_sent_at?: string | null
@@ -3789,6 +3793,7 @@ export type Database = {
           instagram_handle?: string | null
           instagram_score?: number | null
           ip_address?: string | null
+          language?: string | null
           linkedin_handle?: string | null
           locale?: string | null
           location?: string | null
@@ -3800,6 +3805,7 @@ export type Database = {
           migrated_to_profile?: boolean | null
           opening_hours?: Json | null
           overall_score?: number | null
+          phone_number?: string | null
           postal_code?: string | null
           report_generated_at?: string | null
           report_sent_at?: string | null

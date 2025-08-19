@@ -53,7 +53,7 @@ export const useServicePackages = () =>
         const { data: packages, error: packagesError } = await supabase
           .from("service_packages")
           .select("id, code, default_name, is_recurring, interval_months")
-          .eq('is_active', true)
+          .eq('is_active', true as any)
           .order('code');
 
         if (packagesError) {
@@ -86,14 +86,14 @@ export const useServicePackages = () =>
         monitoring.info('Successfully loaded service prices', { count: prices?.length || 0 });
 
         // Step 3: Merge packages with their prices
-        const mappedPackages = packages.map((pkg) => {
+        const mappedPackages = packages.map((pkg: any) => {
           // Find price for this package
-          const priceData = prices?.find(p => p.package_id === pkg.id);
+          const priceData = prices?.find((p: any) => p.package_id === pkg.id);
           
           // Calculate prices defensively
-          const normalPriceCents = priceData?.normal_price_cents || 0;
-          const promoPriceCents = priceData?.promo_price_cents;
-          const promoActive = priceData?.promo_active || false;
+          const normalPriceCents = (priceData as any)?.normal_price_cents || 0;
+          const promoPriceCents = (priceData as any)?.promo_price_cents;
+          const promoActive = (priceData as any)?.promo_active || false;
           
           // Convert cents to euros with proper formatting
           const normalPrice = normalPriceCents / 100;
@@ -203,7 +203,7 @@ export const useAddonServices = () => {
       const { data, error } = await supabase
         .from('addon_services')
         .select('*')
-        .eq('is_active', true)
+        .eq('is_active', true as any)
         .order('sort_order', { ascending: true });
 
       console.log('useAddonServices: Raw database response:', { data, error });
@@ -221,7 +221,7 @@ export const useAddonServices = () => {
       console.log('useAddonServices: Total addon records:', data.length);
       
       // Defensive validation of addon data
-      const validatedAddons = data.filter(addon => {
+      const validatedAddons = data.filter((addon: any) => {
         const isValid = addon.name && 
                        addon.slug && 
                        typeof addon.price === 'number' && 
@@ -232,8 +232,8 @@ export const useAddonServices = () => {
         }
         
         return isValid;
-      }).map(addon => ({
-        ...addon,
+      }).map((addon: any) => ({
+        ...(addon as any),
         features: addon.features || [],
         original_price: addon.original_price || null,
         compatible_packages: addon.compatible_packages || []
