@@ -144,7 +144,7 @@ export function GoogleOAuthManager({ userId, onConnectionUpdate }: GoogleOAuthMa
       const { data: tokens, error } = await supabase
         .from('google_oauth_tokens')
         .select('service_type, gmb_account_id, ga4_property_id, ads_customer_id')
-        .eq('user_id', userId);
+        .eq('user_id', userId as any);
 
       if (error) {
         console.error('Error checking connection status:', error);
@@ -152,11 +152,11 @@ export function GoogleOAuthManager({ userId, onConnectionUpdate }: GoogleOAuthMa
       }
 
       setServices(prev => prev.map(service => {
-        const token = tokens?.find(t => t.service_type === service.id);
+        const token = tokens?.find(t => (t as any).service_type === service.id);
         return {
           ...service,
           isConnected: !!token,
-          accountId: token?.gmb_account_id || token?.ga4_property_id || token?.ads_customer_id
+          accountId: (token as any)?.gmb_account_id || (token as any)?.ga4_property_id || (token as any)?.ads_customer_id
         };
       }));
 
@@ -170,8 +170,8 @@ export function GoogleOAuthManager({ userId, onConnectionUpdate }: GoogleOAuthMa
       const { error } = await supabase
         .from('google_oauth_tokens')
         .delete()
-        .eq('user_id', userId)
-        .eq('service_type', serviceType);
+        .eq('user_id', userId as any)
+        .eq('service_type', serviceType as any);
 
       if (error) throw error;
 

@@ -31,7 +31,7 @@ export function useDashboardWidget(widgetType: string, tenantId?: string) {
           const { data: profile, error } = await supabase
             .from('business_profiles')
             .select('google_rating, google_reviews_count, google_photos, gmb_posts, vc_score, vc_last_run')
-            .eq('user_id', user.id)
+            .eq('user_id', user.id as any)
             .maybeSingle();
             
           if (error) {
@@ -43,14 +43,14 @@ export function useDashboardWidget(widgetType: string, tenantId?: string) {
             return { score: 0, trend: 0, previousScore: 0, date: new Date().toISOString(), noData: true };
           }
           
-          const score = profile.vc_score || calculateVisibilityScore(profile);
+          const score = (profile as any).vc_score || calculateVisibilityScore(profile);
           const trend = calculateTrend(profile);
           
           return { 
             score, 
             trend, 
             previousScore: Math.max(0, score - trend),
-            date: profile.vc_last_run || new Date().toISOString()
+            date: (profile as any).vc_last_run || new Date().toISOString()
           };
         }
           
@@ -58,7 +58,7 @@ export function useDashboardWidget(widgetType: string, tenantId?: string) {
           const { data: profile, error } = await supabase
             .from('business_profiles')
             .select('google_rating, google_reviews_count, gmb_posts')
-            .eq('user_id', user.id)
+            .eq('user_id', user.id as any)
             .maybeSingle();
             
           if (error) {
@@ -71,18 +71,18 @@ export function useDashboardWidget(widgetType: string, tenantId?: string) {
           }
           
           // Extract latest review from gmb_posts if available
-          const latestPost = profile.gmb_posts?.[0];
+          const latestPost = (profile as any).gmb_posts?.[0];
           const latest = latestPost ? {
             author: "Google Nutzer",
-            rating: profile.google_rating || 0,
+            rating: (profile as any).google_rating || 0,
             text: latestPost.summary || "Keine aktuellen Bewertungen verfügbar",
             date: latestPost.createTime || new Date().toISOString(),
             platform: "Google"
           } : null;
           
           return { 
-            count: profile.google_reviews_count || 0, 
-            avg_rating: profile.google_rating || 0, 
+            count: (profile as any).google_reviews_count || 0, 
+            avg_rating: (profile as any).google_rating || 0, 
             latest
           };
         }

@@ -68,7 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         context: context || {},
         ip_address: null, // Frontend kann IP nicht ermitteln
         user_agent: navigator.userAgent
-      });
+      } as any);
     } catch (error) {
       console.error('Failed to log OAuth event:', error);
     }
@@ -90,7 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             consent_given: true,
             consent_timestamp: new Date().toISOString(),
             expires_at: new Date(Date.now() + 3600000).toISOString() // 1 Stunde
-          });
+          } as any);
 
         if (error) {
           console.error('Error storing Google tokens:', error);
@@ -121,7 +121,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             consent_given: true,
             consent_timestamp: new Date().toISOString(),
             expires_at: new Date(Date.now() + 86400000).toISOString() // 24 Stunden
-          });
+          } as any);
 
         if (error) {
           console.error('Error storing Facebook tokens:', error);
@@ -198,19 +198,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               const { data: profile } = await supabase
                 .from('profiles')
                 .select('role')
-                .eq('id', session.user.id)
+                .eq('id', session.user.id as any)
                 .maybeSingle();
-               
-               setIsAdmin(profile?.role === 'admin');
-               
-               // Check if user profile is completed
-               setHasCompletedUserProfile(!!profile && !!profile.role);
+                
+                setIsAdmin((profile as any)?.role === 'admin');
+                
+                // Check if user profile is completed
+                setHasCompletedUserProfile(!!profile && !!(profile as any).role);
               
               // Check if business profile exists and onboarding is completed
               const { data: partner } = await supabase
                 .from('business_partners')
                 .select('id, onboarding_completed')
-                .eq('user_id', session.user.id)
+                .eq('user_id', session.user.id as any)
                 .maybeSingle();
 
               // Log auth event
@@ -221,8 +221,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 undefined,
                 { 
                   has_partner: !!partner,
-                  onboarding_completed: partner?.onboarding_completed,
-                  partner_id: partner?.id,
+                  onboarding_completed: (partner as any)?.onboarding_completed,
+                  partner_id: (partner as any)?.id,
                   redirect_url: location.pathname
                 }
               );
@@ -260,7 +260,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 if (testMode === '1') {
                   console.log('AuthProvider: Test mode detected, redirecting to quick-verify');
                   navigate('/quick-verify', { replace: true });
-                } else if (!partner?.onboarding_completed) {
+                } else if (!(partner as any)?.onboarding_completed) {
                   console.log('AuthProvider: Redirecting to onboarding');
                   
                   // Route based on provider
