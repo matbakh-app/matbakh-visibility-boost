@@ -7,11 +7,29 @@ const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")!;
 const MAIL_FROM = Deno.env.get("MAIL_FROM") || "info@matbakh.app";
 const FRONTEND_BASE_URL = Deno.env.get("FRONTEND_BASE_URL") || "https://matbakh.app";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const ALLOWED_ORIGINS = [
+  "https://matbakh.app",
+  "https://www.matbakh.app", 
+  "http://localhost:5173",
+  "http://localhost:4173",
+];
+
+function isAllowedOrigin(origin: string | null) {
+  if (!origin) return false;
+  // Preview-Links von Lovable erlauben (id-preview--*.lovable.app)
+  if (origin.endsWith(".lovable.app")) return true;
+  return ALLOWED_ORIGINS.includes(origin);
+}
+
+function getCorsHeaders(origin: string | null) {
+  return {
+    "Access-Control-Allow-Origin": isAllowedOrigin(origin) ? origin! : "https://matbakh.app",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Credentials": "true",
+    "Vary": "Origin",
+  };
+}
 
 function sha256Hex(input: string) {
   const data = new TextEncoder().encode(input);
@@ -48,8 +66,11 @@ async function sendConfirmEmail(to: string, token: string) {
 }
 
 serve(async (req) => {
+  const origin = req.headers.get("origin");
+  const corsHeaders = getCorsHeaders(origin);
+
   if (req.method === "OPTIONS") {
-    return new Response(null, { 
+    return new Response("ok", { 
       headers: corsHeaders,
       status: 200 
     });
@@ -69,6 +90,15 @@ serve(async (req) => {
       console.log("vc-start-analysis: validation failed", { email, business_name });
       return new Response(JSON.stringify({ ok: false, error: "validation" }), {
         status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Check if RESEND_API_KEY is available
+    if (!RESEND_API_KEY) {
+      console.error("vc-start-analysis: RESEND_API_KEY is missing");
+      return new Response(JSON.stringify({ ok: false, error: "configuration_error" }), {
+        status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
