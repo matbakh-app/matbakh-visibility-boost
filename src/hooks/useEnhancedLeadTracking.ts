@@ -32,7 +32,7 @@ interface LeadAction {
   leadId: string;
   actionType: string;
   platform?: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
 }
 
 type LeadId = Row<"visibility_check_leads">["id"];
@@ -65,19 +65,20 @@ export const useEnhancedLeadTracking = () => {
 
       const { data: newLead, error } = await supabase
         .from('visibility_check_leads')
-        .insert([payload as any])
+        .insert([payload])
         .select('id')
-        .single();
+        .single()
+        .returns<Row<"visibility_check_leads">>();
 
-      if (error) {
+      if (error || !newLead) {
         console.error('Error creating enhanced lead:', error);
-        throw new Error(`Failed to create lead: ${error.message}`);
+        throw new Error(`Failed to create lead: ${error?.message || 'Unknown error'}`);
       }
 
       // Log the lead creation action
       try {
         await trackLeadAction({
-          leadId: newLead.id as string,
+          leadId: newLead.id,
           actionType: 'lead_created',
           platform: 'visibility_check',
           details: {
@@ -94,7 +95,7 @@ export const useEnhancedLeadTracking = () => {
         console.warn('Failed to log lead creation action:', actionError);
       }
 
-      return newLead.id as string;
+      return newLead.id;
     } catch (error) {
       console.error('Error in createEnhancedLead:', error);
       throw error;
@@ -119,8 +120,8 @@ export const useEnhancedLeadTracking = () => {
 
       const { error } = await supabase
         .from('visibility_check_leads')
-        .update(changes as any)
-        .eq('id', leadId);
+        .update(changes)
+        .eq('id', leadId as any);
 
       if (error) {
         console.error('Error updating lead analysis:', error);
@@ -155,8 +156,8 @@ export const useEnhancedLeadTracking = () => {
 
       const { error } = await supabase
         .from('visibility_check_leads')
-        .update(changes as any)
-        .eq('id', leadId);
+        .update(changes)
+        .eq('id', leadId as any);
 
       if (error) {
         console.error('Error processing GDPR consent:', error);
@@ -194,7 +195,7 @@ export const useEnhancedLeadTracking = () => {
       const { data, error } = await supabase
         .from('visibility_check_leads')
         .select('analysis_data')
-        .eq('id', leadId)
+        .eq('id', leadId as any)
         .single()
         .returns<Row<"visibility_check_leads">>();
 
@@ -215,7 +216,7 @@ export const useEnhancedLeadTracking = () => {
       const { data, error } = await supabase
         .from('visibility_check_leads')
         .select('*')
-        .eq('email', email)
+        .eq('email', email as any)
         .order('created_at', { ascending: false })
         .returns<Row<"visibility_check_leads">[]>();
 
@@ -238,7 +239,7 @@ export const useEnhancedLeadTracking = () => {
         business_name: null,
         event_type: actionData.actionType,
         event_time: new Date().toISOString(),
-        event_payload: actionData.details || {},
+        event_payload: (actionData.details || {}) as any,
         user_id: null,
         partner_id: null,
         facebook_event_id: null,
@@ -248,7 +249,7 @@ export const useEnhancedLeadTracking = () => {
       
       await supabase
         .from('lead_events')
-        .insert([payload as any]);
+        .insert([payload]);
         
       console.log('Tracking lead action:', actionData);
       return true;

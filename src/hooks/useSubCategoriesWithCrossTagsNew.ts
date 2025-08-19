@@ -132,7 +132,7 @@ export const useSubCategoriesWithCrossTagsNew = (
     selectedCategoryId?: string
   ) => {
     try {
-      const payload: Insert<"category_search_logs"> = {
+      const payload = {
         search_term: searchTerm,
         selected_main_categories: selectedMainCategoryUUIDs,
         result_category_ids: resultCategoryIds,
@@ -141,7 +141,7 @@ export const useSubCategoriesWithCrossTagsNew = (
       };
       await supabase
         .from("category_search_logs")
-        .insert([payload]);
+        .insert([payload as any]);
     } catch (err) {
       console.error("Error logging search:", err);
     }

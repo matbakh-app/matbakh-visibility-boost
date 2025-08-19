@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, FUNCTIONS_URL } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { Row, Insert } from '@/integrations/supabase/db-helpers';
 
@@ -53,15 +53,21 @@ export function useEnhancedVisibilityCheck() {
         }
       };
 
-      const { data, error } = await supabase.functions.invoke('enhanced-visibility-check', {
-        body: enhancedData
+      // Call edge function directly using fetch with FUNCTIONS_URL
+      const response = await fetch(`${FUNCTIONS_URL}/enhanced-visibility-check`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+        },
+        body: JSON.stringify(enhancedData)
       });
 
-      if (error) {
-        console.error('❌ Enhanced visibility check failed:', error);
-        throw error;
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
+      const data = await response.json();
       console.log('✅ Enhanced visibility check completed:', data);
       return data;
     },
@@ -91,9 +97,10 @@ export function useCreateVisibilityLead() {
 
       const { data, error } = await supabase
         .from('visibility_check_leads')
-        .insert([payload as any])
+        .insert([payload])
         .select()
-        .single();
+        .single()
+        .returns<Row<"visibility_check_leads">>();
 
       if (error) throw error;
       return data;
