@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { Row, Insert, Update } from '@/integrations/supabase/db-helpers';
 
 export function useUnclaimedProfiles() {
   return useQuery({
@@ -8,8 +9,9 @@ export function useUnclaimedProfiles() {
       const { data, error } = await supabase
         .from('unclaimed_business_profiles')
         .select('*')
-        .eq('claim_status', 'unclaimed')
-        .order('created_at', { ascending: false });
+        .eq('claim_status', 'unclaimed' as any)
+        .order('created_at', { ascending: false })
+        .returns<Row<"unclaimed_business_profiles">[]>();
 
       if (error) throw error;
       return data;
@@ -27,8 +29,9 @@ export function useUnclaimedProfileByLead(leadId?: string) {
       const { data, error } = await supabase
         .from('unclaimed_business_profiles')
         .select('*')
-        .eq('lead_id', leadId)
-        .maybeSingle();
+        .eq('lead_id', leadId as any)
+        .maybeSingle()
+        .returns<Row<"unclaimed_business_profiles">>();
 
       if (error) throw error;
       return data;
@@ -42,12 +45,13 @@ export function useCreateUnclaimedProfile() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (profileData: any) => {
+    mutationFn: async (profileData: Insert<"unclaimed_business_profiles">) => {
       const { data, error } = await supabase
         .from('unclaimed_business_profiles')
-        .insert(profileData)
+        .insert([profileData])
         .select()
-        .single();
+        .single()
+        .returns<Row<"unclaimed_business_profiles">>();
 
       if (error) throw error;
       return data;
@@ -63,16 +67,19 @@ export function useClaimProfile() {
 
   return useMutation({
     mutationFn: async ({ profileId, userId }: { profileId: string; userId: string }) => {
+      const updateData: Update<"unclaimed_business_profiles"> = {
+        claimed_by_user_id: userId as any,
+        claimed_at: new Date().toISOString() as any,
+        claim_status: 'claimed' as any
+      };
+
       const { data, error } = await supabase
         .from('unclaimed_business_profiles')
-        .update({
-          claimed_by_user_id: userId,
-          claimed_at: new Date().toISOString(),
-          claim_status: 'claimed'
-        })
-        .eq('id', profileId)
+        .update(updateData)
+        .eq('id', profileId as any)
         .select()
-        .single();
+        .single()
+        .returns<Row<"unclaimed_business_profiles">>();
 
       if (error) throw error;
       return data;

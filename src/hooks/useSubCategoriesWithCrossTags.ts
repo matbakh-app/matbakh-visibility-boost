@@ -180,7 +180,7 @@ export const useSubCategoriesWithCrossTags = (
    */
   const logSearch = async (searchTerm: string, resultCategoryIds: string[], selectedCategoryId?: string) => {
     try {
-      const payload: Insert<"category_search_logs"> = {
+      const payload = {
         search_term: searchTerm,
         selected_main_categories: selectedMainCategoryUUIDs,
         result_category_ids: resultCategoryIds,
@@ -189,7 +189,7 @@ export const useSubCategoriesWithCrossTags = (
       };
       await supabase
         .from('category_search_logs')
-        .insert([payload]);
+        .insert([payload as any]);
     } catch (error) {
       console.warn('Failed to log search:', error);
     }

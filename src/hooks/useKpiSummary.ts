@@ -13,7 +13,7 @@ export function useKpiSummary() {
       const { data: partner } = await supabase
         .from('business_partners')
         .select('id')
-        .eq('user_id', user.id)
+        .eq('user_id', user.id as any)
         .maybeSingle()
         .returns<Row<"business_partners">>();
 
@@ -23,7 +23,7 @@ export function useKpiSummary() {
       const { data: profile } = await supabase
         .from('business_profiles')
         .select('google_rating, google_reviews_count, google_photos')
-        .eq('user_id', user.id)
+        .eq('user_id', user.id as any)
         .maybeSingle()
         .returns<Row<"business_profiles">>();
 

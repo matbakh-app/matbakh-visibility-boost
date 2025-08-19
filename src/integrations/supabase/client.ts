@@ -11,12 +11,12 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
     persistSession: true,
     autoRefreshToken: true,
   },
-  functions: {
-    url: SUPABASE_FUNCTIONS_URL
-  },
   global: {
     headers: {
       'x-client-info': 'matbakh-app'
     }
   }
 });
+
+// Expose functions URL separately for edge function calls
+export const FUNCTIONS_URL = SUPABASE_FUNCTIONS_URL;
