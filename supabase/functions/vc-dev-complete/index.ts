@@ -10,7 +10,14 @@ function sha256Hex(input: string) {
   return Array.from(hash).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+const cors = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
 serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: cors });
   const token = new URL(req.url).searchParams.get("token") || "";
   if (!token) return new Response("missing token", { status: 400 });
 
@@ -30,9 +37,9 @@ serve(async (req) => {
 
   if (error) {
     console.error("vc-dev-complete: error", error);
-    return new Response(error.message, { status: 500 });
+    return new Response(error.message, { status: 500, headers: { ...cors, "Content-Type": "text/plain" } });
   }
 
   console.log("vc-dev-complete: analysis marked as completed");
-  return new Response("ok");
+  return new Response("ok", { headers: { ...cors, "Content-Type": "text/plain" } });
 });
