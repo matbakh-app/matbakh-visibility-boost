@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -3629,19 +3629,24 @@ export type Database = {
       }
       visibility_check_leads: {
         Row: {
+          analysis_completed_at: string | null
           analysis_data: Json | null
           analysis_error_message: string | null
+          analysis_started_at: string | null
           analysis_status: string | null
           analyzed_at: string | null
           benchmarks: Json | null
           business_model: string[] | null
           business_name: string
           check_type: string
+          confirm_expires_at: string | null
+          confirm_token_hash: string | null
           created_at: string
           double_optin_confirmed: boolean | null
           double_optin_confirmed_at: string | null
           double_optin_sent_at: string | null
           email: string | null
+          email_confirmed: boolean | null
           facebook_handle: string | null
           facebook_score: number | null
           found_business: boolean | null
@@ -3653,10 +3658,12 @@ export type Database = {
           instagram_score: number | null
           ip_address: string | null
           linkedin_handle: string | null
+          locale: string | null
           location: string | null
           location_text: string | null
           main_category: string | null
           marketing_consent: boolean | null
+          marketing_consent_at: string | null
           matbakh_category: string | null
           migrated_to_profile: boolean | null
           opening_hours: Json | null
@@ -3680,19 +3687,24 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          analysis_completed_at?: string | null
           analysis_data?: Json | null
           analysis_error_message?: string | null
+          analysis_started_at?: string | null
           analysis_status?: string | null
           analyzed_at?: string | null
           benchmarks?: Json | null
           business_model?: string[] | null
           business_name: string
           check_type?: string
+          confirm_expires_at?: string | null
+          confirm_token_hash?: string | null
           created_at?: string
           double_optin_confirmed?: boolean | null
           double_optin_confirmed_at?: string | null
           double_optin_sent_at?: string | null
           email?: string | null
+          email_confirmed?: boolean | null
           facebook_handle?: string | null
           facebook_score?: number | null
           found_business?: boolean | null
@@ -3704,10 +3716,12 @@ export type Database = {
           instagram_score?: number | null
           ip_address?: string | null
           linkedin_handle?: string | null
+          locale?: string | null
           location?: string | null
           location_text?: string | null
           main_category?: string | null
           marketing_consent?: boolean | null
+          marketing_consent_at?: string | null
           matbakh_category?: string | null
           migrated_to_profile?: boolean | null
           opening_hours?: Json | null
@@ -3731,19 +3745,24 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          analysis_completed_at?: string | null
           analysis_data?: Json | null
           analysis_error_message?: string | null
+          analysis_started_at?: string | null
           analysis_status?: string | null
           analyzed_at?: string | null
           benchmarks?: Json | null
           business_model?: string[] | null
           business_name?: string
           check_type?: string
+          confirm_expires_at?: string | null
+          confirm_token_hash?: string | null
           created_at?: string
           double_optin_confirmed?: boolean | null
           double_optin_confirmed_at?: string | null
           double_optin_sent_at?: string | null
           email?: string | null
+          email_confirmed?: boolean | null
           facebook_handle?: string | null
           facebook_score?: number | null
           found_business?: boolean | null
@@ -3755,10 +3774,12 @@ export type Database = {
           instagram_score?: number | null
           ip_address?: string | null
           linkedin_handle?: string | null
+          locale?: string | null
           location?: string | null
           location_text?: string | null
           main_category?: string | null
           marketing_consent?: boolean | null
+          marketing_consent_at?: string | null
           matbakh_category?: string | null
           migrated_to_profile?: boolean | null
           opening_hours?: Json | null
@@ -4031,7 +4052,7 @@ export type Database = {
     }
     Functions: {
       check_security_alerts: {
-        Args: { p_event_type: string; p_user_id: string; p_severity: string }
+        Args: { p_event_type: string; p_severity: string; p_user_id: string }
         Returns: undefined
       }
       cleanup_old_security_data: {
@@ -4041,37 +4062,37 @@ export type Database = {
       get_business_profile: {
         Args: { partner_id_param: string }
         Returns: {
-          id: string
-          partner_id: string
-          business_name: string
           address: string
+          business_name: string
+          created_at: string
+          google_place_id: string
+          id: string
+          last_updated: string
           opening_hours: Json
+          partner_id: string
+          phone: string
           photos: string[]
-          reviews: Json
           rating: number
           review_count: number
-          last_updated: string
-          google_place_id: string
-          phone: string
-          website: string
-          created_at: string
+          reviews: Json
           updated_at: string
+          website: string
         }[]
       }
       get_visibility_score: {
         Args: { partner_id_param: string }
         Returns: {
-          id: string
-          partner_id: string
           business_name: string
-          rating: number
-          review_count: number
-          last_updated: string
-          rating_score: number
-          review_score: number
-          photo_score: number
-          hours_score: number
           freshness_score: number
+          hours_score: number
+          id: string
+          last_updated: string
+          partner_id: string
+          photo_score: number
+          rating: number
+          rating_score: number
+          review_count: number
+          review_score: number
           visibility_score: number
         }[]
       }
@@ -4081,12 +4102,12 @@ export type Database = {
       }
       log_security_event: {
         Args: {
-          p_event_type: string
-          p_user_id?: string
-          p_ip_address?: unknown
-          p_user_agent?: string
           p_details?: Json
+          p_event_type: string
+          p_ip_address?: unknown
           p_severity?: string
+          p_user_agent?: string
+          p_user_id?: string
         }
         Returns: undefined
       }
@@ -4095,18 +4116,18 @@ export type Database = {
         Returns: {
           alert_id: string
           alert_type: string
+          created_at: string
+          description: string
           severity: string
           title: string
-          description: string
-          created_at: string
         }[]
       }
       redeem_promo_code_transaction: {
         Args: {
-          p_promo_code_id: string
-          p_user_id: string
           p_granted_features: Json
           p_granted_role: string
+          p_promo_code_id: string
+          p_user_id: string
         }
         Returns: undefined
       }
