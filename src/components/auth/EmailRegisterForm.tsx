@@ -88,7 +88,7 @@ const EmailRegisterForm: React.FC<EmailRegisterFormProps> = ({ onBack }) => {
       const { data: existingPartner, error: checkError } = await supabase
         .from('business_partners')
         .select('id')
-        .eq('company_name', formData.companyName)
+        .eq('company_name', formData.companyName as any)
         .maybeSingle();
 
       if (checkError) {
@@ -147,7 +147,7 @@ const EmailRegisterForm: React.FC<EmailRegisterFormProps> = ({ onBack }) => {
                 contact_email: formData.email,
                 status: 'pending',
                 onboarding_completed: false
-              });
+              } as any);
 
             if (partnerError) {
               console.error('Partner creation error:', partnerError);

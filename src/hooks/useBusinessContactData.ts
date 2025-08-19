@@ -50,7 +50,7 @@ export function useBusinessContactData() {
       const { data: partner, error: partnerError } = await supabase
         .from('business_partners')
         .select('id')
-        .eq('user_id', user.id)
+        .eq('user_id', user.id as any)
         .single();
 
       if (partnerError || !partner) {
@@ -61,13 +61,13 @@ export function useBusinessContactData() {
       const { data, error } = await supabase
         .from('business_contact_data')
         .select('*')
-        .eq('customer_id', partner.id)
+        .eq('customer_id', (partner as any).id)
         .maybeSingle();
 
       if (error) throw error;
       return data ? {
-        ...data,
-        competitors: (data.competitors as any) || []
+        ...(data as any),
+        competitors: (data as any).competitors || []
       } as BusinessContactData : null;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -83,7 +83,7 @@ export function useBusinessContactData() {
       const { data: partner, error: partnerError } = await supabase
         .from('business_partners')
         .select('id, company_name')
-        .eq('user_id', user.id)
+        .eq('user_id', user.id as any)
         .single();
 
       if (partnerError || !partner) {
@@ -92,8 +92,8 @@ export function useBusinessContactData() {
 
       // Prepare data for insertion/update
       const contactDataToSave = {
-        customer_id: partner.id,
-        company_name: partner.company_name || 'Unbekannt', // Get from business_partners table
+        customer_id: (partner as any).id,
+        company_name: (partner as any).company_name || 'Unbekannt', // Get from business_partners table
         address_line1: formData.address.addressLine1,
         house_number: formData.address.houseNumber || '',
         address_line2: formData.address.addressLine2 || null,
@@ -120,7 +120,7 @@ export function useBusinessContactData() {
       // Use upsert to handle both insert and update
       const { data, error } = await supabase
         .from('business_contact_data')
-        .upsert(contactDataToSave, {
+        .upsert(contactDataToSave as any, {
           onConflict: 'customer_id'
         })
         .select()
@@ -185,7 +185,7 @@ export function useBusinessContactData() {
       const { data: partner, error: partnerError } = await supabase
         .from('business_partners')
         .select('id')
-        .eq('user_id', user.id)
+        .eq('user_id', user.id as any)
         .single();
 
       if (partnerError || !partner) {
@@ -195,7 +195,7 @@ export function useBusinessContactData() {
       const { error } = await supabase
         .from('business_contact_data')
         .delete()
-        .eq('customer_id', partner.id);
+        .eq('customer_id', (partner as any).id);
 
       if (error) throw error;
     },

@@ -64,14 +64,14 @@ export function useCompanyProfile() {
         const { data, error } = await supabase
           .from('business_profiles')
           .select('*')
-          .eq('user_id', user.id)
+          .eq('user_id', user.id as any)
           .maybeSingle()
         
         if (error) {
           console.error('Error loading company profile:', error)
           setIsError(true)
         } else {
-          setData(data)
+          setData(data as any)
         }
       } catch (error) {
         console.error('Error loading company profile:', error)
@@ -94,7 +94,7 @@ export function useCompanyProfile() {
     const { data: existingProfile } = await supabase
       .from('business_profiles')
       .select('id')
-      .eq('user_id', user.id)
+      .eq('user_id', user.id as any)
       .maybeSingle()
 
     let result
@@ -102,8 +102,8 @@ export function useCompanyProfile() {
       // Update existing profile
       result = await supabase
         .from('business_profiles')
-        .update(updates)
-        .eq('user_id', user.id)
+        .update(updates as any)
+        .eq('user_id', user.id as any)
     } else {
       // Create new profile - ensure company_name is provided
       if (!updates.company_name) {
@@ -118,7 +118,7 @@ export function useCompanyProfile() {
           user_id: user.id,
           company_name: updates.company_name,
           ...updates
-        })
+        } as any)
     }
     
     if (result.error) {
@@ -132,11 +132,11 @@ export function useCompanyProfile() {
     const { data: updatedData } = await supabase
       .from('business_profiles')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', user.id as any)
       .maybeSingle()
     
     if (updatedData) {
-      setData(updatedData)
+      setData(updatedData as any)
     }
     
     setIsLoading(false)

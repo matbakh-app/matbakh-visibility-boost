@@ -12,7 +12,7 @@ export function useAiRecommendations() {
       const { data: partner } = await supabase
         .from('business_partners')
         .select('id')
-        .eq('user_id', user.id)
+        .eq('user_id', user.id as any)
         .single();
 
       if (!partner) return [];
@@ -20,8 +20,8 @@ export function useAiRecommendations() {
       const { data: recommendations, error } = await supabase
         .from('ai_recommendations')
         .select('*')
-        .eq('partner_id', partner.id)
-        .eq('status', 'pending')
+        .eq('partner_id', (partner as any).id)
+        .eq('status', 'pending' as any)
         .order('priority', { ascending: false })
         .limit(3);
 
