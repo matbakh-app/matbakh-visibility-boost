@@ -53,8 +53,8 @@ export const useNewServicePackages = () => {
       
       // Transform the data to ensure prices is always an array
       const transformedData = data.map(pkg => ({
-        ...pkg,
-        prices: Array.isArray(pkg.prices) ? pkg.prices : (pkg.prices ? [pkg.prices] : [])
+        ...(pkg as any),
+        prices: Array.isArray((pkg as any).prices) ? (pkg as any).prices : ((pkg as any).prices ? [(pkg as any).prices] : [])
       }));
       
       return transformedData as NewServicePackage[];
@@ -71,14 +71,14 @@ export const useServicePrices = (packageId: string) => {
       const { data, error } = await supabase
         .from('service_prices')
         .select('*')
-        .eq('package_id', packageId)
+        .eq('package_id', packageId as any)
         .order('valid_from', { ascending: false });
 
       if (error) {
         throw new Error(`Fehler beim Laden der Preise: ${error.message}`);
       }
       
-      return data as ServicePrice[];
+      return (data as any) as ServicePrice[];
     },
     enabled: !!packageId,
   });

@@ -13,14 +13,14 @@ export function useGoogleConnection() {
       const { data: token, error: tokenError } = await supabase
         .from('google_oauth_tokens')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', user.id as any)
         .maybeSingle();
 
       // Check business profile Google connection status
       const { data: partner } = await supabase
         .from('business_partners')
         .select('id')
-        .eq('user_id', user.id)
+        .eq('user_id', user.id as any)
         .maybeSingle();
 
       let profile = null;
@@ -28,12 +28,12 @@ export function useGoogleConnection() {
         const { data: businessProfile } = await supabase
           .from('business_profiles')
           .select('*')
-          .eq('user_id', user.id)
+          .eq('user_id', user.id as any)
           .maybeSingle();
         profile = businessProfile;
       }
 
-      const isGoogleConnected = !!(token && token.access_token && profile?.google_connected);
+      const isGoogleConnected = !!(token && (token as any)?.access_token && profile?.google_connected);
 
       return {
         isGoogleConnected,
