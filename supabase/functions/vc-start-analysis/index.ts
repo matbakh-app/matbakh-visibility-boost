@@ -16,8 +16,8 @@ const ALLOWED_ORIGINS = [
 
 function isAllowedOrigin(origin: string | null) {
   if (!origin) return false;
-  // Preview-Links von Lovable erlauben (id-preview--*.lovable.app)
-  if (origin.endsWith(".lovable.app")) return true;
+  // Preview-Links von Lovable erlauben (*.lovable.app und *.sandbox.lovable.dev)
+  if (origin.endsWith(".lovable.app") || origin.endsWith(".sandbox.lovable.dev")) return true;
   return ALLOWED_ORIGINS.includes(origin);
 }
 
