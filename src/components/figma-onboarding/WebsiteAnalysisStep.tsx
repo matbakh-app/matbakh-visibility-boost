@@ -242,14 +242,67 @@ export function WebsiteAnalysisStep({
            (guestCodeInfo || validatedCodeInfo || formData.emailConfirmed);
   };
 
-  const handleSendConfirmation = () => {
+  const handleSendConfirmation = async () => {
     setIsSubmitting(true);
     
-    setTimeout(() => {
+    try {
+      // Get restaurant data from localStorage (from step 1)
+      const step1Data = JSON.parse(localStorage.getItem('vcStep1Data') || '{}');
+      
+      console.log('Calling vc-start-analysis for email confirmation with data:', {
+        email: formData.email,
+        restaurantName: step1Data.restaurantName || 'Restaurant',
+        address: step1Data.address || '',
+        locale: language,
+        marketing_consent: formData.marketingAccepted
+      });
+
+      const { data, error } = await supabase.functions.invoke('vc-start-analysis', {
+        body: {
+          email: formData.email,
+          restaurantName: step1Data.restaurantName || 'Restaurant',
+          address: step1Data.address || '',
+          locale: language,
+          marketing_consent: formData.marketingAccepted
+        }
+      });
+
+      console.log('vc-start-analysis response:', { data, error });
+
+      if (error) {
+        console.error('vc-start-analysis error:', error);
+        toast.error(language === 'de' 
+          ? 'Fehler beim Senden der Bestätigungs-E-Mail. Bitte versuchen Sie es erneut.' 
+          : 'Error sending confirmation email. Please try again.'
+        );
+        return;
+      }
+
+      if (!data?.ok) {
+        console.error('vc-start-analysis failed:', data);
+        toast.error(language === 'de' 
+          ? `E-Mail konnte nicht gesendet werden: ${data?.details || data?.error || 'Unbekannter Fehler'}` 
+          : `Email could not be sent: ${data?.details || data?.error || 'Unknown error'}`
+        );
+        return;
+      }
+
       setEmailSent(true);
-      setIsSubmitting(false);
       console.log('Confirmation email sent to:', formData.email);
-    }, 1000);
+      toast.success(language === 'de' 
+        ? 'Bestätigungs-E-Mail erfolgreich gesendet! Prüfen Sie Ihre E-Mails.' 
+        : 'Confirmation email sent successfully! Please check your email.'
+      );
+      
+    } catch (error) {
+      console.error('Unexpected error sending confirmation:', error);
+      toast.error(language === 'de' 
+        ? 'Ein unerwarteter Fehler ist aufgetreten.' 
+        : 'An unexpected error occurred.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSubmit = async () => {
