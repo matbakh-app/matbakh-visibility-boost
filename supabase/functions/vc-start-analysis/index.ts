@@ -69,10 +69,21 @@ serve(async (req) => {
   const origin = req.headers.get("origin");
   const corsHeaders = getCorsHeaders(origin);
 
+  console.log("vc-start-analysis: Function called with method:", req.method, "from origin:", origin);
+
   if (req.method === "OPTIONS") {
+    console.log("vc-start-analysis: Handling OPTIONS request");
     return new Response("ok", { 
       headers: corsHeaders,
       status: 200 
+    });
+  }
+
+  if (req.method !== "POST") {
+    console.log("vc-start-analysis: Method not allowed:", req.method);
+    return new Response(JSON.stringify({ ok: false, error: "method_not_allowed" }), {
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
@@ -94,54 +105,12 @@ serve(async (req) => {
       });
     }
 
-    // Check if RESEND_API_KEY is available
-    if (!RESEND_API_KEY) {
-      console.error("vc-start-analysis: RESEND_API_KEY is missing");
-      return new Response(JSON.stringify({ ok: false, error: "configuration_error" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Token + Hash
-    const token = crypto.randomUUID().replace(/-/g, "");
-    const tokenHash = sha256Hex(token);
-    const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
-
-    const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
-
-    // Insert Lead – Spaltennamen an dein Schema angepasst
-    const { error: insertErr } = await supabase.from("visibility_check_leads").insert({
-      email,
-      email_confirmed: false,
-      confirm_token_hash: tokenHash,
-      confirm_expires_at: expiresAt,
-      analysis_status: "pending",
-      analysis_started_at: new Date().toISOString(),
-      locale,
-      marketing_consent,
-      business_name,     // vormals restaurant_name
-      location_text,     // vormals address
-    });
-
-    if (insertErr) {
-      console.error("vc-start-analysis: insert failed", insertErr);
-      return new Response(JSON.stringify({ ok: false, error: "insert_failed", details: insertErr.message }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    console.log("vc-start-analysis: lead inserted, sending email to", email);
-
-    // Bestätigungsmail
-    await sendConfirmEmail(email, token);
-
-    console.log("vc-start-analysis: email sent successfully");
-
-    return new Response(JSON.stringify({ ok: true }), {
+    // For now, just return success without sending email to test if function works
+    console.log("vc-start-analysis: Returning test response");
+    return new Response(JSON.stringify({ ok: true, test: true, received: { email, business_name } }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
+
   } catch (e: any) {
     console.error("vc-start-analysis: error", e);
     return new Response(JSON.stringify({ ok: false, error: e?.message ?? "internal" }), {
