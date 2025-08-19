@@ -7,8 +7,8 @@ const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
-  "Access-Control-Allow-Headers": "content-type, authorization",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 function sha256Hex(input: string) {
@@ -37,7 +37,7 @@ serve(async (req) => {
     if (error) throw error;
     if (!data) return new Response(JSON.stringify({ error: "not found" }), { status: 404, headers: { ...cors, "Content-Type": "application/json" } });
 
-    return new Response(JSON.stringify({ ok: true, ...data }), {
+    return new Response(JSON.stringify({ ok: true, data }), {
       headers: { ...cors, "Content-Type": "application/json" },
     });
   } catch (e: any) {
