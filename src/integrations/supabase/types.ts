@@ -429,6 +429,7 @@ export type Database = {
           gmb_posts: Json | null
           gmb_social_links: Json | null
           gmb_verification_status: string | null
+          google_connected: boolean
           google_photos: Json | null
           google_places_id: string | null
           google_rating: number | null
@@ -491,6 +492,7 @@ export type Database = {
           gmb_posts?: Json | null
           gmb_social_links?: Json | null
           gmb_verification_status?: string | null
+          google_connected?: boolean
           google_photos?: Json | null
           google_places_id?: string | null
           google_rating?: number | null
@@ -553,6 +555,7 @@ export type Database = {
           gmb_posts?: Json | null
           gmb_social_links?: Json | null
           gmb_verification_status?: string | null
+          google_connected?: boolean
           google_photos?: Json | null
           google_places_id?: string | null
           google_rating?: number | null
