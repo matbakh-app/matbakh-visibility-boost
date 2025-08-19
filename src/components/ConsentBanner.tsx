@@ -58,7 +58,7 @@ export const ConsentBanner: React.FC<ConsentBannerProps> = ({
           consent_given: consentGiven,
           ip_address: null, // Will be filled server-side if needed
           user_agent: navigator.userAgent,
-          consent_method: 'consent_banner'
+          consent_method: 'ui'
         });
       }
 
