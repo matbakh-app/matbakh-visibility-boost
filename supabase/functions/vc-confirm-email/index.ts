@@ -11,8 +11,14 @@ function sha256Hex(input: string) {
   return Array.from(hash).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+const cors = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: { "Access-Control-Allow-Origin": "*" } });
+  if (req.method === "OPTIONS") return new Response(null, { headers: cors });
 
   try {
     const token = new URL(req.url).searchParams.get("token") || "";

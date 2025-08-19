@@ -7,9 +7,11 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
 interface Note {
-  id: number;
+  id: string;
   title: string;
+  content?: string | null;
   created_at: string;
+  user_id: string;
 }
 
 const Notes: React.FC = () => {
@@ -24,9 +26,16 @@ const Notes: React.FC = () => {
 
   const fetchNotes = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('Please log in to view notes');
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('notes')
-        .select('*')
+        .select('id, title, content, created_at, user_id')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -48,10 +57,21 @@ const Notes: React.FC = () => {
 
     setAdding(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('Please log in to add notes');
+        setAdding(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('notes')
-        .insert([{ title: newNoteTitle.trim() }])
-        .select()
+        .insert([{ 
+          title: newNoteTitle.trim(),
+          content: '',
+          user_id: user.id
+        }])
+        .select('id, title, content, created_at, user_id')
         .single();
 
       if (error) {
