@@ -23,7 +23,12 @@ serve(async (req) => {
   try {
     const url = new URL(req.url);
     const token = url.searchParams.get("token") ?? "";
-    if (!token) return new Response(JSON.stringify({ error: "missing token" }), { status: 400, headers: { ...cors, "Content-Type": "application/json" } });
+    if (!token) {
+      console.log("vc-result: missing token");
+      return new Response(JSON.stringify({ error: "missing token" }), { status: 400, headers: { ...cors, "Content-Type": "application/json" } });
+    }
+
+    console.log("vc-result: checking token", token.substring(0, 8) + "...");
 
     const tokenHash = sha256Hex(token);
     const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
@@ -34,13 +39,22 @@ serve(async (req) => {
       .eq("confirm_token_hash", tokenHash)
       .maybeSingle();
 
-    if (error) throw error;
-    if (!data) return new Response(JSON.stringify({ error: "not found" }), { status: 404, headers: { ...cors, "Content-Type": "application/json" } });
+    if (error) {
+      console.error("vc-result: query error", error);
+      throw error;
+    }
+    if (!data) {
+      console.log("vc-result: token not found", token.substring(0, 8) + "...");
+      return new Response(JSON.stringify({ error: "not found" }), { status: 404, headers: { ...cors, "Content-Type": "application/json" } });
+    }
+
+    console.log("vc-result: found data", data);
 
     return new Response(JSON.stringify({ ok: true, data }), {
       headers: { ...cors, "Content-Type": "application/json" },
     });
   } catch (e: any) {
+    console.error("vc-result: error", e);
     return new Response(JSON.stringify({ ok: false, error: e?.message ?? "error" }), { status: 500, headers: { ...cors, "Content-Type": "application/json" } });
   }
 });
