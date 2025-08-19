@@ -67,16 +67,17 @@ export function useClaimProfile() {
 
   return useMutation({
     mutationFn: async ({ profileId, userId }: { profileId: string; userId: string }) => {
-      const updateData: Update<"unclaimed_business_profiles"> = {
-        claimed_by_user_id: userId,
-        claimed_at: new Date().toISOString(),
-        claim_status: 'claimed'
-      };
-
+      // Claim in one step with RLS-compatible conditions
       const { data, error } = await supabase
         .from('unclaimed_business_profiles')
-        .update(updateData)
+        .update({
+          claim_status: 'claimed',
+          claimed_by_user_id: userId,
+          claimed_at: new Date().toISOString(),
+        })
         .eq('id', profileId)
+        .eq('claim_status', 'unclaimed')          // prevents race conditions & matches RLS policy
+        .is('claimed_by_user_id', null)           // ensures profile is truly unclaimed
         .select()
         .single()
         .returns<Row<"unclaimed_business_profiles">>();

@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Row, Insert } from '@/integrations/supabase/db-helpers';
+import type { Database } from '@/integrations/supabase/types';
+
+type CatRow = Database['public']['Tables']['gmb_categories']['Row'];
+type CrossRow = Database['public']['Tables']['category_cross_tags']['Row'];
+type CatWithCross = CatRow & {
+  category_cross_tags: Pick<CrossRow, 'target_main_category_id'|'confidence_score'|'source'>[]
+};
 
 export interface SubCategoryWithCrossTags {
   id: string;
@@ -75,29 +82,17 @@ export const useSubCategoriesWithCrossTags = (
       }
 
       // Then get categories by cross-tags (using UUID) - now with proper FK relations
-      type CatWithCrossTags = Row<'gmb_categories'> & {
-        category_cross_tags: Pick<Row<'category_cross_tags'>, 
-          'target_main_category_id' | 'confidence_score' | 'source'
-        >[]
-      };
-
       const { data: crossCategories, error: crossError } = await supabase
         .from('gmb_categories')
         .select(`
-          id,
-          name_de,
-          name_en,
-          description_de,
-          description_en,
-          keywords,
-          is_popular,
-          sort_order,
-          main_category_id,
-          haupt_kategorie,
-          category_cross_tags!inner(target_main_category_id, confidence_score, source)
+          id, name_de, name_en, description_de, description_en,
+          keywords, is_popular, sort_order, main_category_id, haupt_kategorie,
+          category_cross_tags!inner(
+            target_main_category_id, confidence_score, source
+          )
         `)
         .in('category_cross_tags.target_main_category_id', selectedMainCategoryUUIDs)
-        .returns<CatWithCrossTags[]>();
+        .returns<CatWithCross[]>();
 
       if (crossError) {
         console.error('❌ Error loading cross-tag categories:', crossError);
@@ -184,18 +179,19 @@ export const useSubCategoriesWithCrossTags = (
   /**
    * Log user search for analytics
    */
-  const logSearch = async (searchTerm: string, resultCategoryIds: string[], selectedCategoryId?: string) => {
+   const logSearch = async (searchTerm: string, resultCategoryIds: string[], selectedCategoryId?: string) => {
     try {
-      const payload = {
+      type InsertSearchLog = Database['public']['Tables']['category_search_logs']['Insert'];
+      
+      const payload: InsertSearchLog = {
         search_term: searchTerm,
         selected_main_categories: selectedMainCategoryUUIDs,
         result_category_ids: resultCategoryIds,
-        selected_category_id: selectedCategoryId || null,
+        selected_category_id: selectedCategoryId ?? null,
         user_id: null
       };
-      await supabase
-        .from('category_search_logs')
-        .insert([payload]);
+      
+      await supabase.from('category_search_logs').insert([payload]);
     } catch (error) {
       console.warn('Failed to log search:', error);
     }
