@@ -74,7 +74,13 @@ export const useSubCategoriesWithCrossTags = (
         throw mainError;
       }
 
-      // Then get categories by cross-tags (using UUID)
+      // Then get categories by cross-tags (using UUID) - now with proper FK relations
+      type CatWithCrossTags = Row<'gmb_categories'> & {
+        category_cross_tags: Pick<Row<'category_cross_tags'>, 
+          'target_main_category_id' | 'confidence_score' | 'source'
+        >[]
+      };
+
       const { data: crossCategories, error: crossError } = await supabase
         .from('gmb_categories')
         .select(`
@@ -88,10 +94,10 @@ export const useSubCategoriesWithCrossTags = (
           sort_order,
           main_category_id,
           haupt_kategorie,
-          category_cross_tags!inner(target_main_category_id)
+          category_cross_tags!inner(target_main_category_id, confidence_score, source)
         `)
         .in('category_cross_tags.target_main_category_id', selectedMainCategoryUUIDs)
-        .returns<any[]>();
+        .returns<CatWithCrossTags[]>();
 
       if (crossError) {
         console.error('❌ Error loading cross-tag categories:', crossError);
