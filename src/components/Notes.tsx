@@ -5,14 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import type { Database } from '@/integrations/supabase/types';
 
-interface Note {
-  id: string;
-  title: string;
-  content?: string | null;
-  created_at: string;
-  user_id: string;
-}
+type Note = Database['public']['Tables']['notes']['Row'];
 
 const Notes: React.FC = () => {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -42,7 +37,7 @@ const Notes: React.FC = () => {
         console.error('Error fetching notes:', error);
         toast.error('Failed to load notes');
       } else {
-        setNotes(data || []);
+        setNotes((data || []) as Note[]);
       }
     } catch (error) {
       console.error('Error:', error);
@@ -70,7 +65,7 @@ const Notes: React.FC = () => {
           title: newNoteTitle.trim(),
           content: '',
           user_id: user.id
-        }])
+        } as any])
         .select('id, title, content, created_at, user_id')
         .single();
 
@@ -78,7 +73,7 @@ const Notes: React.FC = () => {
         console.error('Error adding note:', error);
         toast.error('Failed to add note');
       } else {
-        setNotes(prev => [data, ...prev]);
+        setNotes(prev => [data as Note, ...prev]);
         setNewNoteTitle('');
         toast.success('Note added successfully!');
       }
