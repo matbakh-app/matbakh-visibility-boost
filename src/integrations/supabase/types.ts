@@ -639,6 +639,20 @@ export type Database = {
             referencedRelation: "main_categories"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "cct_category_fk"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "gmb_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cct_target_fk"
+            columns: ["target_main_category_id"]
+            isOneToOne: false
+            referencedRelation: "gmb_categories"
+            referencedColumns: ["id"]
+          },
         ]
       }
       category_search_logs: {
@@ -3409,6 +3423,13 @@ export type Database = {
           },
           {
             foreignKeyName: "unclaimed_business_profiles_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "visibility_check_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unclaimed_lead_fk"
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "visibility_check_leads"
