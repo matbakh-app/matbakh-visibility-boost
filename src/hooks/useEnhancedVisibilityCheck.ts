@@ -71,7 +71,7 @@ export function useCreateVisibilityLead() {
   return useMutation({
     mutationFn: async (leadData: Partial<EnhancedLeadData>) => {
       const { data, error } = await supabase
-        .from('visibility_check_leads')
+        .from('visibility_check_leads' as any)
         .insert({
           business_name: leadData.businessName,
           location: leadData.location,
@@ -90,7 +90,7 @@ export function useCreateVisibilityLead() {
           competitor_urls: leadData.competitorUrls || [],
           social_links: leadData.socialLinks || {},
           status: 'pending'
-        })
+        } as any)
         .select()
         .single();
 

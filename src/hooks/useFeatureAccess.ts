@@ -34,9 +34,9 @@ export function useFeatureAccess() {
 
         // Get user profile with granted features
         const { data: profile, error } = await supabase
-          .from('profiles')
+          .from('profiles' as any)
           .select('role, granted_features, feature_access_until, subscription_status')
-          .eq('id', currentUser.id)
+          .eq('id', currentUser.id as any)
           .single()
 
         if (error) {
@@ -46,20 +46,20 @@ export function useFeatureAccess() {
         }
 
         if (profile) {
-          const accessUntil = profile.feature_access_until 
-            ? new Date(profile.feature_access_until) 
+          const accessUntil = (profile as any).feature_access_until 
+            ? new Date((profile as any).feature_access_until) 
             : undefined
 
           const isExpired = accessUntil ? new Date() > accessUntil : false
 
           setAccess({
-            features: Array.isArray(profile.granted_features) 
-              ? profile.granted_features.filter((item): item is string => typeof item === 'string')
+            features: Array.isArray((profile as any).granted_features) 
+              ? (profile as any).granted_features.filter((item: any): item is string => typeof item === 'string')
               : [],
-            role: profile.role || 'user',
+            role: (profile as any).role || 'user',
             accessUntil,
             isExpired,
-            subscriptionStatus: profile.subscription_status || 'free'
+            subscriptionStatus: (profile as any).subscription_status || 'free'
           })
         }
       } catch (error) {
