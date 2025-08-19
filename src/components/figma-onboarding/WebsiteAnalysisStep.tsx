@@ -261,6 +261,14 @@ export function WebsiteAnalysisStep({
       // Get restaurant data from localStorage (from step 1)
       const step1Data = JSON.parse(localStorage.getItem('vcStep1Data') || '{}');
       
+      console.log('Calling vc-start-analysis with data:', {
+        email: formData.email,
+        restaurantName: step1Data.restaurantName || 'Restaurant',
+        address: step1Data.address || '',
+        locale: language,
+        marketing_consent: formData.marketingAccepted
+      });
+
       const { data, error } = await supabase.functions.invoke('vc-start-analysis', {
         body: {
           email: formData.email,
@@ -270,6 +278,8 @@ export function WebsiteAnalysisStep({
           marketing_consent: formData.marketingAccepted
         }
       });
+
+      console.log('vc-start-analysis response:', { data, error });
 
       if (error) {
         console.error('vc-start-analysis error:', error);
