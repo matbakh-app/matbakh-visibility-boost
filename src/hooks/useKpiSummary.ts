@@ -13,9 +13,9 @@ export function useKpiSummary() {
       const { data: partner } = await supabase
         .from('business_partners')
         .select('id')
-        .eq('user_id', user.id as any)
+        .eq('user_id', user.id)
         .maybeSingle()
-        .returns<Row<"business_partners">>();
+        .returns<Row<"business_partners"> | null>();
 
       if (!partner) return null;
 
@@ -23,9 +23,9 @@ export function useKpiSummary() {
       const { data: profile } = await supabase
         .from('business_profiles')
         .select('google_rating, google_reviews_count, google_photos')
-        .eq('user_id', user.id as any)
+        .eq('user_id', user.id)
         .maybeSingle()
-        .returns<Row<"business_profiles">>();
+        .returns<Row<"business_profiles"> | null>();
 
       // Dynamische Score-Berechnung basierend auf echten Daten
       const ratingScore = (profile?.google_rating || 0) * 20; // max 100 for 5 stars

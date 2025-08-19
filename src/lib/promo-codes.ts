@@ -23,8 +23,8 @@ export async function redeemPromoCode(code: string): Promise<PromoCodeValidation
     const { data: promoCode, error: fetchError } = await supabase
       .from('promo_codes')
       .select('*')
-      .eq('code', code.toUpperCase().trim() as any)
-      .eq('status', 'active' as any)
+      .eq('code', code.toUpperCase().trim())
+      .eq('status', 'active')
       .maybeSingle()
 
     if (fetchError || !promoCode) {
@@ -32,12 +32,12 @@ export async function redeemPromoCode(code: string): Promise<PromoCodeValidation
     }
 
     // 3. Verfügbarkeit prüfen
-    if ((promoCode as any).current_uses >= (promoCode as any).max_uses) {
+    if ((promoCode as any)?.current_uses >= (promoCode as any)?.max_uses) {
       return { success: false, error: 'Gutschein-Code bereits aufgebraucht' }
     }
 
     // 4. Gültigkeit prüfen
-    if ((promoCode as any).valid_until && new Date() > new Date((promoCode as any).valid_until)) {
+    if ((promoCode as any)?.valid_until && new Date() > new Date((promoCode as any).valid_until)) {
       return { success: false, error: 'Gutschein-Code abgelaufen' }
     }
 
@@ -45,8 +45,8 @@ export async function redeemPromoCode(code: string): Promise<PromoCodeValidation
     const { data: existingUsage, error: usageCheckError } = await supabase
       .from('promo_code_usage')
       .select('id')
-      .eq('promo_code_id', (promoCode as any).id)
-      .eq('user_id', user.id as any)
+      .eq('promo_code_id', (promoCode as any)?.id)
+      .eq('user_id', user.id)
       .maybeSingle()
 
     if (usageCheckError) {
@@ -60,10 +60,10 @@ export async function redeemPromoCode(code: string): Promise<PromoCodeValidation
 
     // 6. Transaktion: Usage erstellen + Counter erhöhen + Profil aktualisieren
     const { error: transactionError } = await supabase.rpc('redeem_promo_code_transaction', {
-      p_promo_code_id: (promoCode as any).id,
+      p_promo_code_id: (promoCode as any)?.id,
       p_user_id: user.id,
-      p_granted_features: (promoCode as any).granted_features || [],
-      p_granted_role: (promoCode as any).granted_role || 'user'
+      p_granted_features: (promoCode as any)?.granted_features || [],
+      p_granted_role: (promoCode as any)?.granted_role || 'user'
     })
 
     if (transactionError) {
@@ -81,7 +81,7 @@ export async function redeemPromoCode(code: string): Promise<PromoCodeValidation
     return { 
       success: true, 
       promoCode,
-      message: `Gutschein erfolgreich eingelöst: ${(promoCode as any).description}`
+      message: `Gutschein erfolgreich eingelöst: ${(promoCode as any)?.description || 'Unbekannt'}`
     }
 
   } catch (error) {
@@ -106,7 +106,7 @@ export async function getUserPromoUsage() {
         is_review_code
       )
     `)
-    .eq('user_id', user.id as any)
+    .eq('user_id', user.id)
     .order('used_at', { ascending: false })
 
   return { data, error }
@@ -117,7 +117,7 @@ export async function getActivePromoCodes() {
   const { data, error } = await supabase
     .from('promo_codes')
     .select('*')
-    .eq('status', 'active' as any)
+    .eq('status', 'active')
     .order('created_at', { ascending: false })
 
   return { data, error }

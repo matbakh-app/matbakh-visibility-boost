@@ -54,7 +54,7 @@ export const useEnhancedLeadTracking = () => {
         website: leadData.website || '',
         facebook_handle: leadData.facebookName || '',
         instagram_handle: leadData.instagramName || '',
-        benchmarks: leadData.benchmarks as any || [],
+        benchmarks: leadData.benchmarks || [],
         email: leadData.email || '',
         phone_number: leadData.phoneNumber || '',
         gdpr_consent: leadData.gdprConsent || false,
@@ -113,7 +113,7 @@ export const useEnhancedLeadTracking = () => {
       setLoading(true);
 
       const changes: Update<"visibility_check_leads"> = {
-        analysis_data: analysisData,
+        analysis_data: analysisData as any,
         analysis_status: status || 'completed',
         analyzed_at: new Date().toISOString()
       };
@@ -121,7 +121,7 @@ export const useEnhancedLeadTracking = () => {
       const { error } = await supabase
         .from('visibility_check_leads')
         .update(changes)
-        .eq('id', leadId as any);
+        .eq('id', leadId);
 
       if (error) {
         console.error('Error updating lead analysis:', error);
@@ -157,7 +157,7 @@ export const useEnhancedLeadTracking = () => {
       const { error } = await supabase
         .from('visibility_check_leads')
         .update(changes)
-        .eq('id', leadId as any);
+        .eq('id', leadId);
 
       if (error) {
         console.error('Error processing GDPR consent:', error);
@@ -195,7 +195,7 @@ export const useEnhancedLeadTracking = () => {
       const { data, error } = await supabase
         .from('visibility_check_leads')
         .select('analysis_data')
-        .eq('id', leadId as any)
+        .eq('id', leadId)
         .single()
         .returns<Row<"visibility_check_leads">>();
 
@@ -216,7 +216,7 @@ export const useEnhancedLeadTracking = () => {
       const { data, error } = await supabase
         .from('visibility_check_leads')
         .select('*')
-        .eq('email', email as any)
+        .eq('email', email)
         .order('created_at', { ascending: false })
         .returns<Row<"visibility_check_leads">[]>();
 

@@ -3708,6 +3708,7 @@ export type Database = {
           business_model: string[] | null
           business_name: string
           check_type: string
+          competitor_urls: string[] | null
           confirm_expires_at: string | null
           confirm_token_hash: string | null
           created_at: string
@@ -3730,6 +3731,7 @@ export type Database = {
           linkedin_handle: string | null
           locale: string | null
           location: string | null
+          location_data: Json | null
           location_text: string | null
           main_category: string | null
           marketing_consent: boolean | null
@@ -3746,6 +3748,7 @@ export type Database = {
           result_status: string
           revenue_streams: string[] | null
           seating_capacity: number | null
+          social_links: Json | null
           special_features: Json | null
           status: string | null
           sub_category: string | null
@@ -3768,6 +3771,7 @@ export type Database = {
           business_model?: string[] | null
           business_name: string
           check_type?: string
+          competitor_urls?: string[] | null
           confirm_expires_at?: string | null
           confirm_token_hash?: string | null
           created_at?: string
@@ -3790,6 +3794,7 @@ export type Database = {
           linkedin_handle?: string | null
           locale?: string | null
           location?: string | null
+          location_data?: Json | null
           location_text?: string | null
           main_category?: string | null
           marketing_consent?: boolean | null
@@ -3806,6 +3811,7 @@ export type Database = {
           result_status?: string
           revenue_streams?: string[] | null
           seating_capacity?: number | null
+          social_links?: Json | null
           special_features?: Json | null
           status?: string | null
           sub_category?: string | null
@@ -3828,6 +3834,7 @@ export type Database = {
           business_model?: string[] | null
           business_name?: string
           check_type?: string
+          competitor_urls?: string[] | null
           confirm_expires_at?: string | null
           confirm_token_hash?: string | null
           created_at?: string
@@ -3850,6 +3857,7 @@ export type Database = {
           linkedin_handle?: string | null
           locale?: string | null
           location?: string | null
+          location_data?: Json | null
           location_text?: string | null
           main_category?: string | null
           marketing_consent?: boolean | null
@@ -3866,6 +3874,7 @@ export type Database = {
           result_status?: string
           revenue_streams?: string[] | null
           seating_capacity?: number | null
+          social_links?: Json | null
           special_features?: Json | null
           status?: string | null
           sub_category?: string | null

@@ -141,7 +141,7 @@ export const useSubCategoriesWithCrossTagsNew = (
       };
       await supabase
         .from("category_search_logs")
-        .insert([payload as any]);
+        .insert([payload]);
     } catch (err) {
       console.error("Error logging search:", err);
     }
