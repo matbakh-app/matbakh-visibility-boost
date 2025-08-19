@@ -61,11 +61,10 @@ serve(async (req) => {
       .from("visibility_check_leads")
       .insert({
         email,
-        restaurant_name: restaurantName,
-        address,
-        locale,
+        business_name: restaurantName,
+        location_text: address,
+        gdpr_consent: true,
         marketing_consent,
-        marketing_consent_at: marketing_consent ? new Date().toISOString() : null,
         confirm_token_hash: tokenHash,
         confirm_expires_at: expires,
         analysis_status: "pending",
