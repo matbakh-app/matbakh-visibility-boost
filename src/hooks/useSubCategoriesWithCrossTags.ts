@@ -66,7 +66,7 @@ export const useSubCategoriesWithCrossTags = (
           main_category_id,
           haupt_kategorie
         `)
-        .in('main_category_id', selectedMainCategoryUUIDs as any)
+        .in('main_category_id', selectedMainCategoryUUIDs)
         .returns<Row<"gmb_categories">[]>();
 
       if (mainError) {
@@ -90,7 +90,7 @@ export const useSubCategoriesWithCrossTags = (
           haupt_kategorie,
           category_cross_tags!inner(target_main_category_id)
         `)
-        .in('category_cross_tags.target_main_category_id', selectedMainCategoryUUIDs as any)
+        .in('category_cross_tags.target_main_category_id', selectedMainCategoryUUIDs)
         .returns<any[]>();
 
       if (crossError) {
@@ -189,7 +189,7 @@ export const useSubCategoriesWithCrossTags = (
       };
       await supabase
         .from('category_search_logs')
-        .insert([payload as any]);
+        .insert([payload]);
     } catch (error) {
       console.warn('Failed to log search:', error);
     }
