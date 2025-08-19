@@ -23,6 +23,8 @@ import {
 } from 'lucide-react';
 import { WebsiteAnalysisFormData, GuestCodeInfo } from '@/types/app';
 import { useI18n } from '@/contexts/i18nContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/components/ui/sonner';
 
 interface WebsiteAnalysisStepProps {
   onNext: (data: WebsiteAnalysisFormData) => void;
@@ -88,6 +90,7 @@ export function WebsiteAnalysisStep({
 
   const [emailSent, setEmailSent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isStartingAnalysis, setIsStartingAnalysis] = useState(false);
 
   // Promo code state
   const [promoCode, setPromoCode] = useState('');
@@ -249,9 +252,60 @@ export function WebsiteAnalysisStep({
     }, 1000);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!isFormValid()) return;
-    onNext(formData);
+    
+    setIsStartingAnalysis(true);
+    
+    try {
+      // Get restaurant data from localStorage (from step 1)
+      const step1Data = JSON.parse(localStorage.getItem('vcStep1Data') || '{}');
+      
+      const { data, error } = await supabase.functions.invoke('vc-start-analysis', {
+        body: {
+          email: formData.email,
+          restaurantName: step1Data.restaurantName || 'Restaurant',
+          address: step1Data.address || '',
+          locale: language,
+          marketing_consent: formData.marketingAccepted
+        }
+      });
+
+      if (error) {
+        console.error('vc-start-analysis error:', error);
+        toast.error(language === 'de' 
+          ? 'Fehler beim Starten der Analyse. Bitte versuchen Sie es erneut.' 
+          : 'Error starting analysis. Please try again.'
+        );
+        return;
+      }
+
+      if (!data?.ok) {
+        console.error('vc-start-analysis failed:', data);
+        toast.error(language === 'de' 
+          ? `Analyse konnte nicht gestartet werden: ${data?.details || data?.error || 'Unbekannter Fehler'}` 
+          : `Analysis could not be started: ${data?.details || data?.error || 'Unknown error'}`
+        );
+        return;
+      }
+
+      toast.success(language === 'de' 
+        ? 'Analyse erfolgreich gestartet! Prüfen Sie Ihre E-Mails.' 
+        : 'Analysis started successfully! Please check your email.'
+      );
+      
+      // Pass data to next step
+      onNext(formData);
+      
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast.error(language === 'de' 
+        ? 'Ein unerwarteter Fehler ist aufgetreten.' 
+        : 'An unexpected error occurred.'
+      );
+    } finally {
+      setIsStartingAnalysis(false);
+    }
   };
 
   // Promo code validation
@@ -623,12 +677,21 @@ export function WebsiteAnalysisStep({
               {(guestCodeInfo || validatedCodeInfo) && (
                 <Button
                   onClick={handleSubmit}
-                  disabled={!formData.email.trim() || !formData.privacyAccepted || !formData.emailReportAccepted}
+                  disabled={!formData.email.trim() || !formData.privacyAccepted || !formData.emailReportAccepted || isStartingAnalysis}
                   size="lg"
                   className="w-full bg-primary hover:bg-primary/90 text-primary-foreground btn-hover-enhanced"
                 >
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  {t.startAnalysis}
+                  {isStartingAnalysis ? (
+                    <>
+                      <div className="w-4 h-4 animate-spin rounded-full border-2 border-muted border-t-primary-foreground mr-2" />
+                      {language === 'de' ? 'Analyse wird gestartet...' : 'Starting analysis...'}
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      {t.startAnalysis}
+                    </>
+                  )}
                 </Button>
               )}
 
@@ -703,12 +766,21 @@ export function WebsiteAnalysisStep({
               
               <Button 
                 onClick={handleSubmit}
-                disabled={!isFormValid()}
+                disabled={!isFormValid() || isStartingAnalysis}
                 size="lg"
                 className="min-w-48 bg-primary hover:bg-primary/90 text-primary-foreground btn-hover-enhanced"
               >
-                <Target className="w-4 h-4 mr-2" />
-                {t.startAnalysis}
+                {isStartingAnalysis ? (
+                  <>
+                    <div className="w-4 h-4 animate-spin rounded-full border-2 border-muted border-t-primary-foreground mr-2" />
+                    {language === 'de' ? 'Analyse wird gestartet...' : 'Starting analysis...'}
+                  </>
+                ) : (
+                  <>
+                    <Target className="w-4 h-4 mr-2" />
+                    {t.startAnalysis}
+                  </>
+                )}
               </Button>
             </div>
           )}
