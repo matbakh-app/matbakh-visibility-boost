@@ -38,7 +38,7 @@ export const useGmbCategories = () => {
         throw error;
       }
 
-      return data as GmbCategory[];
+      return (data as any) as GmbCategory[];
     },
   });
 };
@@ -51,7 +51,7 @@ export const usePrimaryGmbCategories = () => {
       const { data, error } = await supabase
         .from('gmb_categories')
         .select('*')
-        .eq('is_primary', true)
+        .eq('is_primary', true as any)
         .order('sort_order', { ascending: true });
 
       if (error) {
@@ -59,7 +59,7 @@ export const usePrimaryGmbCategories = () => {
         throw error;
       }
 
-      return data as GmbCategory[];
+      return (data as any) as GmbCategory[];
     },
   });
 };
@@ -71,7 +71,7 @@ export const usePopularGmbCategories = () => {
       const { data, error } = await supabase
         .from('gmb_categories')
         .select('*')
-        .eq('is_popular', true)
+        .eq('is_popular', true as any)
         .order('sort_order', { ascending: true });
 
       if (error) {
@@ -79,7 +79,7 @@ export const usePopularGmbCategories = () => {
         throw error;
       }
 
-      return data as GmbCategory[];
+      return (data as any) as GmbCategory[];
     },
   });
 };
@@ -94,7 +94,7 @@ export const useGmbCategoriesByParent = (parentId: string | null) => {
         .order('sort_order', { ascending: true });
 
       if (parentId) {
-        query.eq('parent_id', parentId);
+        query.eq('parent_id', parentId as any);
       } else {
         query.is('parent_id', null);
       }
@@ -106,7 +106,7 @@ export const useGmbCategoriesByParent = (parentId: string | null) => {
         throw error;
       }
 
-      return data as GmbCategory[];
+      return (data as any) as GmbCategory[];
     },
   });
 };
@@ -131,7 +131,7 @@ export const useGmbCategorySearch = (searchTerm: string) => {
         throw error;
       }
 
-      return data as GmbCategory[];
+      return (data as any) as GmbCategory[];
     },
     enabled: searchTerm.length >= 2,
   });

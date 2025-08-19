@@ -1837,19 +1837,28 @@ export type Database = {
       }
       notes: {
         Row: {
+          content: string | null
           created_at: string | null
-          id: number
+          id: string
           title: string
+          updated_at: string
+          user_id: string | null
         }
         Insert: {
+          content?: string | null
           created_at?: string | null
-          id?: never
+          id?: string
           title: string
+          updated_at?: string
+          user_id?: string | null
         }
         Update: {
+          content?: string | null
           created_at?: string | null
-          id?: never
+          id?: string
           title?: string
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }

@@ -37,7 +37,7 @@ const Notes: React.FC = () => {
         console.error('Error fetching notes:', error);
         toast.error('Failed to load notes');
       } else {
-        setNotes((data || []) as Note[]);
+        setNotes((data as any || []) as Note[]);
       }
     } catch (error) {
       console.error('Error:', error);
