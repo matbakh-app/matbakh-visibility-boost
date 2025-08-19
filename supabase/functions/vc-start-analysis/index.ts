@@ -7,7 +7,7 @@ const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")!;
 const MAIL_FROM = Deno.env.get("MAIL_FROM") || "info@matbakh.app";
 const FRONTEND_BASE_URL = Deno.env.get("FRONTEND_BASE_URL") || "https://matbakh.app";
 
-const cors = {
+const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -48,7 +48,12 @@ async function sendConfirmEmail(to: string, token: string) {
 }
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: cors });
+  if (req.method === "OPTIONS") {
+    return new Response(null, { 
+      headers: corsHeaders,
+      status: 200 
+    });
+  }
 
   try {
     const body = await req.json().catch(() => ({}));
@@ -64,7 +69,7 @@ serve(async (req) => {
       console.log("vc-start-analysis: validation failed", { email, business_name });
       return new Response(JSON.stringify({ ok: false, error: "validation" }), {
         status: 400,
-        headers: { ...cors, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -93,7 +98,7 @@ serve(async (req) => {
       console.error("vc-start-analysis: insert failed", insertErr);
       return new Response(JSON.stringify({ ok: false, error: "insert_failed", details: insertErr.message }), {
         status: 500,
-        headers: { ...cors, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -105,13 +110,13 @@ serve(async (req) => {
     console.log("vc-start-analysis: email sent successfully");
 
     return new Response(JSON.stringify({ ok: true }), {
-      headers: { ...cors, "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e: any) {
     console.error("vc-start-analysis: error", e);
     return new Response(JSON.stringify({ ok: false, error: e?.message ?? "internal" }), {
       status: 500,
-      headers: { ...cors, "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
