@@ -1,90 +1,28 @@
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")!;
-const MAIL_FROM = Deno.env.get("MAIL_FROM") || "info@matbakh.app";
-const FRONTEND_BASE_URL = Deno.env.get("FRONTEND_BASE_URL") || "https://matbakh.app";
+const ALLOWED = (Deno.env.get("CORS_ORIGINS") || "")
+  .split(",")
+  .map(s => s.trim())
+  .filter(Boolean);
 
-const ALLOWED_ORIGINS = [
-  "https://matbakh.app",
-  "https://www.matbakh.app", 
-  "http://localhost:5173",
-  "http://localhost:4173",
-];
-
-function isAllowedOrigin(origin: string | null) {
-  if (!origin) return false;
-  // Preview-Links von Lovable erlauben (*.lovable.app und *.sandbox.lovable.dev)
-  if (origin.endsWith(".lovable.app") || origin.endsWith(".sandbox.lovable.dev")) return true;
-  return ALLOWED_ORIGINS.includes(origin);
-}
-
-function getCorsHeaders(origin: string | null) {
+function cors(origin: string | null) {
+  const allow = origin && ALLOWED.includes(origin) ? origin : ALLOWED[0] ?? "*";
   return {
-    "Access-Control-Allow-Origin": isAllowedOrigin(origin) ? origin! : "https://matbakh.app",
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Credentials": "true",
+    "Access-Control-Allow-Origin": allow,
     "Vary": "Origin",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Allow-Headers": "authorization,content-type",
+    "Access-Control-Max-Age": "86400",
   };
-}
-
-function sha256Hex(input: string) {
-  const data = new TextEncoder().encode(input);
-  const hash = new Uint8Array(crypto.subtle.digestSync("SHA-256", data));
-  return Array.from(hash).map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-async function sendConfirmEmail(to: string, token: string) {
-  const confirmUrl =
-    `${SUPABASE_URL.replace("https://", "https://")}/functions/v1/vc-confirm-email?token=${token}`;
-  const html = `
-    <p>Bitte bestätige deine E-Mail für deinen Sichtbarkeits-Check.</p>
-    <p><a href="${confirmUrl}">E-Mail bestätigen und Ergebnis öffnen</a></p>
-    <p>Oder kopiere den Link in den Browser: ${confirmUrl}</p>
-  `;
-  const payload = {
-    from: MAIL_FROM,
-    to,
-    subject: "Bestätigung – Sichtbarkeits-Check",
-    html,
-  };
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) {
-    const t = await res.text();
-    throw new Error(`Resend error: ${res.status} ${t}`);
-  }
 }
 
 serve(async (req) => {
-  const origin = req.headers.get("origin");
-  const corsHeaders = getCorsHeaders(origin);
-
+  const origin = req.headers.get("Origin");
   console.log("vc-start-analysis: Function called with method:", req.method, "from origin:", origin);
 
   if (req.method === "OPTIONS") {
     console.log("vc-start-analysis: Handling OPTIONS request");
-    return new Response("ok", { 
-      headers: corsHeaders,
-      status: 200 
-    });
-  }
-
-  if (req.method !== "POST") {
-    console.log("vc-start-analysis: Method not allowed:", req.method);
-    return new Response(JSON.stringify({ ok: false, error: "method_not_allowed" }), {
-      status: 405,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(null, { headers: cors(origin) });
   }
 
   try {
@@ -101,21 +39,24 @@ serve(async (req) => {
       console.log("vc-start-analysis: validation failed", { email, business_name });
       return new Response(JSON.stringify({ ok: false, error: "validation" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...cors(origin) },
       });
     }
 
-    // For now, just return success without sending email to test if function works
-    console.log("vc-start-analysis: Returning test response");
-    return new Response(JSON.stringify({ ok: true, test: true, received: { email, business_name } }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    // For now, return success - TODO: implement email sending and database operations
+    const res = { ok: true, test: true, received: { email, business_name }, ts: new Date().toISOString() };
+    console.log("vc-start-analysis: Returning success response");
+    
+    return new Response(JSON.stringify(res), {
+      status: 200,
+      headers: { "Content-Type": "application/json", ...cors(origin) },
     });
 
-  } catch (e: any) {
+  } catch (e) {
     console.error("vc-start-analysis: error", e);
-    return new Response(JSON.stringify({ ok: false, error: e?.message ?? "internal" }), {
+    return new Response(JSON.stringify({ ok: false, error: String(e) }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...cors(origin) },
     });
   }
 });
