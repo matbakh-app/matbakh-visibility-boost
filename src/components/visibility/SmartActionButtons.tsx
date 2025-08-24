@@ -55,10 +55,10 @@ const SmartActionButtons: React.FC<SmartActionButtonsProps> = ({
         const { data: businessPartner } = await supabase
           .from('business_partners')
           .select('id, status, services_selected')
-          .eq('user_id', user.id)
+          .eq('user_id', user.id as any)
           .single();
 
-        const isSubscriber = businessPartner?.services_selected?.length > 0;
+        const isSubscriber = (businessPartner as any)?.services_selected?.length > 0;
         
         setUserStatus({
           isLoggedIn: true,

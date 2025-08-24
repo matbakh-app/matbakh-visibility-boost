@@ -64,7 +64,7 @@ export const useOnboardingQuestions = (step?: number) => {
       }
       
       // Map the database response to our interface
-      const mappedCategories: GmbCategory[] = (data || []).map((cat: Database['public']['Tables']['gmb_categories']['Row']) => ({
+      const mappedCategories: GmbCategory[] = (data || []).map((cat: any) => ({
         id: cat.id,
         category_id: cat.category_id,
         name_de: cat.name_de,
@@ -93,7 +93,7 @@ export const useOnboardingQuestions = (step?: number) => {
         .order('order_index', { ascending: true });
 
       if (step !== undefined) {
-        query = query.eq('step', step);
+        query = query.eq('step', step as any);
       }
 
       const { data, error } = await query;
@@ -107,7 +107,7 @@ export const useOnboardingQuestions = (step?: number) => {
 
       // Process questions with dynamic options
       const processedQuestions = await Promise.all(
-        (data || []).map(async (q: Database['public']['Tables']['onboarding_questions']['Row']) => {
+        (data || []).map(async (q: any) => {
           const question: OnboardingQuestion = {
             id: q.id,
             step: q.step,

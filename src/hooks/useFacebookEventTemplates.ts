@@ -17,7 +17,7 @@ export const useFacebookEventTemplates = () => {
       const { data, error } = await supabase
         .from('facebook_event_templates' as any)
         .select('*')
-        .eq('is_active', true)
+        .eq('is_active', true as any)
         .order('event_name');
 
       if (error) throw error;

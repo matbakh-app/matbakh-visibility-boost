@@ -124,8 +124,7 @@ export default function GoogleEnhancedOnboarding() {
 
       // Then create business profile using partner_id
       const profileData = {
-        partner_id: partner.id,
-        business_name: formData.businessName,
+        company_name: formData.businessName,
         user_id: user.id,
         address: formData.address,
         phone: formData.phone,

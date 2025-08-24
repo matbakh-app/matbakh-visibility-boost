@@ -70,8 +70,8 @@ export const saveBusinessPartner = async (data: any) => {
     const { error: profileError } = await supabase
       .from('business_profiles')
       .insert({
-        partner_id: partner.id,
-        business_name: data.companyName,
+        user_id: user.id,
+        company_name: data.companyName,
         address: data.address,
         phone: data.phone,
         website: data.website,

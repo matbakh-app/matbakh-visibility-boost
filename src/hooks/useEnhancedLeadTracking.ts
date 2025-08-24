@@ -1,133 +1,139 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { Row, Insert, Update } from '@/integrations/supabase/db-helpers';
 
+// Enhanced Lead Data Types
 interface EnhancedLeadData {
-  business_name: string;
+  businessName: string;
   location: string;
-  postal_code?: string;
-  main_category: string;
-  sub_category: string;
-  matbakh_category: string;
+  postalCode?: string;
+  mainCategory: string;
+  subCategory: string;
+  matbakhTags: string[];
   website?: string;
-  facebook_handle?: string;
-  instagram_handle?: string;
-  tiktok_handle?: string;
-  linkedin_handle?: string;
-  benchmarks?: string[];
-  email: string;
-  gdpr_consent: boolean;
-  marketing_consent?: boolean;
+  facebookName?: string;
+  instagramName?: string;
+  benchmarks: string[];
+  email?: string;
+  phoneNumber?: string;
+  gdprConsent?: boolean;
+  marketingConsent?: boolean;
+  language?: string;
+  locationData?: {
+    city: string;
+    country: string;
+    coordinates?: [number, number];
+  };
+  competitorUrls?: string[];
+  socialLinks?: Record<string, string>;
 }
 
 interface LeadAction {
-  lead_id: string;
-  action_type: string;
+  leadId: string;
+  actionType: string;
   platform?: string;
-  details?: any;
-  duration_ms?: number;
-  device_type?: string;
-  browser?: string;
+  details?: Record<string, unknown>;
 }
+
+type LeadId = Row<"visibility_check_leads">["id"];
 
 export const useEnhancedLeadTracking = () => {
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
 
   const createEnhancedLead = async (leadData: EnhancedLeadData): Promise<string | null> => {
-    setLoading(true);
     try {
-      console.log('📝 Creating enhanced lead:', leadData);
+      setLoading(true);
 
-      const { data, error } = await supabase
+      const payload: Insert<"visibility_check_leads"> = {
+        business_name: leadData.businessName,
+        location: leadData.location,
+        postal_code: leadData.postalCode || '',
+        main_category: leadData.mainCategory,
+        sub_category: leadData.subCategory,
+        matbakh_category: leadData.matbakhTags?.[0] || '',
+        website: leadData.website || '',
+        facebook_handle: leadData.facebookName || '',
+        instagram_handle: leadData.instagramName || '',
+        benchmarks: leadData.benchmarks || [],
+        email: leadData.email || '',
+        phone_number: leadData.phoneNumber || '',
+        gdpr_consent: leadData.gdprConsent || false,
+        marketing_consent: leadData.marketingConsent || false,
+        language: leadData.language || 'de',
+        analysis_status: 'pending'
+      };
+
+      const { data: newLead, error } = await supabase
         .from('visibility_check_leads')
-        .insert([{
-          business_name: leadData.business_name,
-          location: leadData.location,
-          postal_code: leadData.postal_code,
-          main_category: leadData.main_category,
-          sub_category: leadData.sub_category,
-          matbakh_category: leadData.matbakh_category,
-          website: leadData.website,
-          facebook_handle: leadData.facebook_handle,
-          instagram_handle: leadData.instagram_handle,
-          tiktok_handle: leadData.tiktok_handle,
-          linkedin_handle: leadData.linkedin_handle,
-          benchmarks: leadData.benchmarks,
-          email: leadData.email,
-          gdpr_consent: leadData.gdpr_consent,
-          marketing_consent: leadData.marketing_consent,
-          analysis_status: 'pending',
-        }])
+        .insert([payload])
         .select('id')
-        .single();
+        .single()
+        .returns<Row<"visibility_check_leads">>();
 
-      if (error) {
-        console.error('❌ Error creating lead:', error);
-        toast({
-          variant: 'destructive',
-          title: 'Fehler beim Speichern',
-          description: 'Lead konnte nicht gespeichert werden.',
-        });
-        return null;
+      if (error || !newLead) {
+        console.error('Error creating enhanced lead:', error);
+        throw new Error(`Failed to create lead: ${error?.message || 'Unknown error'}`);
       }
 
-      console.log('✅ Enhanced lead created:', data.id);
-      return data.id;
+      // Log the lead creation action
+      try {
+        await trackLeadAction({
+          leadId: newLead.id,
+          actionType: 'lead_created',
+          platform: 'visibility_check',
+          details: {
+            businessName: leadData.businessName,
+            location: leadData.location,
+            mainCategory: leadData.mainCategory,
+            hasWebsite: Boolean(leadData.website),
+            hasSocialMedia: Boolean(leadData.facebookName || leadData.instagramName),
+            gdprConsent: leadData.gdprConsent,
+            marketingConsent: leadData.marketingConsent
+          }
+        });
+      } catch (actionError) {
+        console.warn('Failed to log lead creation action:', actionError);
+      }
+
+      return newLead.id;
     } catch (error) {
-      console.error('❌ Error in createEnhancedLead:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Fehler',
-        description: 'Ein unerwarteter Fehler ist aufgetreten.',
-      });
-      return null;
+      console.error('Error in createEnhancedLead:', error);
+      throw error;
     } finally {
       setLoading(false);
-    }
-  };
-
-  const trackLeadAction = async (actionData: LeadAction): Promise<boolean> => {
-    try {
-      console.log('📊 Tracking lead action:', actionData);
-
-      // For now, we'll skip action tracking since the table structure needs to be clarified
-      // This will be implemented once the database migration is complete
-      console.log('⏳ Action tracking will be implemented after database migration');
-      return true;
-    } catch (error) {
-      console.error('❌ Error in trackLeadAction:', error);
-      return false;
     }
   };
 
   const updateLeadAnalysis = async (
     leadId: string, 
     analysisData: any, 
-    status: 'completed' | 'failed' = 'completed'
+    status?: 'completed' | 'failed'
   ): Promise<boolean> => {
     try {
-      console.log('📈 Updating lead analysis:', leadId);
+      setLoading(true);
+
+      const changes: Update<"visibility_check_leads"> = {
+        analysis_data: analysisData as any,
+        analysis_status: status || 'completed',
+        analyzed_at: new Date().toISOString()
+      };
 
       const { error } = await supabase
         .from('visibility_check_leads')
-        .update({
-          analysis_data: analysisData,
-          analysis_status: status,
-          analyzed_at: new Date().toISOString(),
-        })
+        .update(changes)
         .eq('id', leadId);
 
       if (error) {
-        console.error('❌ Error updating analysis:', error);
+        console.error('Error updating lead analysis:', error);
         return false;
       }
 
-      console.log('✅ Lead analysis updated');
       return true;
     } catch (error) {
-      console.error('❌ Error in updateLeadAnalysis:', error);
+      console.error('Error in updateLeadAnalysis:', error);
       return false;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -138,41 +144,49 @@ export const useEnhancedLeadTracking = () => {
     marketingConsent?: boolean
   ): Promise<boolean> => {
     try {
-      console.log('🛡️ Processing GDPR consent for lead:', leadId);
+      setLoading(true);
+
+      const changes: Update<"visibility_check_leads"> = {
+        analysis_data: {
+          gdpr_consent: gdprConsent,
+          marketing_consent: marketingConsent || false,
+          consent_timestamp: new Date().toISOString()
+        } as any
+      };
 
       const { error } = await supabase
         .from('visibility_check_leads')
-        .update({
-          // Use available fields from the existing schema
-          analysis_data: {
-            gdpr_consent: gdprConsent,
-            marketing_consent: marketingConsent,
-            consent_timestamp: gdprConsent ? new Date().toISOString() : null,
-          }
-        })
+        .update(changes)
         .eq('id', leadId);
 
       if (error) {
-        console.error('❌ Error processing GDPR consent:', error);
+        console.error('Error processing GDPR consent:', error);
         return false;
       }
 
-      // Track consent action
-      await trackLeadAction({
-        lead_id: leadId,
-        action_type: 'gdpr_consent',
-        details: {
-          gdpr_consent: gdprConsent,
-          marketing_consent: marketingConsent,
-          email,
-        },
-      });
+      // Track consent processing
+      try {
+        await trackLeadAction({
+          leadId,
+          actionType: 'gdpr_consent_processed',
+          platform: 'visibility_check',
+          details: {
+            email,
+            gdprConsent,
+            marketingConsent: marketingConsent || false,
+            timestamp: new Date().toISOString()
+          }
+        });
+      } catch (actionError) {
+        console.warn('Failed to log GDPR consent action:', actionError);
+      }
 
-      console.log('✅ GDPR consent processed');
       return true;
     } catch (error) {
-      console.error('❌ Error in processGDPRConsent:', error);
+      console.error('Error in processGDPRConsent:', error);
       return false;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -180,18 +194,19 @@ export const useEnhancedLeadTracking = () => {
     try {
       const { data, error } = await supabase
         .from('visibility_check_leads')
-        .select('*')
+        .select('analysis_data')
         .eq('id', leadId)
-        .single();
+        .single()
+        .returns<Row<"visibility_check_leads">>();
 
       if (error) {
-        console.error('❌ Error fetching lead analysis:', error);
+        console.error('Error fetching lead analysis:', error);
         return null;
       }
 
-      return data;
+      return data?.analysis_data || null;
     } catch (error) {
-      console.error('❌ Error in getLeadAnalysis:', error);
+      console.error('Error in getLeadAnalysis:', error);
       return null;
     }
   };
@@ -202,29 +217,55 @@ export const useEnhancedLeadTracking = () => {
         .from('visibility_check_leads')
         .select('*')
         .eq('email', email)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .returns<Row<"visibility_check_leads">[]>();
 
       if (error) {
-        console.error('❌ Error searching leads by email:', error);
+        console.error('Error searching leads by email:', error);
         return [];
       }
 
       return data || [];
     } catch (error) {
-      console.error('❌ Error in searchLeadsByEmail:', error);
+      console.error('Error in searchLeadsByEmail:', error);
       return [];
+    }
+  };
+
+  const trackLeadAction = async (actionData: LeadAction): Promise<boolean> => {
+    try {
+      const payload: Insert<"lead_events"> = {
+        email: null,
+        business_name: null,
+        event_type: actionData.actionType,
+        event_time: new Date().toISOString(),
+        event_payload: (actionData.details || {}) as any,
+        user_id: null,
+        partner_id: null,
+        facebook_event_id: null,
+        response_status: null,
+        success: true
+      };
+      
+      await supabase
+        .from('lead_events')
+        .insert([payload]);
+        
+      console.log('Tracking lead action:', actionData);
+      return true;
+    } catch (error) {
+      console.error('Error in trackLeadAction:', error);
+      return false;
     }
   };
 
   return {
     loading,
     createEnhancedLead,
-    trackLeadAction,
     updateLeadAnalysis,
     processGDPRConsent,
     getLeadAnalysis,
     searchLeadsByEmail,
+    trackLeadAction
   };
 };
-
-export default useEnhancedLeadTracking;

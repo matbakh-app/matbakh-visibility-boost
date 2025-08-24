@@ -1,12 +1,12 @@
 
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Outlet } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import BackHomeButtons from '@/components/navigation/BackHomeButtons';
 
 interface AppLayoutProps {
-  children: React.ReactNode;
+  children?: React.ReactNode; // Optional für nested routes
   hideNav?: boolean; // Neues optionales Prop zum Ausblenden der Navigation
 }
 
@@ -38,7 +38,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, hideNav = false }) => {
         
         {/* Page Content */}
         <div className="w-full">
-          {children}
+          {children || <Outlet />}
         </div>
       </main>
       

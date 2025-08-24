@@ -1,5 +1,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { Row, Insert } from '@/integrations/supabase/db-helpers';
+import type { Database } from '@/integrations/supabase/types';
+
+type CatRow = Database['public']['Tables']['gmb_categories']['Row'];
+type CrossRow = Database['public']['Tables']['category_cross_tags']['Row'];
+type CatWithCross = CatRow & {
+  category_cross_tags: Pick<CrossRow, 'target_main_category_id'|'confidence_score'|'source'>[]
+};
 
 export interface SubCategoryWithCrossTags {
   id: string;
@@ -51,7 +59,7 @@ export const useSubCategoriesWithCrossTags = (
       console.log('🔍 Loading subcategories for main category UUIDs:', selectedMainCategoryUUIDs);
 
       // First get categories by main category ID (UUID)
-      const mainCategoryQuery = supabase
+      const { data: mainCategories, error: mainError } = await supabase
         .from('gmb_categories')
         .select(`
           id,
@@ -65,51 +73,41 @@ export const useSubCategoriesWithCrossTags = (
           main_category_id,
           haupt_kategorie
         `)
-        .in('main_category_id', selectedMainCategoryUUIDs);
+        .in('main_category_id', selectedMainCategoryUUIDs)
+        .returns<Row<"gmb_categories">[]>();
 
-      // Then get categories by cross-tags (using UUID)
-      const crossTagQuery = supabase
-        .from('gmb_categories')
-        .select(`
-          id,
-          name_de,
-          name_en,
-          description_de,
-          description_en,
-          keywords,
-          is_popular,
-          sort_order,
-          main_category_id,
-          haupt_kategorie,
-          category_cross_tags!inner(target_main_category_id)
-        `)
-        .in('category_cross_tags.target_main_category_id', selectedMainCategoryUUIDs);
-
-      // Execute both queries
-      const [mainResult, crossResult] = await Promise.all([
-        mainCategoryQuery,
-        crossTagQuery
-      ]);
-
-      if (mainResult.error) {
-        console.error('❌ Error loading main categories:', mainResult.error);
-        throw mainResult.error;
+      if (mainError) {
+        console.error('❌ Error loading main categories:', mainError);
+        throw mainError;
       }
 
-      if (crossResult.error) {
-        console.error('❌ Error loading cross-tag categories:', crossResult.error);
-        throw crossResult.error;
+      // Then get categories by cross-tags (using UUID) - now with proper FK relations
+      const { data: crossCategories, error: crossError } = await supabase
+        .from('gmb_categories')
+        .select(`
+          id, name_de, name_en, description_de, description_en,
+          keywords, is_popular, sort_order, main_category_id, haupt_kategorie,
+          category_cross_tags!inner(
+            target_main_category_id, confidence_score, source
+          )
+        `)
+        .in('category_cross_tags.target_main_category_id', selectedMainCategoryUUIDs)
+        .returns<CatWithCross[]>();
+
+      if (crossError) {
+        console.error('❌ Error loading cross-tag categories:', crossError);
+        throw crossError;
       }
 
       // Combine and deduplicate results
-      const allCategories = [...(mainResult.data || []), ...(crossResult.data || [])];
+      const allCategories = [...(mainCategories || []), ...(crossCategories || [])];
 
       // Process and map the data
-      const processedCategories: RelatedCategory[] = allCategories.map(item => {
+      const processedCategories: RelatedCategory[] = allCategories.map((item: any) => {
         // Extract cross-tags from the joined data (only available in crossResult)
-        const crossTags = (item as any).category_cross_tags 
-          ? Array.isArray((item as any).category_cross_tags)
-            ? (item as any).category_cross_tags.map((tag: any) => tag.target_main_category)
+        const crossTags = item.category_cross_tags 
+          ? Array.isArray(item.category_cross_tags)
+            ? item.category_cross_tags.map((tag: any) => tag.target_main_category_id)
             : []
           : [];
 
@@ -181,16 +179,19 @@ export const useSubCategoriesWithCrossTags = (
   /**
    * Log user search for analytics
    */
-  const logSearch = async (searchTerm: string, resultCategoryIds: string[], selectedCategoryId?: string) => {
+   const logSearch = async (searchTerm: string, resultCategoryIds: string[], selectedCategoryId?: string) => {
     try {
-      await supabase
-        .from('category_search_logs')
-        .insert({
-          search_term: searchTerm,
-          selected_main_categories: selectedMainCategoryUUIDs, // Using UUIDs now
-          result_category_ids: resultCategoryIds,
-          selected_category_id: selectedCategoryId || null
-        });
+      type InsertSearchLog = Database['public']['Tables']['category_search_logs']['Insert'];
+      
+      const payload: InsertSearchLog = {
+        search_term: searchTerm,
+        selected_main_categories: selectedMainCategoryUUIDs,
+        result_category_ids: resultCategoryIds,
+        selected_category_id: selectedCategoryId ?? null,
+        user_id: null
+      };
+      
+      await supabase.from('category_search_logs').insert([payload]);
     } catch (error) {
       console.warn('Failed to log search:', error);
     }

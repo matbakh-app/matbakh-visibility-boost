@@ -1,52 +1,72 @@
 
-import { Suspense } from 'react';
-import { Routes, Route, Outlet } from 'react-router-dom';
+import { Suspense, lazy } from 'react';
+import { Routes, Route, Outlet, useNavigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from '@/components/ui/sonner';
+
+// Core pages - loaded immediately
 import Index from '@/pages/Index';
-import BusinessLanding from '@/pages/BusinessLanding';
-import B2CLanding from '@/pages/B2CLanding';
-import ServicesPage from '@/pages/ServicesPage';
-import AngebotePage from '@/pages/AngebotePage';
-import AngeboteDE from '@/pages/AngeboteDE';
-import PackagesEN from '@/pages/PackagesEN';
-import BusinessLogin from '@/pages/BusinessLogin';
-import PartnerOnboarding from '@/pages/PartnerOnboarding';
-import PartnerDashboard from '@/pages/PartnerDashboard';
-import PartnerProfile from '@/pages/PartnerProfile';
-import PartnerCalendar from '@/pages/PartnerCalendar';
-import RegistrationOptions from '@/pages/RegistrationOptions';
-import EmailRegistration from '@/pages/EmailRegistration';
-import StandardOnboarding from '@/pages/StandardOnboarding';
-import GoogleOAuth from '@/pages/GoogleOAuth';
-import GoogleCallback from '@/pages/GoogleCallback';
-import GoogleEnhancedOnboarding from '@/pages/GoogleEnhancedOnboarding';
-import Dashboard from '@/pages/Dashboard';
-import DashboardOverview from '@/pages/DashboardOverview';
-import DashboardMain from '@/pages/DashboardMain';
-import DashboardProfile from '@/pages/DashboardProfile';
-import DashboardGmb from '@/pages/DashboardGmb';
-import DashboardGa4 from '@/pages/DashboardGa4';
-import DashboardSocial from '@/pages/DashboardSocial';
-import DashboardReports from '@/pages/DashboardReports';
-import AdminPanel from '@/pages/AdminPanel';
-import PasswordReset from '@/pages/PasswordReset';
 import NotFound from '@/pages/NotFound';
-import NotesPage from '@/pages/NotesPage';
-import CheckoutSuccess from '@/pages/CheckoutSuccess';
-import VisibilityCheckVerified from '@/pages/VisibilityCheckVerified';
-import RedeemPage from '@/pages/RedeemPage';
-import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import CookieConsentBanner from '@/components/CookieConsentBanner';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { AuthModal } from '@/components/auth/AuthModal';
+
+// Layouts - loaded immediately for structure
 import AppLayout from '@/components/layout/AppLayout';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import AdminLayout from '@/components/layout/AdminLayout';
-import VisibilityCheckPage from '@/components/visibility/VisibilityCheckPage';
-import CookieConsentBanner from '@/components/CookieConsentBanner';
-import { DashboardRedirect } from '@/components/DashboardRedirect';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
+
+// Lazy loaded pages and components
+const BusinessLanding = lazy(() => import('@/pages/BusinessLanding'));
+const B2CLanding = lazy(() => import('@/pages/B2CLanding'));
+const ServicesPage = lazy(() => import('@/pages/ServicesPage'));
+const AngebotePage = lazy(() => import('@/pages/AngebotePage'));
+const AngeboteDE = lazy(() => import('@/pages/AngeboteDE'));
+const PackagesEN = lazy(() => import('@/pages/PackagesEN'));
+const BusinessLogin = lazy(() => import('@/pages/BusinessLogin'));
+const LoginPage = lazy(() => import('@/pages/LoginPage'));
+const PasswordReset = lazy(() => import('@/pages/PasswordReset'));
+
+// Partner/Business pages
+const PartnerOnboarding = lazy(() => import('@/pages/PartnerOnboarding'));
+const PartnerProfile = lazy(() => import('@/pages/PartnerProfile'));
+const PartnerCalendar = lazy(() => import('@/pages/PartnerCalendar'));
+const DashboardMain = lazy(() => import('@/pages/DashboardMain'));
+const AdminPanel = lazy(() => import('@/pages/AdminPanel'));
+
+// Registration & Auth
+const RegistrationOptions = lazy(() => import('@/pages/RegistrationOptions'));
+const EmailRegistration = lazy(() => import('@/pages/EmailRegistration'));
+const StandardOnboarding = lazy(() => import('@/pages/StandardOnboarding'));
+const GoogleOAuth = lazy(() => import('@/pages/GoogleOAuth'));
+const GoogleCallback = lazy(() => import('@/pages/GoogleCallback'));
+const GoogleEnhancedOnboarding = lazy(() => import('@/pages/GoogleEnhancedOnboarding'));
+
+// Utility pages
+const NotesPage = lazy(() => import('@/pages/NotesPage'));
+const CheckoutSuccess = lazy(() => import('@/pages/CheckoutSuccess'));
+const RedeemPage = lazy(() => import('@/pages/RedeemPage'));
+
+// Visibility Check
+const VisibilityCheckPage = lazy(() => import('@/components/visibility/VisibilityCheckPage'));
+const VisibilityCheckVerified = lazy(() => import('@/pages/VisibilityCheckVerified'));
+
+// Profile components
+const MyProfile = lazy(() => import('@/components/Profile/MyProfile').then(m => ({ default: m.MyProfile })));
+const CompanyProfile = lazy(() => import('@/components/Profile/CompanyProfile').then(m => ({ default: m.CompanyProfile })));
+
 import { GoogleOAuthCallback } from '@/components/auth/GoogleOAuthCallback';
 import { QuickVerifyMode } from '@/components/onboarding/QuickVerifyMode';
+import { RestaurantInfoStep } from '@/components/figma-onboarding/RestaurantInfoStep';
+import { WebsiteAnalysisStep } from '@/components/figma-onboarding/WebsiteAnalysisStep';
+
+// DEBUG: Navigate tracing (DEV only)
+if (import.meta.env.DEV) {
+  const origNavigate = console.log; // Will be replaced in useNavigate hook
+}
 
 // Legal pages
 import Impressum from '@/pages/legal/Impressum';
@@ -70,12 +90,47 @@ const queryClient = new QueryClient({
   },
 });
 
+// VC Route wrappers to handle navigation and data persistence
+function VCStep1Route() {
+  const navigate = useNavigate();
+  return (
+    <RestaurantInfoStep
+      onNext={(data) => {
+        console.log('Step 1 data:', data);
+        try {
+          const prev = JSON.parse(localStorage.getItem('vc:data') || '{}');
+          localStorage.setItem('vc:data', JSON.stringify({ ...prev, ...data }));
+        } catch {}
+        navigate('/visibilitycheck/onboarding/step2');
+      }}
+      onBack={() => window.history.back()}
+      skipEmailGate={true}
+    />
+  );
+}
+
+function VCStep2Route() {
+  return (
+    <WebsiteAnalysisStep
+      onNext={(data) => {
+        console.log('Step 2 data:', data);
+      }}
+      onBack={() => window.history.back()}
+    />
+  );
+}
+
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
         <div className="min-h-screen bg-background">
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center">
+              <div className="animate-pulse">Loading...</div>
+            </div>
+          }>
             <Routes>
               {/* Main routes with AppLayout wrapper */}
               <Route path="/" element={<AppLayout><Outlet /></AppLayout>}>
@@ -87,14 +142,36 @@ function App() {
                 <Route path="angebote-de" element={<AngeboteDE />} />
                 <Route path="packages" element={<PackagesEN />} />
                 <Route path="login" element={<BusinessLogin />} />
+                <Route path="business/partner/login" element={<BusinessLogin />} />
+                <Route path="auth/login" element={<LoginPage />} />
                 <Route path="password-reset" element={<PasswordReset />} />
                 <Route path="checkout-success" element={<CheckoutSuccess />} />
                 <Route path="visibility-check" element={<VisibilityCheckPage />} />
                 <Route path="visibility-check/verified/:leadId" element={<VisibilityCheckVerified />} />
+                
+                {/* Figma-based Visibility Check Routes */}
+                <Route path="visibilitycheck/onboarding/step1" element={<VCStep1Route />} />
+                <Route path="visibilitycheck/onboarding/step2" element={<VCStep2Route />} />
+                
+                {/* Temporarily disabled Figma Router */}
+                {/* <Route path="visibilitycheck/*" element={<FigmaMainRouter />} /> */}
+                
                 <Route path="redeem" element={<RedeemPage />} />
                 <Route path="auth/google/callback" element={<GoogleOAuthCallback />} />
                 <Route path="quick-verify" element={<QuickVerifyMode />} />
                 <Route path="notes" element={<NotesPage />} />
+                
+                {/* Profile Routes */}
+                <Route path="profile" element={
+                  <ProtectedRoute>
+                    <MyProfile />
+                  </ProtectedRoute>
+                } />
+                <Route path="company-profile" element={
+                  <ProtectedRoute>
+                    <CompanyProfile />
+                  </ProtectedRoute>
+                } />
                 
                 {/* New Registration Flow */}
                 <Route path="register" element={<RegistrationOptions />} />
@@ -131,7 +208,7 @@ function App() {
                 </ProtectedRoute>
               }>
                 <Route path="onboarding" element={<PartnerOnboarding />} />
-                <Route path="dashboard" element={<PartnerDashboard />} />
+                <Route path="dashboard" element={<DashboardMain />} />
                 <Route path="profile" element={<PartnerProfile />} />
                 <Route path="calendar" element={<PartnerCalendar />} />
               </Route>
@@ -144,14 +221,8 @@ function App() {
                   </DashboardLayout>
                 </ProtectedRoute>
               }>
-                <Route index element={<DashboardRedirect />} />
+                <Route index element={<DashboardMain />} />
                 <Route path="main" element={<DashboardMain />} />
-                <Route path="overview" element={<DashboardOverview />} />
-                <Route path="profile" element={<DashboardProfile />} />
-                <Route path="gmb" element={<DashboardGmb />} />
-                <Route path="ga4" element={<DashboardGa4 />} />
-                <Route path="social" element={<DashboardSocial />} />
-                <Route path="reports" element={<DashboardReports />} />
               </Route>
 
               {/* Admin routes */}
@@ -171,11 +242,13 @@ function App() {
           
           {/* Global components - properly nested within ThemeProvider */}
           <CookieConsentBanner />
+          <AuthModal />
           <Toaster />
           <SonnerToaster />
         </div>
       </ThemeProvider>
     </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

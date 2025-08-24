@@ -53,7 +53,7 @@ export const FacebookConversionsConfig: React.FC<{ partnerId: string }> = ({ par
       const { data, error } = await supabase
         .from('fb_conversions_config')
         .select('*')
-        .eq('partner_id', partnerId)
+        .eq('partner_id', partnerId as any)
         .single();
 
       if (error && error.code !== 'PGRST116') {
@@ -61,11 +61,11 @@ export const FacebookConversionsConfig: React.FC<{ partnerId: string }> = ({ par
       }
 
       if (data) {
-        setConfig(data);
+        setConfig(data as any);
         setFormData({
-          pixel_id: data.pixel_id,
-          access_token: data.access_token,
-          is_active: data.is_active
+          pixel_id: (data as any).pixel_id,
+          access_token: (data as any).access_token,
+          is_active: (data as any).is_active
         });
       }
     } catch (error) {
@@ -85,12 +85,12 @@ export const FacebookConversionsConfig: React.FC<{ partnerId: string }> = ({ par
       const { data, error } = await supabase
         .from('fb_conversion_logs')
         .select('id, event_name, pixel_id, success, sent_at, error_message')
-        .eq('partner_id', partnerId)
+        .eq('partner_id', partnerId as any)
         .order('sent_at', { ascending: false })
         .limit(20);
 
       if (error) throw error;
-      setLogs(data || []);
+      setLogs((data || []) as ConversionLog[]);
     } catch (error) {
       console.error('Error loading conversion logs:', error);
     }
@@ -108,7 +108,7 @@ export const FacebookConversionsConfig: React.FC<{ partnerId: string }> = ({ par
 
       const { error } = await supabase
         .from('fb_conversions_config')
-        .upsert(configData, { onConflict: 'partner_id' });
+        .upsert(configData as any, { onConflict: 'partner_id' });
 
       if (error) throw error;
 

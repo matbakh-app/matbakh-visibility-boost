@@ -5,11 +5,13 @@ import { useAuth } from '@/contexts/AuthContext';
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requirePartner?: boolean;
+  requireCompleteProfile?: boolean;
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
   children, 
-  requirePartner = false 
+  requirePartner = false,
+  requireCompleteProfile = false
 }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
@@ -27,7 +29,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   if (!user) {
     // Redirect to login page with return URL
-    return <Navigate to="/business/partner/login" state={{ from: location }} replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Check if complete profile is required
+  if (requireCompleteProfile && !user) {
+    return <Navigate to="/profile" state={{ from: location }} replace />;
   }
 
   // If we need to check for partner status, we could add that logic here
