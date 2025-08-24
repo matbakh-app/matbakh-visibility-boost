@@ -1,0 +1,121 @@
+{
+ "Resources": {
+  "SqsAgeAlarm9D9E7BD0": {
+   "Type": "AWS::CloudWatch::Alarm",
+   "Properties": {
+    "ComparisonOperator": "GreaterThanThreshold",
+    "Dimensions": [
+     {
+      "Name": "QueueName",
+      "Value": "ses-events-queue"
+     }
+    ],
+    "EvaluationPeriods": 1,
+    "MetricName": "ApproximateAgeOfOldestMessage",
+    "Namespace": "AWS/SQS",
+    "Period": 300,
+    "Statistic": "Maximum",
+    "Threshold": 300
+   },
+   "Metadata": {
+    "aws:cdk:path": "SesEventsMonitorStack/SqsAgeAlarm/Resource"
+   }
+  },
+  "WorkerErrorsAlarm1932B217": {
+   "Type": "AWS::CloudWatch::Alarm",
+   "Properties": {
+    "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+    "Dimensions": [
+     {
+      "Name": "FunctionName",
+      "Value": {
+       "Fn::Select": [
+        6,
+        {
+         "Fn::Split": [
+          ":",
+          {
+           "Fn::Join": [
+            "",
+            [
+             "arn:",
+             {
+              "Ref": "AWS::Partition"
+             },
+             ":lambda:eu-central-1:055062860590:function:ses-events-worker"
+            ]
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    "EvaluationPeriods": 1,
+    "MetricName": "Errors",
+    "Namespace": "AWS/Lambda",
+    "Period": 300,
+    "Statistic": "Sum",
+    "Threshold": 1
+   },
+   "Metadata": {
+    "aws:cdk:path": "SesEventsMonitorStack/WorkerErrorsAlarm/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/yWISw7CIBBAz9I9jC3xAmri1ljdmylgpOVTO4xdkN7diKv3UaC6DtoGV5LaTNK7Acoto54ErvQo9Ca4smV7RLLCYxgMwpmjzi7F+igS3NPsdC3tE5sVs35BOXhcgjg9Y5Vt++mF88x5EzEZCyPtPkpBt4e2Gck5uXDMLljo//wCvFGL7J0AAAA="
+   },
+   "Metadata": {
+    "aws:cdk:path": "SesEventsMonitorStack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "SesTopicArn": {
+   "Value": "arn:aws:sns:eu-central-1:055062860590:matbakh-ses-notify"
+  },
+  "SesEventsQueueArn": {
+   "Value": "arn:aws:sqs:eu-central-1:055062860590:ses-events-queue"
+  },
+  "SesEventsDlqArn": {
+   "Value": "arn:aws:sqs:eu-central-1:055062860590:ses-events-dlq"
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}
