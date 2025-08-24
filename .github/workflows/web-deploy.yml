@@ -3,28 +3,28 @@ name: Web Deploy
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
 
 permissions:
   id-token: write
   contents: read
 
-env:
-  AWS_REGION: ${{ vars.AWS_REGION }}
-  BUCKET: ${{ vars.BUCKET }}
-  DIST_ID: ${{ vars.DIST_ID }}
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      BUCKET: ${{ vars.BUCKET }}
+      DIST_ID: ${{ vars.DIST_ID }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
 
       - name: Install deps
         run: |
@@ -33,26 +33,36 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Configure AWS (OIDC)
+      - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::055062860590:role/gh-actions-web-deploy
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Upload immutable assets
-        run: aws s3 sync dist/assets s3://$BUCKET/assets --delete --cache-control "public,max-age=31536000,immutable"
-
-      - name: Upload HTML (short cache)
-        run: aws s3 cp dist/ s3://$BUCKET/ --recursive --exclude "*" --include "*.html" --cache-control "public,max-age=300" --content-type "text/html"
-
-      - name: Upload manifest/robots/sitemap
+      - name: Upload assets
         run: |
-          aws s3 cp dist/site.webmanifest s3://$BUCKET/site.webmanifest --cache-control "public,max-age=86400" --content-type "application/manifest+json"
-          aws s3 cp dist/robots.txt        s3://$BUCKET/robots.txt        --cache-control "public,max-age=300"   --content-type "text/plain"
-          aws s3 cp dist/sitemap.xml       s3://$BUCKET/sitemap.xml       --cache-control "public,max-age=300"   --content-type "application/xml"
-
-      - name: Upload rest (ohne assets & *.html)
-        run: aws s3 sync dist/ s3://$BUCKET --delete --exclude "assets/*" --exclude "*.html"
-
-      - name: Invalidate CloudFront
-        run: aws cloudfront create-invalidation --distribution-id "$DIST_ID" --paths "/" "/index.html" "/site.webmanifest" "/favicons/*" "/favicon.ico" "/robots.txt" "/sitemap.xml"
+          set -e
+aws s3 cp dist/assets/ s3://$BUCKET/assets/ \
+            --recursive --cache-control "public,max-age=31536000,immutable"
+aws s3 cp dist/ s3://$BUCKET/ \
+            --recursive --exclude "*" --include "*.html" \
+            --cache-control "public,max-age=300" --content-type "text/html"
+if [ -f dist/site.webmanifest ]; then
+            aws s3 cp dist/site.webmanifest s3://$BUCKET/site.webmanifest \
+              --cache-control "public,max-age=86400" \
+              --content-type "application/manifest+json"
+          fi
+if [ -f dist/robots.txt ]; then
+            aws s3 cp dist/robots.txt s3://$BUCKET/robots.txt \
+              --cache-control "public,max-age=86400" \
+              --content-type "text/plain"
+          fi
+if [ -d dist/favicons ]; then
+            aws s3 cp dist/favicons/ s3://$BUCKET/favicons/ \
+              --recursive --cache-control "public,max-age=31536000,immutable"
+          fi
+  - name: Invalidate CloudFront
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "$DIST_ID" \
+            --paths "/index.html" "/" "/favicons/*" "/sitemap.xml" "/robots.txt" "/site.webmanifest"
