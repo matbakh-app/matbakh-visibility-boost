@@ -24,11 +24,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: npm
 
       - name: Install deps
         run: |
-          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
 
       - name: Build
         run: npm run build
@@ -42,26 +46,36 @@ jobs:
       - name: Upload assets
         run: |
           set -e
-aws s3 cp dist/assets/ s3://$BUCKET/assets/ \
+          # immutable, fingerprinted assets
+          aws s3 cp dist/assets/ s3://$BUCKET/assets/ \
             --recursive --cache-control "public,max-age=31536000,immutable"
-aws s3 cp dist/ s3://$BUCKET/ \
+
+          # html mit kurzer Cachezeit
+          aws s3 cp dist/ s3://$BUCKET/ \
             --recursive --exclude "*" --include "*.html" \
             --cache-control "public,max-age=300" --content-type "text/html"
-if [ -f dist/site.webmanifest ]; then
+
+          # optional: manifest
+          if [ -f dist/site.webmanifest ]; then
             aws s3 cp dist/site.webmanifest s3://$BUCKET/site.webmanifest \
               --cache-control "public,max-age=86400" \
               --content-type "application/manifest+json"
           fi
-if [ -f dist/robots.txt ]; then
+
+          # optional: robots.txt
+          if [ -f dist/robots.txt ]; then
             aws s3 cp dist/robots.txt s3://$BUCKET/robots.txt \
               --cache-control "public,max-age=86400" \
               --content-type "text/plain"
           fi
-if [ -d dist/favicons ]; then
+
+          # optional: favicons
+          if [ -d dist/favicons ]; then
             aws s3 cp dist/favicons/ s3://$BUCKET/favicons/ \
               --recursive --cache-control "public,max-age=31536000,immutable"
           fi
-  - name: Invalidate CloudFront
+
+      - name: Invalidate CloudFront
         run: |
           aws cloudfront create-invalidation \
             --distribution-id "$DIST_ID" \
