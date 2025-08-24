@@ -22,21 +22,37 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   isAdmin: boolean;
+  hasCompletedUserProfile: boolean;
   signInWithGoogle: () => Promise<void>;
   signInWithFacebook: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   oauthError: string | null;
+  // Modal functionality
+  showAuthModal: boolean;
+  authModalMode: 'login' | 'register';
+  vcData: any | null;
+  openAuthModal: (mode: 'login' | 'register', vcData?: any) => void;
+  closeAuthModal: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  console.log('AuthProvider: Starting component render');
+  console.log('AuthProvider: React available:', typeof React);
+  console.log('AuthProvider: useState available:', typeof useState);
+  
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [hasCompletedUserProfile, setHasCompletedUserProfile] = useState(false);
   const [oauthError, setOauthError] = useState<string | null>(null);
+  // Modal state
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
+  const [vcData, setVcData] = useState<any | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -52,7 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         context: context || {},
         ip_address: null, // Frontend kann IP nicht ermitteln
         user_agent: navigator.userAgent
-      });
+      } as any);
     } catch (error) {
       console.error('Failed to log OAuth event:', error);
     }
@@ -74,7 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             consent_given: true,
             consent_timestamp: new Date().toISOString(),
             expires_at: new Date(Date.now() + 3600000).toISOString() // 1 Stunde
-          });
+          } as any);
 
         if (error) {
           console.error('Error storing Google tokens:', error);
@@ -105,7 +121,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             consent_given: true,
             consent_timestamp: new Date().toISOString(),
             expires_at: new Date(Date.now() + 86400000).toISOString() // 24 Stunden
-          });
+          } as any);
 
         if (error) {
           console.error('Error storing Facebook tokens:', error);
@@ -124,13 +140,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     console.log('AuthProvider: Initializing auth state');
     
-    // Set up auth state listener FIRST
+    let mounted = true;
+    
+    // Initialize session first
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (!mounted) return;
+      
+      if (error) {
+        console.error('AuthProvider: Error getting session:', error);
+      }
+      console.log('AuthProvider: Initial session:', session?.user?.email || 'No session');
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    // Set up auth state listener - only once
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!mounted) return;
+        
         console.log('AuthProvider: Auth state changed:', event, session?.user?.email || 'No session');
         setSession(session);
         setUser(session?.user ?? null);
-        setOauthError(null); // Reset error on state change
+        setOauthError(null);
+
+        // Public route guard (VC and other public pages)
+        const urlParams = new URLSearchParams(location.search);
+        const forcePublic = urlParams.get('guest') === '1';
+        const publicPrefixes = [
+          '/', '/visibility', '/visibilitycheck', '/visibilitycheck/onboarding',
+          '/visibility-check', '/profile', '/company-profile', '/impressum', '/datenschutz', '/agb'
+        ];
+        const isOnPublicRoute = publicPrefixes.some(r => location.pathname === r || location.pathname.startsWith(r + '/'));
+        if (isOnPublicRoute || forcePublic) {
+          console.log('AuthProvider: public/VC route – skip redirects');
+          setLoading(false);
+          return;
+        }
         
         if (session?.user && event === 'SIGNED_IN') {
           console.log('AuthProvider: User signed in, checking profile and provider');
@@ -144,21 +191,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           
           // Defer data fetching to prevent deadlocks
           setTimeout(async () => {
+            if (!mounted) return;
+            
             try {
               // Check admin role from profiles table
               const { data: profile } = await supabase
                 .from('profiles')
                 .select('role')
-                .eq('id', session.user.id)
+                .eq('id', session.user.id as any)
                 .maybeSingle();
-              
-              setIsAdmin(profile?.role === 'admin');
+                
+                setIsAdmin((profile as any)?.role === 'admin');
+                
+                // Check if user profile is completed
+                setHasCompletedUserProfile(!!profile && !!(profile as any).role);
               
               // Check if business profile exists and onboarding is completed
               const { data: partner } = await supabase
                 .from('business_partners')
                 .select('id, onboarding_completed')
-                .eq('user_id', session.user.id)
+                .eq('user_id', session.user.id as any)
                 .maybeSingle();
 
               // Log auth event
@@ -169,20 +221,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 undefined,
                 { 
                   has_partner: !!partner,
-                  onboarding_completed: partner?.onboarding_completed,
-                  partner_id: partner?.id,
+                  onboarding_completed: (partner as any)?.onboarding_completed,
+                  partner_id: (partner as any)?.id,
                   redirect_url: location.pathname
                 }
               );
               
-              // Only redirect if not on login, landing, or visibility check pages
-              const isOnLandingPage = location.pathname === '/' || 
-                                     location.pathname.startsWith('/business/partner');
-              const isOnVisibilityCheck = location.pathname.startsWith('/visibility');
+              // Public routes that don't require redirects (expanded)
+              const publicRoutes = [
+                '/',
+                '/business/partner',
+                '/visibility',
+                '/visibilitycheck',
+                '/visibilitycheck/onboarding',
+                '/visibilitycheck/onboarding/step1',
+                '/visibilitycheck/onboarding/step2',
+                '/visibilitycheck/confirm',
+                '/visibility-check',
+                '/profile',
+                '/company-profile',
+                '/impressum',
+                '/datenschutz',
+                '/agb'
+              ];
               
-              console.log('AuthProvider: Current path:', location.pathname, 'isOnLandingPage:', isOnLandingPage, 'isOnVisibilityCheck:', isOnVisibilityCheck);
+              const isOnPublicRoute = publicRoutes.some(route => 
+                location.pathname === route || location.pathname.startsWith(route + '/')
+              );
               
-              if ((!isOnLandingPage && !isOnVisibilityCheck) || location.pathname === '/business/partner/login') {
+              console.log('AuthProvider: Current path:', location.pathname, 'isOnPublicRoute:', isOnPublicRoute);
+              
+              // Only redirect from login page or private routes
+              if (location.pathname === '/business/partner/login' || (!isOnPublicRoute && location.pathname !== '/')) {
                 // Check for test mode parameter
                 const urlParams = new URLSearchParams(location.search);
                 const testMode = urlParams.get('test');
@@ -190,7 +260,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 if (testMode === '1') {
                   console.log('AuthProvider: Test mode detected, redirecting to quick-verify');
                   navigate('/quick-verify', { replace: true });
-                } else if (!partner?.onboarding_completed) {
+                } else if (!(partner as any)?.onboarding_completed) {
                   console.log('AuthProvider: Redirecting to onboarding');
                   
                   // Route based on provider
@@ -206,36 +276,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 }
               }
             } catch (error) {
-              console.log('AuthProvider: No partner record found, will redirect to onboarding on next navigation');
+              console.log('AuthProvider: Error checking partner record:', error);
               
               // Log auth event with error
               await logOAuthEvent(
-                'login_success',
+                'login_error',
                 session.user.app_metadata?.provider || 'email',
                 false,
-                'No partner record found'
+                'Partner record check failed'
               );
             }
-          }, 0);
+          }, 100);
         }
         
         setLoading(false);
       }
     );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      if (error) {
-        console.error('AuthProvider: Error getting session:', error);
-      }
-      console.log('AuthProvider: Initial session:', session?.user?.email || 'No session');
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate, location.pathname]);
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []); // Empty dependency array to prevent multiple subscriptions
 
   const signInWithGoogle = async () => {
     console.log('AuthProvider: Starting Google OAuth sign in');
@@ -346,21 +408,61 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Modal functions
+  const openAuthModal = (mode: 'login' | 'register', vcData?: any) => {
+    setAuthModalMode(mode);
+    setVcData(vcData || null);
+    setShowAuthModal(true);
+  };
+
+  const closeAuthModal = () => {
+    setShowAuthModal(false);
+    setVcData(null);
+  };
+
   const value = {
     user,
     session,
     loading,
     isAdmin,
+    hasCompletedUserProfile,
     signInWithGoogle,
     signInWithFacebook,
     signIn,
     signOut,
-    oauthError
+    oauthError,
+    // Modal values
+    showAuthModal,
+    authModalMode,
+    vcData,
+    openAuthModal,
+    closeAuthModal
   };
+
+  // Allow public pages to render even while auth is loading
+  const publicRoutesRender = [
+    '/',
+    '/business/partner',
+    '/visibility',
+    '/visibilitycheck',
+    '/visibilitycheck/onboarding',
+    '/visibilitycheck/onboarding/step1',
+    '/visibilitycheck/onboarding/step2',
+    '/visibilitycheck/confirm',
+    '/visibility-check',
+    '/profile',
+    '/company-profile',
+    '/impressum',
+    '/datenschutz',
+    '/agb'
+  ];
+  const isOnPublicRouteRender = publicRoutesRender.some(route =>
+    location.pathname === route || location.pathname.startsWith(route + '/')
+  );
 
   return (
     <AuthContext.Provider value={value}>
-      {loading ? (
+      {loading && !isOnPublicRouteRender ? (
         <div className="min-h-screen flex items-center justify-center bg-white">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto mb-4"></div>

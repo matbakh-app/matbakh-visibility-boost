@@ -1,30 +1,91 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
+// Utility functions for score calculations
+const calculateVisibilityScore = (profile: any) => {
+  if (!profile) return 0;
+  
+  const ratingScore = profile.google_rating ? (profile.google_rating / 5) * 40 : 0;
+  const reviewsScore = Math.min((profile.google_reviews_count || 0) / 2, 30);
+  const photosScore = Math.min((profile.google_photos?.length || 0) * 5, 30);
+  
+  return Math.round(ratingScore + reviewsScore + photosScore);
+};
+
+const calculateTrend = (profile: any) => {
+  // Simple trend calculation based on recent activity
+  const recentActivity = (profile.gmb_posts?.length || 0) + (profile.google_photos?.length || 0);
+  return recentActivity > 10 ? 5 : recentActivity > 5 ? 2 : -1;
+};
+
 // Hook for fetching widget data with caching and error handling
 export function useDashboardWidget(widgetType: string, tenantId?: string) {
   return useQuery({
     queryKey: ['dashboard-widget', widgetType, tenantId],
     queryFn: async () => {
-      // In a real implementation, this would call the actual API endpoints
-      // For now, return mock data based on widget type
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
       
       switch (widgetType) {
-        case 'visibility':
-          return { date: "2025-08-01", score: 87, trend: 5, previousScore: 82 };
+        case 'visibility': {
+          const { data: profile, error } = await supabase
+            .from('business_profiles')
+            .select('google_rating, google_reviews_count, google_photos, gmb_posts, vc_score, vc_last_run')
+            .eq('user_id', user.id as any)
+            .maybeSingle();
+            
+          if (error) {
+            console.error('Error fetching visibility data:', error);
+            return { score: 0, trend: 0, previousScore: 0, date: new Date().toISOString() };
+          }
           
-        case 'reviews':
+          if (!profile) {
+            return { score: 0, trend: 0, previousScore: 0, date: new Date().toISOString(), noData: true };
+          }
+          
+          const score = (profile as any).vc_score || calculateVisibilityScore(profile);
+          const trend = calculateTrend(profile);
+          
           return { 
-            count: 42, 
-            avg_rating: 4.3, 
-            latest: { 
-              author: "Max M.", 
-              rating: 5, 
-              text: "Fantastisches Essen und super Service!", 
-              date: "2025-08-01", 
-              platform: "Google" 
-            }
+            score, 
+            trend, 
+            previousScore: Math.max(0, score - trend),
+            date: (profile as any).vc_last_run || new Date().toISOString()
           };
+        }
+          
+        case 'reviews': {
+          const { data: profile, error } = await supabase
+            .from('business_profiles')
+            .select('google_rating, google_reviews_count, gmb_posts')
+            .eq('user_id', user.id as any)
+            .maybeSingle();
+            
+          if (error) {
+            console.error('Error fetching reviews data:', error);
+            return { count: 0, avg_rating: 0, latest: null };
+          }
+          
+          if (!profile) {
+            return { count: 0, avg_rating: 0, latest: null, noData: true };
+          }
+          
+          // Extract latest review from gmb_posts if available
+          const latestPost = (profile as any).gmb_posts?.[0];
+          const latest = latestPost ? {
+            author: "Google Nutzer",
+            rating: (profile as any).google_rating || 0,
+            text: latestPost.summary || "Keine aktuellen Bewertungen verfügbar",
+            date: latestPost.createTime || new Date().toISOString(),
+            platform: "Google"
+          } : null;
+          
+          return { 
+            count: (profile as any).google_reviews_count || 0, 
+            avg_rating: (profile as any).google_rating || 0, 
+            latest
+          };
+        }
           
         case 'orders':
           return [

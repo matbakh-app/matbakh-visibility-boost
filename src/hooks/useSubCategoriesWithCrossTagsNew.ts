@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Row, Insert } from "@/integrations/supabase/db-helpers";
 
 export interface RelatedCategory {
   id: string;
@@ -34,13 +35,14 @@ export const useSubCategoriesWithCrossTagsNew = (
     const fetchSubCategories = async () => {
       try {
         // Get subcategories with direct main_category_id match
-        const { data: directMatch, error: directError } = await (supabase as any)
+        const { data: directMatch, error: directError } = await supabase
           .from("gmb_categories")
           .select("*")
-          .in("main_category_id", selectedMainCategoryUUIDs);
+          .in("main_category_id", selectedMainCategoryUUIDs as any)
+          .returns<Row<"gmb_categories">[]>();
 
         // Get subcategories through cross-tag relations
-        const { data: crossTagged, error: crossError } = await (supabase as any)
+        const { data: crossTagged, error: crossError } = await supabase
           .from("gmb_categories")
           .select(`
             *,
@@ -50,7 +52,8 @@ export const useSubCategoriesWithCrossTagsNew = (
               source
             )
           `)
-          .not("category_cross_tags", "is", null);
+          .not("category_cross_tags", "is", null)
+          .returns<any[]>();
 
         // Filter cross-tagged subcategories by selected main UUIDs
         const crossFiltered = (crossTagged || []).filter((cat: any) =>
@@ -129,14 +132,17 @@ export const useSubCategoriesWithCrossTagsNew = (
     selectedCategoryId?: string
   ) => {
     try {
-      await supabase
-        .from("category_search_logs")
-        .insert({
-          search_term: searchTerm,
-          selected_main_categories: selectedMainCategoryUUIDs,
-          result_category_ids: resultCategoryIds,
-          selected_category_id: selectedCategoryId
-        });
+      type InsertSearchLog = Insert<"category_search_logs">;
+      
+      const payload: InsertSearchLog = {
+        search_term: searchTerm,
+        selected_main_categories: selectedMainCategoryUUIDs,
+        result_category_ids: resultCategoryIds,
+        selected_category_id: selectedCategoryId ?? null,
+        user_id: null
+      };
+      
+      await supabase.from("category_search_logs").insert([payload]);
     } catch (err) {
       console.error("Error logging search:", err);
     }

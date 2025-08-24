@@ -72,8 +72,8 @@ export const PackageEditModal: React.FC<PackageEditModalProps> = ({
           code: formData.code,
           is_recurring: formData.is_recurring,
           interval_months: formData.is_recurring ? formData.interval_months : null
-        })
-        .eq('id', pkg.id);
+        } as any)
+        .eq('id', pkg.id as any);
 
       if (packageError) throw packageError;
 
@@ -89,7 +89,7 @@ export const PackageEditModal: React.FC<PackageEditModalProps> = ({
               : null,
             promo_active: formData.promo_active,
             currency: 'EUR'
-          });
+          } as any);
 
         if (priceError) throw priceError;
       }

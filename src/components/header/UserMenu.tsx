@@ -17,7 +17,7 @@ import { useAuth } from '@/contexts/AuthContext';
 const UserMenu: React.FC = () => {
   const { t } = useTranslation('navigation');
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, signOut, openAuthModal } = useAuth();
 
   const handleLogout = async () => {
     await signOut();
@@ -25,19 +25,33 @@ const UserMenu: React.FC = () => {
   };
 
   const handleLogin = () => {
-    navigate('/register');
+    openAuthModal('login');
+  };
+
+  const handleRegister = () => {
+    openAuthModal('register');
   };
 
   if (!user) {
     return (
-      <Button 
-        onClick={handleLogin}
-        variant="outline"
-        size="sm"
-        className="text-gray-700 hover:text-black"
-      >
-        {t('register', 'Registrieren')}
-      </Button>
+      <div className="flex items-center gap-2">
+        <Button 
+          onClick={handleLogin}
+          variant="ghost"
+          size="sm"
+          className="text-gray-700 hover:text-black"
+        >
+          {t('login', 'Anmelden')}
+        </Button>
+        <Button 
+          onClick={handleRegister}
+          variant="outline"
+          size="sm"
+          className="text-gray-700 hover:text-black"
+        >
+          {t('register', 'Registrieren')}
+        </Button>
+      </div>
     );
   }
 
@@ -64,7 +78,7 @@ const UserMenu: React.FC = () => {
           <User className="mr-2 h-4 w-4" />
           <span>{t('dashboard', 'Dashboard')}</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate('/dashboard/profile')}>
+        <DropdownMenuItem onClick={() => navigate('/profile')}>
           <Settings className="mr-2 h-4 w-4" />
           <span>{t('profile', 'Profil')}</span>
         </DropdownMenuItem>

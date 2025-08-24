@@ -59,8 +59,8 @@ const VisibilityCheckForm: React.FC = () => {
       if (error) throw error;
 
       const categoryOptions = data?.map(cat => ({
-        id: cat.category_id,
-        name: cat.name_de
+        id: (cat as any).category_id,
+        name: (cat as any).name_de
       })) || [];
 
       setCategories(categoryOptions);
@@ -74,14 +74,14 @@ const VisibilityCheckForm: React.FC = () => {
       const { data, error } = await supabase
         .from('gmb_categories')
         .select('category_id, name_de')
-        .eq('parent_id', mainCategoryId)
+        .eq('parent_id', mainCategoryId as any)
         .order('sort_order');
 
       if (error) throw error;
 
       const subcategoryOptions = data?.map(cat => ({
-        id: cat.category_id,
-        name: cat.name_de
+        id: (cat as any).category_id,
+        name: (cat as any).name_de
       })) || [];
 
       setSubcategories(subcategoryOptions);

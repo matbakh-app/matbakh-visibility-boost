@@ -25,19 +25,19 @@ export async function redeemPromoCode(code: string): Promise<PromoCodeValidation
       .select('*')
       .eq('code', code.toUpperCase().trim())
       .eq('status', 'active')
-      .single()
+      .maybeSingle()
 
     if (fetchError || !promoCode) {
       return { success: false, error: 'Ungültiger oder inaktiver Gutschein-Code' }
     }
 
     // 3. Verfügbarkeit prüfen
-    if (promoCode.current_uses >= promoCode.max_uses) {
+    if ((promoCode as any)?.current_uses >= (promoCode as any)?.max_uses) {
       return { success: false, error: 'Gutschein-Code bereits aufgebraucht' }
     }
 
     // 4. Gültigkeit prüfen
-    if (promoCode.valid_until && new Date() > new Date(promoCode.valid_until)) {
+    if ((promoCode as any)?.valid_until && new Date() > new Date((promoCode as any).valid_until)) {
       return { success: false, error: 'Gutschein-Code abgelaufen' }
     }
 
@@ -45,7 +45,7 @@ export async function redeemPromoCode(code: string): Promise<PromoCodeValidation
     const { data: existingUsage, error: usageCheckError } = await supabase
       .from('promo_code_usage')
       .select('id')
-      .eq('promo_code_id', promoCode.id)
+      .eq('promo_code_id', (promoCode as any)?.id)
       .eq('user_id', user.id)
       .maybeSingle()
 
@@ -60,10 +60,10 @@ export async function redeemPromoCode(code: string): Promise<PromoCodeValidation
 
     // 6. Transaktion: Usage erstellen + Counter erhöhen + Profil aktualisieren
     const { error: transactionError } = await supabase.rpc('redeem_promo_code_transaction', {
-      p_promo_code_id: promoCode.id,
+      p_promo_code_id: (promoCode as any)?.id,
       p_user_id: user.id,
-      p_granted_features: promoCode.granted_features || [],
-      p_granted_role: promoCode.granted_role || 'user'
+      p_granted_features: (promoCode as any)?.granted_features || [],
+      p_granted_role: (promoCode as any)?.granted_role || 'user'
     })
 
     if (transactionError) {
@@ -81,7 +81,7 @@ export async function redeemPromoCode(code: string): Promise<PromoCodeValidation
     return { 
       success: true, 
       promoCode,
-      message: `Gutschein erfolgreich eingelöst: ${promoCode.description}`
+      message: `Gutschein erfolgreich eingelöst: ${(promoCode as any)?.description || 'Unbekannt'}`
     }
 
   } catch (error) {

@@ -51,7 +51,7 @@ export const useLeadTracking = () => {
       // Command: npx supabase gen types typescript --project-id uheksobnyedarrpgxhju --schema public > src/integrations/supabase/types.ts
       const { data, error } = await supabase
         .from('lead_events' as any)
-        .insert(insertData)
+        .insert([insertData] as any)
         .select()
         .single();
 
@@ -105,7 +105,7 @@ export const useLeadTracking = () => {
       // TODO [TypeSafety]: Replace `as any` with generated Supabase types after next type generation
       const { data, error } = await supabase
         .from('lead_sources' as any)
-        .insert(insertData)
+        .insert([insertData] as any)
         .select()
         .single();
 
@@ -150,7 +150,7 @@ export const useLeadTracking = () => {
       // TODO [TypeSafety]: Replace `as any` with generated Supabase types after next type generation
       const { data, error } = await supabase
         .from('lead_todos' as any)
-        .insert(insertData)
+        .insert([insertData] as any)
         .select()
         .single();
 
@@ -182,8 +182,8 @@ export const useLeadTracking = () => {
       // TODO [TypeSafety]: Replace `as any` with generated Supabase types after next type generation
       const { error } = await supabase
         .from('lead_events' as any)
-        .update({ processed })
-        .eq('id', lead_id);
+        .update({ processed } as any)
+        .eq('id', lead_id as any);
 
       if (error) throw error;
       return true;
@@ -208,10 +208,10 @@ export const useLeadTracking = () => {
 
       // Apply filters if provided
       if (filters?.event_type) {
-        query = query.eq('event_type', filters.event_type);
+        query = query.eq('event_type', filters.event_type as any);
       }
       if (filters?.processed !== undefined) {
-        query = query.eq('processed', filters.processed);
+        query = query.eq('processed', filters.processed as any);
       }
       if (filters?.date_from) {
         query = query.gte('created_at', filters.date_from);

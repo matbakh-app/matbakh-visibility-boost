@@ -5,12 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import type { Database } from '@/integrations/supabase/types';
 
-interface Note {
-  id: number;
-  title: string;
-  created_at: string;
-}
+type Note = Database['public']['Tables']['notes']['Row'];
 
 const Notes: React.FC = () => {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -24,16 +21,23 @@ const Notes: React.FC = () => {
 
   const fetchNotes = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('Please log in to view notes');
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('notes')
-        .select('*')
+        .select('id, title, content, created_at, user_id')
         .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching notes:', error);
         toast.error('Failed to load notes');
       } else {
-        setNotes(data || []);
+        setNotes((data as any || []) as Note[]);
       }
     } catch (error) {
       console.error('Error:', error);
@@ -48,17 +52,28 @@ const Notes: React.FC = () => {
 
     setAdding(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('Please log in to add notes');
+        setAdding(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('notes')
-        .insert([{ title: newNoteTitle.trim() }])
-        .select()
+        .insert([{ 
+          title: newNoteTitle.trim(),
+          content: '',
+          user_id: user.id
+        } as any])
+        .select('id, title, content, created_at, user_id')
         .single();
 
       if (error) {
         console.error('Error adding note:', error);
         toast.error('Failed to add note');
       } else {
-        setNotes(prev => [data, ...prev]);
+        setNotes(prev => [data as Note, ...prev]);
         setNewNoteTitle('');
         toast.success('Note added successfully!');
       }

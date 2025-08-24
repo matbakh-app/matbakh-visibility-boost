@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import VisibilityStepOne from './VisibilityStepOne';
 import VisibilityStepTwo from './VisibilityStepTwo';
 import VisibilityStepThree from './VisibilityStepThree';
@@ -96,21 +97,20 @@ const VisibilityWizard: React.FC = () => {
     try {
       // First, create the enhanced lead in our database
       const leadData = {
-        business_name: stepOneData.businessName,
-        location: stepOneData.location || null,
-        postal_code: stepOneData.postalCode || null,
-        main_category: stepOneData.mainCategory || null,
-        sub_category: stepOneData.subCategory || null,
-        matbakh_category: stepOneData.matbakhCategory || null,
-        website: data.website || null,
-        facebook_handle: data.facebook || null,
-        instagram_handle: data.instagram || null,
-        tiktok_handle: data.tiktok || null,
-        linkedin_handle: data.linkedin || null,
+        businessName: stepOneData.businessName,
+        location: stepOneData.location || '',
+        postalCode: stepOneData.postalCode || '',
+        mainCategory: stepOneData.mainCategory,
+        subCategory: stepOneData.subCategory,
+        matbakhTags: [stepOneData.matbakhCategory].filter(Boolean),
+        website: data.website || '',
+        facebookName: data.facebook || '',
+        instagramName: data.instagram || '',
         benchmarks: [data.benchmarkOne, data.benchmarkTwo, data.benchmarkThree].filter(Boolean),
-        email: data.email || null,
-        gdpr_consent: data.gdprConsent || false,
-        marketing_consent: data.marketingConsent || false,
+        email: data.email || '',
+        phoneNumber: '',
+        gdprConsent: data.gdprConsent || false,
+        marketingConsent: data.marketingConsent || false,
       };
 
       console.log('🏗️ Creating enhanced lead:', leadData);
@@ -127,8 +127,8 @@ const VisibilityWizard: React.FC = () => {
 
       // Track the analysis start action
       await trackLeadAction({
-        lead_id: leadId,
-        action_type: 'analysis_started',
+        leadId: leadId,
+        actionType: 'analysis_started',
         details: { step: 'visibility_check' },
       });
 
@@ -182,8 +182,8 @@ const VisibilityWizard: React.FC = () => {
       if (error) {
         console.error('❌ Analysis error:', error);
         await trackLeadAction({
-          lead_id: leadId,
-          action_type: 'analysis_failed',
+          leadId: leadId,
+          actionType: 'analysis_failed',
           details: { error: error.message },
         });
         
@@ -200,8 +200,8 @@ const VisibilityWizard: React.FC = () => {
       
       // Track successful analysis
       await trackLeadAction({
-        lead_id: leadId,
-        action_type: 'analysis_completed',
+        leadId: leadId,
+        actionType: 'analysis_completed',
         details: { 
           overall_score: result?.overallScore,
           platforms_analyzed: result?.platformAnalyses?.length || 0
@@ -341,12 +341,20 @@ const VisibilityWizard: React.FC = () => {
       )}
       
       {step === 2 && (
-        <VisibilityStepTwo 
-          onNext={handleStepTwo}
-          onBack={() => setStep(1)}
-          defaultValues={stepTwoData}
-          instagramCandidates={instagramCandidates}
-        />
+        <div className="text-center p-8">
+          <h3 className="text-lg font-semibold mb-4">Social Media & Website</h3>
+          <p className="text-muted-foreground mb-6">
+            Diese Seite wird in der nächsten Phase implementiert.
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Button variant="outline" onClick={() => setStep(1)}>
+              Zurück
+            </Button>
+            <Button onClick={() => setStep(3)}>
+              Weiter zur Analyse
+            </Button>
+          </div>
+        </div>
       )}
       
       {step === 3 && (

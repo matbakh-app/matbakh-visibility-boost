@@ -1,6 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { Row } from '@/integrations/supabase/db-helpers';
 
 export function useGoogleConnection() {
   return useQuery({
@@ -14,26 +15,29 @@ export function useGoogleConnection() {
         .from('google_oauth_tokens')
         .select('*')
         .eq('user_id', user.id)
-        .maybeSingle();
+        .maybeSingle()
+        .returns<Row<"google_oauth_tokens"> | null>();
 
       // Check business profile Google connection status
       const { data: partner } = await supabase
         .from('business_partners')
         .select('id')
         .eq('user_id', user.id)
-        .maybeSingle();
+        .maybeSingle()
+        .returns<Row<"business_partners"> | null>();
 
       let profile = null;
       if (partner) {
         const { data: businessProfile } = await supabase
           .from('business_profiles')
           .select('*')
-          .eq('partner_id', partner.id)
-          .maybeSingle();
+          .eq('user_id', user.id)
+          .maybeSingle()
+          .returns<Row<"business_profiles"> | null>();
         profile = businessProfile;
       }
 
-      const isGoogleConnected = !!(token && token.access_token && profile?.google_connected);
+      const isGoogleConnected = !!(token?.access_token && (profile as any)?.google_connected);
 
       return {
         isGoogleConnected,
