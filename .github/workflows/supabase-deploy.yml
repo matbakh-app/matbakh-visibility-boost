@@ -1,1 +1,36 @@
-# (hier den Block von oben 1:1 einfügen)
+name: Deploy Supabase CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Supabase version
+        run: supabase --version
+
+      - name: Login to Supabase
+        run: supabase login --token "${{ secrets.SUPABASE_ACCESS_TOKEN }}"
+
+      - name: Link to project
+        run: supabase link --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"
+
+      - name: Run database migrations
+        run: supabase db push
+
+      - name: Deploy Edge Functions
+        run: supabase functions deploy --all
