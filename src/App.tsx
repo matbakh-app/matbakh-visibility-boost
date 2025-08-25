@@ -1,4 +1,3 @@
-
 import { Suspense, lazy } from 'react';
 import { Routes, Route, Outlet, useNavigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -63,6 +62,9 @@ import { QuickVerifyMode } from '@/components/onboarding/QuickVerifyMode';
 import { RestaurantInfoStep } from '@/components/figma-onboarding/RestaurantInfoStep';
 import { WebsiteAnalysisStep } from '@/components/figma-onboarding/WebsiteAnalysisStep';
 
+// SEO
+import Canonical from '@/components/seo/Canonical';
+
 // DEBUG: Navigate tracing (DEV only)
 if (import.meta.env.DEV) {
   const origNavigate = console.log; // Will be replaced in useNavigate hook
@@ -125,129 +127,131 @@ function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-        <div className="min-h-screen bg-background">
-          <Suspense fallback={
-            <div className="min-h-screen flex items-center justify-center">
-              <div className="animate-pulse">Loading...</div>
-            </div>
-          }>
-            <Routes>
-              {/* Main routes with AppLayout wrapper */}
-              <Route path="/" element={<AppLayout><Outlet /></AppLayout>}>
-                <Route index element={<Index />} />
-                <Route path="business" element={<BusinessLanding />} />
-                <Route path="b2c" element={<B2CLanding />} />
-                <Route path="services" element={<ServicesPage />} />
-                <Route path="angebote" element={<AngebotePage />} />
-                <Route path="angebote-de" element={<AngeboteDE />} />
-                <Route path="packages" element={<PackagesEN />} />
-                <Route path="login" element={<BusinessLogin />} />
-                <Route path="business/partner/login" element={<BusinessLogin />} />
-                <Route path="auth/login" element={<LoginPage />} />
-                <Route path="password-reset" element={<PasswordReset />} />
-                <Route path="checkout-success" element={<CheckoutSuccess />} />
-                <Route path="visibility-check" element={<VisibilityCheckPage />} />
-                <Route path="visibility-check/verified/:leadId" element={<VisibilityCheckVerified />} />
-                
-                {/* Figma-based Visibility Check Routes */}
-                <Route path="visibilitycheck/onboarding/step1" element={<VCStep1Route />} />
-                <Route path="visibilitycheck/onboarding/step2" element={<VCStep2Route />} />
-                
-                {/* Temporarily disabled Figma Router */}
-                {/* <Route path="visibilitycheck/*" element={<FigmaMainRouter />} /> */}
-                
-                <Route path="redeem" element={<RedeemPage />} />
-                <Route path="auth/google/callback" element={<GoogleOAuthCallback />} />
-                <Route path="quick-verify" element={<QuickVerifyMode />} />
-                <Route path="notes" element={<NotesPage />} />
-                
-                {/* Profile Routes */}
-                <Route path="profile" element={
+          {/* Canonical tag for every route (BrowserRouter is in index.tsx) */}
+          <Canonical />
+
+          <div className="min-h-screen bg-background">
+            <Suspense fallback={
+              <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-pulse">Loading...</div>
+              </div>
+            }>
+              <Routes>
+                {/* Main routes with AppLayout wrapper */}
+                <Route path="/" element={<AppLayout><Outlet /></AppLayout>}>
+                  <Route index element={<Index />} />
+                  <Route path="business" element={<BusinessLanding />} />
+                  <Route path="b2c" element={<B2CLanding />} />
+                  <Route path="services" element={<ServicesPage />} />
+                  <Route path="angebote" element={<AngebotePage />} />
+                  <Route path="angebote-de" element={<AngeboteDE />} />
+                  <Route path="packages" element={<PackagesEN />} />
+                  <Route path="login" element={<BusinessLogin />} />
+                  <Route path="business/partner/login" element={<BusinessLogin />} />
+                  <Route path="auth/login" element={<LoginPage />} />
+                  <Route path="password-reset" element={<PasswordReset />} />
+                  <Route path="checkout-success" element={<CheckoutSuccess />} />
+                  <Route path="visibility-check" element={<VisibilityCheckPage />} />
+                  <Route path="visibility-check/verified/:leadId" element={<VisibilityCheckVerified />} />
+
+                  {/* Figma-based Visibility Check Routes */}
+                  <Route path="visibilitycheck/onboarding/step1" element={<VCStep1Route />} />
+                  <Route path="visibilitycheck/onboarding/step2" element={<VCStep2Route />} />
+
+                  {/* <Route path="visibilitycheck/*" element={<FigmaMainRouter />} /> */}
+
+                  <Route path="redeem" element={<RedeemPage />} />
+                  <Route path="auth/google/callback" element={<GoogleOAuthCallback />} />
+                  <Route path="quick-verify" element={<QuickVerifyMode />} />
+                  <Route path="notes" element={<NotesPage />} />
+
+                  {/* Profile Routes */}
+                  <Route path="profile" element={
+                    <ProtectedRoute>
+                      <MyProfile />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="company-profile" element={
+                    <ProtectedRoute>
+                      <CompanyProfile />
+                    </ProtectedRoute>
+                  } />
+
+                  {/* New Registration Flow */}
+                  <Route path="register" element={<RegistrationOptions />} />
+                  <Route path="register/email" element={<EmailRegistration />} />
+                  <Route path="onboarding/standard" element={<StandardOnboarding />} />
+
+                  {/* Google OAuth Flow */}
+                  <Route path="auth/google" element={<GoogleOAuth />} />
+                  <Route path="auth/callback" element={<GoogleCallback />} />
+                  <Route path="onboarding/google" element={<GoogleEnhancedOnboarding />} />
+
+                  {/* Legal pages - German */}
+                  <Route path="impressum" element={<Impressum />} />
+                  <Route path="datenschutz" element={<Datenschutz />} />
+                  <Route path="agb" element={<AGB />} />
+                  <Route path="nutzung" element={<Nutzung />} />
+                  <Route path="kontakt" element={<Kontakt />} />
+
+                  {/* Legal pages - English */}
+                  <Route path="imprint" element={<Imprint />} />
+                  <Route path="privacy" element={<Privacy />} />
+                  <Route path="terms" element={<Terms />} />
+                  <Route path="usage" element={<Usage />} />
+                  <Route path="contact" element={<Contact />} />
+
+                  {/* Facebook Data Deletion */}
+                  <Route path="facebook-data-deletion" element={<FacebookDataDeletion />} />
+                </Route>
+
+                {/* Partner/Business routes */}
+                <Route path="/partner" element={
                   <ProtectedRoute>
-                    <MyProfile />
+                    <Outlet />
                   </ProtectedRoute>
-                } />
-                <Route path="company-profile" element={
+                }>
+                  <Route path="onboarding" element={<PartnerOnboarding />} />
+                  <Route path="dashboard" element={<DashboardMain />} />
+                  <Route path="profile" element={<PartnerProfile />} />
+                  <Route path="calendar" element={<PartnerCalendar />} />
+                </Route>
+
+                {/* Dashboard routes */}
+                <Route path="/dashboard" element={
                   <ProtectedRoute>
-                    <CompanyProfile />
+                    <DashboardLayout>
+                      <Outlet />
+                    </DashboardLayout>
                   </ProtectedRoute>
-                } />
-                
-                {/* New Registration Flow */}
-                <Route path="register" element={<RegistrationOptions />} />
-                <Route path="register/email" element={<EmailRegistration />} />
-                <Route path="onboarding/standard" element={<StandardOnboarding />} />
-                
-                {/* Google OAuth Flow */}
-                <Route path="auth/google" element={<GoogleOAuth />} />
-                <Route path="auth/callback" element={<GoogleCallback />} />
-                <Route path="onboarding/google" element={<GoogleEnhancedOnboarding />} />
-                
-              {/* Legal pages - German */}
-              <Route path="impressum" element={<Impressum />} />
-              <Route path="datenschutz" element={<Datenschutz />} />
-              <Route path="agb" element={<AGB />} />
-              <Route path="nutzung" element={<Nutzung />} />
-              <Route path="kontakt" element={<Kontakt />} />
-              
-              {/* Legal pages - English */}
-              <Route path="imprint" element={<Imprint />} />
-              <Route path="privacy" element={<Privacy />} />
-              <Route path="terms" element={<Terms />} />
-              <Route path="usage" element={<Usage />} />
-              <Route path="contact" element={<Contact />} />
-              
-              {/* Facebook Data Deletion - Required for Facebook App Verification */}
-              <Route path="facebook-data-deletion" element={<FacebookDataDeletion />} />
-              </Route>
+                }>
+                  <Route index element={<DashboardMain />} />
+                  <Route path="main" element={<DashboardMain />} />
+                </Route>
 
-              {/* Partner/Business routes */}
-              <Route path="/partner" element={
-                <ProtectedRoute>
-                  <Outlet />
-                </ProtectedRoute>
-              }>
-                <Route path="onboarding" element={<PartnerOnboarding />} />
-                <Route path="dashboard" element={<DashboardMain />} />
-                <Route path="profile" element={<PartnerProfile />} />
-                <Route path="calendar" element={<PartnerCalendar />} />
-              </Route>
+                {/* Admin routes */}
+                <Route path="/admin" element={
+                  <ProtectedRoute>
+                    <AdminLayout>
+                      <Outlet />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }>
+                  <Route path="panel" element={<AdminPanel />} />
+                </Route>
 
-              {/* Dashboard routes */}
-              <Route path="/dashboard" element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <Outlet />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }>
-                <Route index element={<DashboardMain />} />
-                <Route path="main" element={<DashboardMain />} />
-              </Route>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
 
-              {/* Admin routes */}
-              <Route path="/admin" element={
-                <ProtectedRoute>
-                  <AdminLayout>
-                    <Outlet />
-                  </AdminLayout>
-                </ProtectedRoute>
-              }>
-                <Route path="panel" element={<AdminPanel />} />
-              </Route>
-
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-          
-          {/* Global components - properly nested within ThemeProvider */}
-          <CookieConsentBanner />
-          <AuthModal />
-          <Toaster />
-          <SonnerToaster />
-        </div>
-      </ThemeProvider>
-    </QueryClientProvider>
+            {/* Global components */}
+            <CookieConsentBanner />
+            <AuthModal />
+            <Toaster />
+            <SonnerToaster />
+          </div>
+        </ThemeProvider>
+      </QueryClientProvider>
     </ErrorBoundary>
   );
 }
