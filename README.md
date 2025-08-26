@@ -149,4 +149,47 @@ echo "Env gesetzt. Starte jetzt: npm run dev"
 
 **Important**: `.env`, `scripts/`, and any files containing secrets are in `.gitignore`
 
+## 📧 SES Diagnose in 60 Sek.
+
+**Problem**: DOI-E-Mail kommt nicht an? Hier die Copy-Paste-Befehle für schnelle Diagnose:
+
+### 1. API Test
+```bash
+API="https://guf7ho7bze.execute-api.eu-central-1.amazonaws.com/prod"
+curl -s -X POST "$API/vc/start" \
+  -H "Origin: https://matbakh.app" -H "Content-Type: application/json" \
+  --data '{"email":"YOUR_EMAIL","name":"Test"}' | jq .
+```
+
+### 2. Lambda Logs
+```bash
+# Find log group
+aws logs describe-log-groups --log-group-name-prefix "/aws/lambda" | grep vc-start
+
+# Tail logs
+aws logs tail /aws/lambda/vc-start-function --follow --since 10m
+```
+
+### 3. SES Status
+```bash
+# Account status
+aws sesv2 get-account --region eu-central-1
+
+# Sender verification
+aws sesv2 get-email-identity --email-identity noreply@matbakh.app --region eu-central-1
+
+# Check suppression
+aws sesv2 get-suppressed-destination --email-address YOUR_EMAIL --region eu-central-1
+```
+
+### 4. Direct SES Test
+```bash
+aws sesv2 send-email --region eu-central-1 \
+  --from-email-address "noreply@matbakh.app" \
+  --destination "ToAddresses=YOUR_EMAIL" \
+  --content '{"Simple": {"Subject": {"Data": "SES Test"}, "Body": {"Text": {"Data": "Direct test"}}}}'
+```
+
+**Vollständiges Runbook**: `scripts/ses_doi_healthcheck.md`
+
 # Trigger CI
