@@ -18,10 +18,12 @@ function cors(origin: string | null) {
 
 serve(async (req) => {
   const origin = req.headers.get("Origin");
-  console.log("vc-start-analysis: Function called with method:", req.method, "from origin:", origin);
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] vc-start-analysis: Function called with method:`, req.method, "from origin:", origin);
+  console.log(`[${timestamp}] vc-start-analysis: Headers:`, Object.fromEntries(req.headers.entries()));
 
   if (req.method === "OPTIONS") {
-    console.log("vc-start-analysis: Handling OPTIONS request");
+    console.log(`[${timestamp}] vc-start-analysis: Handling OPTIONS request`);
     return new Response(null, { headers: cors(origin) });
   }
 
@@ -33,19 +35,29 @@ serve(async (req) => {
     const locale = (body.locale || "de").trim();
     const marketing_consent: boolean = !!body.marketing_consent;
 
-    console.log("vc-start-analysis: received data", { email, business_name, location_text, locale, marketing_consent });
+    console.log(`[${timestamp}] vc-start-analysis: received data`, { email, business_name, location_text, locale, marketing_consent });
 
     if (!email || !business_name) {
-      console.log("vc-start-analysis: validation failed", { email, business_name });
+      console.log(`[${timestamp}] vc-start-analysis: validation failed`, { email: !!email, business_name: !!business_name });
       return new Response(JSON.stringify({ ok: false, error: "validation" }), {
         status: 400,
         headers: { "Content-Type": "application/json", ...cors(origin) },
       });
     }
 
-    // For now, return success - TODO: implement email sending and database operations
-    const res = { ok: true, test: true, received: { email, business_name }, ts: new Date().toISOString() };
-    console.log("vc-start-analysis: Returning success response");
+    // TODO: implement email sending and database operations
+    // Current status: This function is a placeholder and does NOT send emails
+    console.log(`[${timestamp}] vc-start-analysis: WARNING - This is a placeholder function. No email will be sent!`);
+    console.log(`[${timestamp}] vc-start-analysis: Email sending should be implemented here or called via separate function`);
+    
+    const res = { 
+      ok: true, 
+      test: true, 
+      received: { email, business_name }, 
+      ts: timestamp,
+      warning: "This is a placeholder - no email sent"
+    };
+    console.log(`[${timestamp}] vc-start-analysis: Returning success response (but no email sent)`);
     
     return new Response(JSON.stringify(res), {
       status: 200,
@@ -53,8 +65,10 @@ serve(async (req) => {
     });
 
   } catch (e) {
-    console.error("vc-start-analysis: error", e);
-    return new Response(JSON.stringify({ ok: false, error: String(e) }), {
+    const timestamp = new Date().toISOString();
+    console.error(`[${timestamp}] vc-start-analysis: error`, e);
+    console.error(`[${timestamp}] vc-start-analysis: error stack`, e instanceof Error ? e.stack : 'No stack trace');
+    return new Response(JSON.stringify({ ok: false, error: String(e), timestamp }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...cors(origin) },
     });
