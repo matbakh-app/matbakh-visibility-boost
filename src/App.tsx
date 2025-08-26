@@ -52,6 +52,7 @@ const RedeemPage = lazy(() => import('@/pages/RedeemPage'));
 // Visibility Check
 const VisibilityCheckPage = lazy(() => import('@/components/visibility/VisibilityCheckPage'));
 const VisibilityCheckVerified = lazy(() => import('@/pages/VisibilityCheckVerified'));
+const VCResult = lazy(() => import('@/pages/VCResult'));
 
 // Profile components
 const MyProfile = lazy(() => import('@/components/Profile/MyProfile').then(m => ({ default: m.MyProfile })));
@@ -153,6 +154,7 @@ function App() {
                   <Route path="checkout-success" element={<CheckoutSuccess />} />
                   <Route path="visibility-check" element={<VisibilityCheckPage />} />
                   <Route path="visibility-check/verified/:leadId" element={<VisibilityCheckVerified />} />
+                  <Route path="vc/result" element={<VCResult />} />
 
                   {/* Figma-based Visibility Check Routes */}
                   <Route path="visibilitycheck/onboarding/step1" element={<VCStep1Route />} />
