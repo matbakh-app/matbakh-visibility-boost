@@ -103,4 +103,50 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+## 🔐 Secrets Management
+
+**SECRETS MODE (permanent)**: Never commit secrets to repo. Use AWS Secrets Manager.
+
+### Available Secrets:
+- `gcp/kiro-sa` → Google Service Account JSON
+- `supabase/service_role` → Supabase Service Role Key
+
+### For Frontend Development:
+- No secrets required for frontend-only development
+- All API calls use public endpoints or user authentication
+
+### For CI/Deploy:
+Secrets are fetched at runtime and set as environment variables:
+
+```yaml
+# .github/workflows/deploy.yml (example)
+- name: Configure AWS (OIDC)
+  uses: aws-actions/configure-aws-credentials@v4
+  with:
+    role-to-assume: arn:aws:iam::055062860590:role/gh-actions-web-deploy
+    aws-region: eu-central-1
+
+- name: Fetch Supabase Service Role
+  run: |
+    echo "SUPABASE_SERVICE_ROLE_KEY=$(aws secretsmanager get-secret-value \
+      --secret-id supabase/service_role --query SecretString --output text)" >> $GITHUB_ENV
+```
+
+### Local Development:
+Create `scripts/env-from-aws.sh` (git-ignored):
+
+```bash
+#!/usr/bin/env bash
+export AWS_PROFILE=matbakh-dev
+export AWS_REGION=eu-central-1
+
+export SUPABASE_SERVICE_ROLE_KEY="$(aws secretsmanager get-secret-value \
+  --secret-id supabase/service_role --query SecretString --output text)"
+
+echo "Env gesetzt. Starte jetzt: npm run dev"
+```
+
+**Important**: `.env`, `scripts/`, and any files containing secrets are in `.gitignore`
+
 # Trigger CI
