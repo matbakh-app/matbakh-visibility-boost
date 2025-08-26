@@ -310,3 +310,111 @@ Session 6: Business Card / Visitenkarte (Conversion-Optimiert) – 2025-01-27 18
 - OpenGraph + JSON-LD Template-System für dynamische SEO-Meta-Tags
 - Performance-Optimierung für LCP < 2s Ziel
 - A/B-Testing-Setup für Single CTA vs. Multi-CTA Conversion-Vergleich
+
+## Session 8: VC Result Page + SES Diagnostics – 2025-01-27 19:45
+
+**Ziel**: VC Result Page implementieren und SES DOI E-Mail-Delivery-Problem diagnostizieren
+
+**Kontext**: 
+- GREENLIGHT #1 erhalten für VC Result Page Implementation
+- DOI-E-Mails kommen nicht an - Troubleshooting erforderlich
+- Bestehende Supabase Edge Functions für VC-Workflow
+- SES-Integration über AWS mit noreply@matbakh.app
+
+**Aktionen**: 
+- VC Result Page vollständig implementiert (/vc/result mit 3 Zuständen)
+- i18n-Support (DE/EN) mit "Einfach erklärt"-Toggle
+- SES DOI Healthcheck Runbook erstellt (scripts/ses_doi_healthcheck.md)
+- README um "SES Diagnose in 60 Sek." erweitert
+- Kritisches Problem identifiziert: vc-start-analysis ist Placeholder-Funktion
+- Enhanced Logging in vc-start-analysis für bessere Diagnose
+- Secrets Management Dokumentation hinzugefügt
+
+**Entscheidungen**:
+- Single CTA-Design für VC Result Page (kein Dead-End)
+- Status-Ermittlung via URL-Parameter (?t=token, ?e=expired|invalid)
+- Minimal Event-Tracking (4 Events) für Performance
+- SES-Troubleshooting ohne Cloud-Änderungen (nur Diagnostics)
+- Enhanced Logging mit Timestamps für bessere Fehleranalyse
+
+**Artefakte**: 
+- `src/pages/VCResult.tsx` - VC Result Page Component
+- `public/locales/{de,en}/vc_result.json` - i18n-Übersetzungen
+- `scripts/ses_doi_healthcheck.md` - Vollständiges SES-Troubleshooting-Runbook
+- README-Erweiterung mit Copy-Paste-Diagnose-Befehlen
+- Branch: `feat/vc-result-page` (VC Result Page)
+- Branch: `feat/ses-diagnostics` (SES Troubleshooting)
+
+**Kritische Erkenntnisse**:
+- **VC Result Page**: Vollständig implementiert, alle Akzeptanzkriterien erfüllt
+- **SES Problem**: vc-start-analysis ist Placeholder-Funktion, sendet KEINE E-Mails
+- **Root Cause**: API antwortet erfolgreich, aber keine E-Mail-Versendung implementiert
+- **Workaround**: send-visibility-report Funktion existiert, wird aber nicht aufgerufen
+
+**Risiken/Blocker**:
+- **Kritisch**: DOI-E-Mails werden nicht versendet (Placeholder-Funktion)
+- **Medium**: vc-start-analysis muss E-Mail-Versendung implementieren
+- **Low**: SES-Konfiguration scheint korrekt (Resend API wird verwendet)
+
+**Nächste Schritte (Vorschlag)**:
+- **P0**: vc-start-analysis Funktion um E-Mail-Versendung erweitern
+- **P0**: Integration mit send-visibility-report für DOI-Flow
+- **P1**: SES vs. Resend API Entscheidung (aktuell mixed usage)
+- **P1**: End-to-End-Test des kompletten DOI-Flows
+- **P2**: Performance-Optimierung der VC Result Page
+
+## Session 9: Web Deploy VITE Variables & VC Quick AWS – 2025-01-27 20:15
+
+**Ziel**: Web-Deploy-Workflow konfigurieren um GitHub Repository Variables zu nutzen und AWS VC API Endpoint in Production zu aktivieren
+
+**Kontext**: 
+- Bestehender web-deploy.yml Workflow mit S3/CloudFront Deployment
+- Bedarf nach konfigurierbaren API Endpoints über GitHub Variables
+- AWS Lambda VC API Endpoint: https://guf7ho7bze.execute-api.eu-central-1.amazonaws.com/prod
+- VC Result Page bereits implementiert, benötigt korrekte API Integration
+
+**Aktionen**: 
+- Web-Deploy-Workflow um VITE Environment Variables erweitert
+- vcApi.ts um Provider-Konfiguration erweitert (AWS als Standard)
+- Debug-Logging für API-Konfiguration hinzugefügt
+- .env.example um neue VC API Variables erweitert
+- PR-Checklist mit Post-Deploy-Testing-Plan erstellt
+- GitHub Repository Variables Konfiguration dokumentiert
+
+**Entscheidungen**:
+- AWS als Standard-Provider (VITE_VC_API_PROVIDER=aws)
+- GitHub Repository Variables statt Secrets für öffentliche API URLs
+- Debug-Logging für bessere Troubleshooting-Möglichkeiten
+- Beibehaltung der bestehenden AWS Credentials für S3/CloudFront
+
+**Artefakte**: 
+- `.github/workflows/web-deploy.yml` - Erweitert um VITE Variables
+- `src/lib/vcApi.ts` - Provider-Konfiguration und Debug-Logging
+- `.env.example` - Neue VC API Variables dokumentiert
+- `pr-checklist-web-deploy.md` - Vollständige Testing-Checkliste
+- Branch: `ci/web-deploy-vite-vars`
+
+**GitHub Repository Variables (erforderlich)**:
+```
+VITE_PUBLIC_API_BASE=https://guf7ho7bze.execute-api.eu-central-1.amazonaws.com/prod
+VITE_VC_API_PROVIDER=aws
+```
+
+**Testing-Plan (Post-Deploy)**:
+- **Network**: POST /vc/start → 200 Response
+- **E-Mail**: DOI-E-Mail kommt an (Spam-Ordner prüfen)
+- **Success Flow**: E-Mail-Link → /vc/result?t=... → Success State
+- **Error States**: /vc/result?e=expired|invalid → Korrekte Darstellung
+- **CORS**: https://matbakh.app und https://www.matbakh.app erlaubt
+
+**Risiken/Blocker**:
+- **Medium**: GitHub Repository Variables müssen vor Deploy gesetzt werden
+- **Low**: CORS-Konfiguration in API Gateway könnte Anpassung benötigen
+- **Low**: CloudFront Cache könnte alte Build-Artefakte ausliefern
+
+**Nächste Schritte (nach Merge)**:
+- **P0**: GitHub Repository Variables setzen
+- **P0**: Deploy triggern und End-to-End-Test durchführen
+- **P1**: CORS-Konfiguration prüfen falls Fehler auftreten
+- **P1**: CloudWatch Logs monitoren für Fehleranalyse
+- **P2**: Performance-Monitoring der neuen API-Integration
