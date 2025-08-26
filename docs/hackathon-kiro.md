@@ -362,3 +362,59 @@ Session 6: Business Card / Visitenkarte (Conversion-Optimiert) – 2025-01-27 18
 - **P1**: SES vs. Resend API Entscheidung (aktuell mixed usage)
 - **P1**: End-to-End-Test des kompletten DOI-Flows
 - **P2**: Performance-Optimierung der VC Result Page
+
+## Session 9: Web Deploy VITE Variables & VC Quick AWS – 2025-01-27 20:15
+
+**Ziel**: Web-Deploy-Workflow konfigurieren um GitHub Repository Variables zu nutzen und AWS VC API Endpoint in Production zu aktivieren
+
+**Kontext**: 
+- Bestehender web-deploy.yml Workflow mit S3/CloudFront Deployment
+- Bedarf nach konfigurierbaren API Endpoints über GitHub Variables
+- AWS Lambda VC API Endpoint: https://guf7ho7bze.execute-api.eu-central-1.amazonaws.com/prod
+- VC Result Page bereits implementiert, benötigt korrekte API Integration
+
+**Aktionen**: 
+- Web-Deploy-Workflow um VITE Environment Variables erweitert
+- vcApi.ts um Provider-Konfiguration erweitert (AWS als Standard)
+- Debug-Logging für API-Konfiguration hinzugefügt
+- .env.example um neue VC API Variables erweitert
+- PR-Checklist mit Post-Deploy-Testing-Plan erstellt
+- GitHub Repository Variables Konfiguration dokumentiert
+
+**Entscheidungen**:
+- AWS als Standard-Provider (VITE_VC_API_PROVIDER=aws)
+- GitHub Repository Variables statt Secrets für öffentliche API URLs
+- Debug-Logging für bessere Troubleshooting-Möglichkeiten
+- Beibehaltung der bestehenden AWS Credentials für S3/CloudFront
+
+**Artefakte**: 
+- `.github/workflows/web-deploy.yml` - Erweitert um VITE Variables
+- `src/lib/vcApi.ts` - Provider-Konfiguration und Debug-Logging
+- `.env.example` - Neue VC API Variables dokumentiert
+- `pr-checklist-web-deploy.md` - Vollständige Testing-Checkliste
+- Branch: `ci/web-deploy-vite-vars`
+
+**GitHub Repository Variables (erforderlich)**:
+```
+VITE_PUBLIC_API_BASE=https://guf7ho7bze.execute-api.eu-central-1.amazonaws.com/prod
+VITE_VC_API_PROVIDER=aws
+```
+
+**Testing-Plan (Post-Deploy)**:
+- **Network**: POST /vc/start → 200 Response
+- **E-Mail**: DOI-E-Mail kommt an (Spam-Ordner prüfen)
+- **Success Flow**: E-Mail-Link → /vc/result?t=... → Success State
+- **Error States**: /vc/result?e=expired|invalid → Korrekte Darstellung
+- **CORS**: https://matbakh.app und https://www.matbakh.app erlaubt
+
+**Risiken/Blocker**:
+- **Medium**: GitHub Repository Variables müssen vor Deploy gesetzt werden
+- **Low**: CORS-Konfiguration in API Gateway könnte Anpassung benötigen
+- **Low**: CloudFront Cache könnte alte Build-Artefakte ausliefern
+
+**Nächste Schritte (nach Merge)**:
+- **P0**: GitHub Repository Variables setzen
+- **P0**: Deploy triggern und End-to-End-Test durchführen
+- **P1**: CORS-Konfiguration prüfen falls Fehler auftreten
+- **P1**: CloudWatch Logs monitoren für Fehleranalyse
+- **P2**: Performance-Monitoring der neuen API-Integration
