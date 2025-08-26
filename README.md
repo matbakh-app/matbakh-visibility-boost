@@ -163,11 +163,11 @@ curl -s -X POST "$API/vc/start" \
 
 ### 2. Lambda Logs
 ```bash
-# Find log group
-aws logs describe-log-groups --log-group-name-prefix "/aws/lambda" | grep vc-start
+# Correct log group for production
+aws logs tail /aws/lambda/MatbakhVcStack-VcStartFnC5BAD875-Lukpaun5TO53 --region eu-central-1 --follow --since 10m
 
-# Tail logs
-aws logs tail /aws/lambda/vc-start-function --follow --since 10m
+# Alternative: Get recent logs
+aws logs tail /aws/lambda/MatbakhVcStack-VcStartFnC5BAD875-Lukpaun5TO53 --region eu-central-1 --since 5m
 ```
 
 ### 3. SES Status
@@ -175,8 +175,8 @@ aws logs tail /aws/lambda/vc-start-function --follow --since 10m
 # Account status
 aws sesv2 get-account --region eu-central-1
 
-# Sender verification
-aws sesv2 get-email-identity --email-identity noreply@matbakh.app --region eu-central-1
+# Sender verification (correct sender)
+aws sesv2 get-email-identity --email-identity mail@matbakh.app --region eu-central-1
 
 # Check suppression
 aws sesv2 get-suppressed-destination --email-address YOUR_EMAIL --region eu-central-1
@@ -185,7 +185,7 @@ aws sesv2 get-suppressed-destination --email-address YOUR_EMAIL --region eu-cent
 ### 4. Direct SES Test
 ```bash
 aws sesv2 send-email --region eu-central-1 \
-  --from-email-address "noreply@matbakh.app" \
+  --from-email-address "mail@matbakh.app" \
   --destination "ToAddresses=YOUR_EMAIL" \
   --content '{"Simple": {"Subject": {"Data": "SES Test"}, "Body": {"Text": {"Data": "Direct test"}}}}'
 ```

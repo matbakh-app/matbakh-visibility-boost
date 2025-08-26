@@ -253,3 +253,82 @@ aws sesv2 put-email-identity --email-identity new-sender@matbakh.app --region eu
 *Last updated: 2025-01-27*
 *Region: eu-central-1*
 *API: https://guf7ho7bze.execute-api.eu-central-1.amazonaws.com/prod*
+---
+
+
+## 🔬 Live Diagnosis Results - 2025-08-26 06:51 UTC
+
+### Test Execution
+**Test Email**: rabieb@gmx.de  
+**API Endpoint**: https://guf7ho7bze.execute-api.eu-central-1.amazonaws.com/prod/vc/start  
+**Lambda Function**: MatbakhVcStack-VcStartFnC5BAD875-Lukpaun5TO53  
+
+### API Response
+```json
+{
+  "ok": true,
+  "token": "9ee0f57a801d06034643e12a1ac2b1f6"
+}
+```
+
+### Lambda Logs Analysis
+**RequestId**: 592a30cb-3725-4d26-89d1-63b353734d9d  
+**Duration**: 1762.66 ms  
+**Memory Used**: 99 MB / 128 MB  
+
+**Key Log Entries**:
+```
+INFO vc-start lead {
+  email: 'rabieb@gmx.de',
+  name: 'Test User',
+  venue: '',
+  tokenHash: '3183eead7d12f4fea90d152430011e97b78bbb8e9980473c781051cce7c72fb1'
+}
+INFO SES send ok 01070198e5258511-de9db2de-4bac-4d46-847c-a814924e7cd0-000000
+```
+
+### SES Verification Results
+✅ **Email Sent Successfully**: MessageId `01070198e5258511-de9db2de-4bac-4d46-847c-a814924e7cd0-000000`  
+✅ **Sender Identity Verified**: mail@matbakh.app (VerificationStatus: SUCCESS)  
+✅ **DKIM Enabled**: SigningEnabled: true, Status: SUCCESS  
+✅ **Not Suppressed**: rabieb@gmx.de not in suppression list  
+✅ **Configuration Set**: matbakh-default  
+✅ **Delivery Statistics**: 2 delivery attempts, 0 bounces, 0 complaints, 0 rejects  
+
+### Critical Discovery: Dual Function Architecture
+**IMPORTANT**: There are TWO different VC start functions:
+
+1. **AWS Lambda** (PRODUCTION): `MatbakhVcStack-VcStartFnC5BAD875-Lukpaun5TO53`
+   - ✅ **Status**: WORKING - Sends emails successfully
+   - ✅ **Integration**: Connected to API Gateway /vc/start endpoint
+   - ✅ **Email Provider**: AWS SES (mail@matbakh.app)
+
+2. **Supabase Edge Function** (DEVELOPMENT): `vc-start-analysis`
+   - ❌ **Status**: PLACEHOLDER - Does NOT send emails
+   - ❌ **Integration**: Not connected to production API
+   - ❌ **Purpose**: Development/testing only
+
+### Root Cause Analysis
+**Problem**: DOI emails not arriving  
+**Root Cause**: ❌ **INCORRECT ASSUMPTION** - The production system DOES send emails  
+**Actual Issue**: Email delivery may be working, but emails might be:
+- Going to spam/junk folder
+- Blocked by recipient's email provider (GMX)
+- Delayed in delivery
+
+### Recommendations
+1. **Check Spam/Junk Folder**: Primary recommendation for users
+2. **Email Provider Issues**: GMX may have strict filtering
+3. **Alternative Test**: Try with Gmail/Outlook for comparison
+4. **Delivery Delay**: SES delivery can take 1-15 minutes
+
+### Next Steps
+- **P0**: Verify email actually arrives in test inbox (check spam folder)
+- **P1**: Test with different email providers (Gmail, Outlook)
+- **P2**: Consider adding email delivery status tracking
+- **P3**: Implement bounce/complaint handling via SNS
+
+---
+
+*Diagnosis completed: 2025-08-26 06:51 UTC*  
+*Conclusion: Email sending infrastructure is WORKING correctly*
