@@ -52,12 +52,12 @@ const RedeemPage = lazy(() => import('@/pages/RedeemPage'));
 // Visibility Check
 const VisibilityCheckPage = lazy(() => import('@/components/visibility/VisibilityCheckPage'));
 const VisibilityCheckVerified = lazy(() => import('@/pages/VisibilityCheckVerified'));
-const VCResult = lazy(() => import('@/pages/VCResult'));
 
 // Profile components
 const MyProfile = lazy(() => import('@/components/Profile/MyProfile').then(m => ({ default: m.MyProfile })));
 const CompanyProfile = lazy(() => import('@/components/Profile/CompanyProfile').then(m => ({ default: m.CompanyProfile })));
 
+// Auth / misc
 import { GoogleOAuthCallback } from '@/components/auth/GoogleOAuthCallback';
 import { QuickVerifyMode } from '@/components/onboarding/QuickVerifyMode';
 import { RestaurantInfoStep } from '@/components/figma-onboarding/RestaurantInfoStep';
@@ -128,15 +128,17 @@ function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-          {/* Canonical tag for every route (BrowserRouter is in index.tsx) */}
-          <Canonical />
-
           <div className="min-h-screen bg-background">
-            <Suspense fallback={
-              <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-pulse">Loading...</div>
-              </div>
-            }>
+            <Suspense
+              fallback={
+                <div className="min-h-screen flex items-center justify-center">
+                  <div className="animate-pulse">Loading...</div>
+                </div>
+              }
+            >
+              {/* SEO canonical handling */}
+              <Canonical />
+
               <Routes>
                 {/* Main routes with AppLayout wrapper */}
                 <Route path="/" element={<AppLayout><Outlet /></AppLayout>}>
@@ -154,12 +156,12 @@ function App() {
                   <Route path="checkout-success" element={<CheckoutSuccess />} />
                   <Route path="visibility-check" element={<VisibilityCheckPage />} />
                   <Route path="visibility-check/verified/:leadId" element={<VisibilityCheckVerified />} />
-                  <Route path="vc/result" element={<VCResult />} />
 
                   {/* Figma-based Visibility Check Routes */}
                   <Route path="visibilitycheck/onboarding/step1" element={<VCStep1Route />} />
                   <Route path="visibilitycheck/onboarding/step2" element={<VCStep2Route />} />
 
+                  {/* Temporarily disabled Figma Router */}
                   {/* <Route path="visibilitycheck/*" element={<FigmaMainRouter />} /> */}
 
                   <Route path="redeem" element={<RedeemPage />} />
@@ -168,16 +170,22 @@ function App() {
                   <Route path="notes" element={<NotesPage />} />
 
                   {/* Profile Routes */}
-                  <Route path="profile" element={
-                    <ProtectedRoute>
-                      <MyProfile />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="company-profile" element={
-                    <ProtectedRoute>
-                      <CompanyProfile />
-                    </ProtectedRoute>
-                  } />
+                  <Route
+                    path="profile"
+                    element={
+                      <ProtectedRoute>
+                        <MyProfile />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="company-profile"
+                    element={
+                      <ProtectedRoute>
+                        <CompanyProfile />
+                      </ProtectedRoute>
+                    }
+                  />
 
                   {/* New Registration Flow */}
                   <Route path="register" element={<RegistrationOptions />} />
@@ -203,16 +211,19 @@ function App() {
                   <Route path="usage" element={<Usage />} />
                   <Route path="contact" element={<Contact />} />
 
-                  {/* Facebook Data Deletion */}
+                  {/* Facebook Data Deletion - Required for Facebook App Verification */}
                   <Route path="facebook-data-deletion" element={<FacebookDataDeletion />} />
                 </Route>
 
                 {/* Partner/Business routes */}
-                <Route path="/partner" element={
-                  <ProtectedRoute>
-                    <Outlet />
-                  </ProtectedRoute>
-                }>
+                <Route
+                  path="/partner"
+                  element={
+                    <ProtectedRoute>
+                      <Outlet />
+                    </ProtectedRoute>
+                  }
+                >
                   <Route path="onboarding" element={<PartnerOnboarding />} />
                   <Route path="dashboard" element={<DashboardMain />} />
                   <Route path="profile" element={<PartnerProfile />} />
@@ -220,25 +231,31 @@ function App() {
                 </Route>
 
                 {/* Dashboard routes */}
-                <Route path="/dashboard" element={
-                  <ProtectedRoute>
-                    <DashboardLayout>
-                      <Outlet />
-                    </DashboardLayout>
-                  </ProtectedRoute>
-                }>
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <DashboardLayout>
+                        <Outlet />
+                      </DashboardLayout>
+                    </ProtectedRoute>
+                  }
+                >
                   <Route index element={<DashboardMain />} />
                   <Route path="main" element={<DashboardMain />} />
                 </Route>
 
                 {/* Admin routes */}
-                <Route path="/admin" element={
-                  <ProtectedRoute>
-                    <AdminLayout>
-                      <Outlet />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                }>
+                <Route
+                  path="/admin"
+                  element={
+                    <ProtectedRoute>
+                      <AdminLayout>
+                        <Outlet />
+                      </AdminLayout>
+                    </ProtectedRoute>
+                  }
+                >
                   <Route path="panel" element={<AdminPanel />} />
                 </Route>
 
@@ -246,7 +263,7 @@ function App() {
               </Routes>
             </Suspense>
 
-            {/* Global components */}
+            {/* Global components - properly nested within ThemeProvider */}
             <CookieConsentBanner />
             <AuthModal />
             <Toaster />
