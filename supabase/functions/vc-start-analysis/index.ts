@@ -68,7 +68,7 @@ serve(async (req) => {
     const timestamp = new Date().toISOString();
     console.error(`[${timestamp}] vc-start-analysis: error`, e);
     console.error(`[${timestamp}] vc-start-analysis: error stack`, e instanceof Error ? e.stack : 'No stack trace');
-    return new Response(JSON.stringify({ ok: false, error: String(e), timestamp }), {
+    return new Response(JSON.stringify({ ok: false, error: "Internal server error", timestamp }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...cors(origin) },
     });
