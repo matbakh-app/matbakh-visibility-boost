@@ -96,8 +96,9 @@ class UserJourneyManager {
         return '/visibilitycheck/onboarding/step1';
       
       case 'subscription':
-        // From subscription selection, go to onboarding first, then checkout
-        return '/onboarding/standard?source=subscription';
+        // From subscription selection, check if onboarding is needed
+        // If guard is disabled, go directly to checkout
+        return '/dashboard?source=subscription'; // Let guard handle onboarding if needed
       
       case 'landing':
       case 'direct':

@@ -1,0 +1,69 @@
+{
+  "$schema": "https://matbakh.app/schemas/leadgen_mapper.schema.json",
+  "version": "1.0",
+  "source": "linkedin",
+  "description": "Maps LinkedIn Lead Gen form data to VC identification flow",
+  "webhook_endpoint": "/integrations/linkedin/leadgen",
+  "map": {
+    "company_name": "identify.business_name",
+    "business_address": "identify.address_or_city", 
+    "website": "identify.website",
+    "instagram": "identify.instagram",
+    "facebook": "identify.facebook",
+    "email": "contact.email"
+  },
+  "defaults": {
+    "ref": "li",
+    "utm.source": "linkedin",
+    "utm.medium": "leadgen",
+    "utm.campaign": "vc_share",
+    "consent.analytics": true,
+    "consent.marketing": false
+  },
+  "target_endpoints": [
+    {
+      "fn": "identify",
+      "path": "/vc/identify",
+      "method": "POST",
+      "required_fields": ["business_name", "address_or_city"]
+    },
+    {
+      "fn": "confirm", 
+      "path": "/vc/identify/confirm",
+      "method": "POST",
+      "required_fields": ["tracking_id", "place_id"]
+    },
+    {
+      "fn": "start_doi",
+      "path": "/vc/start", 
+      "method": "POST",
+      "required_fields": ["email"],
+      "idempotent_key": "lead_id"
+    }
+  ],
+  "validation": {
+    "required_linkedin_fields": ["company_name", "email"],
+    "optional_linkedin_fields": ["business_address", "website", "instagram", "facebook"],
+    "email_format": "RFC5322",
+    "deduplication": "lead_id"
+  },
+  "error_handling": {
+    "missing_required_fields": "Skip lead, log warning",
+    "invalid_email": "Skip lead, log error", 
+    "duplicate_lead_id": "Return existing tracking_id",
+    "api_failure": "Retry with exponential backoff, max 3 attempts"
+  },
+  "example_payload": {
+    "lead_id": "li_lead_12345",
+    "form_id": "li_form_vc_2025",
+    "campaign_id": "li_camp_restaurant_visibility",
+    "submitted_at": "2025-08-26T15:30:00Z",
+    "fields": {
+      "company_name": "Bella Vista Restaurant",
+      "business_address": "München, Bayern",
+      "website": "https://bellavista-muenchen.de",
+      "instagram": "@bellavista_muenchen",
+      "email": "info@bellavista-muenchen.de"
+    }
+  }
+}

@@ -45,8 +45,8 @@ export default function VCResult() {
 
   const handleRetryClick = () => {
     trackEvent('cta_retry_click', { status });
-    // Navigate to VC start form
-    navigate('/visibility-check');
+    // Navigate to VC Quick form for new link
+    navigate('/vc/quick');
   };
 
   const handleHomeClick = () => {
@@ -80,7 +80,7 @@ export default function VCResult() {
           title: t(`expired.title${suffix}`),
           body: t(`expired.body${suffix}`),
           primaryCta: {
-            text: t('cta.retry'),
+            text: t('cta.requestNew'),
             action: handleRetryClick,
             variant: 'default' as const
           },
@@ -92,7 +92,7 @@ export default function VCResult() {
           title: t(`invalid.title${suffix}`),
           body: t(`invalid.body${suffix}`),
           primaryCta: {
-            text: t('cta.retry'),
+            text: t('cta.requestNew'),
             action: handleRetryClick,
             variant: 'default' as const
           },

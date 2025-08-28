@@ -5,11 +5,13 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Mail, Chrome, Facebook } from 'lucide-react';
+import { Mail, Chrome, Facebook, Rocket } from 'lucide-react';
+import { useAnalyticsEvent } from '@/hooks/useAnalyticsEvent';
 
 export default function RegistrationOptions() {
   const navigate = useNavigate();
   const { t } = useTranslation('auth');
+  const { trackEvent } = useAnalyticsEvent();
 
   const registrationOptions = [
     {
@@ -40,6 +42,14 @@ export default function RegistrationOptions() {
 
   const handleRegistrationChoice = (route: string) => {
     navigate(route);
+  };
+
+  const handleVCQuickClick = () => {
+    trackEvent('vc_quick_cta_click', { 
+      location: 'registration_options',
+      cta_type: 'alternative'
+    });
+    navigate('/vc/quick');
   };
 
   return (
@@ -92,6 +102,24 @@ export default function RegistrationOptions() {
               </Card>
             );
           })}
+        </div>
+
+        {/* Quick Check Option */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+          <h3 className="text-lg font-semibold mb-2 text-blue-900">
+            Nur schnell checken?
+          </h3>
+          <p className="text-sm text-blue-700 mb-4">
+            Starten Sie direkt mit einem kostenlosen Visibility Check - ohne Registrierung.
+          </p>
+          <Button
+            onClick={handleVCQuickClick}
+            variant="outline"
+            className="border-blue-300 text-blue-700 hover:bg-blue-100"
+          >
+            <Rocket className="w-4 h-4 mr-2" />
+            Nur Check starten (ohne Registrierung)
+          </Button>
         </div>
 
         {/* Info Section */}

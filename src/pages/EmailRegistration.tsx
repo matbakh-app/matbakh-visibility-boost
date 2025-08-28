@@ -1,7 +1,7 @@
 // Phase 1: Email-Registrierungsseite
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ import { ArrowLeft, Mail, Eye, EyeOff } from 'lucide-react';
 
 export default function EmailRegistration() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation('auth');
   
   const [formData, setFormData] = useState({
@@ -90,8 +91,22 @@ export default function EmailRegistration() {
           description: t('messages.checkEmail', 'Prüfen Sie Ihre E-Mails für die Bestätigung')
         });
         
-        // Redirect zum Standard-Onboarding
-        navigate('/onboarding/standard');
+        // Use centralized onboarding guard to determine redirect
+        const { shouldRedirectToOnboarding } = await import('@/guards/onboardingGuard');
+        const redirectPath = await shouldRedirectToOnboarding(location.pathname);
+        
+        if (redirectPath) {
+          navigate(redirectPath);
+        } else {
+          // 🔧 NUR auf Startseite weiterleiten, nicht von anderen Seiten
+          const currentPath = window.location.pathname;
+          if (currentPath === '/' || currentPath === '/register') {
+            navigate('/dashboard');
+          } else {
+            // Bleibe auf aktueller Seite
+            console.log('EmailRegistration: Staying on current path:', currentPath);
+          }
+        }
       }
 
     } catch (error) {

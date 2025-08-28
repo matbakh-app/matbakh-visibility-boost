@@ -45,7 +45,13 @@ const BusinessLogin: React.FC = () => {
         setCallbackStatus("success");
         window.history.replaceState(null, '', window.location.pathname);
         setTimeout(() => {
-          navigate("/dashboard", { replace: true });
+          // 🔧 NUR auf Startseite weiterleiten, nicht von anderen Seiten
+          const currentPath = window.location.pathname;
+          if (currentPath === '/' || currentPath.includes('/login')) {
+            navigate("/dashboard", { replace: true });
+          } else {
+            console.log('BusinessLogin: Staying on current path:', currentPath);
+          }
         }, 1200);
       }
     }

@@ -14,7 +14,7 @@ import { AuthModal } from '@/components/auth/AuthModal';
 
 // Layouts - loaded immediately for structure
 import AppLayout from '@/components/layout/AppLayout';
-import DashboardLayout from '@/components/layout/DashboardLayout';
+// Moved to useless: import DashboardLayout from '@/components/layout/DashboardLayout';
 import AdminLayout from '@/components/layout/AdminLayout';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
@@ -33,8 +33,33 @@ const PasswordReset = lazy(() => import('@/pages/PasswordReset'));
 const PartnerOnboarding = lazy(() => import('@/pages/PartnerOnboarding'));
 const PartnerProfile = lazy(() => import('@/pages/PartnerProfile'));
 const PartnerCalendar = lazy(() => import('@/pages/PartnerCalendar'));
-const DashboardMain = lazy(() => import('@/pages/DashboardMain'));
+// Moved to useless: const DashboardMain = lazy(() => import('@/pages/DashboardMain'));
 const AdminPanel = lazy(() => import('@/pages/AdminPanel'));
+
+// Admin pages
+const AdminOverview = lazy(() => import('@/pages/admin/AdminOverview'));
+const AdminLeads = lazy(() => import('@/pages/admin/AdminLeads'));
+const AdminVCRuns = lazy(() => import('@/pages/admin/AdminVCRuns'));
+const AdminPartners = lazy(() => import('@/pages/admin/AdminPartners'));
+const AdminPartnerCredits = lazy(() => import('@/pages/admin/AdminPartnerCredits'));
+const AdminContentQueue = lazy(() => import('@/pages/admin/AdminContentQueue'));
+
+// Dashboard pages
+// Moved to useless: const OwnerOverview = lazy(() => import('@/pages/dashboard/OwnerOverview'));
+const RestaurantDashboard = lazy(() => import('@/pages/dashboard/RestaurantDashboard'));
+const VCResultDashboard = lazy(() => import('@/pages/vc/VCResultDashboard'));
+
+// Onboarding V2
+const OnboardingGate = lazy(() => import('@/components/onboarding/OnboardingGate'));
+const OnboardingLayout = lazy(() => import('@/components/onboarding/OnboardingLayout'));
+const StepWelcome = lazy(() => import('@/pages/onboarding/StepWelcome'));
+const StepRestaurant = lazy(() => import('@/pages/onboarding/StepRestaurant'));
+const StepBrand = lazy(() => import('@/pages/onboarding/StepBrand'));
+const StepMenu = lazy(() => import('@/pages/onboarding/StepMenu'));
+const StepChannels = lazy(() => import('@/pages/onboarding/StepChannels'));
+const StepQuickWins = lazy(() => import('@/pages/onboarding/StepQuickWins'));
+const StepBaseline = lazy(() => import('@/pages/onboarding/StepBaseline'));
+const StepDone = lazy(() => import('@/pages/onboarding/StepDone'));
 
 // Registration & Auth
 const RegistrationOptions = lazy(() => import('@/pages/RegistrationOptions'));
@@ -52,7 +77,11 @@ const RedeemPage = lazy(() => import('@/pages/RedeemPage'));
 // Visibility Check
 const VisibilityCheckPage = lazy(() => import('@/components/visibility/VisibilityCheckPage'));
 const VisibilityCheckVerified = lazy(() => import('@/pages/VisibilityCheckVerified'));
-const VCResult = lazy(() => import('@/pages/VCResult'));
+const VCResult = lazy(() => import('@/pages/vc/VCResult'));
+const VCQuick = lazy(() => import('@/pages/vc/VCQuick'));
+
+// Kiro Showcase
+const KiroShowcase = lazy(() => import('@/pages/_KiroShowcase'));
 
 // Profile components
 const MyProfile = lazy(() => import('@/components/Profile/MyProfile').then(m => ({ default: m.MyProfile })));
@@ -155,6 +184,8 @@ function App() {
                   <Route path="visibility-check" element={<VisibilityCheckPage />} />
                   <Route path="visibility-check/verified/:leadId" element={<VisibilityCheckVerified />} />
                   <Route path="vc/result" element={<VCResult />} />
+                  <Route path="vc/result/dashboard" element={<VCResultDashboard />} />
+                  <Route path="vc/quick" element={<VCQuick />} />
 
                   {/* Figma-based Visibility Check Routes */}
                   <Route path="visibilitycheck/onboarding/step1" element={<VCStep1Route />} />
@@ -182,11 +213,13 @@ function App() {
                   {/* New Registration Flow */}
                   <Route path="register" element={<RegistrationOptions />} />
                   <Route path="register/email" element={<EmailRegistration />} />
-                  <Route path="onboarding/standard" element={<StandardOnboarding />} />
-
+                  
                   {/* Google OAuth Flow */}
                   <Route path="auth/google" element={<GoogleOAuth />} />
                   <Route path="auth/callback" element={<GoogleCallback />} />
+                  
+                  {/* Legacy Onboarding Routes - Redirect to V2 */}
+                  <Route path="onboarding/standard" element={<StandardOnboarding />} />
                   <Route path="onboarding/google" element={<GoogleEnhancedOnboarding />} />
 
                   {/* Legal pages - German */}
@@ -205,7 +238,11 @@ function App() {
 
                   {/* Facebook Data Deletion */}
                   <Route path="facebook-data-deletion" element={<FacebookDataDeletion />} />
+
                 </Route>
+
+                {/* Kiro Showcase - Outside AppLayout for direct access */}
+                <Route path="/_kiro" element={<KiroShowcase />} />
 
                 {/* Partner/Business routes */}
                 <Route path="/partner" element={
@@ -214,32 +251,57 @@ function App() {
                   </ProtectedRoute>
                 }>
                   <Route path="onboarding" element={<PartnerOnboarding />} />
-                  <Route path="dashboard" element={<DashboardMain />} />
+                  {/* Moved to useless: <Route path="dashboard" element={<DashboardMain />} /> */}
                   <Route path="profile" element={<PartnerProfile />} />
                   <Route path="calendar" element={<PartnerCalendar />} />
                 </Route>
 
-                {/* Dashboard routes */}
+                {/* Onboarding V2 Routes */}
+                <Route path="/onboarding" element={<OnboardingLayout />}>
+                  <Route index element={<StepWelcome />} />
+                  <Route path="restaurant" element={<StepRestaurant />} />
+                  <Route path="brand" element={<StepBrand />} />
+                  <Route path="menu" element={<StepMenu />} />
+                  <Route path="channels" element={<StepChannels />} />
+                  <Route path="quickwins" element={<StepQuickWins />} />
+                  <Route path="baseline" element={<StepBaseline />} />
+                  <Route path="done" element={<StepDone />} />
+                </Route>
+
+                {/* Protected Dashboard routes - OnboardingGate temporarily disabled */}
                 <Route path="/dashboard" element={
+                  <ProtectedRoute>
+                    <RestaurantDashboard />
+                  </ProtectedRoute>
+                } />
+                
+                {/* Legacy Dashboard routes - DISABLED - moved to useless */}
+                {/* <Route path="/dashboard/legacy" element={
                   <ProtectedRoute>
                     <DashboardLayout>
                       <Outlet />
                     </DashboardLayout>
                   </ProtectedRoute>
                 }>
-                  <Route index element={<DashboardMain />} />
+                  <Route index element={<OwnerOverview />} />
                   <Route path="main" element={<DashboardMain />} />
-                </Route>
+                </Route> */}
 
                 {/* Admin routes */}
                 <Route path="/admin" element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requireRole="admin">
                     <AdminLayout>
                       <Outlet />
                     </AdminLayout>
                   </ProtectedRoute>
                 }>
+                  <Route index element={<AdminOverview />} />
                   <Route path="panel" element={<AdminPanel />} />
+                  <Route path="leads" element={<AdminLeads />} />
+                  <Route path="vc-runs" element={<AdminVCRuns />} />
+                  <Route path="partners" element={<AdminPartners />} />
+                  <Route path="partner-credits" element={<AdminPartnerCredits />} />
+                  <Route path="content-queue" element={<AdminContentQueue />} />
                 </Route>
 
                 <Route path="*" element={<NotFound />} />

@@ -2,11 +2,13 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Phone, BarChart3 } from 'lucide-react';
+import { Phone, BarChart3, Rocket } from 'lucide-react';
 import WhyMatbakhBanner from './WhyMatbakhBanner';
+import { useAnalyticsEvent } from '@/hooks/useAnalyticsEvent';
 
 const HeroSection: React.FC = () => {
   const { t } = useTranslation('landing');
+  const { trackEvent } = useAnalyticsEvent();
 
   const scrollToVisibilityCheck = () => {
     const visibilitySection = document.querySelector('.visibility-check-section');
@@ -16,6 +18,14 @@ const HeroSection: React.FC = () => {
         block: 'start'
       });
     }
+  };
+
+  const handleVCQuickClick = () => {
+    trackEvent('vc_quick_cta_click', { 
+      location: 'hero_section',
+      cta_type: 'primary'
+    });
+    window.location.href = '/vc/quick';
   };
 
   const handleWhatsAppContact = () => {
@@ -37,11 +47,20 @@ const HeroSection: React.FC = () => {
             {t('heroSubtitle')}
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-lg mx-auto">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-2xl mx-auto">
             <Button 
-              onClick={() => window.location.href = '/register'}
+              onClick={handleVCQuickClick}
               size="lg" 
               className="bg-primary hover:bg-primary/90 text-white flex-1"
+            >
+              <Rocket className="h-5 w-5 mr-2" />
+              Visibility Check starten
+            </Button>
+            <Button 
+              onClick={() => window.location.href = '/register'}
+              variant="outline"
+              size="lg" 
+              className="flex-1"
             >
               <BarChart3 className="h-5 w-5 mr-2" />
               Jetzt kostenlos registrieren

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <title>matbakh.app — VC Embed</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+      .vc-container { max-width: 880px; margin: 0 auto; }
+      .vc-frame { width: 1px; min-width: 100%; border: 0; }
+      .vc-fallback { font: 16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; color:#111; }
+      .vc-fallback a { color:#0a58ca; text-decoration:underline; }
+    </style>
+  </head>
+  <body>
+    <div class="vc-container">
+      <!--
+        REQUIRED data attributes for attribution.
+        Replace values when embedding on partner site.
+      -->
+      <div id="vc-embed"
+           data-src="https://matbakh.app/vc/quick"
+           data-partner-id="PARTNER_ABC"
+           data-campaign-id="SUMMER_2025"
+           data-lang="de"
+           aria-label="Visibility Check Einbettung">
+        <noscript class="vc-fallback">
+          JavaScript ist deaktiviert. Bitte den Visibility Check direkt auf
+          <a href="https://matbakh.app/vc/quick" rel="nofollow">matbakh.app</a> starten.
+        </noscript>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        // --- Config & Helpers ---
+        var container = document.getElementById('vc-embed');
+        if (!container) return;
+        var src = (container.getAttribute('data-src') || 'https://matbakh.app/vc/quick').replace(/\/$/, '');
+        var partnerId = container.getAttribute('data-partner-id') || '';
+        var campaignId = container.getAttribute('data-campaign-id') || '';
+        var lang = container.getAttribute('data-lang') || 'de';
+
+        // Append attribution query params
+        var url = src + '?embed=1'
+          + (partnerId ? '&partner_id=' + encodeURIComponent(partnerId) : '')
+          + (campaignId ? '&campaign_id=' + encodeURIComponent(campaignId) : '')
+          + (lang ? '&lang=' + encodeURIComponent(lang) : '');
+
+        // Create iframe
+        var iframe = document.createElement('iframe');
+        iframe.className = 'vc-frame';
+        iframe.setAttribute('title', 'Visibility Check');
+        iframe.setAttribute('loading', 'lazy');
+        iframe.setAttribute('allow', 'clipboard-write;');
+        iframe.src = url;
+
+        // Insert
+        container.appendChild(iframe);
+
+        // --- postMessage handling ---
+        var ALLOWLIST = [
+          'https://matbakh.app',
+          'https://www.matbakh.app'
+        ];
+        function isAllowed(origin) {
+          try {
+            return ALLOWLIST.indexOf(origin) !== -1;
+          } catch (e) { return false; }
+        }
+        function onMessage(e) {
+          if (!isAllowed(e.origin)) return;
+          if (!e.data || typeof e.data !== 'object') return;
+          var type = e.data.type;
+          var payload = e.data.payload || {};
+          if (type === 'vc:ready' || type === 'vc:height') {
+            var h = parseInt(payload.height, 10);
+            if (h && h > 0 && h < 4000) { iframe.style.height = h + 'px'; }
+          } else if (type === 'vc:submit') {
+            // Optional: analytics hook
+            // console.log('VC submit', payload);
+          } else if (type === 'vc:success') {
+            // Optional: handle success (e.g., show toast on partner site)
+          } else if (type === 'vc:error') {
+            // Optional: log or show error
+            // console.warn('VC error', payload);
+          }
+        }
+        window.addEventListener('message', onMessage, false);
+
+        // --- Responsive height fallback ---
+        var lastH = 0;
+        var tick = 0;
+        var timer = setInterval(function () {
+          tick++;
+          // Initial generous height while waiting for vc:ready
+          if (!lastH && tick < 50) { iframe.style.height = '900px'; }
+          if (tick > 60) clearInterval(timer);
+        }, 100);
+
+        // --- Clean up on unload ---
+        window.addEventListener('beforeunload', function () {
+          window.removeEventListener('message', onMessage, false);
+        });
+      })();
+    </script>
+  </body>
+</html>

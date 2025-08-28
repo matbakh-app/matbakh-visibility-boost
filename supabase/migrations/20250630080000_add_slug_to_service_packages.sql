@@ -3,6 +3,15 @@ DO $$
 DECLARE
   src_col text;
 BEGIN
+  -- First check if the table exists at all
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.tables
+    WHERE table_schema='public' AND table_name='service_packages'
+  ) THEN
+    RAISE NOTICE 'Table service_packages does not exist, skipping migration.';
+    RETURN;
+  END IF;
+
   -- ensure column exists
   IF NOT EXISTS (
     SELECT 1 FROM information_schema.columns

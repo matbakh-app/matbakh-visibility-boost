@@ -113,7 +113,13 @@ const PartnerOnboarding: React.FC = () => {
 
       // Redirect to dashboard
       setTimeout(() => {
-        navigate('/dashboard');
+        // 🔧 NUR nach Onboarding weiterleiten
+        const currentPath = window.location.pathname;
+        if (currentPath.includes('/onboarding')) {
+          navigate('/dashboard');
+        } else {
+          console.log('PartnerOnboarding: Staying on current path:', currentPath);
+        }
       }, 2000);
 
     } catch (error) {

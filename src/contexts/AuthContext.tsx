@@ -251,30 +251,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               
               console.log('AuthProvider: Current path:', location.pathname, 'isOnPublicRoute:', isOnPublicRoute);
               
-              // Only redirect from login page or private routes
-              if (location.pathname === '/business/partner/login' || (!isOnPublicRoute && location.pathname !== '/')) {
-                // Check for test mode parameter
-                const urlParams = new URLSearchParams(location.search);
-                const testMode = urlParams.get('test');
-                
-                if (testMode === '1') {
-                  console.log('AuthProvider: Test mode detected, redirecting to quick-verify');
-                  navigate('/quick-verify', { replace: true });
-                } else if (!(partner as any)?.onboarding_completed) {
-                  console.log('AuthProvider: Redirecting to onboarding');
-                  
-                  // Route based on provider
-                  const provider = session.user.app_metadata?.provider || 'email';
-                  if (provider === 'google') {
-                    navigate('/onboarding/google', { replace: true });
-                  } else {
-                    navigate('/onboarding/standard', { replace: true });
-                  }
-                } else {
-                  console.log('AuthProvider: Redirecting to dashboard');
-                  navigate('/dashboard', { replace: true });
-                }
-              }
+              // 🔧 KEINE AUTOMATISCHEN REDIRECTS - User bleibt wo er ist
+              console.log('AuthProvider: User logged in, staying on current path:', location.pathname);
             } catch (error) {
               console.log('AuthProvider: Error checking partner record:', error);
               

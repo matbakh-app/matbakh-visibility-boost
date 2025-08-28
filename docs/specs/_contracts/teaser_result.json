@@ -1,0 +1,220 @@
+{
+  "version": "1.0",
+  "description": "Contract for teaser results returned after business identification",
+  "schema": {
+    "type": "object",
+    "required": ["tracking_id", "ranking_percentile", "benchmarks", "top_opportunities"],
+    "properties": {
+      "tracking_id": {
+        "type": "string",
+        "description": "Unique identifier for this analysis session"
+      },
+      "ranking_percentile": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 100,
+        "description": "Overall visibility ranking percentile (0-100)"
+      },
+      "benchmarks": {
+        "type": "object",
+        "required": ["local_percentile", "category_median"],
+        "properties": {
+          "local_percentile": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Ranking within local area"
+          },
+          "category_median": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Score relative to category median"
+          },
+          "competitor_count": {
+            "type": "integer",
+            "description": "Number of competitors in comparison set"
+          }
+        }
+      },
+      "top_opportunities": {
+        "type": "array",
+        "maxItems": 3,
+        "items": {
+          "type": "object",
+          "required": ["id", "title", "confidence", "evidence"],
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Unique identifier for this opportunity type"
+            },
+            "title": {
+              "type": "string",
+              "description": "Human-readable opportunity description"
+            },
+            "est_lift_eur_min": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Minimum estimated monthly revenue impact (non-binding)"
+            },
+            "est_lift_eur_max": {
+              "type": "number", 
+              "minimum": 0,
+              "description": "Maximum estimated monthly revenue impact (non-binding)"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Confidence score for this opportunity"
+            },
+            "evidence": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["source", "metric", "observed", "ts"],
+                "properties": {
+                  "source": {
+                    "type": "string",
+                    "description": "Data source (e.g., 'Google', 'Facebook')"
+                  },
+                  "metric": {
+                    "type": "string", 
+                    "description": "Specific metric measured"
+                  },
+                  "observed": {
+                    "type": "string",
+                    "description": "Observed value"
+                  },
+                  "ts": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Timestamp when data was collected"
+                  },
+                  "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Optional link to source data"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "next_actions": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["action_id", "channels"],
+          "properties": {
+            "action_id": {
+              "type": "string",
+              "description": "Identifier for the recommended action"
+            },
+            "channels": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["google", "facebook", "instagram", "website", "tripadvisor"]
+              },
+              "description": "Channels this action applies to"
+            },
+            "preview_required": {
+              "type": "boolean",
+              "description": "Whether user preview/approval is required"
+            },
+            "estimated_time_minutes": {
+              "type": "integer",
+              "description": "Estimated time to complete action"
+            }
+          }
+        }
+      },
+      "metadata": {
+        "type": "object",
+        "properties": {
+          "analysis_timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data_freshness_hours": {
+            "type": "integer",
+            "description": "Age of the underlying data in hours"
+          },
+          "cache_ttl_seconds": {
+            "type": "integer",
+            "description": "How long this result can be cached"
+          }
+        }
+      }
+    }
+  },
+  "example": {
+    "tracking_id": "vc_2025_08_26_abc123",
+    "ranking_percentile": 78,
+    "benchmarks": {
+      "local_percentile": 78,
+      "category_median": 0.52,
+      "competitor_count": 45
+    },
+    "top_opportunities": [
+      {
+        "id": "rev_reply_rate",
+        "title": "Antwortquote auf Bewertungen erhöhen",
+        "est_lift_eur_min": 300,
+        "est_lift_eur_max": 700,
+        "confidence": 0.68,
+        "evidence": [
+          {
+            "source": "Google",
+            "metric": "reply_rate",
+            "observed": "12%",
+            "ts": "2025-08-26T10:30:00Z",
+            "url": "https://business.google.com/reviews"
+          }
+        ]
+      },
+      {
+        "id": "gmb_photos_update",
+        "title": "Aktuelle Fotos hochladen",
+        "est_lift_eur_min": 200,
+        "est_lift_eur_max": 500,
+        "confidence": 0.82,
+        "evidence": [
+          {
+            "source": "Google",
+            "metric": "photo_count",
+            "observed": "3",
+            "ts": "2025-08-26T10:30:00Z"
+          },
+          {
+            "source": "Google",
+            "metric": "last_photo_age_days",
+            "observed": "180",
+            "ts": "2025-08-26T10:30:00Z"
+          }
+        ]
+      }
+    ],
+    "next_actions": [
+      {
+        "action_id": "gmb_update_hours",
+        "channels": ["google"],
+        "preview_required": true,
+        "estimated_time_minutes": 5
+      },
+      {
+        "action_id": "social_post_template",
+        "channels": ["facebook", "instagram"],
+        "preview_required": true,
+        "estimated_time_minutes": 15
+      }
+    ],
+    "metadata": {
+      "analysis_timestamp": "2025-08-26T10:30:00Z",
+      "data_freshness_hours": 2,
+      "cache_ttl_seconds": 3600
+    }
+  }
+}

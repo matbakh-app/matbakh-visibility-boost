@@ -153,7 +153,13 @@ export const CompanyProfile: React.FC = () => {
           title: "Firmenprofil gespeichert",
           description: "Ihre Unternehmensangaben wurden erfolgreich gespeichert.",
         });
-        navigate('/dashboard');
+        // 🔧 NUR nach Profil-Bearbeitung weiterleiten
+        const currentPath = window.location.pathname;
+        if (currentPath.includes('/profile') || currentPath.includes('/onboarding')) {
+          navigate('/dashboard');
+        } else {
+          console.log('CompanyProfile: Staying on current path:', currentPath);
+        }
       } else {
         throw new Error('Speichern fehlgeschlagen');
       }

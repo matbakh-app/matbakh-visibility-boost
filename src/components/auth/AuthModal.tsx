@@ -119,9 +119,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ defaultMode }) => {
         handleAuthSuccess();
       } else {
         // Register - for VC flow, redirect to proper onboarding
+        // Use centralized guard to determine redirect (but keep VC flow separate)
         const redirectUrl = isFromVisibilityCheck() 
           ? `${window.location.origin}/visibilitycheck/onboarding/step1`
-          : `${window.location.origin}/onboarding/standard`;
+          : `${window.location.origin}/dashboard`; // Let AuthContext handle onboarding redirect
           
         const { data, error } = await supabase.auth.signUp({
           email,

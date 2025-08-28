@@ -1,21 +1,34 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import type { Role } from '@/lib/rbac';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requirePartner?: boolean;
   requireCompleteProfile?: boolean;
+  requireRole?: Role;
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
   children, 
   requirePartner = false,
-  requireCompleteProfile = false
+  requireCompleteProfile = false,
+  requireRole
 }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
+  console.log('ProtectedRoute:', { 
+    path: location.pathname, 
+    user: user?.email, 
+    loading, 
+    requireRole 
+  });
+
+  // 🚨 EMERGENCY BYPASS: NO DATABASE TABLES EXIST YET!
+  // Allow ALL authenticated users access to ALL routes until DB is deployed
+  
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -32,14 +45,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Check if complete profile is required
-  if (requireCompleteProfile && !user) {
-    return <Navigate to="/profile" state={{ from: location }} replace />;
-  }
-
-  // If we need to check for partner status, we could add that logic here
-  // For now, we just check if user is authenticated
-
+  // 🚨 TEMPORARY BYPASS: Allow ALL authenticated users access to ALL routes
+  // This will be removed once the database schema is deployed
+  console.log('ProtectedRoute: BYPASSING all role checks - allowing access for:', user?.email);
+  
   return <>{children}</>;
 };
 

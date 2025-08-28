@@ -50,13 +50,25 @@ export const QuickVerifyMode: React.FC = () => {
 
       // Weiterleitung mit Test-Parameter
       setTimeout(() => {
-        navigate('/dashboard?test=1&mode=verify');
+        // 🔧 NUR nach Verify weiterleiten
+        const currentPath = window.location.pathname;
+        if (currentPath.includes('/onboarding') || currentPath.includes('/verify')) {
+          navigate('/dashboard?test=1&mode=verify');
+        } else {
+          console.log('QuickVerifyMode: Staying on current path:', currentPath);
+        }
       }, 1500);
 
     } catch (error) {
       console.error('Quick verify error:', error);
       // Fallback: Direkt weiterleiten auch bei Fehlern
-      navigate('/dashboard?test=1&mode=verify');
+      // 🔧 NUR nach Verify weiterleiten
+      const currentPath = window.location.pathname;
+      if (currentPath.includes('/onboarding') || currentPath.includes('/verify')) {
+        navigate('/dashboard?test=1&mode=verify');
+      } else {
+        console.log('QuickVerifyMode fallback: Staying on current path:', currentPath);
+      }
     }
   };
 

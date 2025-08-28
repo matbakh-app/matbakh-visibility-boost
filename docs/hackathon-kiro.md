@@ -309,4 +309,39 @@ Session 6: Business Card / Visitenkarte (Conversion-Optimiert) – 2025-01-27 18
 - Share-Link-Signierung und Sicherheits-Mechanismen
 - OpenGraph + JSON-LD Template-System für dynamische SEO-Meta-Tags
 - Performance-Optimierung für LCP < 2s Ziel
-- A/B-Testing-Setup für Single CTA vs. Multi-CTA Conversion-Vergleich
+- A/B-Testing-Setup für Single CTA vs. Multi-CTA Conversion-Vergleich---
+
+
+## VC Dashboard Governance Session - 25. Januar 2025
+
+### Ziel erreicht: Vollständige Dashboard-Spezifikation ohne Duplikate
+
+**Erstellte Artefakte:**
+- **Dashboard Governance Framework** (`docs/dashboard/governance.md`)
+- **Dashboard Katalog** (`docs/dashboard/catalog.md`) mit 5 Views, 8 KPIs/Charts/Rules
+- **Figma-Repo Mapping** (`docs/audits/dashboard-figma-mapping.md`)
+- **Spec Templates** (`docs/specs/_template/`) für KPI, Chart, Rule
+- **JSON Contracts** (`docs/specs/_contracts/`) mit Evidence-Tracking
+- **Deprecation Framework** (`docs/dashboard/deprecations.md`) mit Wave-1 Vorschlägen
+
+### Technische Innovationen
+- **Evidence-Ledger**: Transparente Quellenangaben mit Confidence-Levels
+- **ROI-Simulator**: Interaktive Empfehlungs-Berechnung mit Disclaimern
+- **Persona-Switcher**: Adaptive Dashboard-Anpassung per Nutzertyp
+- **Cultural-Tone-Indicator**: Hofstede-basierte Tonalitäts-Empfehlungen
+
+### Governance-Prinzipien etabliert
+- **Single Source of Truth**: Figma für Visuals, Repo für Business Logic
+- **No-Dupes Regel**: Jede `spec_id` existiert nur einmal
+- **Template-Compliance**: Strukturierte Spec-Erstellung
+- **Review-Gates**: GATE-A (Katalog), GATE-B (Contracts), GATE-C (Deprecations)
+
+### Nächste Phase: Konkrete Spec-Erstellung
+Bereit für Erstellung der 5 Kern-Spezifikationen:
+- `vc.kpi.total_visibility` - Gesamtscore mit Gewichtung
+- `vc.chart.subscores_timeseries` - Platform-Breakdown über Zeit  
+- `vc.kpi.gmb_completeness` - Google My Business Vollständigkeit
+- `vc.rule.quickwin_post_frequency` - Content-Empfehlungen
+- `vc.chart.benchmark_percentiles` - Wettbewerbsvergleiche
+
+**Status:** Governance etabliert, awaiting approval für Wave-1 Deprecations

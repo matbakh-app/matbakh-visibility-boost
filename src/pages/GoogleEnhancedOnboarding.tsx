@@ -154,7 +154,13 @@ export default function GoogleEnhancedOnboarding() {
       alert('Profil erfolgreich erstellt! Weiterleitung zu Dashboard...');
 
       // Redirect to dashboard instead of visibility check for now
-      navigate('/dashboard');
+      // 🔧 NUR nach Onboarding weiterleiten
+      const currentPath = window.location.pathname;
+      if (currentPath.includes('/onboarding')) {
+        navigate('/dashboard');
+      } else {
+        console.log('GoogleEnhancedOnboarding: Staying on current path:', currentPath);
+      }
 
     } catch (error) {
       console.error('[DEBUG] Unexpected error:', error);

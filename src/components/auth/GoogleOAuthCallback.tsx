@@ -63,7 +63,13 @@ export function GoogleOAuthCallback() {
             title: 'Erfolgreich verbunden',
             description: `Google ${serviceType} wurde erfolgreich verknüpft.`
           });
-          navigate('/dashboard');
+          // 🔧 NUR nach OAuth weiterleiten
+          const currentPath = window.location.pathname;
+          if (currentPath.includes('/callback') || currentPath.includes('/auth')) {
+            navigate('/dashboard');
+          } else {
+            console.log('GoogleOAuthCallback success: Staying on current path:', currentPath);
+          }
         }
 
       } catch (error) {
@@ -84,7 +90,13 @@ export function GoogleOAuthCallback() {
             description: error instanceof Error ? error.message : 'Ein unbekannter Fehler ist aufgetreten.',
             variant: 'destructive'
           });
-          navigate('/dashboard');
+          // 🔧 NUR nach OAuth-Fehler weiterleiten
+          const currentPath = window.location.pathname;
+          if (currentPath.includes('/callback') || currentPath.includes('/auth')) {
+            navigate('/dashboard');
+          } else {
+            console.log('GoogleOAuthCallback error: Staying on current path:', currentPath);
+          }
         }
       }
     };
