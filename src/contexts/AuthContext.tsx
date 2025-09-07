@@ -10,11 +10,11 @@ const OAUTH_DOMAINS = {
   SUPABASE_CALLBACK: 'https://uheksobnyedarrpgxhju.supabase.co/auth/v1/callback'
 } as const;
 
-// Hardcoded Redirect-URLs für OAuth - KORRIGIERTE URLS
+// OAuth Redirect URLs - KORRIGIERT für Onboarding v2
 const OAUTH_REDIRECTS = {
-  BUSINESS_LOGIN: `${OAUTH_DOMAINS.MAIN}/business/partner/login`,
-  PARTNER_ONBOARDING: `${OAUTH_DOMAINS.MAIN}/partner/onboarding`,
-  DASHBOARD: `${OAUTH_DOMAINS.MAIN}/dashboard`
+  ONBOARDING: `${OAUTH_DOMAINS.MAIN}/onboarding`,
+  DASHBOARD: `${OAUTH_DOMAINS.MAIN}/dashboard`,
+  AUTH_CALLBACK: `${OAUTH_DOMAINS.MAIN}/auth/callback`
 } as const;
 
 interface AuthContextType {
@@ -284,8 +284,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       // Log OAuth attempt
       await logOAuthEvent('oauth_attempt', 'google', true, undefined, {
-        redirect_url: OAUTH_REDIRECTS.BUSINESS_LOGIN,
-        scopes: ['profile', 'email'], // Minimale Scopes für Tests
+        redirect_url: OAUTH_REDIRECTS.AUTH_CALLBACK,
+        scopes: ['profile', 'email'],
         domain: OAUTH_DOMAINS.MAIN
       });
 
@@ -294,8 +294,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         options: {
           // Minimale Scopes für initial setup
           scopes: 'profile email openid',
-          // Hardcoded Redirect URL
-          redirectTo: OAUTH_REDIRECTS.BUSINESS_LOGIN,
+          // Korrigierte Redirect URL
+          redirectTo: OAUTH_REDIRECTS.AUTH_CALLBACK,
           // Query parameters für debugging
           queryParams: {
             access_type: 'offline',
@@ -328,8 +328,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       // Log OAuth attempt
       await logOAuthEvent('oauth_attempt', 'facebook', true, undefined, {
-        redirect_url: OAUTH_REDIRECTS.BUSINESS_LOGIN,
-        scopes: ['public_profile', 'email', 'pages_read_engagement'],
+        redirect_url: OAUTH_REDIRECTS.AUTH_CALLBACK,
+        scopes: ['public_profile', 'email'],
         domain: OAUTH_DOMAINS.MAIN
       });
 
@@ -338,8 +338,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         options: {
           // Facebook Scopes für Business-Profile - REDUZIERTE SCOPES
           scopes: 'public_profile,email',
-          // Hardcoded Redirect URL - KORRIGIERT
-          redirectTo: OAUTH_REDIRECTS.BUSINESS_LOGIN,
+          // Korrigierte Redirect URL
+          redirectTo: OAUTH_REDIRECTS.AUTH_CALLBACK,
           // Query parameters für debugging
           queryParams: {
             display: 'popup'

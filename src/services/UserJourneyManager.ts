@@ -39,14 +39,14 @@ class UserJourneyManager {
   public setEntryPoint(source: EntryPoint, data?: any): void {
     this.entryPoint = source;
     console.log('UserJourneyManager: Entry point set to:', source, data);
-    
+
     // Store additional context data
     if (data) {
       if (source === 'vc') {
         this.setVCData(data);
       }
     }
-    
+
     this.saveToStorage();
   }
 
@@ -94,12 +94,12 @@ class UserJourneyManager {
       case 'vc':
         // From visibility check, go to Figma-based VC onboarding
         return '/visibilitycheck/onboarding/step1';
-      
+
       case 'subscription':
         // From subscription selection, check if onboarding is needed
         // If guard is disabled, go directly to checkout
         return '/dashboard?source=subscription'; // Let guard handle onboarding if needed
-      
+
       case 'landing':
       case 'direct':
       default:
@@ -188,7 +188,7 @@ class UserJourneyManager {
       const stored = localStorage.getItem('userJourneyData');
       if (stored) {
         const data = JSON.parse(stored);
-        
+
         // Check if data is not too old (24 hours)
         const maxAge = 24 * 60 * 60 * 1000; // 24 hours
         if (data.timestamp && (Date.now() - data.timestamp) < maxAge) {

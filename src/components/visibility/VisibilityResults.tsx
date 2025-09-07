@@ -21,7 +21,7 @@ interface VisibilityResultsProps {
       why: string;
     }>;
     is_fully_satisfied?: boolean;
-    full_report_url?: string;
+    full_report_s3_url?: string;
   };
   onRequestDetailedReport: () => void;
   onNewAnalysis: () => void;

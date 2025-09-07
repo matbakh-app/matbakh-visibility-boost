@@ -1,25 +1,31 @@
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { SpeedInsights } from '@vercel/speed-insights/react'
+import { HelmetProvider } from 'react-helmet-async'
 
-import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async';
-import { AuthProvider } from '@/contexts/AuthContext'; 
-import '@/lib/i18n';
-import App from './App.tsx';
-import { I18nProvider } from '@/contexts/i18nContext';
-import './index.css';
-import { clearExpiredData } from './utils/localStorage';
+// Zentrale Provider-Architektur
+import { AppProviders } from '@/contexts/AppProviders'
 
-// Clear expired localStorage data on app load
-clearExpiredData();
+// i18n initialisieren BEVOR App geladen wird
+import './i18n'
 
-createRoot(document.getElementById("root")!).render(
-  <HelmetProvider>
-    <BrowserRouter>
-      <AuthProvider>
-        <I18nProvider>
+import App from './App'
+import './index.css'
+
+console.log('🚀 Starting matbakh.app with unified provider architecture')
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <HelmetProvider>
+      <AppProviders>
+        <BrowserRouter>
           <App />
-        </I18nProvider>
-      </AuthProvider>
-    </BrowserRouter>
-  </HelmetProvider>
-);
+          <SpeedInsights />
+        </BrowserRouter>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </AppProviders>
+    </HelmetProvider>
+  </React.StrictMode>,
+)

@@ -2,6 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
 import { jsPDF } from 'npm:jspdf@2.5.1';
+import { S3Client, PutObjectCommand } from "https://esm.sh/@aws-sdk/client-s3@3.450.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -249,34 +250,41 @@ const handler = async (req: Request): Promise<Response> => {
     // Generate PDF buffer
     const pdfBuffer = new Uint8Array(doc.output('arraybuffer'));
 
-    // Upload to Storage
-    const fileName = `${leadId}/report.pdf`;
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('visibility-reports')
-      .upload(fileName, pdfBuffer, {
-        contentType: 'application/pdf',
-        cacheControl: '3600',
-        upsert: true
+    // Upload to S3
+    const s3Client = new S3Client({
+      region: Deno.env.get('AWS_REGION') || 'eu-central-1',
+      credentials: {
+        accessKeyId: Deno.env.get('AWS_ACCESS_KEY_ID') || '',
+        secretAccessKey: Deno.env.get('AWS_SECRET_ACCESS_KEY') || '',
+      },
+    });
+
+    const fileName = `vc-reports/${leadId}/report.pdf`;
+    const bucketName = 'matbakh-files-reports';
+
+    try {
+      const putCommand = new PutObjectCommand({
+        Bucket: bucketName,
+        Key: fileName,
+        Body: pdfBuffer,
+        ContentType: 'application/pdf',
+        CacheControl: 'max-age=3600',
+        Metadata: {
+          'lead-id': leadId,
+          'generated-at': new Date().toISOString(),
+        },
       });
 
-    if (uploadError) {
-      console.error('❌ Error uploading PDF:', uploadError);
+      await s3Client.send(putCommand);
+      console.log('✅ PDF uploaded to S3:', fileName);
+
+      // Generate CloudFront URL for download (reports bucket is public via CloudFront)
+      const cloudFrontDomain = Deno.env.get('CLOUDFRONT_DOMAIN') || 'd1234567890.cloudfront.net';
+      const downloadUrl = `https://${cloudFrontDomain}/${fileName}`;
+
+    } catch (uploadError) {
+      console.error('❌ Error uploading PDF to S3:', uploadError);
       return new Response(JSON.stringify({ error: 'Failed to upload PDF' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    console.log('✅ PDF uploaded to storage:', uploadData.path);
-
-    // Generate signed URL for download
-    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-      .from('visibility-reports')
-      .createSignedUrl(fileName, 86400); // 24 hours
-
-    if (signedUrlError) {
-      console.error('❌ Error creating signed URL:', signedUrlError);
-      return new Response(JSON.stringify({ error: 'Failed to create download link' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -286,7 +294,7 @@ const handler = async (req: Request): Promise<Response> => {
     await supabase
       .from('visibility_check_leads')
       .update({
-        report_url: signedUrlData.signedUrl,
+        report_url: downloadUrl,
         report_generated_at: new Date().toISOString()
       })
       .eq('id', leadId);
@@ -298,8 +306,10 @@ const handler = async (req: Request): Promise<Response> => {
         lead_id: leadId,
         action_type: 'report_generated',
         details: { 
-          file_path: uploadData.path,
-          file_size: pdfBuffer.length
+          file_path: fileName,
+          file_size: pdfBuffer.length,
+          s3_bucket: bucketName,
+          cloudfront_url: downloadUrl
         }
       });
 
@@ -320,8 +330,8 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(JSON.stringify({
       success: true,
       message: 'PDF report generated',
-      downloadUrl: signedUrlData.signedUrl,
-      reportPath: uploadData.path
+      downloadUrl: downloadUrl,
+      reportPath: fileName
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

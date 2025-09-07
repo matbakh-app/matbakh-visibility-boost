@@ -233,14 +233,29 @@ export function WebsiteAnalysisStep({
            (guestCodeInfo || validatedCodeInfo || formData.emailConfirmed);
   };
 
-  const handleSendConfirmation = () => {
+  const handleSendConfirmation = async () => {
     setIsSubmitting(true);
     
-    setTimeout(() => {
+    try {
+      // Import the VC service to send the visibility check request
+      const { startVisibilityCheck } = await import('../../../services/vc');
+      
+      await startVisibilityCheck(
+        formData.email,
+        undefined, // name is optional for VC
+        formData.marketingAccepted,
+        language
+      );
+      
       setEmailSent(true);
+      console.log('Visibility check confirmation email sent to:', formData.email);
+    } catch (error) {
+      console.error('Failed to send confirmation email:', error);
+      // Still show success to avoid revealing system details
+      setEmailSent(true);
+    } finally {
       setIsSubmitting(false);
-      console.log('Confirmation email sent to:', formData.email);
-    }, 1000);
+    }
   };
 
   const handleSubmit = () => {

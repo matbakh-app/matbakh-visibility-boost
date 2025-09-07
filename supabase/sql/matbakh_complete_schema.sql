@@ -1,7 +1,13 @@
 -- =========================================================
--- MATBAKH.APP COMPLETE DATABASE SCHEMA
+-- MATBAKH.APP COMPLETE DATABASE SCHEMA - UPDATED
 -- Vollständige Datenbankstruktur für Restaurant Business Management Platform
+-- Last Updated: September 2, 2025 - Task 12.1 Schema Consolidation
+-- Status: 🔄 In Progress - Schema conflicts being resolved
 -- =========================================================
+
+-- IMPORTANT: This schema reflects the TARGET state after Task 12.1 completion
+-- Current production may have schema conflicts that are being resolved
+-- See docs/database/migrations/current-state.md for current status
 
 -- Enable required extensions
 create extension if not exists "uuid-ossp";

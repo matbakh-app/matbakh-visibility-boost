@@ -1,6 +1,5 @@
 import { Suspense, lazy } from 'react';
 import { Routes, Route, Outlet, useNavigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from '@/components/ui/sonner';
@@ -43,11 +42,13 @@ const AdminVCRuns = lazy(() => import('@/pages/admin/AdminVCRuns'));
 const AdminPartners = lazy(() => import('@/pages/admin/AdminPartners'));
 const AdminPartnerCredits = lazy(() => import('@/pages/admin/AdminPartnerCredits'));
 const AdminContentQueue = lazy(() => import('@/pages/admin/AdminContentQueue'));
+const DSGVOComplianceDashboard = lazy(() => import('@/pages/admin/DSGVOComplianceDashboard'));
 
 // Dashboard pages
 // Moved to useless: const OwnerOverview = lazy(() => import('@/pages/dashboard/OwnerOverview'));
 const RestaurantDashboard = lazy(() => import('@/pages/dashboard/RestaurantDashboard'));
 const VCResultDashboard = lazy(() => import('@/pages/vc/VCResultDashboard'));
+const AdaptiveAIDashboard = lazy(() => import('@/pages/dashboard/AdaptiveAIDashboard'));
 
 // Onboarding V2
 const OnboardingGate = lazy(() => import('@/components/onboarding/OnboardingGate'));
@@ -83,6 +84,9 @@ const VCQuick = lazy(() => import('@/pages/vc/VCQuick'));
 // Kiro Showcase
 const KiroShowcase = lazy(() => import('@/pages/_KiroShowcase'));
 
+// Cognito Test (Development only)
+const CognitoTest = lazy(() => import('@/pages/CognitoTest'));
+
 // Profile components
 const MyProfile = lazy(() => import('@/components/Profile/MyProfile').then(m => ({ default: m.MyProfile })));
 const CompanyProfile = lazy(() => import('@/components/Profile/CompanyProfile').then(m => ({ default: m.CompanyProfile })));
@@ -113,14 +117,7 @@ import Usage from '@/pages/legal/Usage';
 import Contact from '@/pages/legal/Contact';
 import FacebookDataDeletion from '@/pages/FacebookDataDeletion';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: 1,
-    },
-  },
-});
+// QueryClient wird jetzt in AppProviders.tsx verwaltet
 
 // VC Route wrappers to handle navigation and data persistence
 function VCStep1Route() {
@@ -155,12 +152,11 @@ function VCStep2Route() {
 function App() {
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-          {/* Canonical tag for every route (BrowserRouter is in index.tsx) */}
-          <Canonical />
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+        {/* Canonical tag for every route (BrowserRouter is in main.tsx) */}
+        <Canonical />
 
-          <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-background">
             <Suspense fallback={
               <div className="min-h-screen flex items-center justify-center">
                 <div className="animate-pulse">Loading...</div>
@@ -243,6 +239,11 @@ function App() {
 
                 {/* Kiro Showcase - Outside AppLayout for direct access */}
                 <Route path="/_kiro" element={<KiroShowcase />} />
+                
+                {/* Cognito Test - Development only */}
+                {import.meta.env.DEV && (
+                  <Route path="/_cognito-test" element={<CognitoTest />} />
+                )}
 
                 {/* Partner/Business routes */}
                 <Route path="/partner" element={
@@ -268,12 +269,21 @@ function App() {
                   <Route path="done" element={<StepDone />} />
                 </Route>
 
-                {/* Protected Dashboard routes - OnboardingGate temporarily disabled */}
-                <Route path="/dashboard" element={
-                  <ProtectedRoute>
-                    <RestaurantDashboard />
-                  </ProtectedRoute>
-                } />
+                  {/* Protected Dashboard routes with OnboardingGate - MOVED INSIDE AppLayout */}
+                  <Route path="dashboard" element={
+                    <ProtectedRoute>
+                      <OnboardingGate>
+                        <RestaurantDashboard />
+                      </OnboardingGate>
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Adaptive AI Dashboard - Demo/Development */}
+                  <Route path="dashboard/ai" element={
+                    <ProtectedRoute>
+                      <AdaptiveAIDashboard />
+                    </ProtectedRoute>
+                  } />
                 
                 {/* Legacy Dashboard routes - DISABLED - moved to useless */}
                 {/* <Route path="/dashboard/legacy" element={
@@ -302,6 +312,7 @@ function App() {
                   <Route path="partners" element={<AdminPartners />} />
                   <Route path="partner-credits" element={<AdminPartnerCredits />} />
                   <Route path="content-queue" element={<AdminContentQueue />} />
+                  <Route path="dsgvo-compliance" element={<DSGVOComplianceDashboard />} />
                 </Route>
 
                 <Route path="*" element={<NotFound />} />
@@ -311,11 +322,10 @@ function App() {
             {/* Global components */}
             <CookieConsentBanner />
             <AuthModal />
-            <Toaster />
-            <SonnerToaster />
-          </div>
-        </ThemeProvider>
-      </QueryClientProvider>
+          <Toaster />
+          <SonnerToaster />
+        </div>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

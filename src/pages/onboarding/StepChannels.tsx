@@ -43,11 +43,62 @@ export default function StepChannels() {
   ];
 
   const handleConnect = async (channelId: string) => {
-    // Simulate connection process
-    setConnectedChannels(prev => [...prev, channelId]);
-    
-    // In real implementation, this would trigger OAuth flows
-    console.log(`Connecting to ${channelId}`);
+    try {
+      // GTM Event
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('event', 'connect_start', {
+          provider: channelId,
+          source: 'onboarding'
+        });
+      }
+
+      switch (channelId) {
+        case 'gmb':
+          // Google My Business OAuth
+          const googleAuthUrl = `/auth/google?provider=gmb&redirect=${encodeURIComponent('/onboarding/channels')}`;
+          window.location.href = googleAuthUrl;
+          break;
+          
+        case 'facebook':
+          // Facebook OAuth
+          const fbAuthUrl = `/auth/facebook?redirect=${encodeURIComponent('/onboarding/channels')}`;
+          window.location.href = fbAuthUrl;
+          break;
+          
+        case 'instagram':
+          // Instagram Business (via Facebook)
+          const igAuthUrl = `/auth/facebook?scope=instagram_basic&redirect=${encodeURIComponent('/onboarding/channels')}`;
+          window.location.href = igAuthUrl;
+          break;
+          
+        case 'website':
+          // Website connection - just mark as connected for now
+          setConnectedChannels(prev => [...prev, channelId]);
+          
+          // GTM Success Event
+          if (typeof window !== 'undefined' && (window as any).gtag) {
+            (window as any).gtag('event', 'connect_success', {
+              provider: channelId,
+              source: 'onboarding'
+            });
+          }
+          break;
+          
+        default:
+          console.warn(`Unknown channel: ${channelId}`);
+      }
+    } catch (error) {
+      console.error(`Error connecting to ${channelId}:`, error);
+      
+      // GTM Error Event
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('event', 'connect_fail', {
+          provider: channelId,
+          source: 'onboarding',
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+    }
   };
 
   const handleSubmit = async () => {

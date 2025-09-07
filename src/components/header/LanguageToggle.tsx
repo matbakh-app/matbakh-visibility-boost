@@ -1,13 +1,27 @@
 
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigationUtils } from './navigationUtils';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 
 const LanguageToggle: React.FC = () => {
-  const { i18n } = useTranslation();
+  const { languageUpper, isReady } = useSafeTranslation();
   const { toggleLanguage } = useNavigationUtils();
+
+  if (!isReady) {
+    return (
+      <Button
+        variant="ghost"
+        size="sm"
+        disabled
+        className="text-gray-400"
+      >
+        <Globe className="h-4 w-4 mr-2" />
+        --
+      </Button>
+    );
+  }
 
   return (
     <Button
@@ -17,7 +31,7 @@ const LanguageToggle: React.FC = () => {
       className="text-gray-700 hover:text-black"
     >
       <Globe className="h-4 w-4 mr-2" />
-      {i18n.language.toUpperCase()}
+      {languageUpper}
     </Button>
   );
 };

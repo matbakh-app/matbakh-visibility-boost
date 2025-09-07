@@ -102,7 +102,7 @@ export interface LeadCheckReport {
   visibility_score?: number;
   total_todos?: number;
   critical_todos?: number;
-  pdf_report_url?: string;
+  pdf_report_s3_url?: string;
   created_at: string;
 }
 

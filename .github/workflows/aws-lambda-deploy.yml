@@ -1,0 +1,386 @@
+# 🚀 AWS Lambda Deployment Pipeline
+# Phase A2.5 - CI/CD Integration
+# Automated deployment for Lambda-RDS integration
+
+name: AWS Lambda Deployment
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'lambda-functions/**'
+      - 'infra/aws/**'
+      - '.github/workflows/aws-lambda-deploy.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'lambda-functions/**'
+      - 'infra/aws/**'
+
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+      force_deploy:
+        description: 'Force deployment (skip tests)'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  AWS_REGION: eu-central-1
+  NODE_VERSION: '18'
+  LAMBDA_FUNCTION_NAME: matbakh-db-test
+
+jobs:
+  # Job 1: Validate and Test
+  validate:
+    name: 🧪 Validate & Test
+    runs-on: ubuntu-latest
+    if: github.event.inputs.force_deploy != 'true'
+    
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: lambda-functions/db-test/package-lock.json
+
+      - name: 📦 Install Dependencies
+        working-directory: lambda-functions/db-test
+        run: |
+          npm ci
+          npm audit --audit-level=high
+
+      - name: 🧪 Run Tests
+        working-directory: lambda-functions/db-test
+        run: |
+          npm test
+          npm run lint
+
+      - name: 🔍 Security Scan
+        working-directory: lambda-functions/db-test
+        run: |
+          npm audit --audit-level=moderate
+          # Add additional security scanning tools here
+
+      - name: 📊 Code Coverage
+        working-directory: lambda-functions/db-test
+        run: |
+          npm run test:coverage
+          # Upload coverage reports if needed
+
+  # Job 2: Build Lambda Package
+  build:
+    name: 🏗️ Build Lambda Package
+    runs-on: ubuntu-latest
+    needs: [validate]
+    if: always() && (needs.validate.result == 'success' || needs.validate.result == 'skipped')
+    
+    outputs:
+      package-hash: ${{ steps.package.outputs.hash }}
+      
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: lambda-functions/db-test/package-lock.json
+
+      - name: 📦 Install Production Dependencies
+        working-directory: lambda-functions/db-test
+        run: |
+          npm ci --only=production
+          npm prune --production
+
+      - name: 🏗️ Build Lambda Package
+        id: package
+        working-directory: lambda-functions/db-test
+        run: |
+          # Create deployment package
+          zip -r ../lambda-deployment.zip . -x "*.test.js" "coverage/*" "node_modules/.cache/*"
+          
+          # Calculate package hash for change detection
+          PACKAGE_HASH=$(sha256sum ../lambda-deployment.zip | cut -d' ' -f1)
+          echo "hash=$PACKAGE_HASH" >> $GITHUB_OUTPUT
+          echo "📦 Package hash: $PACKAGE_HASH"
+
+      - name: 📤 Upload Lambda Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: lambda-deployment-package
+          path: lambda-functions/lambda-deployment.zip
+          retention-days: 30
+
+  # Job 3: Deploy to Development
+  deploy-dev:
+    name: 🚀 Deploy to Development
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.ref == 'refs/heads/develop' || github.event.inputs.environment == 'dev'
+    environment: development
+    
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 📥 Download Lambda Package
+        uses: actions/download-artifact@v4
+        with:
+          name: lambda-deployment-package
+          path: ./
+
+      - name: ⚙️ Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: 🔄 Update Lambda Function
+        run: |
+          echo "🚀 Deploying to Development..."
+          
+          # Update function code
+          aws lambda update-function-code \
+            --function-name ${{ env.LAMBDA_FUNCTION_NAME }}-dev \
+            --zip-file fileb://lambda-deployment.zip \
+            --region ${{ env.AWS_REGION }}
+          
+          # Wait for update to complete
+          aws lambda wait function-updated \
+            --function-name ${{ env.LAMBDA_FUNCTION_NAME }}-dev \
+            --region ${{ env.AWS_REGION }}
+          
+          echo "✅ Development deployment complete"
+
+      - name: 🧪 Post-Deployment Test
+        run: |
+          echo "🧪 Running post-deployment tests..."
+          
+          # Test Lambda function
+          aws lambda invoke \
+            --function-name ${{ env.LAMBDA_FUNCTION_NAME }}-dev \
+            --payload '{"test": "ci-cd-deployment"}' \
+            --region ${{ env.AWS_REGION }} \
+            response.json
+          
+          # Check response
+          if grep -q '"success":true' response.json; then
+            echo "✅ Post-deployment test passed"
+          else
+            echo "❌ Post-deployment test failed"
+            cat response.json
+            exit 1
+          fi
+
+  # Job 4: Deploy to Production
+  deploy-prod:
+    name: 🚀 Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.ref == 'refs/heads/main' || github.event.inputs.environment == 'prod'
+    environment: production
+    
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 📥 Download Lambda Package
+        uses: actions/download-artifact@v4
+        with:
+          name: lambda-deployment-package
+          path: ./
+
+      - name: ⚙️ Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: 🔍 Pre-Deployment Validation
+        run: |
+          echo "🔍 Running pre-deployment validation..."
+          
+          # Check if function exists
+          aws lambda get-function \
+            --function-name ${{ env.LAMBDA_FUNCTION_NAME }} \
+            --region ${{ env.AWS_REGION }} > /dev/null
+          
+          # Check RDS connectivity
+          aws rds describe-db-instances \
+            --db-instance-identifier matbakh-prod-db \
+            --region ${{ env.AWS_REGION }} > /dev/null
+          
+          echo "✅ Pre-deployment validation passed"
+
+      - name: 🚀 Deploy to Production
+        run: |
+          echo "🚀 Deploying to Production..."
+          
+          # Create function alias for blue-green deployment
+          CURRENT_VERSION=$(aws lambda publish-version \
+            --function-name ${{ env.LAMBDA_FUNCTION_NAME }} \
+            --region ${{ env.AWS_REGION }} \
+            --query 'Version' --output text)
+          
+          echo "📦 Published version: $CURRENT_VERSION"
+          
+          # Update function code
+          aws lambda update-function-code \
+            --function-name ${{ env.LAMBDA_FUNCTION_NAME }} \
+            --zip-file fileb://lambda-deployment.zip \
+            --region ${{ env.AWS_REGION }}
+          
+          # Wait for update to complete
+          aws lambda wait function-updated \
+            --function-name ${{ env.LAMBDA_FUNCTION_NAME }} \
+            --region ${{ env.AWS_REGION }}
+          
+          # Publish new version
+          NEW_VERSION=$(aws lambda publish-version \
+            --function-name ${{ env.LAMBDA_FUNCTION_NAME }} \
+            --region ${{ env.AWS_REGION }} \
+            --query 'Version' --output text)
+          
+          echo "🆕 New version: $NEW_VERSION"
+          
+          # Update LIVE alias to new version
+          aws lambda update-alias \
+            --function-name ${{ env.LAMBDA_FUNCTION_NAME }} \
+            --name LIVE \
+            --function-version $NEW_VERSION \
+            --region ${{ env.AWS_REGION }} || \
+          aws lambda create-alias \
+            --function-name ${{ env.LAMBDA_FUNCTION_NAME }} \
+            --name LIVE \
+            --function-version $NEW_VERSION \
+            --region ${{ env.AWS_REGION }}
+          
+          echo "✅ Production deployment complete"
+
+      - name: 🧪 Production Health Check
+        run: |
+          echo "🧪 Running production health check..."
+          
+          # Wait for deployment to stabilize
+          sleep 30
+          
+          # Test Lambda function via API Gateway
+          if [ -n "${{ secrets.API_GATEWAY_URL }}" ]; then
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.API_GATEWAY_URL }}/health")
+            
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "✅ Production health check passed (HTTP $HTTP_STATUS)"
+            else
+              echo "❌ Production health check failed (HTTP $HTTP_STATUS)"
+              exit 1
+            fi
+          else
+            # Direct Lambda test
+            aws lambda invoke \
+              --function-name ${{ env.LAMBDA_FUNCTION_NAME }}:LIVE \
+              --payload '{"test": "production-health-check"}' \
+              --region ${{ env.AWS_REGION }} \
+              response.json
+            
+            if grep -q '"success":true' response.json; then
+              echo "✅ Production health check passed"
+            else
+              echo "❌ Production health check failed"
+              cat response.json
+              exit 1
+            fi
+          fi
+
+      - name: 📊 Update CloudWatch Dashboard
+        run: |
+          echo "📊 Updating CloudWatch metrics..."
+          
+          # Publish deployment metric
+          aws cloudwatch put-metric-data \
+            --namespace "matbakh/deployments" \
+            --metric-data MetricName=Deployment,Value=1,Unit=Count,Dimensions=Environment=production,Status=success \
+            --region ${{ env.AWS_REGION }}
+          
+          echo "✅ Deployment metrics published"
+
+  # Job 5: Rollback (Manual Trigger)
+  rollback:
+    name: 🔄 Rollback Production
+    runs-on: ubuntu-latest
+    if: github.event.inputs.environment == 'rollback'
+    environment: production
+    
+    steps:
+      - name: ⚙️ Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: 🔄 Execute Rollback
+        run: |
+          echo "🔄 Rolling back production deployment..."
+          
+          # Get previous version
+          VERSIONS=$(aws lambda list-versions-by-function \
+            --function-name ${{ env.LAMBDA_FUNCTION_NAME }} \
+            --region ${{ env.AWS_REGION }} \
+            --query 'Versions[?Version!=`$LATEST`].Version' \
+            --output text | tr '\t' '\n' | sort -nr)
+          
+          PREVIOUS_VERSION=$(echo "$VERSIONS" | sed -n '2p')
+          
+          if [ -n "$PREVIOUS_VERSION" ]; then
+            echo "🔄 Rolling back to version: $PREVIOUS_VERSION"
+            
+            aws lambda update-alias \
+              --function-name ${{ env.LAMBDA_FUNCTION_NAME }} \
+              --name LIVE \
+              --function-version $PREVIOUS_VERSION \
+              --region ${{ env.AWS_REGION }}
+            
+            echo "✅ Rollback complete"
+          else
+            echo "❌ No previous version found for rollback"
+            exit 1
+          fi
+
+  # Job 6: Notification
+  notify:
+    name: 📢 Notify Deployment Status
+    runs-on: ubuntu-latest
+    needs: [deploy-dev, deploy-prod]
+    if: always()
+    
+    steps:
+      - name: 📢 Send Notification
+        run: |
+          if [ "${{ needs.deploy-prod.result }}" = "success" ]; then
+            echo "✅ Production deployment successful"
+            # Add Slack/Teams notification here
+          elif [ "${{ needs.deploy-dev.result }}" = "success" ]; then
+            echo "✅ Development deployment successful"
+          else
+            echo "❌ Deployment failed"
+            # Add failure notification here
+          fi

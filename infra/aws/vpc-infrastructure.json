@@ -1,0 +1,205 @@
+{
+  "VPCConfiguration": {
+    "projectName": "matbakh.app",
+    "region": "eu-central-1",
+    "vpc": {
+      "cidrBlock": "10.0.0.0/16",
+      "enableDnsHostnames": true,
+      "enableDnsSupport": true,
+      "tags": {
+        "Name": "matbakh-vpc",
+        "Environment": "production",
+        "Project": "matbakh-migration"
+      }
+    },
+    "availabilityZones": [
+      "eu-central-1a",
+      "eu-central-1b",
+      "eu-central-1c"
+    ],
+    "subnets": {
+      "public": [
+        {
+          "name": "matbakh-public-1a",
+          "cidrBlock": "10.0.1.0/24",
+          "availabilityZone": "eu-central-1a",
+          "mapPublicIpOnLaunch": true
+        },
+        {
+          "name": "matbakh-public-1b",
+          "cidrBlock": "10.0.2.0/24",
+          "availabilityZone": "eu-central-1b",
+          "mapPublicIpOnLaunch": true
+        },
+        {
+          "name": "matbakh-public-1c",
+          "cidrBlock": "10.0.3.0/24",
+          "availabilityZone": "eu-central-1c",
+          "mapPublicIpOnLaunch": true
+        }
+      ],
+      "private": [
+        {
+          "name": "matbakh-private-1a",
+          "cidrBlock": "10.0.11.0/24",
+          "availabilityZone": "eu-central-1a",
+          "mapPublicIpOnLaunch": false
+        },
+        {
+          "name": "matbakh-private-1b",
+          "cidrBlock": "10.0.12.0/24",
+          "availabilityZone": "eu-central-1b",
+          "mapPublicIpOnLaunch": false
+        },
+        {
+          "name": "matbakh-private-1c",
+          "cidrBlock": "10.0.13.0/24",
+          "availabilityZone": "eu-central-1c",
+          "mapPublicIpOnLaunch": false
+        }
+      ],
+      "database": [
+        {
+          "name": "matbakh-db-1a",
+          "cidrBlock": "10.0.21.0/24",
+          "availabilityZone": "eu-central-1a",
+          "mapPublicIpOnLaunch": false
+        },
+        {
+          "name": "matbakh-db-1b",
+          "cidrBlock": "10.0.22.0/24",
+          "availabilityZone": "eu-central-1b",
+          "mapPublicIpOnLaunch": false
+        },
+        {
+          "name": "matbakh-db-1c",
+          "cidrBlock": "10.0.23.0/24",
+          "availabilityZone": "eu-central-1c",
+          "mapPublicIpOnLaunch": false
+        }
+      ]
+    },
+    "internetGateway": {
+      "name": "matbakh-igw",
+      "attachToVpc": true
+    },
+    "natGateways": [
+      {
+        "name": "matbakh-nat-1a",
+        "subnetName": "matbakh-public-1a",
+        "allocationId": "auto-create"
+      },
+      {
+        "name": "matbakh-nat-1b",
+        "subnetName": "matbakh-public-1b",
+        "allocationId": "auto-create"
+      }
+    ],
+    "routeTables": {
+      "public": {
+        "name": "matbakh-public-rt",
+        "routes": [
+          {
+            "destinationCidrBlock": "0.0.0.0/0",
+            "gatewayId": "internetGateway"
+          }
+        ],
+        "associatedSubnets": ["matbakh-public-1a", "matbakh-public-1b", "matbakh-public-1c"]
+      },
+      "private": [
+        {
+          "name": "matbakh-private-rt-1a",
+          "routes": [
+            {
+              "destinationCidrBlock": "0.0.0.0/0",
+              "natGatewayId": "matbakh-nat-1a"
+            }
+          ],
+          "associatedSubnets": ["matbakh-private-1a"]
+        },
+        {
+          "name": "matbakh-private-rt-1b",
+          "routes": [
+            {
+              "destinationCidrBlock": "0.0.0.0/0",
+              "natGatewayId": "matbakh-nat-1b"
+            }
+          ],
+          "associatedSubnets": ["matbakh-private-1b", "matbakh-private-1c"]
+        }
+      ],
+      "database": {
+        "name": "matbakh-db-rt",
+        "routes": [],
+        "associatedSubnets": ["matbakh-db-1a", "matbakh-db-1b", "matbakh-db-1c"]
+      }
+    },
+    "securityGroups": {
+      "lambda": {
+        "name": "matbakh-lambda-sg",
+        "description": "Security group for Lambda functions",
+        "ingressRules": [],
+        "egressRules": [
+          {
+            "protocol": "tcp",
+            "fromPort": 443,
+            "toPort": 443,
+            "cidrBlocks": ["0.0.0.0/0"],
+            "description": "HTTPS outbound"
+          },
+          {
+            "protocol": "tcp",
+            "fromPort": 5432,
+            "toPort": 5432,
+            "sourceSecurityGroupId": "matbakh-rds-sg",
+            "description": "PostgreSQL to RDS"
+          }
+        ]
+      },
+      "rds": {
+        "name": "matbakh-rds-sg",
+        "description": "Security group for RDS PostgreSQL",
+        "ingressRules": [
+          {
+            "protocol": "tcp",
+            "fromPort": 5432,
+            "toPort": 5432,
+            "sourceSecurityGroupId": "matbakh-lambda-sg",
+            "description": "PostgreSQL from Lambda"
+          }
+        ],
+        "egressRules": []
+      },
+      "vpc-endpoints": {
+        "name": "matbakh-vpc-endpoints-sg",
+        "description": "Security group for VPC endpoints",
+        "ingressRules": [
+          {
+            "protocol": "tcp",
+            "fromPort": 443,
+            "toPort": 443,
+            "cidrBlocks": ["10.0.0.0/16"],
+            "description": "HTTPS from VPC"
+          }
+        ],
+        "egressRules": []
+      }
+    },
+    "vpcEndpoints": {
+      "secretsManager": {
+        "serviceName": "com.amazonaws.eu-central-1.secretsmanager",
+        "vpcEndpointType": "Interface",
+        "subnetIds": ["matbakh-private-1a", "matbakh-private-1b"],
+        "securityGroupIds": ["matbakh-vpc-endpoints-sg"],
+        "privateDnsEnabled": true
+      },
+      "rdsData": {
+        "serviceName": "com.amazonaws.eu-central-1.rds-data",
+        "vpcEndpointType": "Interface",
+        "subnetIds": ["matbakh-private-1a", "matbakh-private-1b"],
+        "securityGroupIds": ["matbakh-vpc-endpoints-sg"],
+        "privateDnsEnabled": true
+      }
+    }
+  }
+}

@@ -1,0 +1,35 @@
+config:
+  target: "{{ $env.API_BASE }}"
+  phases:
+    - duration: 60
+      arrivalRate: 5
+  processor: "./artillery-processors.js"
+  variables:
+    bucket: "matbakh-files-uploads"
+    folder: "perf-tests"
+    filename: "test-{{ $randomString(6) }}.txt"
+    contentType: "text/plain"
+scenarios:
+  - name: "Presign → PUT upload (single-part)"
+    flow:
+      - post:
+          url: "/get-presigned-url"
+          json:
+            bucket: "{{ bucket }}"
+            filename: "{{ filename }}"
+            contentType: "{{ contentType }}"
+            folder: "{{ folder }}"
+            fileSize: 1024
+          headers:
+            Authorization: "Bearer {{ $env.AUTH_BEARER }}"
+          capture:
+            - json: "$.uploadUrl"
+              as: "uploadUrl"
+            - json: "$.fileUrl"
+              as: "fileUrl"
+      - put:
+          url: "{{ uploadUrl }}"
+          body: "hello world perf test"
+          headers:
+            Content-Type: "text/plain"
+      - log: "Uploaded to {{ fileUrl }}"

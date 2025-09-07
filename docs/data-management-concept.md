@@ -49,7 +49,7 @@
 | `industry_benchmarks` | Branchenvergleiche | Standalone | - |
 
 **Enhanced Datenfluss:** 
-Lead-Erfassung → Enhanced Analyse (Multi-Platform) → JSONB Results → PDF-Report-Generation → Storage (visibility-reports bucket) → Double-Opt-In → E-Mail mit Download-Link → Optional: B2B Conversion
+Lead-Erfassung → Enhanced Analyse (Multi-Platform) → JSONB Results → PDF-Report-Generation → S3 Storage (matbakh-files-reports bucket) → Double-Opt-In → E-Mail mit CloudFront Download-Link → Optional: B2B Conversion
 
 **KI-Features:**
 - Instagram Auto-Detection mit Relevance-Scoring
@@ -199,8 +199,8 @@ service_packages (booking) → ga4_daily (sync)
 Anonymer Check → visibility_check_leads (status: pending) → 
 Enhanced Analysis (Multi-Platform API Calls) → 
 visibility_check_results (JSONB: scores, platforms, benchmarks) → 
-PDF Report Generation → Storage (visibility-reports bucket) → 
-visibility_check_leads.report_url UPDATE → 
+PDF Report Generation → S3 Storage (matbakh-files-reports bucket) → 
+visibility_check_leads.report_url UPDATE (CloudFront URL) → 
 Double-Opt-In Email with Download Link → 
 Optional: business_partners (B2B Conversion)
 ```

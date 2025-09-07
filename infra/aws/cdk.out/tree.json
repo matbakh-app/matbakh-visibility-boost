@@ -1,0 +1,1990 @@
+{
+  "version": "tree-0.1",
+  "tree": {
+    "id": "App",
+    "path": "",
+    "children": {
+      "MatbakhS3BucketsStack": {
+        "id": "MatbakhS3BucketsStack",
+        "path": "MatbakhS3BucketsStack",
+        "children": {
+          "MatbakhAccessLogs": {
+            "id": "MatbakhAccessLogs",
+            "path": "MatbakhS3BucketsStack/MatbakhAccessLogs",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "MatbakhS3BucketsStack/MatbakhAccessLogs/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::S3::Bucket",
+                  "aws:cdk:cloudformation:props": {
+                    "accessControl": "LogDeliveryWrite",
+                    "bucketEncryption": {
+                      "serverSideEncryptionConfiguration": [
+                        {
+                          "serverSideEncryptionByDefault": {
+                            "sseAlgorithm": "AES256"
+                          }
+                        }
+                      ]
+                    },
+                    "bucketName": "matbakh-access-logs",
+                    "lifecycleConfiguration": {
+                      "rules": [
+                        {
+                          "expirationInDays": 90,
+                          "id": "delete-access-logs",
+                          "status": "Enabled"
+                        }
+                      ]
+                    },
+                    "ownershipControls": {
+                      "rules": [
+                        {
+                          "objectOwnership": "ObjectWriter"
+                        }
+                      ]
+                    },
+                    "publicAccessBlockConfiguration": {
+                      "blockPublicAcls": true,
+                      "blockPublicPolicy": true,
+                      "ignorePublicAcls": true,
+                      "restrictPublicBuckets": true
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_s3.CfnBucket",
+                  "version": "2.87.0"
+                }
+              },
+              "Policy": {
+                "id": "Policy",
+                "path": "MatbakhS3BucketsStack/MatbakhAccessLogs/Policy",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "MatbakhS3BucketsStack/MatbakhAccessLogs/Policy/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::S3::BucketPolicy",
+                      "aws:cdk:cloudformation:props": {
+                        "bucket": {
+                          "Ref": "MatbakhAccessLogs1B1EE804"
+                        },
+                        "policyDocument": {
+                          "Statement": [
+                            {
+                              "Action": "s3:*",
+                              "Condition": {
+                                "Bool": {
+                                  "aws:SecureTransport": "false"
+                                }
+                              },
+                              "Effect": "Deny",
+                              "Principal": {
+                                "AWS": "*"
+                              },
+                              "Resource": [
+                                {
+                                  "Fn::GetAtt": [
+                                    "MatbakhAccessLogs1B1EE804",
+                                    "Arn"
+                                  ]
+                                },
+                                {
+                                  "Fn::Join": [
+                                    "",
+                                    [
+                                      {
+                                        "Fn::GetAtt": [
+                                          "MatbakhAccessLogs1B1EE804",
+                                          "Arn"
+                                        ]
+                                      },
+                                      "/*"
+                                    ]
+                                  ]
+                                }
+                              ]
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_s3.CfnBucketPolicy",
+                      "version": "2.87.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_s3.BucketPolicy",
+                  "version": "2.87.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_s3.Bucket",
+              "version": "2.87.0"
+            }
+          },
+          "MatbakhFilesUploads": {
+            "id": "MatbakhFilesUploads",
+            "path": "MatbakhS3BucketsStack/MatbakhFilesUploads",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "MatbakhS3BucketsStack/MatbakhFilesUploads/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::S3::Bucket",
+                  "aws:cdk:cloudformation:props": {
+                    "bucketEncryption": {
+                      "serverSideEncryptionConfiguration": [
+                        {
+                          "serverSideEncryptionByDefault": {
+                            "sseAlgorithm": "AES256"
+                          }
+                        }
+                      ]
+                    },
+                    "bucketName": "matbakh-files-uploads",
+                    "corsConfiguration": {
+                      "corsRules": [
+                        {
+                          "maxAge": 3000,
+                          "allowedHeaders": [
+                            "*"
+                          ],
+                          "allowedMethods": [
+                            "GET",
+                            "PUT",
+                            "HEAD"
+                          ],
+                          "allowedOrigins": [
+                            "https://matbakh.app",
+                            "http://localhost:5173"
+                          ],
+                          "exposedHeaders": [
+                            "ETag"
+                          ]
+                        }
+                      ]
+                    },
+                    "lifecycleConfiguration": {
+                      "rules": [
+                        {
+                          "expirationInDays": 7,
+                          "id": "delete-temp-files",
+                          "prefix": "temp/",
+                          "status": "Enabled"
+                        },
+                        {
+                          "id": "transition-to-ia",
+                          "status": "Enabled",
+                          "transitions": [
+                            {
+                              "storageClass": "STANDARD_IA",
+                              "transitionInDays": 30
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    "loggingConfiguration": {
+                      "destinationBucketName": {
+                        "Ref": "MatbakhAccessLogs1B1EE804"
+                      },
+                      "logFilePrefix": "uploads/"
+                    },
+                    "publicAccessBlockConfiguration": {
+                      "blockPublicAcls": true,
+                      "blockPublicPolicy": true,
+                      "ignorePublicAcls": true,
+                      "restrictPublicBuckets": true
+                    },
+                    "tags": [
+                      {
+                        "key": "BucketType",
+                        "value": "uploads"
+                      },
+                      {
+                        "key": "Environment",
+                        "value": "production"
+                      },
+                      {
+                        "key": "Project",
+                        "value": "matbakh"
+                      }
+                    ]
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_s3.CfnBucket",
+                  "version": "2.87.0"
+                }
+              },
+              "Policy": {
+                "id": "Policy",
+                "path": "MatbakhS3BucketsStack/MatbakhFilesUploads/Policy",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "MatbakhS3BucketsStack/MatbakhFilesUploads/Policy/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::S3::BucketPolicy",
+                      "aws:cdk:cloudformation:props": {
+                        "bucket": {
+                          "Ref": "MatbakhFilesUploads1640262B"
+                        },
+                        "policyDocument": {
+                          "Statement": [
+                            {
+                              "Action": "s3:*",
+                              "Condition": {
+                                "Bool": {
+                                  "aws:SecureTransport": "false"
+                                }
+                              },
+                              "Effect": "Deny",
+                              "Principal": {
+                                "AWS": "*"
+                              },
+                              "Resource": [
+                                {
+                                  "Fn::GetAtt": [
+                                    "MatbakhFilesUploads1640262B",
+                                    "Arn"
+                                  ]
+                                },
+                                {
+                                  "Fn::Join": [
+                                    "",
+                                    [
+                                      {
+                                        "Fn::GetAtt": [
+                                          "MatbakhFilesUploads1640262B",
+                                          "Arn"
+                                        ]
+                                      },
+                                      "/*"
+                                    ]
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "Action": [
+                                "s3:GetObject",
+                                "s3:PutObject"
+                              ],
+                              "Condition": {
+                                "Bool": {
+                                  "aws:SecureTransport": "false"
+                                }
+                              },
+                              "Effect": "Deny",
+                              "Principal": {
+                                "AWS": "*"
+                              },
+                              "Resource": {
+                                "Fn::Join": [
+                                  "",
+                                  [
+                                    {
+                                      "Fn::GetAtt": [
+                                        "MatbakhFilesUploads1640262B",
+                                        "Arn"
+                                      ]
+                                    },
+                                    "/*"
+                                  ]
+                                ]
+                              },
+                              "Sid": "DenyInsecureTransport"
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_s3.CfnBucketPolicy",
+                      "version": "2.87.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_s3.BucketPolicy",
+                  "version": "2.87.0"
+                }
+              },
+              "Notifications": {
+                "id": "Notifications",
+                "path": "MatbakhS3BucketsStack/MatbakhFilesUploads/Notifications",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "MatbakhS3BucketsStack/MatbakhFilesUploads/Notifications/Resource",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.CfnResource",
+                      "version": "2.87.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "constructs.Construct",
+                  "version": "10.4.2"
+                }
+              },
+              "AllowBucketNotificationsToMatbakhS3BucketsStackS3UploadProcessorFn11F0937A": {
+                "id": "AllowBucketNotificationsToMatbakhS3BucketsStackS3UploadProcessorFn11F0937A",
+                "path": "MatbakhS3BucketsStack/MatbakhFilesUploads/AllowBucketNotificationsToMatbakhS3BucketsStackS3UploadProcessorFn11F0937A",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Lambda::Permission",
+                  "aws:cdk:cloudformation:props": {
+                    "action": "lambda:InvokeFunction",
+                    "functionName": {
+                      "Fn::GetAtt": [
+                        "S3UploadProcessorFn6EA650DA",
+                        "Arn"
+                      ]
+                    },
+                    "principal": "s3.amazonaws.com",
+                    "sourceAccount": "055062860590",
+                    "sourceArn": {
+                      "Fn::GetAtt": [
+                        "MatbakhFilesUploads1640262B",
+                        "Arn"
+                      ]
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_lambda.CfnPermission",
+                  "version": "2.87.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_s3.Bucket",
+              "version": "2.87.0"
+            }
+          },
+          "MatbakhFilesProfile": {
+            "id": "MatbakhFilesProfile",
+            "path": "MatbakhS3BucketsStack/MatbakhFilesProfile",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "MatbakhS3BucketsStack/MatbakhFilesProfile/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::S3::Bucket",
+                  "aws:cdk:cloudformation:props": {
+                    "bucketEncryption": {
+                      "serverSideEncryptionConfiguration": [
+                        {
+                          "serverSideEncryptionByDefault": {
+                            "sseAlgorithm": "AES256"
+                          }
+                        }
+                      ]
+                    },
+                    "bucketName": "matbakh-files-profile",
+                    "corsConfiguration": {
+                      "corsRules": [
+                        {
+                          "maxAge": 3000,
+                          "allowedHeaders": [
+                            "*"
+                          ],
+                          "allowedMethods": [
+                            "GET",
+                            "PUT",
+                            "HEAD"
+                          ],
+                          "allowedOrigins": [
+                            "https://matbakh.app",
+                            "http://localhost:5173"
+                          ],
+                          "exposedHeaders": [
+                            "ETag"
+                          ]
+                        }
+                      ]
+                    },
+                    "lifecycleConfiguration": {
+                      "rules": [
+                        {
+                          "expirationInDays": 7,
+                          "id": "delete-temp-files",
+                          "prefix": "temp/",
+                          "status": "Enabled"
+                        },
+                        {
+                          "id": "optimize-storage",
+                          "status": "Enabled",
+                          "transitions": [
+                            {
+                              "storageClass": "STANDARD_IA",
+                              "transitionInDays": 90
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    "loggingConfiguration": {
+                      "destinationBucketName": {
+                        "Ref": "MatbakhAccessLogs1B1EE804"
+                      },
+                      "logFilePrefix": "profile/"
+                    },
+                    "publicAccessBlockConfiguration": {
+                      "blockPublicAcls": true,
+                      "blockPublicPolicy": true,
+                      "ignorePublicAcls": true,
+                      "restrictPublicBuckets": true
+                    },
+                    "tags": [
+                      {
+                        "key": "BucketType",
+                        "value": "profile"
+                      },
+                      {
+                        "key": "Environment",
+                        "value": "production"
+                      },
+                      {
+                        "key": "Project",
+                        "value": "matbakh"
+                      }
+                    ]
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_s3.CfnBucket",
+                  "version": "2.87.0"
+                }
+              },
+              "Policy": {
+                "id": "Policy",
+                "path": "MatbakhS3BucketsStack/MatbakhFilesProfile/Policy",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "MatbakhS3BucketsStack/MatbakhFilesProfile/Policy/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::S3::BucketPolicy",
+                      "aws:cdk:cloudformation:props": {
+                        "bucket": {
+                          "Ref": "MatbakhFilesProfile2891F944"
+                        },
+                        "policyDocument": {
+                          "Statement": [
+                            {
+                              "Action": "s3:*",
+                              "Condition": {
+                                "Bool": {
+                                  "aws:SecureTransport": "false"
+                                }
+                              },
+                              "Effect": "Deny",
+                              "Principal": {
+                                "AWS": "*"
+                              },
+                              "Resource": [
+                                {
+                                  "Fn::GetAtt": [
+                                    "MatbakhFilesProfile2891F944",
+                                    "Arn"
+                                  ]
+                                },
+                                {
+                                  "Fn::Join": [
+                                    "",
+                                    [
+                                      {
+                                        "Fn::GetAtt": [
+                                          "MatbakhFilesProfile2891F944",
+                                          "Arn"
+                                        ]
+                                      },
+                                      "/*"
+                                    ]
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "Action": [
+                                "s3:GetObject",
+                                "s3:PutObject"
+                              ],
+                              "Condition": {
+                                "Bool": {
+                                  "aws:SecureTransport": "false"
+                                }
+                              },
+                              "Effect": "Deny",
+                              "Principal": {
+                                "AWS": "*"
+                              },
+                              "Resource": {
+                                "Fn::Join": [
+                                  "",
+                                  [
+                                    {
+                                      "Fn::GetAtt": [
+                                        "MatbakhFilesProfile2891F944",
+                                        "Arn"
+                                      ]
+                                    },
+                                    "/*"
+                                  ]
+                                ]
+                              },
+                              "Sid": "DenyInsecureTransport"
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_s3.CfnBucketPolicy",
+                      "version": "2.87.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_s3.BucketPolicy",
+                  "version": "2.87.0"
+                }
+              },
+              "Notifications": {
+                "id": "Notifications",
+                "path": "MatbakhS3BucketsStack/MatbakhFilesProfile/Notifications",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "MatbakhS3BucketsStack/MatbakhFilesProfile/Notifications/Resource",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.CfnResource",
+                      "version": "2.87.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "constructs.Construct",
+                  "version": "10.4.2"
+                }
+              },
+              "AllowBucketNotificationsToMatbakhS3BucketsStackS3UploadProcessorFn11F0937A": {
+                "id": "AllowBucketNotificationsToMatbakhS3BucketsStackS3UploadProcessorFn11F0937A",
+                "path": "MatbakhS3BucketsStack/MatbakhFilesProfile/AllowBucketNotificationsToMatbakhS3BucketsStackS3UploadProcessorFn11F0937A",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Lambda::Permission",
+                  "aws:cdk:cloudformation:props": {
+                    "action": "lambda:InvokeFunction",
+                    "functionName": {
+                      "Fn::GetAtt": [
+                        "S3UploadProcessorFn6EA650DA",
+                        "Arn"
+                      ]
+                    },
+                    "principal": "s3.amazonaws.com",
+                    "sourceAccount": "055062860590",
+                    "sourceArn": {
+                      "Fn::GetAtt": [
+                        "MatbakhFilesProfile2891F944",
+                        "Arn"
+                      ]
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_lambda.CfnPermission",
+                  "version": "2.87.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_s3.Bucket",
+              "version": "2.87.0"
+            }
+          },
+          "MatbakhFilesReports": {
+            "id": "MatbakhFilesReports",
+            "path": "MatbakhS3BucketsStack/MatbakhFilesReports",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "MatbakhS3BucketsStack/MatbakhFilesReports/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::S3::Bucket",
+                  "aws:cdk:cloudformation:props": {
+                    "bucketEncryption": {
+                      "serverSideEncryptionConfiguration": [
+                        {
+                          "serverSideEncryptionByDefault": {
+                            "sseAlgorithm": "AES256"
+                          }
+                        }
+                      ]
+                    },
+                    "bucketName": "matbakh-files-reports",
+                    "corsConfiguration": {
+                      "corsRules": [
+                        {
+                          "maxAge": 3000,
+                          "allowedHeaders": [
+                            "*"
+                          ],
+                          "allowedMethods": [
+                            "GET",
+                            "HEAD"
+                          ],
+                          "allowedOrigins": [
+                            "https://matbakh.app",
+                            "http://localhost:5173"
+                          ],
+                          "exposedHeaders": [
+                            "ETag"
+                          ]
+                        }
+                      ]
+                    },
+                    "lifecycleConfiguration": {
+                      "rules": [
+                        {
+                          "expirationInDays": 30,
+                          "id": "expire-reports",
+                          "status": "Enabled"
+                        },
+                        {
+                          "expirationInDays": 7,
+                          "id": "expire-temp-reports",
+                          "prefix": "tmp/",
+                          "status": "Enabled"
+                        }
+                      ]
+                    },
+                    "loggingConfiguration": {
+                      "destinationBucketName": {
+                        "Ref": "MatbakhAccessLogs1B1EE804"
+                      },
+                      "logFilePrefix": "reports/"
+                    },
+                    "publicAccessBlockConfiguration": {
+                      "blockPublicAcls": true,
+                      "blockPublicPolicy": true,
+                      "ignorePublicAcls": true,
+                      "restrictPublicBuckets": true
+                    },
+                    "tags": [
+                      {
+                        "key": "BucketType",
+                        "value": "reports"
+                      },
+                      {
+                        "key": "Environment",
+                        "value": "production"
+                      },
+                      {
+                        "key": "Project",
+                        "value": "matbakh"
+                      }
+                    ]
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_s3.CfnBucket",
+                  "version": "2.87.0"
+                }
+              },
+              "Policy": {
+                "id": "Policy",
+                "path": "MatbakhS3BucketsStack/MatbakhFilesReports/Policy",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "MatbakhS3BucketsStack/MatbakhFilesReports/Policy/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::S3::BucketPolicy",
+                      "aws:cdk:cloudformation:props": {
+                        "bucket": {
+                          "Ref": "MatbakhFilesReports77AE59B4"
+                        },
+                        "policyDocument": {
+                          "Statement": [
+                            {
+                              "Action": "s3:*",
+                              "Condition": {
+                                "Bool": {
+                                  "aws:SecureTransport": "false"
+                                }
+                              },
+                              "Effect": "Deny",
+                              "Principal": {
+                                "AWS": "*"
+                              },
+                              "Resource": [
+                                {
+                                  "Fn::GetAtt": [
+                                    "MatbakhFilesReports77AE59B4",
+                                    "Arn"
+                                  ]
+                                },
+                                {
+                                  "Fn::Join": [
+                                    "",
+                                    [
+                                      {
+                                        "Fn::GetAtt": [
+                                          "MatbakhFilesReports77AE59B4",
+                                          "Arn"
+                                        ]
+                                      },
+                                      "/*"
+                                    ]
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "Action": "s3:GetObject",
+                              "Effect": "Allow",
+                              "Principal": {
+                                "CanonicalUser": {
+                                  "Fn::GetAtt": [
+                                    "ReportsOAI662F18DA",
+                                    "S3CanonicalUserId"
+                                  ]
+                                }
+                              },
+                              "Resource": {
+                                "Fn::Join": [
+                                  "",
+                                  [
+                                    {
+                                      "Fn::GetAtt": [
+                                        "MatbakhFilesReports77AE59B4",
+                                        "Arn"
+                                      ]
+                                    },
+                                    "/*"
+                                  ]
+                                ]
+                              }
+                            },
+                            {
+                              "Action": [
+                                "s3:GetObject",
+                                "s3:PutObject"
+                              ],
+                              "Condition": {
+                                "Bool": {
+                                  "aws:SecureTransport": "false"
+                                }
+                              },
+                              "Effect": "Deny",
+                              "Principal": {
+                                "AWS": "*"
+                              },
+                              "Resource": {
+                                "Fn::Join": [
+                                  "",
+                                  [
+                                    {
+                                      "Fn::GetAtt": [
+                                        "MatbakhFilesReports77AE59B4",
+                                        "Arn"
+                                      ]
+                                    },
+                                    "/*"
+                                  ]
+                                ]
+                              },
+                              "Sid": "DenyInsecureTransport"
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_s3.CfnBucketPolicy",
+                      "version": "2.87.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_s3.BucketPolicy",
+                  "version": "2.87.0"
+                }
+              },
+              "Notifications": {
+                "id": "Notifications",
+                "path": "MatbakhS3BucketsStack/MatbakhFilesReports/Notifications",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "MatbakhS3BucketsStack/MatbakhFilesReports/Notifications/Resource",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.CfnResource",
+                      "version": "2.87.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "constructs.Construct",
+                  "version": "10.4.2"
+                }
+              },
+              "AllowBucketNotificationsToMatbakhS3BucketsStackS3UploadProcessorFn11F0937A": {
+                "id": "AllowBucketNotificationsToMatbakhS3BucketsStackS3UploadProcessorFn11F0937A",
+                "path": "MatbakhS3BucketsStack/MatbakhFilesReports/AllowBucketNotificationsToMatbakhS3BucketsStackS3UploadProcessorFn11F0937A",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Lambda::Permission",
+                  "aws:cdk:cloudformation:props": {
+                    "action": "lambda:InvokeFunction",
+                    "functionName": {
+                      "Fn::GetAtt": [
+                        "S3UploadProcessorFn6EA650DA",
+                        "Arn"
+                      ]
+                    },
+                    "principal": "s3.amazonaws.com",
+                    "sourceAccount": "055062860590",
+                    "sourceArn": {
+                      "Fn::GetAtt": [
+                        "MatbakhFilesReports77AE59B4",
+                        "Arn"
+                      ]
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_lambda.CfnPermission",
+                  "version": "2.87.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_s3.Bucket",
+              "version": "2.87.0"
+            }
+          },
+          "ReportsResponseHeadersPolicy": {
+            "id": "ReportsResponseHeadersPolicy",
+            "path": "MatbakhS3BucketsStack/ReportsResponseHeadersPolicy",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "MatbakhS3BucketsStack/ReportsResponseHeadersPolicy/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::CloudFront::ResponseHeadersPolicy",
+                  "aws:cdk:cloudformation:props": {
+                    "responseHeadersPolicyConfig": {
+                      "name": "matbakh-reports-headers-policy",
+                      "comment": "Security and CORS headers for matbakh reports",
+                      "corsConfig": {
+                        "accessControlAllowCredentials": false,
+                        "accessControlAllowHeaders": {
+                          "items": [
+                            "*"
+                          ]
+                        },
+                        "accessControlAllowMethods": {
+                          "items": [
+                            "GET",
+                            "HEAD",
+                            "OPTIONS"
+                          ]
+                        },
+                        "accessControlAllowOrigins": {
+                          "items": [
+                            "https://matbakh.app",
+                            "https://*.matbakh.app"
+                          ]
+                        },
+                        "accessControlExposeHeaders": {
+                          "items": [
+                            "ETag"
+                          ]
+                        },
+                        "accessControlMaxAgeSec": 3600,
+                        "originOverride": true
+                      },
+                      "securityHeadersConfig": {
+                        "contentTypeOptions": {
+                          "override": true
+                        },
+                        "frameOptions": {
+                          "frameOption": "DENY",
+                          "override": true
+                        },
+                        "referrerPolicy": {
+                          "referrerPolicy": "strict-origin-when-cross-origin",
+                          "override": true
+                        },
+                        "strictTransportSecurity": {
+                          "accessControlMaxAge": {
+                            "amount": 31536000,
+                            "unit": {
+                              "label": "seconds",
+                              "isoLabel": "S",
+                              "inMillis": 1000
+                            }
+                          },
+                          "includeSubdomains": true,
+                          "override": true,
+                          "accessControlMaxAgeSec": 31536000
+                        }
+                      }
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_cloudfront.CfnResponseHeadersPolicy",
+                  "version": "2.87.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_cloudfront.ResponseHeadersPolicy",
+              "version": "2.87.0"
+            }
+          },
+          "ReportsOAI": {
+            "id": "ReportsOAI",
+            "path": "MatbakhS3BucketsStack/ReportsOAI",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "MatbakhS3BucketsStack/ReportsOAI/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+                  "aws:cdk:cloudformation:props": {
+                    "cloudFrontOriginAccessIdentityConfig": {
+                      "comment": "OAI for matbakh-files-reports bucket"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_cloudfront.CfnCloudFrontOriginAccessIdentity",
+                  "version": "2.87.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_cloudfront.OriginAccessIdentity",
+              "version": "2.87.0"
+            }
+          },
+          "ReportsDistribution": {
+            "id": "ReportsDistribution",
+            "path": "MatbakhS3BucketsStack/ReportsDistribution",
+            "children": {
+              "Origin1": {
+                "id": "Origin1",
+                "path": "MatbakhS3BucketsStack/ReportsDistribution/Origin1",
+                "constructInfo": {
+                  "fqn": "constructs.Construct",
+                  "version": "10.4.2"
+                }
+              },
+              "Origin2": {
+                "id": "Origin2",
+                "path": "MatbakhS3BucketsStack/ReportsDistribution/Origin2",
+                "constructInfo": {
+                  "fqn": "constructs.Construct",
+                  "version": "10.4.2"
+                }
+              },
+              "Origin3": {
+                "id": "Origin3",
+                "path": "MatbakhS3BucketsStack/ReportsDistribution/Origin3",
+                "constructInfo": {
+                  "fqn": "constructs.Construct",
+                  "version": "10.4.2"
+                }
+              },
+              "Resource": {
+                "id": "Resource",
+                "path": "MatbakhS3BucketsStack/ReportsDistribution/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::CloudFront::Distribution",
+                  "aws:cdk:cloudformation:props": {
+                    "distributionConfig": {
+                      "enabled": true,
+                      "origins": [
+                        {
+                          "domainName": {
+                            "Fn::GetAtt": [
+                              "MatbakhFilesReports77AE59B4",
+                              "RegionalDomainName"
+                            ]
+                          },
+                          "id": "MatbakhS3BucketsStackReportsDistributionOrigin1E8C14A68",
+                          "s3OriginConfig": {
+                            "originAccessIdentity": {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  "origin-access-identity/cloudfront/",
+                                  {
+                                    "Ref": "ReportsOAI662F18DA"
+                                  }
+                                ]
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "domainName": {
+                            "Fn::GetAtt": [
+                              "MatbakhFilesReports77AE59B4",
+                              "RegionalDomainName"
+                            ]
+                          },
+                          "id": "MatbakhS3BucketsStackReportsDistributionOrigin29BD1567C",
+                          "s3OriginConfig": {
+                            "originAccessIdentity": {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  "origin-access-identity/cloudfront/",
+                                  {
+                                    "Ref": "ReportsOAI662F18DA"
+                                  }
+                                ]
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "domainName": {
+                            "Fn::GetAtt": [
+                              "MatbakhFilesReports77AE59B4",
+                              "RegionalDomainName"
+                            ]
+                          },
+                          "id": "MatbakhS3BucketsStackReportsDistributionOrigin3EFCDBC0A",
+                          "s3OriginConfig": {
+                            "originAccessIdentity": {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  "origin-access-identity/cloudfront/",
+                                  {
+                                    "Ref": "ReportsOAI662F18DA"
+                                  }
+                                ]
+                              ]
+                            }
+                          }
+                        }
+                      ],
+                      "defaultCacheBehavior": {
+                        "pathPattern": "*",
+                        "targetOriginId": "MatbakhS3BucketsStackReportsDistributionOrigin1E8C14A68",
+                        "allowedMethods": [
+                          "GET",
+                          "HEAD"
+                        ],
+                        "cachedMethods": [
+                          "GET",
+                          "HEAD"
+                        ],
+                        "cachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+                        "compress": true,
+                        "responseHeadersPolicyId": {
+                          "Ref": "ReportsResponseHeadersPolicyE0C12EE4"
+                        },
+                        "viewerProtocolPolicy": "redirect-to-https"
+                      },
+                      "cacheBehaviors": [
+                        {
+                          "pathPattern": "/vc-reports/*",
+                          "targetOriginId": "MatbakhS3BucketsStackReportsDistributionOrigin29BD1567C",
+                          "cachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+                          "compress": true,
+                          "responseHeadersPolicyId": {
+                            "Ref": "ReportsResponseHeadersPolicyE0C12EE4"
+                          },
+                          "viewerProtocolPolicy": "redirect-to-https"
+                        },
+                        {
+                          "pathPattern": "/pdf-exports/*",
+                          "targetOriginId": "MatbakhS3BucketsStackReportsDistributionOrigin3EFCDBC0A",
+                          "cachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
+                          "compress": true,
+                          "responseHeadersPolicyId": {
+                            "Ref": "ReportsResponseHeadersPolicyE0C12EE4"
+                          },
+                          "viewerProtocolPolicy": "redirect-to-https"
+                        }
+                      ],
+                      "comment": "CloudFront distribution for matbakh reports bucket",
+                      "customErrorResponses": [
+                        {
+                          "errorCachingMinTtl": 300,
+                          "errorCode": 404,
+                          "responseCode": 404,
+                          "responsePagePath": "/error.html"
+                        }
+                      ],
+                      "httpVersion": "http2",
+                      "ipv6Enabled": true,
+                      "priceClass": "PriceClass_100",
+                      "restrictions": {
+                        "geoRestriction": {
+                          "restrictionType": "whitelist",
+                          "locations": [
+                            "DE",
+                            "AT",
+                            "CH",
+                            "US",
+                            "GB"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_cloudfront.CfnDistribution",
+                  "version": "2.87.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_cloudfront.Distribution",
+              "version": "2.87.0"
+            }
+          },
+          "S3PresignedUrlFn": {
+            "id": "S3PresignedUrlFn",
+            "path": "MatbakhS3BucketsStack/S3PresignedUrlFn",
+            "children": {
+              "ServiceRole": {
+                "id": "ServiceRole",
+                "path": "MatbakhS3BucketsStack/S3PresignedUrlFn/ServiceRole",
+                "children": {
+                  "ImportServiceRole": {
+                    "id": "ImportServiceRole",
+                    "path": "MatbakhS3BucketsStack/S3PresignedUrlFn/ServiceRole/ImportServiceRole",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.Resource",
+                      "version": "2.87.0"
+                    }
+                  },
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "MatbakhS3BucketsStack/S3PresignedUrlFn/ServiceRole/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::IAM::Role",
+                      "aws:cdk:cloudformation:props": {
+                        "assumeRolePolicyDocument": {
+                          "Statement": [
+                            {
+                              "Action": "sts:AssumeRole",
+                              "Effect": "Allow",
+                              "Principal": {
+                                "Service": "lambda.amazonaws.com"
+                              }
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        },
+                        "managedPolicyArns": [
+                          {
+                            "Fn::Join": [
+                              "",
+                              [
+                                "arn:",
+                                {
+                                  "Ref": "AWS::Partition"
+                                },
+                                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+                              ]
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.CfnRole",
+                      "version": "2.87.0"
+                    }
+                  },
+                  "DefaultPolicy": {
+                    "id": "DefaultPolicy",
+                    "path": "MatbakhS3BucketsStack/S3PresignedUrlFn/ServiceRole/DefaultPolicy",
+                    "children": {
+                      "Resource": {
+                        "id": "Resource",
+                        "path": "MatbakhS3BucketsStack/S3PresignedUrlFn/ServiceRole/DefaultPolicy/Resource",
+                        "attributes": {
+                          "aws:cdk:cloudformation:type": "AWS::IAM::Policy",
+                          "aws:cdk:cloudformation:props": {
+                            "policyDocument": {
+                              "Statement": [
+                                {
+                                  "Action": [
+                                    "s3:AbortMultipartUpload",
+                                    "s3:CompleteMultipartUpload",
+                                    "s3:CreateMultipartUpload",
+                                    "s3:GetObject",
+                                    "s3:HeadObject",
+                                    "s3:ListMultipartUploadParts",
+                                    "s3:PutObject",
+                                    "s3:PutObjectAcl",
+                                    "s3:PutObjectTagging"
+                                  ],
+                                  "Effect": "Allow",
+                                  "Resource": [
+                                    {
+                                      "Fn::Join": [
+                                        "",
+                                        [
+                                          {
+                                            "Fn::GetAtt": [
+                                              "MatbakhFilesProfile2891F944",
+                                              "Arn"
+                                            ]
+                                          },
+                                          "/*"
+                                        ]
+                                      ]
+                                    },
+                                    {
+                                      "Fn::Join": [
+                                        "",
+                                        [
+                                          {
+                                            "Fn::GetAtt": [
+                                              "MatbakhFilesReports77AE59B4",
+                                              "Arn"
+                                            ]
+                                          },
+                                          "/*"
+                                        ]
+                                      ]
+                                    },
+                                    {
+                                      "Fn::Join": [
+                                        "",
+                                        [
+                                          {
+                                            "Fn::GetAtt": [
+                                              "MatbakhFilesUploads1640262B",
+                                              "Arn"
+                                            ]
+                                          },
+                                          "/*"
+                                        ]
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "Action": "s3:ListBucket",
+                                  "Effect": "Allow",
+                                  "Resource": [
+                                    {
+                                      "Fn::GetAtt": [
+                                        "MatbakhFilesProfile2891F944",
+                                        "Arn"
+                                      ]
+                                    },
+                                    {
+                                      "Fn::GetAtt": [
+                                        "MatbakhFilesReports77AE59B4",
+                                        "Arn"
+                                      ]
+                                    },
+                                    {
+                                      "Fn::GetAtt": [
+                                        "MatbakhFilesUploads1640262B",
+                                        "Arn"
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "Action": "secretsmanager:GetSecretValue",
+                                  "Effect": "Allow",
+                                  "Resource": "arn:aws:secretsmanager:eu-central-1:055062860590:secret:matbakh-db-postgres-*"
+                                }
+                              ],
+                              "Version": "2012-10-17"
+                            },
+                            "policyName": "S3PresignedUrlFnServiceRoleDefaultPolicy17388DD6",
+                            "roles": [
+                              {
+                                "Ref": "S3PresignedUrlFnServiceRoleC7A8EF9A"
+                              }
+                            ]
+                          }
+                        },
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.aws_iam.CfnPolicy",
+                          "version": "2.87.0"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.Policy",
+                      "version": "2.87.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_iam.Role",
+                  "version": "2.87.0"
+                }
+              },
+              "Code": {
+                "id": "Code",
+                "path": "MatbakhS3BucketsStack/S3PresignedUrlFn/Code",
+                "children": {
+                  "Stage": {
+                    "id": "Stage",
+                    "path": "MatbakhS3BucketsStack/S3PresignedUrlFn/Code/Stage",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.AssetStaging",
+                      "version": "2.87.0"
+                    }
+                  },
+                  "AssetBucket": {
+                    "id": "AssetBucket",
+                    "path": "MatbakhS3BucketsStack/S3PresignedUrlFn/Code/AssetBucket",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_s3.BucketBase",
+                      "version": "2.87.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_s3_assets.Asset",
+                  "version": "2.87.0"
+                }
+              },
+              "Resource": {
+                "id": "Resource",
+                "path": "MatbakhS3BucketsStack/S3PresignedUrlFn/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Lambda::Function",
+                  "aws:cdk:cloudformation:props": {
+                    "code": {
+                      "s3Bucket": "cdk-hnb659fds-assets-055062860590-eu-central-1",
+                      "s3Key": "60c797742cea20742aa82eced0bd99c766229fd3f3afc102670dfd99e883a678.zip"
+                    },
+                    "role": {
+                      "Fn::GetAtt": [
+                        "S3PresignedUrlFnServiceRoleC7A8EF9A",
+                        "Arn"
+                      ]
+                    },
+                    "environment": {
+                      "variables": {
+                        "NODE_ENV": "production",
+                        "DB_SECRET_NAME": "matbakh-db-postgres",
+                        "UPLOADS_BUCKET": {
+                          "Ref": "MatbakhFilesUploads1640262B"
+                        },
+                        "PROFILE_BUCKET": {
+                          "Ref": "MatbakhFilesProfile2891F944"
+                        },
+                        "REPORTS_BUCKET": {
+                          "Ref": "MatbakhFilesReports77AE59B4"
+                        },
+                        "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1"
+                      }
+                    },
+                    "functionName": "matbakh-get-presigned-url",
+                    "handler": "index.handler",
+                    "layers": [
+                      "arn:aws:lambda:eu-central-1:055062860590:layer:pg-client-layer:1"
+                    ],
+                    "memorySize": 256,
+                    "runtime": "nodejs18.x",
+                    "timeout": 30
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_lambda.CfnFunction",
+                  "version": "2.87.0"
+                }
+              },
+              "FunctionUrl": {
+                "id": "FunctionUrl",
+                "path": "MatbakhS3BucketsStack/S3PresignedUrlFn/FunctionUrl",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "MatbakhS3BucketsStack/S3PresignedUrlFn/FunctionUrl/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::Lambda::Url",
+                      "aws:cdk:cloudformation:props": {
+                        "authType": "NONE",
+                        "targetFunctionArn": {
+                          "Fn::GetAtt": [
+                            "S3PresignedUrlFn1D59CD8F",
+                            "Arn"
+                          ]
+                        },
+                        "cors": {
+                          "allowHeaders": [
+                            "*"
+                          ],
+                          "allowMethods": [
+                            "GET",
+                            "POST"
+                          ],
+                          "allowOrigins": [
+                            "https://matbakh.app",
+                            "http://localhost:5173"
+                          ],
+                          "maxAge": 600
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_lambda.CfnUrl",
+                      "version": "2.87.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_lambda.FunctionUrl",
+                  "version": "2.87.0"
+                }
+              },
+              "invoke-function-url": {
+                "id": "invoke-function-url",
+                "path": "MatbakhS3BucketsStack/S3PresignedUrlFn/invoke-function-url",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Lambda::Permission",
+                  "aws:cdk:cloudformation:props": {
+                    "action": "lambda:InvokeFunctionUrl",
+                    "functionName": {
+                      "Fn::GetAtt": [
+                        "S3PresignedUrlFn1D59CD8F",
+                        "Arn"
+                      ]
+                    },
+                    "principal": "*",
+                    "functionUrlAuthType": "NONE"
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_lambda.CfnPermission",
+                  "version": "2.87.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_lambda_nodejs.NodejsFunction",
+              "version": "2.87.0"
+            }
+          },
+          "PgClientLayerPresigned": {
+            "id": "PgClientLayerPresigned",
+            "path": "MatbakhS3BucketsStack/PgClientLayerPresigned",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.Resource",
+              "version": "2.87.0"
+            }
+          },
+          "S3UploadProcessorFn": {
+            "id": "S3UploadProcessorFn",
+            "path": "MatbakhS3BucketsStack/S3UploadProcessorFn",
+            "children": {
+              "ServiceRole": {
+                "id": "ServiceRole",
+                "path": "MatbakhS3BucketsStack/S3UploadProcessorFn/ServiceRole",
+                "children": {
+                  "ImportServiceRole": {
+                    "id": "ImportServiceRole",
+                    "path": "MatbakhS3BucketsStack/S3UploadProcessorFn/ServiceRole/ImportServiceRole",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.Resource",
+                      "version": "2.87.0"
+                    }
+                  },
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "MatbakhS3BucketsStack/S3UploadProcessorFn/ServiceRole/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::IAM::Role",
+                      "aws:cdk:cloudformation:props": {
+                        "assumeRolePolicyDocument": {
+                          "Statement": [
+                            {
+                              "Action": "sts:AssumeRole",
+                              "Effect": "Allow",
+                              "Principal": {
+                                "Service": "lambda.amazonaws.com"
+                              }
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        },
+                        "managedPolicyArns": [
+                          {
+                            "Fn::Join": [
+                              "",
+                              [
+                                "arn:",
+                                {
+                                  "Ref": "AWS::Partition"
+                                },
+                                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+                              ]
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.CfnRole",
+                      "version": "2.87.0"
+                    }
+                  },
+                  "DefaultPolicy": {
+                    "id": "DefaultPolicy",
+                    "path": "MatbakhS3BucketsStack/S3UploadProcessorFn/ServiceRole/DefaultPolicy",
+                    "children": {
+                      "Resource": {
+                        "id": "Resource",
+                        "path": "MatbakhS3BucketsStack/S3UploadProcessorFn/ServiceRole/DefaultPolicy/Resource",
+                        "attributes": {
+                          "aws:cdk:cloudformation:type": "AWS::IAM::Policy",
+                          "aws:cdk:cloudformation:props": {
+                            "policyDocument": {
+                              "Statement": [
+                                {
+                                  "Action": [
+                                    "s3:GetBucket*",
+                                    "s3:GetObject*",
+                                    "s3:List*"
+                                  ],
+                                  "Effect": "Allow",
+                                  "Resource": [
+                                    {
+                                      "Fn::GetAtt": [
+                                        "MatbakhFilesProfile2891F944",
+                                        "Arn"
+                                      ]
+                                    },
+                                    {
+                                      "Fn::GetAtt": [
+                                        "MatbakhFilesReports77AE59B4",
+                                        "Arn"
+                                      ]
+                                    },
+                                    {
+                                      "Fn::GetAtt": [
+                                        "MatbakhFilesUploads1640262B",
+                                        "Arn"
+                                      ]
+                                    },
+                                    {
+                                      "Fn::Join": [
+                                        "",
+                                        [
+                                          {
+                                            "Fn::GetAtt": [
+                                              "MatbakhFilesProfile2891F944",
+                                              "Arn"
+                                            ]
+                                          },
+                                          "/*"
+                                        ]
+                                      ]
+                                    },
+                                    {
+                                      "Fn::Join": [
+                                        "",
+                                        [
+                                          {
+                                            "Fn::GetAtt": [
+                                              "MatbakhFilesReports77AE59B4",
+                                              "Arn"
+                                            ]
+                                          },
+                                          "/*"
+                                        ]
+                                      ]
+                                    },
+                                    {
+                                      "Fn::Join": [
+                                        "",
+                                        [
+                                          {
+                                            "Fn::GetAtt": [
+                                              "MatbakhFilesUploads1640262B",
+                                              "Arn"
+                                            ]
+                                          },
+                                          "/*"
+                                        ]
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "Action": "secretsmanager:GetSecretValue",
+                                  "Effect": "Allow",
+                                  "Resource": "arn:aws:secretsmanager:eu-central-1:055062860590:secret:matbakh-db-postgres-*"
+                                }
+                              ],
+                              "Version": "2012-10-17"
+                            },
+                            "policyName": "S3UploadProcessorFnServiceRoleDefaultPolicy26DB8944",
+                            "roles": [
+                              {
+                                "Ref": "S3UploadProcessorFnServiceRole32E14C90"
+                              }
+                            ]
+                          }
+                        },
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.aws_iam.CfnPolicy",
+                          "version": "2.87.0"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.Policy",
+                      "version": "2.87.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_iam.Role",
+                  "version": "2.87.0"
+                }
+              },
+              "Code": {
+                "id": "Code",
+                "path": "MatbakhS3BucketsStack/S3UploadProcessorFn/Code",
+                "children": {
+                  "Stage": {
+                    "id": "Stage",
+                    "path": "MatbakhS3BucketsStack/S3UploadProcessorFn/Code/Stage",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.AssetStaging",
+                      "version": "2.87.0"
+                    }
+                  },
+                  "AssetBucket": {
+                    "id": "AssetBucket",
+                    "path": "MatbakhS3BucketsStack/S3UploadProcessorFn/Code/AssetBucket",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_s3.BucketBase",
+                      "version": "2.87.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_s3_assets.Asset",
+                  "version": "2.87.0"
+                }
+              },
+              "Resource": {
+                "id": "Resource",
+                "path": "MatbakhS3BucketsStack/S3UploadProcessorFn/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Lambda::Function",
+                  "aws:cdk:cloudformation:props": {
+                    "code": {
+                      "s3Bucket": "cdk-hnb659fds-assets-055062860590-eu-central-1",
+                      "s3Key": "5581e168c18c4bc73e21d320906537d959d82ce54b15e337e89c042cecea616f.zip"
+                    },
+                    "role": {
+                      "Fn::GetAtt": [
+                        "S3UploadProcessorFnServiceRole32E14C90",
+                        "Arn"
+                      ]
+                    },
+                    "environment": {
+                      "variables": {
+                        "NODE_ENV": "production",
+                        "DB_SECRET_NAME": "matbakh-db-postgres",
+                        "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1"
+                      }
+                    },
+                    "functionName": "matbakh-s3-upload-processor",
+                    "handler": "index.handler",
+                    "layers": [
+                      "arn:aws:lambda:eu-central-1:055062860590:layer:pg-client-layer:1"
+                    ],
+                    "memorySize": 512,
+                    "runtime": "nodejs18.x",
+                    "timeout": 60
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_lambda.CfnFunction",
+                  "version": "2.87.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_lambda_nodejs.NodejsFunction",
+              "version": "2.87.0"
+            }
+          },
+          "PgClientLayer": {
+            "id": "PgClientLayer",
+            "path": "MatbakhS3BucketsStack/PgClientLayer",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.Resource",
+              "version": "2.87.0"
+            }
+          },
+          "BucketNotificationsHandler050a0587b7544547bf325f094a3db834": {
+            "id": "BucketNotificationsHandler050a0587b7544547bf325f094a3db834",
+            "path": "MatbakhS3BucketsStack/BucketNotificationsHandler050a0587b7544547bf325f094a3db834",
+            "children": {
+              "Role": {
+                "id": "Role",
+                "path": "MatbakhS3BucketsStack/BucketNotificationsHandler050a0587b7544547bf325f094a3db834/Role",
+                "children": {
+                  "ImportRole": {
+                    "id": "ImportRole",
+                    "path": "MatbakhS3BucketsStack/BucketNotificationsHandler050a0587b7544547bf325f094a3db834/Role/ImportRole",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.Resource",
+                      "version": "2.87.0"
+                    }
+                  },
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "MatbakhS3BucketsStack/BucketNotificationsHandler050a0587b7544547bf325f094a3db834/Role/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::IAM::Role",
+                      "aws:cdk:cloudformation:props": {
+                        "assumeRolePolicyDocument": {
+                          "Statement": [
+                            {
+                              "Action": "sts:AssumeRole",
+                              "Effect": "Allow",
+                              "Principal": {
+                                "Service": "lambda.amazonaws.com"
+                              }
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        },
+                        "managedPolicyArns": [
+                          {
+                            "Fn::Join": [
+                              "",
+                              [
+                                "arn:",
+                                {
+                                  "Ref": "AWS::Partition"
+                                },
+                                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+                              ]
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.CfnRole",
+                      "version": "2.87.0"
+                    }
+                  },
+                  "DefaultPolicy": {
+                    "id": "DefaultPolicy",
+                    "path": "MatbakhS3BucketsStack/BucketNotificationsHandler050a0587b7544547bf325f094a3db834/Role/DefaultPolicy",
+                    "children": {
+                      "Resource": {
+                        "id": "Resource",
+                        "path": "MatbakhS3BucketsStack/BucketNotificationsHandler050a0587b7544547bf325f094a3db834/Role/DefaultPolicy/Resource",
+                        "attributes": {
+                          "aws:cdk:cloudformation:type": "AWS::IAM::Policy",
+                          "aws:cdk:cloudformation:props": {
+                            "policyDocument": {
+                              "Statement": [
+                                {
+                                  "Action": "s3:PutBucketNotification",
+                                  "Effect": "Allow",
+                                  "Resource": "*"
+                                }
+                              ],
+                              "Version": "2012-10-17"
+                            },
+                            "policyName": "BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleDefaultPolicy2CF63D36",
+                            "roles": [
+                              {
+                                "Ref": "BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleB6FB88EC"
+                              }
+                            ]
+                          }
+                        },
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.aws_iam.CfnPolicy",
+                          "version": "2.87.0"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.Policy",
+                      "version": "2.87.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_iam.Role",
+                  "version": "2.87.0"
+                }
+              },
+              "Resource": {
+                "id": "Resource",
+                "path": "MatbakhS3BucketsStack/BucketNotificationsHandler050a0587b7544547bf325f094a3db834/Resource",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.CfnResource",
+                  "version": "2.87.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "constructs.Construct",
+              "version": "10.4.2"
+            }
+          },
+          "UploadsBucketName": {
+            "id": "UploadsBucketName",
+            "path": "MatbakhS3BucketsStack/UploadsBucketName",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.87.0"
+            }
+          },
+          "ProfileBucketName": {
+            "id": "ProfileBucketName",
+            "path": "MatbakhS3BucketsStack/ProfileBucketName",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.87.0"
+            }
+          },
+          "ReportsBucketName": {
+            "id": "ReportsBucketName",
+            "path": "MatbakhS3BucketsStack/ReportsBucketName",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.87.0"
+            }
+          },
+          "ReportsDistributionDomain": {
+            "id": "ReportsDistributionDomain",
+            "path": "MatbakhS3BucketsStack/ReportsDistributionDomain",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.87.0"
+            }
+          },
+          "ReportsDistributionId": {
+            "id": "ReportsDistributionId",
+            "path": "MatbakhS3BucketsStack/ReportsDistributionId",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.87.0"
+            }
+          },
+          "PresignedUrlFunctionArn": {
+            "id": "PresignedUrlFunctionArn",
+            "path": "MatbakhS3BucketsStack/PresignedUrlFunctionArn",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.87.0"
+            }
+          },
+          "PresignedUrlFunctionUrl": {
+            "id": "PresignedUrlFunctionUrl",
+            "path": "MatbakhS3BucketsStack/PresignedUrlFunctionUrl",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.87.0"
+            }
+          },
+          "UploadProcessorFunctionArn": {
+            "id": "UploadProcessorFunctionArn",
+            "path": "MatbakhS3BucketsStack/UploadProcessorFunctionArn",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.87.0"
+            }
+          },
+          "AccessLogsBucketName": {
+            "id": "AccessLogsBucketName",
+            "path": "MatbakhS3BucketsStack/AccessLogsBucketName",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.87.0"
+            }
+          },
+          "CDKMetadata": {
+            "id": "CDKMetadata",
+            "path": "MatbakhS3BucketsStack/CDKMetadata",
+            "children": {
+              "Default": {
+                "id": "Default",
+                "path": "MatbakhS3BucketsStack/CDKMetadata/Default",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.CfnResource",
+                  "version": "2.87.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "constructs.Construct",
+              "version": "10.4.2"
+            }
+          },
+          "BootstrapVersion": {
+            "id": "BootstrapVersion",
+            "path": "MatbakhS3BucketsStack/BootstrapVersion",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnParameter",
+              "version": "2.87.0"
+            }
+          },
+          "CheckBootstrapVersion": {
+            "id": "CheckBootstrapVersion",
+            "path": "MatbakhS3BucketsStack/CheckBootstrapVersion",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnRule",
+              "version": "2.87.0"
+            }
+          }
+        },
+        "constructInfo": {
+          "fqn": "aws-cdk-lib.Stack",
+          "version": "2.87.0"
+        }
+      },
+      "Tree": {
+        "id": "Tree",
+        "path": "Tree",
+        "constructInfo": {
+          "fqn": "constructs.Construct",
+          "version": "10.4.2"
+        }
+      }
+    },
+    "constructInfo": {
+      "fqn": "aws-cdk-lib.App",
+      "version": "2.87.0"
+    }
+  }
+}

@@ -32,10 +32,10 @@ class VCServiceError extends Error {
  */
 function validateEnvironment(): { apiBase: string; provider: string } {
   const provider = import.meta.env.VITE_VC_API_PROVIDER || 'aws';
-  const apiBase = import.meta.env.VITE_PUBLIC_API_BASE || 'https://uheksobnyedarrpgxhju.functions.supabase.co/v1';
+  const apiBase = import.meta.env.VITE_PUBLIC_API_BASE || 'https://guf7ho7bze.execute-api.eu-central-1.amazonaws.com/prod';
 
   // TEMPORARY: Use hardcoded values if env vars are missing
-  const finalApiBase = apiBase || 'https://uheksobnyedarrpgxhju.functions.supabase.co/v1';
+  const finalApiBase = apiBase || 'https://guf7ho7bze.execute-api.eu-central-1.amazonaws.com/prod';
   const finalProvider = provider || 'aws';
 
   console.log('VC Service Environment:', { 

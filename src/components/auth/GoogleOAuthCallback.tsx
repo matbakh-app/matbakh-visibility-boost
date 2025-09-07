@@ -58,17 +58,28 @@ export function GoogleOAuthCallback() {
           );
           window.close();
         } else {
-          // If not in popup, redirect to dashboard
+          // If not in popup, redirect based on onboarding status
           toast({
             title: 'Erfolgreich verbunden',
             description: `Google ${serviceType} wurde erfolgreich verknüpft.`
           });
-          // 🔧 NUR nach OAuth weiterleiten
-          const currentPath = window.location.pathname;
-          if (currentPath.includes('/callback') || currentPath.includes('/auth')) {
-            navigate('/dashboard');
-          } else {
-            console.log('GoogleOAuthCallback success: Staying on current path:', currentPath);
+          
+          // Check onboarding status and redirect accordingly
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('onboarding_complete')
+              .eq('id', userId)
+              .single();
+              
+            if (profile?.onboarding_complete) {
+              navigate('/dashboard');
+            } else {
+              navigate('/onboarding');
+            }
+          } catch (error) {
+            console.error('Error checking onboarding status:', error);
+            navigate('/onboarding'); // Default to onboarding on error
           }
         }
 
@@ -90,13 +101,9 @@ export function GoogleOAuthCallback() {
             description: error instanceof Error ? error.message : 'Ein unbekannter Fehler ist aufgetreten.',
             variant: 'destructive'
           });
-          // 🔧 NUR nach OAuth-Fehler weiterleiten
-          const currentPath = window.location.pathname;
-          if (currentPath.includes('/callback') || currentPath.includes('/auth')) {
-            navigate('/dashboard');
-          } else {
-            console.log('GoogleOAuthCallback error: Staying on current path:', currentPath);
-          }
+          
+          // Redirect to login page on error
+          navigate('/login');
         }
       }
     };

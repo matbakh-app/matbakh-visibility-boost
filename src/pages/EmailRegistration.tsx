@@ -3,14 +3,14 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '@/integrations/supabase/client';
+import { startAuth } from '@/services/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { ArrowLeft, Mail, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Mail } from 'lucide-react';
 
 export default function EmailRegistration() {
   const navigate = useNavigate();
@@ -18,20 +18,27 @@ export default function EmailRegistration() {
   const { t } = useTranslation('auth');
   
   const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
     email: '',
-    password: '',
-    confirmPassword: '',
     acceptTerms: false,
     acceptMarketing: false
   });
   
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
+
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = t('form.firstNameRequired', 'Vorname ist erforderlich');
+    }
+
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = t('form.lastNameRequired', 'Nachname ist erforderlich');
+    }
 
     if (!formData.email) {
       newErrors.email = t('form.emailRequired', 'E-Mail ist erforderlich');
@@ -39,15 +46,7 @@ export default function EmailRegistration() {
       newErrors.email = t('form.emailInvalid', 'E-Mail-Format ist ungültig');
     }
 
-    if (!formData.password) {
-      newErrors.password = t('form.passwordRequired', 'Passwort ist erforderlich');
-    } else if (formData.password.length < 8) {
-      newErrors.password = t('form.passwordTooShort', 'Passwort muss mindestens 8 Zeichen haben');
-    }
 
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = t('form.passwordMismatch', 'Passwörter stimmen nicht überein');
-    }
 
     if (!formData.acceptTerms) {
       newErrors.acceptTerms = t('form.termsRequired', 'Sie müssen den Nutzungsbedingungen zustimmen');
@@ -67,46 +66,23 @@ export default function EmailRegistration() {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/onboarding/standard`,
-          data: {
-            registration_type: 'email',
-            accept_marketing: formData.acceptMarketing
-          }
-        }
-      });
+      // Use new AWS passwordless auth instead of Supabase
+      const fullName = `${formData.firstName.trim()} ${formData.lastName.trim()}`.trim();
+      
+      const result = await startAuth(formData.email, fullName);
 
-      if (error) {
-        toast.error(t('messages.registrationFailed', 'Registrierung fehlgeschlagen'), {
-          description: error.message
-        });
-        return;
-      }
-
-      if (data.user) {
+      if (result.ok) {
         toast.success(t('messages.registrationSuccess', 'Registrierung erfolgreich!'), {
-          description: t('messages.checkEmail', 'Prüfen Sie Ihre E-Mails für die Bestätigung')
+          description: t('messages.checkEmail', 'Prüfen Sie Ihre E-Mails für den Magic Link')
         });
         
-        // Use centralized onboarding guard to determine redirect
-        const { shouldRedirectToOnboarding } = await import('@/guards/onboardingGuard');
-        const redirectPath = await shouldRedirectToOnboarding(location.pathname);
-        
-        if (redirectPath) {
-          navigate(redirectPath);
-        } else {
-          // 🔧 NUR auf Startseite weiterleiten, nicht von anderen Seiten
-          const currentPath = window.location.pathname;
-          if (currentPath === '/' || currentPath === '/register') {
-            navigate('/dashboard');
-          } else {
-            // Bleibe auf aktueller Seite
-            console.log('EmailRegistration: Staying on current path:', currentPath);
-          }
-        }
+        // Show success message and stay on page
+        // User will receive magic link email and be redirected after clicking
+        console.log('Magic link sent to:', formData.email);
+      } else {
+        toast.error(t('messages.registrationFailed', 'Registrierung fehlgeschlagen'), {
+          description: result.error || 'Unbekannter Fehler'
+        });
       }
 
     } catch (error) {
@@ -150,13 +126,50 @@ export default function EmailRegistration() {
               {t('form.emailRegistration', 'Mit E-Mail registrieren')}
             </CardTitle>
             <CardDescription>
-              {t('form.emailRegistrationDesc', 'Erstellen Sie Ihr Konto mit E-Mail und Passwort')}
+              {t('form.emailRegistrationDesc', 'Wir senden Ihnen einen Magic Link zum Anmelden')}
             </CardDescription>
           </CardHeader>
 
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               
+              {/* Name Fields */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">
+                    {t('form.firstName', 'Vorname')} *
+                  </Label>
+                  <Input
+                    id="firstName"
+                    type="text"
+                    value={formData.firstName}
+                    onChange={(e) => handleInputChange('firstName', e.target.value)}
+                    placeholder={t('form.firstNamePlaceholder', 'Max')}
+                    className={errors.firstName ? 'border-red-500' : ''}
+                  />
+                  {errors.firstName && (
+                    <p className="text-sm text-red-500">{errors.firstName}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">
+                    {t('form.lastName', 'Nachname')} *
+                  </Label>
+                  <Input
+                    id="lastName"
+                    type="text"
+                    value={formData.lastName}
+                    onChange={(e) => handleInputChange('lastName', e.target.value)}
+                    placeholder={t('form.lastNamePlaceholder', 'Mustermann')}
+                    className={errors.lastName ? 'border-red-500' : ''}
+                  />
+                  {errors.lastName && (
+                    <p className="text-sm text-red-500">{errors.lastName}</p>
+                  )}
+                </div>
+              </div>
+
               {/* Email */}
               <div className="space-y-2">
                 <Label htmlFor="email">
@@ -175,62 +188,19 @@ export default function EmailRegistration() {
                 )}
               </div>
 
-              {/* Password */}
-              <div className="space-y-2">
-                <Label htmlFor="password">
-                  {t('form.password', 'Passwort')} *
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={formData.password}
-                    onChange={(e) => handleInputChange('password', e.target.value)}
-                    placeholder={t('form.passwordPlaceholder', 'Mindestens 8 Zeichen')}
-                    className={errors.password ? 'border-red-500' : ''}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </Button>
+              {/* Info about passwordless auth */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start space-x-3">
+                  <Mail className="w-5 h-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <h4 className="text-sm font-medium text-blue-900">
+                      Passwordless Anmeldung
+                    </h4>
+                    <p className="text-sm text-blue-700 mt-1">
+                      Wir senden Ihnen einen sicheren Magic Link per E-Mail. Kein Passwort erforderlich!
+                    </p>
+                  </div>
                 </div>
-                {errors.password && (
-                  <p className="text-sm text-red-500">{errors.password}</p>
-                )}
-              </div>
-
-              {/* Confirm Password */}
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">
-                  {t('form.confirmPassword', 'Passwort bestätigen')} *
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="confirmPassword"
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    value={formData.confirmPassword}
-                    onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                    placeholder={t('form.confirmPasswordPlaceholder', 'Passwort wiederholen')}
-                    className={errors.confirmPassword ? 'border-red-500' : ''}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  >
-                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </Button>
-                </div>
-                {errors.confirmPassword && (
-                  <p className="text-sm text-red-500">{errors.confirmPassword}</p>
-                )}
               </div>
 
               {/* Terms Acceptance */}
@@ -276,8 +246,8 @@ export default function EmailRegistration() {
                 disabled={loading}
               >
                 {loading ? 
-                  t('form.registering', 'Registriere...') : 
-                  t('form.register', 'Registrieren')
+                  t('form.sendingMagicLink', 'Magic Link wird gesendet...') : 
+                  t('form.sendMagicLink', 'Magic Link senden')
                 }
               </Button>
 

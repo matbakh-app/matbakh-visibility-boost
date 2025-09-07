@@ -31,6 +31,7 @@ import {
   TrendingUp,
   Save
 } from 'lucide-react';
+import { ImageUpload } from '@/components/ui/image-upload';
 
 // Form validation schema
 const CompanySchema = z.object({
@@ -622,10 +623,33 @@ export const CompanyProfile: React.FC = () => {
                         {companyName ? companyName.charAt(0) : 'B'}
                       </AvatarFallback>
                     </Avatar>
-                    <Button variant="outline" size="sm">
-                      <Upload className="w-4 h-4 mr-2" />
-                      Logo hochladen
-                    </Button>
+                    
+                    <ImageUpload
+                      bucket="matbakh-files-profile"
+                      folder="logos"
+                      maxSize={2 * 1024 * 1024} // 2MB
+                      acceptedTypes={['image/jpeg', 'image/jpg', 'image/png', 'image/svg+xml']}
+                      enableCropping={true}
+                      cropAspectRatio={1} // Square crop for logos
+                      placeholder="Upload company logo"
+                      onUploadSuccess={(fileUrl) => {
+                        toast({
+                          title: "Logo uploaded",
+                          description: "Your company logo has been uploaded successfully.",
+                        });
+                        // TODO: Update company profile with logo URL
+                        console.log('Logo uploaded:', fileUrl);
+                      }}
+                      onUploadError={(error) => {
+                        toast({
+                          title: "Upload failed",
+                          description: error.message,
+                          variant: "destructive",
+                        });
+                      }}
+                      className="max-w-sm mx-auto"
+                    />
+                    
                     <p className="text-xs text-muted-foreground">
                       JPG, PNG oder SVG. Max. 2MB
                     </p>

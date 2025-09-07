@@ -20,9 +20,10 @@ import { supabase } from '@/integrations/supabase/client';
 
 const restaurantSchema = z.object({
   name: z.string().min(2, 'Name muss mindestens 2 Zeichen haben'),
-  street: z.string().min(5, 'Straße und Hausnummer eingeben'),
+  street: z.string().min(3, 'Straße eingeben'),
+  house_number: z.string().min(1, 'Hausnummer eingeben'),
   city: z.string().min(2, 'Stadt eingeben'),
-  zip: z.string().min(4, 'PLZ eingeben'),
+  postal_code: z.string().min(4, 'PLZ eingeben'),
   country: z.string().default('DE'),
   phone: z.string().optional(),
   email: z.string().email('Gültige E-Mail eingeben').optional().or(z.literal('')),
@@ -136,30 +137,45 @@ export default function StepRestaurant() {
             <CardTitle className="text-lg">Adresse</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="street">Straße und Hausnummer *</Label>
-              <Input
-                id="street"
-                {...register('street')}
-                placeholder="z.B. Hauptstraße 123"
-                className={errors.street ? 'border-destructive' : ''}
-              />
-              {errors.street && (
-                <p className="text-sm text-destructive mt-1">{errors.street.message}</p>
-              )}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="col-span-2">
+                <Label htmlFor="street">Straße *</Label>
+                <Input
+                  id="street"
+                  {...register('street')}
+                  placeholder="z.B. Hauptstraße"
+                  className={errors.street ? 'border-destructive' : ''}
+                />
+                {errors.street && (
+                  <p className="text-sm text-destructive mt-1">{errors.street.message}</p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="house_number">Hausnummer *</Label>
+                <Input
+                  id="house_number"
+                  {...register('house_number')}
+                  placeholder="123"
+                  className={errors.house_number ? 'border-destructive' : ''}
+                />
+                {errors.house_number && (
+                  <p className="text-sm text-destructive mt-1">{errors.house_number.message}</p>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="zip">PLZ *</Label>
+                <Label htmlFor="postal_code">PLZ *</Label>
                 <Input
-                  id="zip"
-                  {...register('zip')}
+                  id="postal_code"
+                  {...register('postal_code')}
                   placeholder="12345"
-                  className={errors.zip ? 'border-destructive' : ''}
+                  className={errors.postal_code ? 'border-destructive' : ''}
                 />
-                {errors.zip && (
-                  <p className="text-sm text-destructive mt-1">{errors.zip.message}</p>
+                {errors.postal_code && (
+                  <p className="text-sm text-destructive mt-1">{errors.postal_code.message}</p>
                 )}
               </div>
 

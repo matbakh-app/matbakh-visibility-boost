@@ -30,6 +30,7 @@ import {
   Bell,
   Save
 } from 'lucide-react';
+import { ImageUpload } from '@/components/ui/image-upload';
 
 // Form validation schema
 const ProfileSchema = z.object({
@@ -294,6 +295,32 @@ export const MyProfile: React.FC = () => {
                     {userData.name.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
+                
+                <ImageUpload
+                  bucket="matbakh-files-profile"
+                  folder="avatars"
+                  maxSize={5 * 1024 * 1024} // 5MB
+                  acceptedTypes={['image/jpeg', 'image/jpg', 'image/png']}
+                  enableCropping={true}
+                  cropAspectRatio={1} // Square crop for avatars
+                  placeholder="Upload profile picture"
+                  onUploadSuccess={(fileUrl) => {
+                    toast({
+                      title: "Avatar uploaded",
+                      description: "Your profile picture has been updated successfully.",
+                    });
+                    // TODO: Update user profile with avatar URL
+                    console.log('Avatar uploaded:', fileUrl);
+                  }}
+                  onUploadError={(error) => {
+                    toast({
+                      title: "Upload failed",
+                      description: error.message,
+                      variant: "destructive",
+                    });
+                  }}
+                  className="max-w-xs mx-auto"
+                />
                 
                 <div>
                   <h3 className="text-xl font-bold">{userData.name}</h3>
