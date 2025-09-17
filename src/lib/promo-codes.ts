@@ -1,5 +1,5 @@
 // MIGRATED: Supabase removed - use AWS services
-import type { Database } from '@/integrations/supabase/types'
+// MIGRATED: Use AWS RDS types instead
 
 type PromoCode = Database['public']['Tables']['promo_codes']['Row']
 type PromoCodeUsage = Database['public']['Tables']['promo_code_usage']['Row']

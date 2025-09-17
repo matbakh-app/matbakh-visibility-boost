@@ -33,7 +33,7 @@ describe('ArchitectureScanner', () => {
 
     it('should detect Supabase components correctly', () => {
       const content = `
-        import { createClient } from '@supabase/supabase-js';
+        // MIGRATED: Use AWS services instead
         const supabase = createClient(url, key);
       `;
       

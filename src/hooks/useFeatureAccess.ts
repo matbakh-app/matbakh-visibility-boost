@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 // MIGRATED: Supabase removed - use AWS services
-import type { User } from '@supabase/supabase-js'
+// MIGRATED: Use AWS Cognito user types instead
 
 interface FeatureAccess {
   features: string[]

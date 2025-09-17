@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 // MIGRATED: Supabase removed - use AWS services
-import { Row, Insert } from "@/integrations/supabase/db-helpers";
+// MIGRATED: Use AWS RDS types instead
 
 export interface RelatedCategory {
   id: string;

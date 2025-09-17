@@ -45,13 +45,16 @@ interface MetricData {
   timestamp?: Date;
 }
 
+import { viteEnv } from './env';
+
 /**
  * Publishes a custom metric via server-side endpoint
  */
 export async function publishMetric(data: MetricData): Promise<void> {
   try {
     // Only publish metrics in production or when explicitly enabled
-    if (process.env.NODE_ENV !== 'production' && !import.meta.env.VITE_ENABLE_METRICS) {
+    const enableMetrics = process.env.NODE_ENV === 'production' || viteEnv('VITE_ENABLE_METRICS', false);
+    if (!enableMetrics) {
       console.log('Metrics disabled in development:', data);
       return;
     }

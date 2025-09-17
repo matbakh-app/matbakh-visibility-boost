@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 // MIGRATED: Supabase removed - use AWS services
-import { Row, Insert } from '@/integrations/supabase/db-helpers';
-import type { Database } from '@/integrations/supabase/types';
+// MIGRATED: Use AWS RDS types instead
+// MIGRATED: Use AWS RDS types instead
 
 type CatRow = Database['public']['Tables']['gmb_categories']['Row'];
 type CrossRow = Database['public']['Tables']['category_cross_tags']['Row'];

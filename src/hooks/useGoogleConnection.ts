@@ -1,7 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 // MIGRATED: Supabase removed - use AWS services
-import { Row } from '@/integrations/supabase/db-helpers';
+// MIGRATED: Use AWS RDS types instead
 
 export function useGoogleConnection() {
   return useQuery({

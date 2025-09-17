@@ -13,7 +13,7 @@ export const useFacebookEventTemplates = () => {
       setLoading(true);
       
       // TODO [TypeSafety]: Replace `as any` with generated Supabase types after next type generation
-      // Command: npx supabase gen types typescript --project-id uheksobnyedarrpgxhju --schema public > src/integrations/supabase/types.ts
+      // MIGRATED: Use AWS RDS schema types instead
       const { data, error } = await supabase
         .from('facebook_event_templates' as any)
         .select('*')

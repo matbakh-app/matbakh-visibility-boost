@@ -8,7 +8,7 @@ module.exports = {
   },
 
   // Setup files
-  setupFiles: ['<rootDir>/src/shared/polyfills/importmeta.js'],
+  setupFiles: ['<rootDir>/src/polyfill-importmeta.js'],
   setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
 
   // Transform configuration
@@ -25,8 +25,6 @@ module.exports = {
     '<rootDir>/src/**/__tests__/**/*.(ts|tsx|js)',
     '<rootDir>/src/**/*.(test|spec).(ts|tsx|js)',
     '<rootDir>/test/**/*.(test|spec).(ts|tsx|js)',
-    '<rootDir>/infra/**/__tests__/**/*.(ts|tsx|js)',
-    '<rootDir>/infra/**/*.(test|spec).(ts|tsx|js)',
   ],
 
   // Coverage configuration

@@ -51,7 +51,7 @@ export default function KiroShowcase() {
       let profileInfo = {};
       
       try {
-        const { supabase } = await import('@/integrations/supabase/client');
+        // MIGRATED: Use AWS services instead
         const { data: { user } } = await supabase.auth.getUser();
         
         if (user) {

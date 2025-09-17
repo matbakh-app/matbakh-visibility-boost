@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 // MIGRATED: Supabase removed - use AWS services
-import { Row, Insert, Update } from '@/integrations/supabase/db-helpers';
+// MIGRATED: Use AWS RDS types instead
 
 export function useUnclaimedProfiles() {
   return useQuery({

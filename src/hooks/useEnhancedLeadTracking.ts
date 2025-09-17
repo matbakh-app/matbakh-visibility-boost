@@ -1,6 +1,6 @@
 import { useState } from 'react';
 // MIGRATED: Supabase removed - use AWS services
-import { Row, Insert, Update } from '@/integrations/supabase/db-helpers';
+// MIGRATED: Use AWS RDS types instead
 
 // Enhanced Lead Data Types
 interface EnhancedLeadData {

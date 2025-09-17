@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
-import { supabase, FUNCTIONS_URL } from '@/integrations/supabase/client';
+// MIGRATED: Use AWS Lambda functions instead
 import { useTranslation } from 'react-i18next';
-import { Row, Insert } from '@/integrations/supabase/db-helpers';
+// MIGRATED: Use AWS RDS types instead
 
 interface EnhancedLeadData {
   businessName: string;

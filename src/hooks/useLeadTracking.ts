@@ -48,7 +48,7 @@ export const useLeadTracking = () => {
       };
 
       // TODO [TypeSafety]: Replace `as any` with generated Supabase types after next type generation
-      // Command: npx supabase gen types typescript --project-id uheksobnyedarrpgxhju --schema public > src/integrations/supabase/types.ts
+      // MIGRATED: Use AWS RDS schema types instead
       const { data, error } = await supabase
         .from('lead_events' as any)
         .insert([insertData] as any)

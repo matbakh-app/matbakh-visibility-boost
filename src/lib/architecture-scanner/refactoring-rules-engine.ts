@@ -45,7 +45,7 @@ export class RefactoringRulesEngine {
       name: 'Migrate Supabase Auth to Kiro Auth',
       description: 'Replace Supabase authentication with Kiro AWS Cognito',
       action: 'migrate_auth',
-      pattern: /import.*from\s+['"]@supabase\/supabase-js['"]/g,
+      pattern: /// MIGRATED: Use AWS services instead
       replacement: "import { useAuthUnified } from '@/hooks/useAuthUnified';",
       confidence: 0.9,
       estimatedEffort: 'high',
@@ -405,7 +405,7 @@ export class RefactoringRulesEngine {
       if (component.path.includes('/auth/') || component.imports.some(imp => imp.includes('supabase'))) {
         authMigration.push(
           `# Migrate ${path}`,
-          `# Replace: import { createClient } from '@supabase/supabase-js'`,
+          `# Replace: // MIGRATED: Use AWS services instead
           `# With: import { useAuthUnified } from '@/hooks/useAuthUnified'`,
           `# Action: Update authentication logic to use AWS Cognito`,
           ''

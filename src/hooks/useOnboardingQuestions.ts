@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 // MIGRATED: Supabase removed - use AWS services
-import type { Database } from '@/integrations/supabase/types';
+// MIGRATED: Use AWS RDS types instead
 
 export interface OnboardingQuestion {
   id: string;
