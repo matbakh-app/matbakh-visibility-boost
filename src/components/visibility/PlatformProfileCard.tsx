@@ -93,41 +93,44 @@ const ScoreDonut: React.FC<{ score: number; size?: 'sm' | 'lg' }> = ({ score, si
 const formatProfileUrl = (url: string | undefined, platform: string): string | undefined => {
   if (!url) return undefined;
   
-  // If URL already starts with http, return as is
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    return url;
+  // Sanitize URL to prevent XSS
+  const sanitizedUrl = url.replace(/[<>"']/g, '').trim();
+  
+  // If URL already starts with http, validate and return
+  if (sanitizedUrl.startsWith('http://') || sanitizedUrl.startsWith('https://')) {
+    return sanitizedUrl;
   }
   
   // Handle platform-specific URL formatting
   switch (platform) {
     case 'instagram':
       // If it's just a username, format as Instagram URL
-      if (!url.includes('/')) {
-        return `https://www.instagram.com/${url.replace('@', '')}`;
+      if (!sanitizedUrl.includes('/')) {
+        return `https://www.instagram.com/${sanitizedUrl.replace('@', '')}`;
       }
       // If it's a partial URL, add https://www.instagram.com
-      if (url.startsWith('/')) {
-        return `https://www.instagram.com${url}`;
+      if (sanitizedUrl.startsWith('/')) {
+        return `https://www.instagram.com${sanitizedUrl}`;
       }
-      return `https://www.instagram.com/${url}`;
+      return `https://www.instagram.com/${sanitizedUrl}`;
     
     case 'facebook':
-      if (!url.includes('/')) {
-        return `https://www.facebook.com/${url}`;
+      if (!sanitizedUrl.includes('/')) {
+        return `https://www.facebook.com/${sanitizedUrl}`;
       }
-      if (url.startsWith('/')) {
-        return `https://www.facebook.com${url}`;
+      if (sanitizedUrl.startsWith('/')) {
+        return `https://www.facebook.com${sanitizedUrl}`;
       }
-      return `https://www.facebook.com/${url}`;
+      return `https://www.facebook.com/${sanitizedUrl}`;
     
     case 'google':
-      if (url.startsWith('/')) {
-        return `https://www.google.com${url}`;
+      if (sanitizedUrl.startsWith('/')) {
+        return `https://www.google.com${sanitizedUrl}`;
       }
-      return url.includes('google.com') ? `https://${url}` : url;
+      return sanitizedUrl.includes('google.com') ? `https://${sanitizedUrl}` : sanitizedUrl;
     
     default:
-      return url.startsWith('//') ? `https:${url}` : `https://${url}`;
+      return sanitizedUrl.startsWith('//') ? `https:${sanitizedUrl}` : `https://${sanitizedUrl}`;
   }
 };
 

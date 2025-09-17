@@ -152,7 +152,12 @@ class APIClient {
   }
 
   private generateRequestId(): string {
-    return `req_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+    // Use crypto.randomUUID() for secure request ID generation
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      return `req_${crypto.randomUUID()}`;
+    }
+    // Fallback for environments without crypto.randomUUID
+    return `req_${Date.now()}_${Date.now().toString(36)}`;
   }
 
   private getRequestId(config: InternalAxiosRequestConfig): string {

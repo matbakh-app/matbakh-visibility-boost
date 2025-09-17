@@ -286,8 +286,14 @@ function generateGenericRecommendation(
  */
 function generateRecommendationId(scoreType: string, reason: string): string {
   const timestamp = Date.now();
-  const random = Math.random().toString(36).substr(2, 5);
-  return `rec_${scoreType}_${reason}_${timestamp}_${random}`;
+  // Use crypto.randomUUID() for secure ID generation
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    const uuid = crypto.randomUUID().split('-')[0]; // Use first part of UUID
+    return `rec_${scoreType}_${reason}_${timestamp}_${uuid}`;
+  }
+  // Fallback for environments without crypto.randomUUID
+  const fallback = timestamp.toString(36);
+  return `rec_${scoreType}_${reason}_${timestamp}_${fallback}`;
 }
 
 /**

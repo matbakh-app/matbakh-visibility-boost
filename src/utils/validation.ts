@@ -129,6 +129,9 @@ export const sanitizeDisplayText = (text: string): string => {
     .replace(/[<>]/g, '') // Remove potential HTML tags
     .replace(/javascript:/gi, '') // Remove javascript: URLs
     .replace(/data:/gi, '') // Remove data: URLs
+    .replace(/vbscript:/gi, '') // Remove vbscript: URLs
+    .replace(/file:/gi, '') // Remove file: URLs
+    .replace(/about:/gi, '') // Remove about: URLs
     .trim()
     .slice(0, 1000); // Limit length
 };

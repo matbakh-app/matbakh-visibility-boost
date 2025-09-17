@@ -162,7 +162,10 @@ export function useAIServices(): UseAIServicesReturn {
     type: AIOperationStatus['type'], 
     message: string
   ): string => {
-    const id = `op_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // Use crypto.randomUUID() for secure operation ID generation
+    const id = typeof crypto !== 'undefined' && crypto.randomUUID 
+      ? `op_${crypto.randomUUID()}`
+      : `op_${Date.now()}_${Date.now().toString(36)}`;
     const operation: AIOperationStatus = {
       id,
       type,

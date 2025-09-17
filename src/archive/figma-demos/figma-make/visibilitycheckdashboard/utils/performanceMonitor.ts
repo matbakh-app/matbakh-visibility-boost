@@ -12,7 +12,10 @@ class PerformanceMonitor {
   private isEnabled: boolean = true;
 
   constructor() {
-    this.sessionId = Date.now().toString(36) + Math.random().toString(36);
+    // Use crypto.randomUUID() for secure session ID generation
+    this.sessionId = typeof crypto !== 'undefined' && crypto.randomUUID 
+      ? crypto.randomUUID() 
+      : Date.now().toString(36) + '-' + Date.now().toString(36);
     this.initializeMonitoring();
   }
 

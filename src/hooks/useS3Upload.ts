@@ -87,7 +87,12 @@ export function useS3Upload(options: UseS3UploadOptions): UseS3UploadReturn {
 
   // Generate unique ID for queue items
   const generateId = useCallback(() => {
-    return `upload_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // Use crypto.randomUUID() for secure upload ID generation
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      return `upload_${crypto.randomUUID()}`;
+    }
+    // Fallback for environments without crypto.randomUUID
+    return `upload_${Date.now()}_${Date.now().toString(36)}`;
   }, []);
 
   // Update progress and call callback
