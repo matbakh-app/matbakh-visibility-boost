@@ -1,5 +1,5 @@
 // Score History Service Tests
-// Task: 6.4.1 Create ScoreHistory Database Schema
+// Task: 6.4.1 Create ScoreHistory Database Schema - AWS RDS Migration
 // Requirements: B.1, B.2
 
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
@@ -17,74 +17,29 @@ const mockScoreRecord = {
   updated_at: '2025-01-09T10:00:00Z'
 };
 
-// Using centralized mocks from setupTests.ts - no local mock definitions needed
+// Mock AwsRdsClient
+const mockRdsClient = {
+  executeQuery: jest.fn(),
+  mapRecord: jest.fn()
+};
 
-jest.mock('@/integrations/supabase/client', () => {
-  const mockQuery = {
-    eq: jest.fn().mockReturnThis(),
-    in: jest.fn().mockReturnThis(),
-    gte: jest.fn().mockReturnThis(),
-    lte: jest.fn().mockReturnThis(),
-    order: jest.fn().mockReturnThis(),
-    limit: jest.fn().mockReturnThis(),
-    range: jest.fn().mockReturnThis(),
-    select: jest.fn().mockReturnThis(),
-    single: jest.fn().mockReturnThis()
-  };
-
-  return {
-    supabase: {
-      from: jest.fn(() => ({
-        insert: jest.fn(() => ({
-          select: jest.fn(() => ({
-            single: jest.fn(() => Promise.resolve({
-              data: mockScoreRecord,
-              error: null
-            }))
-          }))
-        })),
-        select: jest.fn(() => {
-          // Return a promise-like object that resolves to data
-          const queryResult = Promise.resolve({
-            data: [mockScoreRecord],
-            error: null
-          });
-          
-          // Add chainable methods to the promise
-          Object.assign(queryResult, mockQuery);
-          return queryResult;
-        }),
-        update: jest.fn(() => ({
-          eq: jest.fn(() => ({
-            select: jest.fn(() => ({
-              single: jest.fn(() => Promise.resolve({
-                data: mockScoreRecord,
-                error: null
-              }))
-            }))
-          }))
-        })),
-        delete: jest.fn(() => ({
-          eq: jest.fn(() => Promise.resolve({
-            error: null
-          }))
-        }))
-      }))
-    }
-  };
-});
+// Mock the AwsRdsClient constructor
+jest.mock('../aws-rds-client', () => ({
+  AwsRdsClient: jest.fn().mockImplementation(() => mockRdsClient)
+}));
 
 // Import after mock
 import { ScoreHistoryService } from '../score-history';
 
 describe('ScoreHistoryService', () => {
   beforeEach(() => {
-    // Use global mocks from setupTests.ts
-    global.mockExecuteQuery.mockResolvedValue({
+    jest.clearAllMocks();
+    // Default mock setup
+    mockRdsClient.executeQuery.mockResolvedValue({
       records: [mockScoreRecord],
       numberOfRecordsUpdated: 1
     });
-    global.mockMapRecord.mockImplementation((record) => record);
+    mockRdsClient.mapRecord.mockImplementation((record) => record);
   });
 
   describe('insertScore', () => {
@@ -100,6 +55,17 @@ describe('ScoreHistoryService', () => {
       const result = await ScoreHistoryService.insertScore(insertData);
 
       expect(result).toEqual(mockScoreRecord);
+      expect(mockRdsClient.executeQuery).toHaveBeenCalledWith(
+        expect.stringContaining('INSERT INTO score_history'),
+        expect.arrayContaining([
+          'business-123',
+          'overall_visibility',
+          75.5,
+          'visibility_check',
+          expect.any(String),
+          expect.any(String)
+        ])
+      );
     });
 
     it('should validate score_type enum values', () => {
@@ -134,6 +100,30 @@ describe('ScoreHistoryService', () => {
     });
   });
 
+  describe('insertScores (bulk)', () => {
+    it('should insert multiple score records', async () => {
+      const insertData: ScoreHistoryInsert[] = [
+        {
+          business_id: 'business-123',
+          score_type: 'overall_visibility',
+          score_value: 75.5,
+          source: 'visibility_check'
+        },
+        {
+          business_id: 'business-123',
+          score_type: 'google_presence',
+          score_value: 80.0,
+          source: 'visibility_check'
+        }
+      ];
+
+      const result = await ScoreHistoryService.insertScores(insertData);
+
+      expect(result).toHaveLength(2);
+      expect(mockRdsClient.executeQuery).toHaveBeenCalledTimes(2);
+    });
+  });
+
   describe('queryScoreHistory', () => {
     it('should query score history with filters', async () => {
       const query = {
@@ -145,6 +135,10 @@ describe('ScoreHistoryService', () => {
       const result = await ScoreHistoryService.queryScoreHistory(query);
 
       expect(result).toEqual([mockScoreRecord]);
+      expect(mockRdsClient.executeQuery).toHaveBeenCalledWith(
+        expect.stringContaining('SELECT * FROM score_history'),
+        expect.arrayContaining(['business-123', 'overall_visibility', 10])
+      );
     });
 
     it('should handle multiple score types in query', async () => {
@@ -156,6 +150,26 @@ describe('ScoreHistoryService', () => {
       const result = await ScoreHistoryService.queryScoreHistory(query);
 
       expect(result).toEqual([mockScoreRecord]);
+      expect(mockRdsClient.executeQuery).toHaveBeenCalledWith(
+        expect.stringContaining('score_type IN'),
+        expect.arrayContaining(['business-123', 'overall_visibility', 'google_presence'])
+      );
+    });
+
+    it('should handle date range filters', async () => {
+      const query = {
+        business_id: 'business-123',
+        date_from: '2025-01-01T00:00:00Z',
+        date_to: '2025-01-31T23:59:59Z'
+      };
+
+      const result = await ScoreHistoryService.queryScoreHistory(query);
+
+      expect(result).toEqual([mockScoreRecord]);
+      expect(mockRdsClient.executeQuery).toHaveBeenCalledWith(
+        expect.stringContaining('calculated_at >='),
+        expect.arrayContaining(['business-123', '2025-01-01T00:00:00Z', '2025-01-31T23:59:59Z'])
+      );
     });
   });
 
@@ -177,17 +191,36 @@ describe('ScoreHistoryService', () => {
     });
 
     it('should handle empty data gracefully', async () => {
-      // This test will use the default mock behavior which returns empty array
-      // when no specific mock is set up for the query
+      mockRdsClient.executeQuery.mockResolvedValue({
+        records: []
+      });
+
       const result = await ScoreHistoryService.getScoreEvolution('business-123', 'overall_visibility');
 
       expect(result).toMatchObject({
         score_type: 'overall_visibility',
-        data_points: expect.any(Array),
-        trend: expect.any(String),
-        change_percentage: expect.any(Number),
+        data_points: [],
+        trend: 'stable',
+        change_percentage: 0,
         period_days: 30
       });
+    });
+
+    it('should calculate trend correctly', async () => {
+      const trendData = [
+        { ...mockScoreRecord, score_value: 60, calculated_at: '2025-01-01T00:00:00Z' },
+        { ...mockScoreRecord, score_value: 80, calculated_at: '2025-01-15T00:00:00Z' }
+      ];
+
+      mockRdsClient.executeQuery.mockResolvedValue({
+        records: trendData
+      });
+      mockRdsClient.mapRecord.mockImplementation((record) => record);
+
+      const result = await ScoreHistoryService.getScoreEvolution('business-123', 'overall_visibility');
+
+      expect(result.trend).toBe('increasing');
+      expect(result.change_percentage).toBeCloseTo(33.33, 1);
     });
   });
 
@@ -205,6 +238,9 @@ describe('ScoreHistoryService', () => {
         recommendations: expect.any(Array),
         last_updated: expect.any(String)
       });
+
+      // Should call getScoreEvolution for each score type
+      expect(mockRdsClient.executeQuery).toHaveBeenCalledTimes(5); // 5 score types
     });
   });
 
@@ -218,29 +254,61 @@ describe('ScoreHistoryService', () => {
       const result = await ScoreHistoryService.updateScore('test-id', updateData);
 
       expect(result).toEqual(mockScoreRecord);
+      expect(mockRdsClient.executeQuery).toHaveBeenCalledWith(
+        expect.stringContaining('UPDATE score_history'),
+        expect.arrayContaining([80.0, expect.any(String), 'test-id'])
+      );
+    });
+
+    it('should handle no fields to update', async () => {
+      await expect(ScoreHistoryService.updateScore('test-id', {}))
+        .rejects.toThrow('No fields to update');
     });
   });
 
   describe('deleteScore', () => {
     it('should delete a score record', async () => {
       await expect(ScoreHistoryService.deleteScore('test-id')).resolves.not.toThrow();
+      expect(mockRdsClient.executeQuery).toHaveBeenCalledWith(
+        'DELETE FROM score_history WHERE id = ?',
+        ['test-id']
+      );
+    });
+
+    it('should handle record not found', async () => {
+      mockRdsClient.executeQuery.mockResolvedValue({
+        numberOfRecordsUpdated: 0
+      });
+
+      await expect(ScoreHistoryService.deleteScore('nonexistent'))
+        .rejects.toThrow('Score history record not found');
     });
   });
 
   describe('getLatestScores', () => {
     it('should get latest scores for all score types', async () => {
-      const businessId = 'business-123';
+      const multipleScores = [
+        { ...mockScoreRecord, score_type: 'overall_visibility', score_value: 75 },
+        { ...mockScoreRecord, score_type: 'google_presence', score_value: 80 },
+        { ...mockScoreRecord, score_type: 'social_media', score_value: 70 }
+      ];
 
+      mockRdsClient.executeQuery.mockResolvedValue({
+        records: multipleScores
+      });
+      mockRdsClient.mapRecord.mockImplementation((record) => record);
+
+      const businessId = 'business-123';
       const result = await ScoreHistoryService.getLatestScores(businessId);
 
-      expect(result).toHaveProperty('overall_visibility');
-      expect(result).toHaveProperty('google_presence');
-      expect(result).toHaveProperty('social_media');
-      expect(result).toHaveProperty('website_performance');
-      expect(result).toHaveProperty('review_management');
-      expect(result).toHaveProperty('local_seo');
-      expect(result).toHaveProperty('content_quality');
-      expect(result).toHaveProperty('competitive_position');
+      expect(result).toHaveProperty('overall_visibility', 75);
+      expect(result).toHaveProperty('google_presence', 80);
+      expect(result).toHaveProperty('social_media', 70);
+      expect(result).toHaveProperty('website_performance', null);
+      expect(result).toHaveProperty('review_management', null);
+      expect(result).toHaveProperty('local_seo', null);
+      expect(result).toHaveProperty('content_quality', null);
+      expect(result).toHaveProperty('competitive_position', null);
     });
   });
 });

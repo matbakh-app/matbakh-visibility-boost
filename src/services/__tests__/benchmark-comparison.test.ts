@@ -1,6 +1,6 @@
 /**
  * Tests for Benchmark Comparison Service
- * Task 6.4.5: Industry Benchmark Comparison
+ * Task 6.4.5: Industry Benchmark Comparison - AWS RDS Migration
  */
 
 import { BenchmarkComparisonService, ScoreBenchmark, IndustryBenchmarkRequest } from '../benchmark-comparison';
@@ -85,10 +85,11 @@ describe('BenchmarkComparisonService', () => {
     };
 
     beforeEach(() => {
-      mockSupabase.from().select().eq().eq().eq().order().limit().single.mockResolvedValue({
-        data: mockBenchmark,
-        error: null
+      // Mock RDS response for benchmark data
+      mockRdsClient.executeQuery.mockResolvedValue({
+        records: [mockBenchmark]
       });
+      mockRdsClient.mapRecord.mockReturnValue(mockBenchmark);
     });
 
     it('should calculate comparison for score above 75th percentile', async () => {
@@ -147,10 +148,12 @@ describe('BenchmarkComparisonService', () => {
     });
 
     it('should fallback to national benchmark when regional not available', async () => {
-      // First call (regional) returns null, second call (national) returns data
-      mockSupabase.from().select().eq().eq().eq().order().limit().single
-        .mockResolvedValueOnce({ data: null, error: { message: 'Not found' } })
-        .mockResolvedValueOnce({ data: mockBenchmark, error: null });
+      // First call (regional) returns empty, second call (national) returns data
+      mockRdsClient.executeQuery
+        .mockResolvedValueOnce({ records: [] })
+        .mockResolvedValueOnce({ records: [mockBenchmark] });
+      
+      mockRdsClient.mapRecord.mockReturnValue(mockBenchmark);
 
       const request: IndustryBenchmarkRequest = {
         business_id: 'test-business',
@@ -163,7 +166,7 @@ describe('BenchmarkComparisonService', () => {
       const result = await service.compareToBenchmark(request);
 
       expect(result).toBeTruthy();
-      expect(mockSupabase.from().select().eq().eq().eq().order().limit().single).toHaveBeenCalledTimes(2);
+      expect(mockRdsClient.executeQuery).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -200,14 +203,10 @@ describe('BenchmarkComparisonService', () => {
         }
       ];
 
-      mockSupabase.from().select().eq().in = jest.fn(() => ({
-        eq: jest.fn(() => ({
-          order: jest.fn(() => Promise.resolve({
-            data: mockBenchmarks,
-            error: null
-          }))
-        }))
-      }));
+      mockRdsClient.executeQuery.mockResolvedValue({
+        records: mockBenchmarks
+      });
+      mockRdsClient.mapRecord.mockImplementation((record) => record);
 
       const result = await service.getMultiRegionBenchmarks('restaurant', ['munich', 'berlin'], 'visibility');
 
@@ -218,14 +217,9 @@ describe('BenchmarkComparisonService', () => {
     });
 
     it('should handle empty results gracefully', async () => {
-      mockSupabase.from().select().eq().in = jest.fn(() => ({
-        eq: jest.fn(() => ({
-          order: jest.fn(() => Promise.resolve({
-            data: [],
-            error: null
-          }))
-        }))
-      }));
+      mockRdsClient.executeQuery.mockResolvedValue({
+        records: []
+      });
 
       const result = await service.getMultiRegionBenchmarks('restaurant', ['nonexistent'], 'visibility');
 
@@ -235,8 +229,9 @@ describe('BenchmarkComparisonService', () => {
 
   describe('updateBenchmark', () => {
     it('should update benchmark data successfully', async () => {
-      mockSupabase.from().upsert.mockResolvedValue({
-        error: null
+      mockRdsClient.executeQuery.mockResolvedValue({
+        records: [],
+        numberOfRecordsUpdated: 1
       });
 
       const benchmarkData = {
@@ -255,20 +250,26 @@ describe('BenchmarkComparisonService', () => {
       const result = await service.updateBenchmark(benchmarkData);
 
       expect(result).toBe(true);
-      expect(mockSupabase.from).toHaveBeenCalledWith('score_benchmarks');
-      expect(mockSupabase.from().upsert).toHaveBeenCalledWith(
-        expect.objectContaining({
-          ...benchmarkData,
-          last_updated: expect.any(String)
-        }),
-        { onConflict: 'industry_id,region_id,score_type' }
+      expect(mockRdsClient.executeQuery).toHaveBeenCalledWith(
+        expect.stringContaining('INSERT INTO score_benchmarks'),
+        expect.arrayContaining([
+          'restaurant',
+          'munich',
+          'visibility',
+          76.0,
+          51.0,
+          71.0,
+          86.0,
+          96.0,
+          210,
+          'updated_data',
+          expect.any(String)
+        ])
       );
     });
 
     it('should handle update errors gracefully', async () => {
-      mockSupabase.from().upsert.mockResolvedValue({
-        error: { message: 'Update failed' }
-      });
+      mockRdsClient.executeQuery.mockRejectedValue(new Error('Update failed'));
 
       const benchmarkData = {
         industry_id: 'restaurant',
@@ -306,10 +307,10 @@ describe('BenchmarkComparisonService', () => {
     };
 
     beforeEach(() => {
-      mockSupabase.from().select().eq().eq().eq().order().limit().single.mockResolvedValue({
-        data: mockBenchmark,
-        error: null
+      mockRdsClient.executeQuery.mockResolvedValue({
+        records: [mockBenchmark]
       });
+      mockRdsClient.mapRecord.mockReturnValue(mockBenchmark);
     });
 
     it('should generate appropriate recommendations for each performance category', async () => {

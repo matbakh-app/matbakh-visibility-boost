@@ -58,7 +58,7 @@ export default defineConfig(({ mode }) => ({
 
           // Data & API
           query: ['@tanstack/react-query'],
-          supabase: ['@supabase/supabase-js'],
+          aws: ['aws-amplify', '@aws-sdk/client-rds-data', '@aws-sdk/client-cognito-identity-provider'],
 
           // Icons & Styling
           icons: ['lucide-react'],
