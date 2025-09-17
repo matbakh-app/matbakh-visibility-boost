@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+import { rdsClient } from '@/services/aws-rds-client';
 
 /**
  * Get a boolean feature flag value from the database
@@ -8,16 +8,10 @@ import { supabase } from '@/integrations/supabase/client';
  */
 export async function getFlagBool(key: string, fallback = false): Promise<boolean> {
   try {
-    const { data, error } = await supabase
-      .from('feature_flags')
-      .select('enabled, value')
-      .eq('flag_name', key)
-      .maybeSingle();
-    
-    if (error) {
-      console.warn(`Feature flag error for ${key}:`, error);
-      return fallback;
-    }
+    const data = await rdsClient.queryOne(
+      'SELECT enabled, value FROM feature_flags WHERE flag_name = $1',
+      [key]
+    );
     
     if (!data) {
       console.warn(`Feature flag not found: ${key}`);
@@ -55,13 +49,12 @@ export async function getFlagBool(key: string, fallback = false): Promise<boolea
  */
 export async function getFlagString(key: string, fallback = ''): Promise<string> {
   try {
-    const { data, error } = await supabase
-      .from('feature_flags')
-      .select('enabled, value')
-      .eq('flag_name', key)
-      .maybeSingle();
+    const data = await rdsClient.queryOne(
+      'SELECT enabled, value FROM feature_flags WHERE flag_name = $1',
+      [key]
+    );
     
-    if (error || !data || !data.enabled) {
+    if (!data || !data.enabled) {
       return fallback;
     }
     
@@ -79,13 +72,12 @@ export async function getFlagString(key: string, fallback = ''): Promise<string>
  */
 export async function getFlagNumber(key: string, fallback = 0): Promise<number> {
   try {
-    const { data, error } = await supabase
-      .from('feature_flags')
-      .select('enabled, value')
-      .eq('flag_name', key)
-      .maybeSingle();
+    const data = await rdsClient.queryOne(
+      'SELECT enabled, value FROM feature_flags WHERE flag_name = $1',
+      [key]
+    );
     
-    if (error || !data || !data.enabled) {
+    if (!data || !data.enabled) {
       return fallback;
     }
     

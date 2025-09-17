@@ -9,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserJourney } from '@/services/UserJourneyManager';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+// Migrated to AWS Cognito via AuthContext
 import { toast } from '@/hooks/use-toast';
 import { Mail, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 
@@ -25,6 +25,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ defaultMode }) => {
     signInWithGoogle, 
     signInWithFacebook, 
     signIn,
+    signUp,
     vcData,
     oauthError 
   } = useAuth();
@@ -124,17 +125,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ defaultMode }) => {
           ? `${window.location.origin}/visibilitycheck/onboarding/step1`
           : `${window.location.origin}/dashboard`; // Let AuthContext handle onboarding redirect
           
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: redirectUrl,
-            data: {
-              gdpr_consent: gdprConsent,
-              marketing_consent: marketingConsent,
-              vc_data: vcData
-            }
-          }
+        const { error } = await signUp(email, password, {
+          gdpr_consent: gdprConsent,
+          marketing_consent: marketingConsent,
+          vc_data: vcData
         });
 
         if (error) {
@@ -187,9 +181,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ defaultMode }) => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/password-reset`
+      // TODO: Implement password reset with AWS Cognito
+      // For now, show a message that password reset is not available
+      toast({
+        title: "Passwort zurücksetzen",
+        description: "Die Passwort-Reset-Funktion wird derzeit migriert. Bitte kontaktieren Sie den Support.",
+        variant: "default"
       });
+      return;
 
       if (error) {
         toast({

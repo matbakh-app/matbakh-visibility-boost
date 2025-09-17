@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
-import { supabase } from '@/integrations/supabase/client';
+// Migrated to AWS Cognito via AuthContext
 import { useOnboardingQuestions } from '@/hooks/useOnboardingQuestions';
 import { useToast } from '@/hooks/use-toast';
 import AuthErrorDialog from './AuthErrorDialog';
@@ -110,17 +110,11 @@ const EmailRegisterForm: React.FC<EmailRegisterFormProps> = ({ onBack }) => {
 
       const redirectUrl = `${window.location.origin}/partner/onboarding`;
       
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            company_name: formData.companyName,
-            contact_person: formData.contactPerson,
-            business_category: formData.businessCategory
-          }
-        }
+      const { signUp } = useAuth();
+      const { error: signUpError } = await signUp(formData.email, formData.password, {
+        company_name: formData.companyName,
+        contact_person: formData.contactPerson,
+        business_category: formData.businessCategory
       });
 
       if (signUpError) {
