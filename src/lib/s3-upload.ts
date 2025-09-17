@@ -64,8 +64,10 @@ export interface MultipartUploadPart {
 }
 
 // Configuration
-const API_BASE_URL = import.meta.env.VITE_PUBLIC_API_BASE || 'https://api.matbakh.app';
-const PRESIGNED_URL_ENDPOINT = import.meta.env.VITE_PRESIGNED_URL_ENDPOINT || 
+// Statt import.meta.env:
+const env = (globalThis as any).importMetaEnv ?? process.env;
+const API_BASE_URL = env.VITE_PUBLIC_API_BASE || 'https://api.matbakh.app';
+const PRESIGNED_URL_ENDPOINT = env.VITE_PRESIGNED_URL_ENDPOINT || 
   'https://mgnmda4fdc7pd33znjxoocpcqe0vpcby.lambda-url.eu-central-1.on.aws/';
 
 // File validation constants

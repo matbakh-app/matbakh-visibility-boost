@@ -28,11 +28,13 @@ class AuthServiceError extends Error {
  * Validates environment configuration for Auth service
  */
 function validateEnvironment(): { apiBase: string } {
-  const apiBase = import.meta.env.VITE_PUBLIC_API_BASE || 'https://guf7ho7bze.execute-api.eu-central-1.amazonaws.com/prod';
+  // Statt import.meta.env:
+  const env = (globalThis as any).importMetaEnv ?? process.env;
+  const apiBase = env.VITE_PUBLIC_API_BASE || 'https://guf7ho7bze.execute-api.eu-central-1.amazonaws.com/prod';
 
   console.log('Auth Service Environment:', { 
     apiBase,
-    envApiBase: import.meta.env.VITE_PUBLIC_API_BASE
+    envApiBase: env.VITE_PUBLIC_API_BASE
   });
 
   if (!apiBase) {
@@ -204,13 +206,15 @@ export function signOut(): void {
  * Get environment info for debugging (dev mode only)
  */
 export function getAuthEnvironmentInfo() {
-  if (import.meta.env.PROD) {
+  // Statt import.meta.env:
+  const env = (globalThis as any).importMetaEnv ?? process.env;
+  if (env.PROD) {
     return null;
   }
 
   return {
-    apiBase: import.meta.env.VITE_PUBLIC_API_BASE,
-    env: import.meta.env.MODE,
+    apiBase: env.VITE_PUBLIC_API_BASE,
+    env: env.MODE,
     hasToken: !!localStorage.getItem('auth_token')
   };
 }

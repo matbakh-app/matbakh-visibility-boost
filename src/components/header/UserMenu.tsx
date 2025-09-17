@@ -12,12 +12,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { User, Settings, LogOut } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthUnified } from '@/hooks/useAuthUnified';
 
 const UserMenu: React.FC = () => {
   const { t } = useTranslation('navigation');
   const navigate = useNavigate();
-  const { user, signOut, openAuthModal } = useAuth();
+  const { user, signOut, openAuthModal } = useAuthUnified();
 
   const handleLogout = async () => {
     await signOut();

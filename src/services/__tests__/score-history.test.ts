@@ -2,7 +2,7 @@
 // Task: 6.4.1 Create ScoreHistory Database Schema
 // Requirements: B.1, B.2
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import type { ScoreHistoryInsert } from '@/types/score-history';
 
 const mockScoreRecord = {
@@ -17,32 +17,33 @@ const mockScoreRecord = {
   updated_at: '2025-01-09T10:00:00Z'
 };
 
-// Mock Supabase client - must be at top level for hoisting
-vi.mock('@/integrations/supabase/client', () => {
+// Using centralized mocks from setupTests.ts - no local mock definitions needed
+
+jest.mock('@/integrations/supabase/client', () => {
   const mockQuery = {
-    eq: vi.fn().mockReturnThis(),
-    in: vi.fn().mockReturnThis(),
-    gte: vi.fn().mockReturnThis(),
-    lte: vi.fn().mockReturnThis(),
-    order: vi.fn().mockReturnThis(),
-    limit: vi.fn().mockReturnThis(),
-    range: vi.fn().mockReturnThis(),
-    select: vi.fn().mockReturnThis(),
-    single: vi.fn().mockReturnThis()
+    eq: jest.fn().mockReturnThis(),
+    in: jest.fn().mockReturnThis(),
+    gte: jest.fn().mockReturnThis(),
+    lte: jest.fn().mockReturnThis(),
+    order: jest.fn().mockReturnThis(),
+    limit: jest.fn().mockReturnThis(),
+    range: jest.fn().mockReturnThis(),
+    select: jest.fn().mockReturnThis(),
+    single: jest.fn().mockReturnThis()
   };
 
   return {
     supabase: {
-      from: vi.fn(() => ({
-        insert: vi.fn(() => ({
-          select: vi.fn(() => ({
-            single: vi.fn(() => Promise.resolve({
+      from: jest.fn(() => ({
+        insert: jest.fn(() => ({
+          select: jest.fn(() => ({
+            single: jest.fn(() => Promise.resolve({
               data: mockScoreRecord,
               error: null
             }))
           }))
         })),
-        select: vi.fn(() => {
+        select: jest.fn(() => {
           // Return a promise-like object that resolves to data
           const queryResult = Promise.resolve({
             data: [mockScoreRecord],
@@ -53,18 +54,18 @@ vi.mock('@/integrations/supabase/client', () => {
           Object.assign(queryResult, mockQuery);
           return queryResult;
         }),
-        update: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            select: vi.fn(() => ({
-              single: vi.fn(() => Promise.resolve({
+        update: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            select: jest.fn(() => ({
+              single: jest.fn(() => Promise.resolve({
                 data: mockScoreRecord,
                 error: null
               }))
             }))
           }))
         })),
-        delete: vi.fn(() => ({
-          eq: vi.fn(() => Promise.resolve({
+        delete: jest.fn(() => ({
+          eq: jest.fn(() => Promise.resolve({
             error: null
           }))
         }))
@@ -78,7 +79,12 @@ import { ScoreHistoryService } from '../score-history';
 
 describe('ScoreHistoryService', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    // Use global mocks from setupTests.ts
+    global.mockExecuteQuery.mockResolvedValue({
+      records: [mockScoreRecord],
+      numberOfRecordsUpdated: 1
+    });
+    global.mockMapRecord.mockImplementation((record) => record);
   });
 
   describe('insertScore', () => {

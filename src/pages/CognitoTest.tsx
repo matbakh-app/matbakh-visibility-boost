@@ -1,47 +1,70 @@
+// src/pages/CognitoTest.tsx
 /**
  * Cognito Test Page for matbakh.app
  * Phase A3.2 - Cognito Auth Integration
- * 
- * Test page to verify Cognito authentication functionality
+ *
+ * Test page to verify Cognito authentication functionality.
+ * Route-Tipp: Im Router unter "/cognito-test" erreichbar.
  */
 
-import React, { useState, useEffect } from 'react';
-import { signUp, confirmSignUp, signIn, signOut, fetchAuthSession, getCurrentUser } from 'aws-amplify/auth';
-import { useAuth } from '../auth/useAuth';
+import React, { useEffect, useState } from 'react';
+import {
+  signUp,
+  confirmSignUp,
+  signIn,
+  signOut,
+  fetchAuthSession,
+} from 'aws-amplify/auth';
+// Falls ihr useAuth hier nicht benötigt, könnt ihr den Import löschen.
+// import { useAuth } from '@/contexts/AuthContext';
 import apiClient from '../api/client';
 
+type TestResult = Record<
+  string,
+  | {
+      status: 'success' | 'error' | 'no_session' | string;
+      [key: string]: any;
+    }
+  | any
+>;
+
 const CognitoTest: React.FC = () => {
-  const [testResults, setTestResults] = useState<Record<string, any>>({});
+  const [testResults, setTestResults] = useState<TestResult>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Test credentials for development
-  const [email, setEmail] = useState('test@matbakh.app');
+  const [email, setEmail] = useState('rabieb@gmx.de');
   const [password, setPassword] = useState('TestPassword123!');
   const [confirmationCode, setConfirmationCode] = useState('');
 
   /**
-   * Test Amplify configuration
+   * Test Amplify configuration (liest VITE-Variablen)
    */
   const testAmplifyConfig = async () => {
     try {
-      // Test basic configuration by checking environment variables
-      setTestResults(prev => ({
+      const clientId =
+        (import.meta.env.VITE_COGNITO_USER_POOL_CLIENT_ID ??
+          import.meta.env.VITE_COGNITO_USER_POOL_WEB_CLIENT_ID ??
+          '') as string;
+
+      setTestResults((prev) => ({
         ...prev,
         amplifyConfig: {
           status: 'success',
           userPoolId: import.meta.env.VITE_COGNITO_USER_POOL_ID,
           region: import.meta.env.VITE_AWS_REGION,
-          clientId: import.meta.env.VITE_COGNITO_USER_POOL_CLIENT_ID?.substring(0, 8) + '...'
-        }
+          // Beide Varianten werden im Code an anderer Stelle genutzt:
+          clientIdShort: clientId ? clientId.toString().substring(0, 8) + '...' : '(leer)',
+        },
       }));
-    } catch (error) {
-      setTestResults(prev => ({
+    } catch (err) {
+      setTestResults((prev) => ({
         ...prev,
         amplifyConfig: {
           status: 'error',
-          error: error instanceof Error ? error.message : 'Unknown error'
-        }
+          error: err instanceof Error ? err.message : 'Unknown error',
+        },
       }));
     }
   };
@@ -52,29 +75,32 @@ const CognitoTest: React.FC = () => {
   const testCurrentSession = async () => {
     try {
       const session = await fetchAuthSession();
-      setTestResults(prev => ({
+      const accessToken = session.tokens?.accessToken?.toString?.() ?? '';
+      const exp = session.tokens?.accessToken?.payload?.exp;
+
+      setTestResults((prev) => ({
         ...prev,
         currentSession: {
           status: 'success',
-          hasTokens: !!session.tokens,
-          accessToken: session.tokens?.accessToken?.toString().substring(0, 20) + '...',
-          expiresAt: session.tokens?.accessToken?.payload?.exp ? 
-            new Date(session.tokens.accessToken.payload.exp * 1000).toISOString() : 'unknown'
-        }
+          hasTokens: Boolean(session.tokens),
+          accessToken: accessToken ? accessToken.substring(0, 20) + '...' : '',
+          expiresAt: exp ? new Date(exp * 1000).toISOString() : 'unknown',
+        },
       }));
-    } catch (error) {
-      setTestResults(prev => ({
+    } catch (err) {
+      setTestResults((prev) => ({
         ...prev,
         currentSession: {
           status: 'no_session',
-          error: error instanceof Error ? error.message : 'No active session'
-        }
+          error: err instanceof Error ? err.message : 'No active session',
+        },
       }));
     }
   };
 
   /**
    * Test user sign up
+   * Hinweis: KEINE custom-Attribute verwenden, solange sie im Pool nicht definiert sind.
    */
   const testSignUp = async () => {
     try {
@@ -89,27 +115,26 @@ const CognitoTest: React.FC = () => {
             email,
             given_name: 'Test',
             family_name: 'User',
-            'custom:locale': 'de',
-            'custom:user_role': 'owner'
-          }
-        }
+            // KEINE custom:locale oder custom:user_role ohne vorherige Schema-Definition in Cognito
+          },
+        },
       });
 
-      setTestResults(prev => ({
+      setTestResults((prev) => ({
         ...prev,
         signUp: {
           status: 'success',
           userSub: result.userSub,
-          codeDelivery: result.nextStep
-        }
+          codeDelivery: result.nextStep,
+        },
       }));
-    } catch (error) {
-      setTestResults(prev => ({
+    } catch (err) {
+      setTestResults((prev) => ({
         ...prev,
         signUp: {
           status: 'error',
-          error: error instanceof Error ? error.message : 'Sign up failed'
-        }
+          error: err instanceof Error ? err.message : 'Sign up failed',
+        },
       }));
     } finally {
       setLoading(false);
@@ -126,24 +151,24 @@ const CognitoTest: React.FC = () => {
 
       const result = await confirmSignUp({
         username: email,
-        confirmationCode
+        confirmationCode,
       });
 
-      setTestResults(prev => ({
+      setTestResults((prev) => ({
         ...prev,
         confirmSignUp: {
           status: 'success',
           message: 'Email confirmed successfully',
-          nextStep: result.nextStep
-        }
+          nextStep: result.nextStep,
+        },
       }));
-    } catch (error) {
-      setTestResults(prev => ({
+    } catch (err) {
+      setTestResults((prev) => ({
         ...prev,
         confirmSignUp: {
           status: 'error',
-          error: error instanceof Error ? error.message : 'Confirmation failed'
-        }
+          error: err instanceof Error ? err.message : 'Confirmation failed',
+        },
       }));
     } finally {
       setLoading(false);
@@ -160,27 +185,27 @@ const CognitoTest: React.FC = () => {
 
       const result = await signIn({
         username: email,
-        password
+        password,
       });
 
-      setTestResults(prev => ({
+      setTestResults((prev) => ({
         ...prev,
         signIn: {
           status: 'success',
           isSignedIn: result.isSignedIn,
-          nextStep: result.nextStep
-        }
+          nextStep: result.nextStep,
+        },
       }));
 
       // Also test session after sign in
       await testCurrentSession();
-    } catch (error) {
-      setTestResults(prev => ({
+    } catch (err) {
+      setTestResults((prev) => ({
         ...prev,
         signIn: {
           status: 'error',
-          error: error instanceof Error ? error.message : 'Sign in failed'
-        }
+          error: err instanceof Error ? err.message : 'Sign in failed',
+        },
       }));
     } finally {
       setLoading(false);
@@ -196,22 +221,21 @@ const CognitoTest: React.FC = () => {
       setError(null);
 
       const response = await apiClient.get('/health');
-
-      setTestResults(prev => ({
+      setTestResults((prev) => ({
         ...prev,
         apiCall: {
           status: 'success',
-          response: response.data || response,
-          timestamp: new Date().toISOString()
-        }
+          response: (response as any).data ?? response,
+          timestamp: new Date().toISOString(),
+        },
       }));
-    } catch (error) {
-      setTestResults(prev => ({
+    } catch (err) {
+      setTestResults((prev) => ({
         ...prev,
         apiCall: {
           status: 'error',
-          error: error instanceof Error ? error.message : 'API call failed'
-        }
+          error: err instanceof Error ? err.message : 'API call failed',
+        },
       }));
     } finally {
       setLoading(false);
@@ -228,23 +252,23 @@ const CognitoTest: React.FC = () => {
 
       await signOut();
 
-      setTestResults(prev => ({
+      setTestResults((prev) => ({
         ...prev,
         signOut: {
           status: 'success',
-          message: 'Signed out successfully'
-        }
+          message: 'Signed out successfully',
+        },
       }));
 
       // Clear session test result
       await testCurrentSession();
-    } catch (error) {
-      setTestResults(prev => ({
+    } catch (err) {
+      setTestResults((prev) => ({
         ...prev,
         signOut: {
           status: 'error',
-          error: error instanceof Error ? error.message : 'Sign out failed'
-        }
+          error: err instanceof Error ? err.message : 'Sign out failed',
+        },
       }));
     } finally {
       setLoading(false);
@@ -262,26 +286,39 @@ const CognitoTest: React.FC = () => {
 
   // Run initial tests on mount
   useEffect(() => {
-    runAllTests();
+    void runAllTests();
   }, []);
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'success': return 'text-green-600';
-      case 'error': return 'text-red-600';
-      case 'no_session': return 'text-yellow-600';
-      default: return 'text-gray-600';
+      case 'success':
+        return 'text-green-600';
+      case 'error':
+        return 'text-red-600';
+      case 'no_session':
+        return 'text-yellow-600';
+      default:
+        return 'text-gray-600';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'success': return '✅';
-      case 'error': return '❌';
-      case 'no_session': return '⚠️';
-      default: return 'ℹ️';
+      case 'success':
+        return '✅';
+      case 'error':
+        return '❌';
+      case 'no_session':
+        return '⚠️';
+      default:
+        return 'ℹ️';
     }
   };
+
+  const apiBase =
+    (import.meta.env.VITE_PUBLIC_API_BASE as string | undefined) ??
+    (import.meta.env.VITE_API_BASE_URL as string | undefined) ??
+    '';
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -290,9 +327,10 @@ const CognitoTest: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900 mb-6">
             🔐 Cognito Authentication Test
           </h1>
-          
+
           <p className="text-gray-600 mb-8">
-            Test page to verify AWS Cognito integration and authentication functionality.
+            Test page to verify AWS Cognito integration and authentication
+            functionality.
           </p>
 
           {/* Test Controls */}
@@ -399,20 +437,28 @@ const CognitoTest: React.FC = () => {
           {/* Test Results */}
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-gray-900">Test Results</h2>
-            
-            {Object.entries(testResults).map(([testName, result]) => (
-              <div key={testName} className="border rounded-lg p-4">
-                <h3 className="text-lg font-semibold mb-3 flex items-center">
-                  {getStatusIcon(result.status)} {testName.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                  <span className={`ml-2 text-sm ${getStatusColor(result.status)}`}>
-                    ({result.status})
-                  </span>
-                </h3>
-                <pre className="bg-gray-100 p-3 rounded text-sm overflow-x-auto">
-                  {JSON.stringify(result, null, 2)}
-                </pre>
-              </div>
-            ))}
+
+            {Object.entries(testResults).map(([testName, result]) => {
+              const status = (result && (result as any).status) || 'info';
+              return (
+                <div key={testName} className="border rounded-lg p-4">
+                  <h3 className="text-lg font-semibold mb-3 flex items-center">
+                    {getStatusIcon(status)}{' '}
+                    {testName
+                      .replace(/([A-Z])/g, ' $1')
+                      .replace(/^./, (str) => str.toUpperCase())}
+                    <span
+                      className={`ml-2 text-sm ${getStatusColor(status)}`}
+                    >
+                      ({status})
+                    </span>
+                  </h3>
+                  <pre className="bg-gray-100 p-3 rounded text-sm overflow-x-auto">
+                    {JSON.stringify(result, null, 2)}
+                  </pre>
+                </div>
+              );
+            })}
           </div>
 
           {/* Environment Info */}
@@ -424,13 +470,15 @@ const CognitoTest: React.FC = () => {
                   <strong>Region:</strong> {import.meta.env.VITE_AWS_REGION}
                 </div>
                 <div>
-                  <strong>Environment:</strong> {import.meta.env.VITE_ENVIRONMENT}
+                  <strong>Environment:</strong>{' '}
+                  {import.meta.env.VITE_ENVIRONMENT}
                 </div>
                 <div>
-                  <strong>User Pool ID:</strong> {import.meta.env.VITE_COGNITO_USER_POOL_ID}
+                  <strong>User Pool ID:</strong>{' '}
+                  {import.meta.env.VITE_COGNITO_USER_POOL_ID}
                 </div>
                 <div>
-                  <strong>API Base URL:</strong> {import.meta.env.VITE_API_BASE_URL}
+                  <strong>API Base URL:</strong> {apiBase || '(nicht gesetzt)'}
                 </div>
               </div>
             </div>
@@ -439,9 +487,15 @@ const CognitoTest: React.FC = () => {
           {loading && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
               <div className="bg-white p-6 rounded-lg">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4"></div>
                 <p>Running test...</p>
               </div>
+            </div>
+          )}
+
+          {error && (
+            <div className="mt-4 p-3 rounded bg-red-50 text-red-700 text-sm">
+              {error}
             </div>
           )}
         </div>

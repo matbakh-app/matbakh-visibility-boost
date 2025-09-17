@@ -12,6 +12,20 @@ interface UseForecastOptions {
   minDataPoints?: number;
 }
 
+interface ForecastSummary {
+  trend_description: string;
+  confidence_description: string;
+  key_insights: string[];
+  recommended_actions: string[];
+}
+
+interface TrendChange {
+  date: string;
+  change_type: 'reversal' | 'acceleration' | 'deceleration';
+  magnitude: number;
+  confidence: number;
+}
+
 interface UseForecastReturn {
   forecast: ForecastResult | null;
   isLoading: boolean;
@@ -19,7 +33,7 @@ interface UseForecastReturn {
   generateForecast: (data: ScorePoint[], range: ForecastRange) => Promise<void>;
   clearForecast: () => void;
   canGenerateForecast: boolean;
-  forecastSummary: ReturnType<typeof ForecastingEngine.getForecastSummary> | null;
+  forecastSummary: ForecastSummary | null;
 }
 
 export const useForecast = (
@@ -76,16 +90,47 @@ export const useForecast = (
   }, []);
 
   // Get forecast summary
-  const forecastSummary = useMemo(() => {
+  const forecastSummary = useMemo((): ForecastSummary | null => {
     if (!forecast) return null;
-    // Create a simple summary from the forecast data
+    
+    const { trend_analysis } = forecast;
+    const trendDirection = trend_analysis.direction;
+    
+    // Generate trend description
+    let trendDesc = 'Stabiler Verlauf';
+    if (trendDirection === 'rising') trendDesc = 'Aufwärtstrend';
+    if (trendDirection === 'falling') trendDesc = 'Abwärtstrend';
+    
+    // Generate confidence description
+    const confidenceDesc = forecast.confidence_level > 0.8 ? 'Hohe Vorhersagegenauigkeit' : 
+                          forecast.confidence_level > 0.6 ? 'Mittlere Vorhersagegenauigkeit' : 
+                          'Niedrige Vorhersagegenauigkeit';
+    
+    // Generate key insights
+    const insights: string[] = [
+      `Trend-Stärke: ${(trend_analysis.strength * 100).toFixed(0)}%`,
+      `R² (Bestimmtheitsmaß): ${trend_analysis.r_squared.toFixed(3)}`,
+      `Volatilität: ±${trend_analysis.volatility.toFixed(1)} Punkte`
+    ];
+    
+    // Generate recommended actions
+    const actions: string[] = [];
+    if (trendDirection === 'falling') {
+      actions.push('Maßnahmen zur Verbesserung der Sichtbarkeit prüfen');
+      actions.push('Aktuelle SEO-Strategie überdenken');
+    } else if (trendDirection === 'rising') {
+      actions.push('Erfolgreiche Maßnahmen weiter ausbauen');
+      actions.push('Momentum durch zusätzliche Aktivitäten verstärken');
+    } else {
+      actions.push('Neue Wachstumsimpulse setzen');
+      actions.push('Bestehende Strategie optimieren');
+    }
+    
     return {
-      trend_description: `${forecast.trend_analysis.direction === 'up' ? 'Aufwärtstrend' : 
-                          forecast.trend_analysis.direction === 'down' ? 'Abwärtstrend' : 'Stabiler Verlauf'}`,
-      confidence_description: `${forecast.confidence_level > 0.8 ? 'Hohe' : 
-                              forecast.confidence_level > 0.6 ? 'Mittlere' : 'Niedrige'} Vorhersagegenauigkeit`,
-      key_insights: [`Trend-Stärke: ${(forecast.trend_analysis.strength * 100).toFixed(0)}%`],
-      recommended_actions: forecast.trend_analysis.direction === 'down' ? ['Maßnahmen zur Verbesserung prüfen'] : []
+      trend_description: trendDesc,
+      confidence_description: confidenceDesc,
+      key_insights: insights,
+      recommended_actions: actions
     };
   }, [forecast]);
 
@@ -135,7 +180,7 @@ export const useTrendChangeDetection = (
   historicalData: ScorePoint[],
   windowSize: number = 14
 ) => {
-  const [trendChanges, setTrendChanges] = useState<ReturnType<typeof ForecastingEngine.detectTrendChanges>>([]);
+  const [trendChanges, setTrendChanges] = useState<TrendChange[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const detectChanges = useCallback(async () => {
@@ -150,8 +195,41 @@ export const useTrendChangeDetection = (
       // Simulate async operation
       await new Promise(resolve => setTimeout(resolve, 200));
       
-      // Simple trend change detection (placeholder)
-      const changes: any[] = [];
+      // Simple trend change detection algorithm
+      const changes: TrendChange[] = [];
+      const sortedData = [...historicalData].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      
+      // Analyze windows of data for trend changes
+      for (let i = windowSize; i < sortedData.length - windowSize; i++) {
+        const beforeWindow = sortedData.slice(i - windowSize, i);
+        const afterWindow = sortedData.slice(i, i + windowSize);
+        
+        // Calculate trends for both windows
+        const beforeTrend = ForecastEngine.analyzeTrend(beforeWindow);
+        const afterTrend = ForecastEngine.analyzeTrend(afterWindow);
+        
+        // Detect significant changes
+        const slopeDiff = Math.abs(afterTrend.slope - beforeTrend.slope);
+        const directionChanged = beforeTrend.direction !== afterTrend.direction;
+        
+        if (slopeDiff > 0.1 || directionChanged) {
+          let changeType: TrendChange['change_type'] = 'acceleration';
+          
+          if (directionChanged) {
+            changeType = 'reversal';
+          } else if (Math.abs(afterTrend.slope) < Math.abs(beforeTrend.slope)) {
+            changeType = 'deceleration';
+          }
+          
+          changes.push({
+            date: sortedData[i].date,
+            change_type: changeType,
+            magnitude: slopeDiff,
+            confidence: Math.min(beforeTrend.r_squared, afterTrend.r_squared)
+          });
+        }
+      }
+      
       setTrendChanges(changes);
     } catch (err) {
       console.error('Error detecting trend changes:', err);

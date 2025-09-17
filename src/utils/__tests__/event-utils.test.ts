@@ -1,7 +1,7 @@
 // Event Utils Tests - Task 6.4.2.4.1
 // Unit tests for event utility functions
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from '@jest/globals';
 import type { VisibilityEvent } from '@/types/score-history';
 import {
   filterEventsByDateRange,

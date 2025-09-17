@@ -56,4 +56,6 @@ process.env.ANONYMIZATION_SALT = 'test-salt';
 process.env.ARCHIVE_ENCRYPTION_KEY = 'test-encryption-key';
 
 // Global test timeout
-jest.setTimeout(30000);
+jest.setTimeout(30000);/
+/ Export to make this a module and prevent Jest "no tests" error
+export {};

@@ -1,59 +1,29 @@
-import { useState, useEffect } from "react";
+/**
+ * UI Mode Hook - Migrated to Generic useLocalStorage
+ * 
+ * @deprecated Use useUIMode from useLocalStorage instead
+ * @version 1.0.0 (deprecated)
+ * @since 2024
+ * @willBeRemovedIn v2.0
+ * 
+ * This hook has been migrated to the generic useLocalStorage pattern.
+ * Please import useUIMode from '@/hooks/useLocalStorage' instead.
+ */
 
-type UIMode = "standard" | "invisible" | "system";
+import { useUIMode as useUIModeGeneric } from './useLocalStorage';
 
-const UI_MODE_KEY = "matbakh_ui_mode";
-
+/**
+ * @deprecated Use useUIMode from useLocalStorage instead
+ */
 export function useUIMode() {
-  const [mode, setMode] = useState<UIMode>(() => {
-    // Initialize from localStorage or default to system
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem(UI_MODE_KEY) as UIMode;
-      return stored || "system";
-    }
-    return "system";
-  });
+  // Show deprecation warning in development
+  if (process.env.NODE_ENV !== 'production') {
+    console.warn(
+      '⚠️ DEPRECATED: useUIMode from useUIMode.ts is deprecated.\n' +
+      '   Please import useUIMode from @/hooks/useLocalStorage instead.\n' +
+      '   Migration: import { useUIMode } from "@/hooks/useLocalStorage";'
+    );
+  }
 
-  const [effectiveMode, setEffectiveMode] = useState<UIMode>("standard");
-
-  useEffect(() => {
-    // Determine effective mode based on user choice and system preference
-    let effective: UIMode = "standard";
-    
-    if (mode === "system") {
-      // Use system preference - could check for reduced motion, screen size, etc.
-      const preferReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      const isMobile = window.matchMedia("(max-width: 768px)").matches;
-      effective = (preferReduced || isMobile) ? "invisible" : "standard";
-    } else {
-      effective = mode;
-    }
-    
-    setEffectiveMode(effective);
-  }, [mode]);
-
-  const setUIMode = (newMode: UIMode) => {
-    setMode(newMode);
-    localStorage.setItem(UI_MODE_KEY, newMode);
-    
-    // Fire analytics event
-    try {
-      window.dispatchEvent(new CustomEvent("analytics", { 
-        detail: { 
-          name: "ui_mode_changed", 
-          from: mode, 
-          to: newMode, 
-          source: "settings" 
-        } 
-      }));
-    } catch {}
-  };
-
-  return {
-    mode,
-    effectiveMode,
-    setUIMode,
-    isInvisible: effectiveMode === "invisible",
-    isStandard: effectiveMode === "standard",
-  };
+  return useUIModeGeneric();
 }

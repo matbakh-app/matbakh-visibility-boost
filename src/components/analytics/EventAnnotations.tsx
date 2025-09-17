@@ -6,6 +6,7 @@ import { ReferenceDot, ReferenceLine } from 'recharts';
 import type { VisibilityEvent, ScorePoint } from '@/types/score-history';
 import { getEventStyleWithImpact, getEventStyle } from '@/data/analytics/event-styles';
 import { formatEventForTooltip } from '@/utils/event-utils';
+import { getScoreAtDate, filterEvents } from '@/utils/event-annotations-utils';
 
 interface EventAnnotationsProps {
   events: VisibilityEvent[];
@@ -65,61 +66,7 @@ const EventTooltip = ({ event }: { event: VisibilityEvent }) => {
   );
 };
 
-// Helper function to find score value at event date
-const getScoreAtDate = (scoreData: ScorePoint[], eventDate: string): number => {
-  // Return default if no data
-  if (!scoreData || scoreData.length === 0) {
-    return 50;
-  }
-  
-  // Find exact match first
-  const exactMatch = scoreData.find(point => point.date === eventDate);
-  if (exactMatch) return exactMatch.score_value;
-  
-  // Find closest date if no exact match
-  const eventTime = new Date(eventDate).getTime();
-  let closestPoint = scoreData[0];
-  let minDiff = Math.abs(new Date(scoreData[0].date).getTime() - eventTime);
-  
-  for (const point of scoreData) {
-    const diff = Math.abs(new Date(point.date).getTime() - eventTime);
-    if (diff < minDiff) {
-      minDiff = diff;
-      closestPoint = point;
-    }
-  }
-  
-  return closestPoint?.score_value || 50; // Default to middle if no data
-};
-
-// Filter events based on date range and visible types
-const filterEvents = (
-  events: VisibilityEvent[],
-  dateRange?: { from: Date; to: Date },
-  visibleEventTypes?: string[]
-): VisibilityEvent[] => {
-  let filtered = events;
-  
-  // Filter by date range
-  if (dateRange) {
-    filtered = filtered.filter(event => {
-      const eventDate = new Date(event.date);
-      return eventDate >= dateRange.from && eventDate <= dateRange.to;
-    });
-  }
-  
-  // Filter by visible event types
-  if (visibleEventTypes !== undefined) {
-    if (visibleEventTypes.length === 0) {
-      return []; // No types selected means no events shown
-    }
-    filtered = filtered.filter(event => 
-      visibleEventTypes.includes(event.type)
-    );
-  }
-  
-  return filtered;
-};
+// Functions are now imported from @/utils/event-annotations-utils
 
 export const EventAnnotations: React.FC<EventAnnotationsProps> = ({
   events,

@@ -1,8 +1,8 @@
-// TrendChart Component - Task 6.4.2.1 + 6.4.2.4.2
-// Visibility Trend Chart Component for Score Evolution Tracking with Event Annotations
-// Requirements: B.3, B.4
+// TrendChart Component - Master Chart Component (Consolidated)
+// Supports: Trend Analysis, Forecast Display, Score Evolution
+// Requirements: B.3, B.4 (Task 6.4.2.1 + 6.4.2.4.2 + Forecast Integration)
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   ResponsiveContainer,
   LineChart,
@@ -11,44 +11,116 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ReferenceLine
+  ReferenceLine,
+  Area,
+  ComposedChart
 } from 'recharts';
 import type { FC } from 'react';
 import type { ScorePoint, VisibilityEvent, ScoreType } from '@/types/score-history';
+import type { ForecastResult } from '@/lib/forecast';
 import { EventAnnotations, EventTooltip } from './EventAnnotations';
 import { EnhancedTooltip } from './EnhancedTooltip';
+import { 
+  formatDate, 
+  getScoreColor, 
+  generateTooltipContent, 
+  CHART_PRESETS, 
+  DEFAULT_CHART_MARGINS,
+  DEFAULT_CHART_STYLES,
+  ChartMode,
+  ForecastChartData,
+  TrendChartData
+} from '@/utils/chart-utils';
 
 type TrendChartProps = {
+  // Core data
   data: ScorePoint[];
-  scoreType: ScoreType;
-  dateRange: { from: Date; to: Date };
+  scoreType?: ScoreType;
+  dateRange?: { from: Date; to: Date };
   businessUnit?: string;
+  
+  // Chart mode and behavior
+  mode?: ChartMode;
+  height?: number;
+  className?: string;
+  
+  // Event handling (trend mode)
   events?: VisibilityEvent[];
   showEvents?: boolean;
   showEventLines?: boolean;
   showEventDots?: boolean;
   visibleEventTypes?: string[];
+  
+  // Forecast mode specific
+  forecast?: ForecastResult;
+  historicalData?: ScorePoint[];
+  showConfidenceInterval?: boolean;
+  showTrendLine?: boolean;
 };
 
 export const TrendChart: FC<TrendChartProps> = ({ 
   data, 
   scoreType, 
   dateRange, 
-  businessUnit, 
+  businessUnit,
+  mode = 'trend',
+  height,
+  className = '',
   events = [],
   showEvents = true,
   showEventLines = true,
   showEventDots = true,
-  visibleEventTypes
+  visibleEventTypes,
+  forecast,
+  historicalData,
+  showConfidenceInterval = true,
+  showTrendLine = true
 }) => {
   const [hoveredEvent, setHoveredEvent] = useState<VisibilityEvent | null>(null);
-  // Format date for German locale
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('de-DE', {
-      day: '2-digit',
-      month: '2-digit'
-    });
-  };
+  
+  // Determine responsive height
+  const chartHeight = height || (window.innerWidth < 768 ? 300 : mode === 'forecast' ? 450 : 400);
+  
+  // Prepare chart data based on mode
+  const chartData = useMemo(() => {
+    if (mode === 'forecast' && forecast && historicalData) {
+      const combinedData: ForecastChartData[] = [];
+      
+      // Add historical data
+      historicalData.forEach(point => {
+        combinedData.push({
+          date: point.date,
+          value: point.score_value,
+          historical_score: point.score_value,
+          is_forecast: false,
+          type: 'historical'
+        });
+      });
+      
+      // Add forecast data
+      forecast.forecast_points.forEach(point => {
+        combinedData.push({
+          date: point.date,
+          value: point.predicted_score,
+          predicted_score: point.predicted_score,
+          confidence_lower: point.confidence_lower,
+          confidence_upper: point.confidence_upper,
+          is_forecast: true,
+          type: 'forecast'
+        });
+      });
+      
+      return combinedData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    }
+    
+    // Default trend mode
+    return data.map(point => ({
+      date: point.date,
+      value: point.score_value,
+      score_value: point.score_value,
+      type: 'historical'
+    }));
+  }, [data, mode, forecast, historicalData]);
 
   // Calculate previous score for change indicator
   const getPreviousScore = (currentDate: string): number | undefined => {

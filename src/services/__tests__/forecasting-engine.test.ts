@@ -2,7 +2,7 @@
 // Unit tests for the predictive forecasting system
 // Requirements: B.3
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from '@jest/globals';
 import { ForecastingEngine } from '../forecasting-engine';
 import type { ScorePoint } from '@/types/score-history';
 

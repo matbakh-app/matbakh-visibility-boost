@@ -1,11 +1,11 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, jest } from '@jest/globals';
 import { createPdfReportAndSend, createSimplePdfReport } from '@/lib/pdfReport';
 
 // Mock Supabase client
-vi.mock('@/integrations/supabase/client', () => ({
+jest.mock('@/integrations/supabase/client', () => ({
   supabase: {
     functions: {
-      invoke: vi.fn(() => Promise.resolve({ 
+      invoke: jest.fn(() => Promise.resolve({ 
         data: { downloadUrl: 'https://test-bucket.com/report_test-lead.pdf' }, 
         error: null 
       }))
@@ -27,7 +27,7 @@ describe('PDF Report Generation', () => {
       const { supabase } = await import('@/integrations/supabase/client');
       
       // Mock error scenario
-      vi.mocked(supabase.functions.invoke).mockResolvedValueOnce({
+      jest.mocked(supabase.functions.invoke).mockResolvedValueOnce({
         data: null,
         error: { message: 'PDF generation failed' }
       });
@@ -41,7 +41,7 @@ describe('PDF Report Generation', () => {
       const { supabase } = await import('@/integrations/supabase/client');
       
       // Mock missing URL scenario
-      vi.mocked(supabase.functions.invoke).mockResolvedValueOnce({
+      jest.mocked(supabase.functions.invoke).mockResolvedValueOnce({
         data: { downloadUrl: null },
         error: null
       });

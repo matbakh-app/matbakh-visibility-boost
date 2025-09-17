@@ -1,6 +1,12 @@
-// Forecasting Engine - Task 6.4.3.1
-// Linear regression forecasting for visibility score projections
-// Requirements: B.3
+/**
+ * Forecasting Engine - Task 6.4.3.1
+ * Linear regression forecasting for visibility score projections
+ * Requirements: B.3
+ * 
+ * @usage Used by VC Analysis Engine and Claude Output Mapper
+ * @integration VCResult dashboard, VC generator lambdas
+ * @status ACTIVE - Core engine for visibility predictions
+ */
 
 import type { ScorePoint } from '@/types/score-history';
 

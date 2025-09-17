@@ -1,3 +1,7 @@
+/**
+ * @jest-environment node
+ */
+
 import { handler } from '../index';
 import { GoalProfileManager } from '../goal-profile-manager';
 import { RecommendationGenerator } from '../recommendation-generator';

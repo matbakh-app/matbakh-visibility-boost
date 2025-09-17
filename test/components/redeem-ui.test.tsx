@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { RedeemCodeForm } from '@/components/redeem/RedeemCodeForm';
 import { RedeemCodeInput } from '@/components/redeem/RedeemCodeInput';
 import { CampaignReport } from '@/components/redeem/CampaignReport';
@@ -12,28 +12,28 @@ import { CampaignReport } from '@/components/redeem/CampaignReport';
 // Mock Supabase client
 const mockSupabase = {
   functions: {
-    invoke: vi.fn()
+    invoke: jest.fn()
   }
 };
 
-vi.mock('@/integrations/supabase/client', () => ({
+jest.mock('@/integrations/supabase/client', () => ({
   supabase: mockSupabase
 }));
 
 // Mock sonner toast
-vi.mock('sonner', () => ({
+jest.mock('sonner', () => ({
   toast: {
-    success: vi.fn(),
-    error: vi.fn()
+    success: jest.fn(),
+    error: jest.fn()
   }
 }));
 
 describe('RedeemCodeForm', () => {
-  const mockOnCodeGenerated = vi.fn();
+  const mockOnCodeGenerated = jest.fn();
   const mockPartnerId = 'test-partner-123';
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   it('renders form fields correctly', () => {
@@ -118,10 +118,10 @@ describe('RedeemCodeForm', () => {
 
 describe('RedeemCodeInput', () => {
   const mockLeadId = 'test-lead-123';
-  const mockOnCodeRedeemed = vi.fn();
+  const mockOnCodeRedeemed = jest.fn();
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   it('renders input field and submit button', () => {
@@ -187,7 +187,7 @@ describe('CampaignReport', () => {
   const mockPartnerId = 'test-partner-123';
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   it('renders loading state initially', () => {

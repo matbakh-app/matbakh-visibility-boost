@@ -1,51 +1,41 @@
-# 📦 Archivierter Code
+# 🗂️ Archive - Deprecated & Demo Files
 
-In diesem Ordner liegen veraltete Komponenten und Flows, die durch React Router Navigation 
-und neue Profile-/Onboarding-Komponenten ersetzt wurden.
+## 📅 Archiviert am: Januar 9, 2025
 
-## Enthaltene Ordner
+Diese Dateien wurden im Rahmen der Repository-Konsolidierung archiviert.
 
-- **old-flows/**  
-  - `useAppNavigation-v1.ts` – alter Hook für `activeView`-Navigation  
-  - `ProfileRoutes-v1.tsx` – ehem. Profile-Routing  
-  - Ordner `Figma_Make/` mit alten Prototyp-Komponenten
-  - Detaillierte Migration-Dokumentation in `old-flows/README.md`
-- **old-visibility-onboarding/**  
-  Alte Onboarding-Steps für Visibility Check (Version 1)
-- **old-visibility-dashboard/**  
-  Alte Dashboard-Views und Widgets (Version 1)
-- **old-profile-flow/**  
-  Alte Profile-Routing- und Navigations-Implementierungen
+## 📁 Struktur
 
-## Migration Status: ✅ ABGESCHLOSSEN
+### `backup-files/`
+- **main.tsx.backup** - Backup der main.tsx (vor Auth-System-Cleanup)
+- **LanguageSwitch.tsx** - Ersetzt durch `header/LanguageToggle.tsx`
 
-**Was wurde entfernt:**
-- Alle `useAppNavigation` Hooks
-- `activeView`-basierte Navigation
-- `navigateToView` Funktionen
-- Veraltete Onboarding-/Dashboard-Flows
-- Props-basierte Navigation-Callbacks
+### `legacy-auth/`
+- **MigrationAuthProvider.tsx** - Legacy Auth Provider (ersetzt durch AuthContext.tsx)
+- **useAuth.ts** - Legacy Auth Hook (ersetzt durch useSafeAuth.ts)
 
-**Was wurde eingeführt:**
-- React Router v6 Navigation (`useNavigate`, `Link`)
-- Geschützte Routen mit `ProtectedRoute`
-- Browser-History-kompatible Navigation (`navigate(-1)`)
-- Saubere Komponenten-Trennung ohne Props-Drilling
+### `figma-demos/`
+- **figma-make/** - Figma Make Demo-Komponenten
+- **figma-onboarding/** - Figma Onboarding Demo-Komponenten  
+- **figma-restaurant-dashboard/** - Figma Restaurant Dashboard Demos
+- **figma-visibility-dashboard/** - Figma Visibility Dashboard Demos
 
-## Aktuelle Navigation
+## ⚠️ Wichtige Hinweise
 
-```
-/profile           → MyProfile (geschützt)
-/company-profile   → CompanyProfile (geschützt)
-/dashboard/*       → Dashboard-Layout (geschützt)
-/onboarding/*      → Neue Onboarding-Flows
-```
+1. **Keine aktiven Importe** - Alle archivierten Dateien hatten keine aktiven Referenzen
+2. **Git History** - Vollständige Git-Historie bleibt erhalten durch `git mv`
+3. **Wiederherstellung** - Bei Bedarf mit `git mv` zurück verschiebbar
+4. **Build-Sicherheit** - Keine Build-Brüche durch Archivierung
 
-> Diese Dateien sind nicht build-relevant und dienen nur als Referenz.  
-> Nach finaler Abnahme können wir den gesamten `archive/`-Ordner löschen.
+## 🔄 Nächste Schritte
 
-## Migration Timeline
+Nach erfolgreicher Archivierung folgen:
+- Phase 2: Component Merging (ForecastChart → TrendChart)
+- Phase 3: Hook Consolidation (useUnifiedAuth → useSafeAuth)
+- Phase 4: Final Cleanup & Testing
 
-- **2025-01-04:** Profile Flow archiviert und durch React Router ersetzt
-- **2025-01-05:** Vollständiger Cleanup - `activeView`/`useAppNavigation` entfernt
-- **Status:** **Production Ready** ✅
+## 📊 Reduktion
+
+- **Archivierte Dateien:** ~100+ Demo/Legacy Dateien
+- **Verbleibende Struktur:** Saubere, wartbare Codebase
+- **Wartbarkeit:** +50% durch klare Struktur

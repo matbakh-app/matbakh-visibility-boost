@@ -1,4 +1,8 @@
 /**
+ * @jest-environment node
+ */
+
+/**
  * Tests for Threat Detection Engine
  */
 import { ThreatDetectionEngine } from '../threat-detection-engine';

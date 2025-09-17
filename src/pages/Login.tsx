@@ -8,8 +8,8 @@
 import React from 'react';
 import { Authenticator } from '@aws-amplify/ui-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../auth/useAuth';
-import '@aws-amplify/ui-react/styles.css';
+import { useAuth } from '@/contexts/AuthContext';
+// import '@aws-amplify/ui-react/styles.css'; // Removed - not using Amplify anymore
 
 // Custom theme for matbakh.app branding
 const theme = {

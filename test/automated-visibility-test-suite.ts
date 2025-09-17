@@ -5,7 +5,7 @@
  * ohne dass manuelle Frontend-Tests erforderlich sind.
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll } from '@jest/globals'
 import { createClient } from '@supabase/supabase-js'
 
 // Testumgebung Config

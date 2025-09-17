@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
-import { componentTagger } from "lovable-tagger";
+// import { componentTagger } from "lovable-tagger"; // Disabled - package not available
 import { visualizer } from "rollup-plugin-visualizer";
 
 // https://vitejs.dev/config/
@@ -9,10 +9,29 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "localhost",
     port: 5173,
+    headers: {
+      'Content-Security-Policy': "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;"
+    },
+    proxy: {
+      // Proxy persona API to mock service or staging
+      '/api/persona': {
+        target: mode === 'development' ? 'http://localhost:3001' : 'https://api-staging.matbakh.app',
+        changeOrigin: true,
+        secure: false,
+        configure: (proxy, _options) => {
+          proxy.on('error', (err, _req, _res) => {
+            console.log('Persona API proxy error:', err);
+          });
+          proxy.on('proxyReq', (proxyReq, req, _res) => {
+            console.log('Persona API proxy request:', req.method, req.url);
+          });
+        },
+      },
+    },
   },
   plugins: [
     react(),
-    mode === 'development' && componentTagger(),
+    // mode === 'development' && componentTagger(), // Disabled - package not available
     mode === 'development' && visualizer({
       filename: 'stats.html',
       gzipSize: true,

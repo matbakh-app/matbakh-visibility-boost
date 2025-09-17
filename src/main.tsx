@@ -18,14 +18,14 @@ console.log('🚀 Starting matbakh.app with unified provider architecture')
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <HelmetProvider>
-      <AppProviders>
-        <BrowserRouter>
+    <BrowserRouter>
+      <HelmetProvider>
+        <AppProviders>
           <App />
           <SpeedInsights />
-        </BrowserRouter>
-        <ReactQueryDevtools initialIsOpen={false} />
-      </AppProviders>
-    </HelmetProvider>
+          <ReactQueryDevtools initialIsOpen={false} />
+        </AppProviders>
+      </HelmetProvider>
+    </BrowserRouter>
   </React.StrictMode>,
 )

@@ -1,8 +1,8 @@
 // Score History Service
-// Task: 6.4.1 Create ScoreHistory Database Schema
+// Task: 1.2 Migrate ScoreHistory service from Supabase to AWS RDS
 // Requirements: B.1, B.2
 
-import { supabase } from '@/integrations/supabase/client';
+import { AwsRdsClient } from './aws-rds-client';
 import type { 
   ScoreHistoryRecord, 
   ScoreHistoryInsert, 
@@ -15,93 +15,143 @@ import type {
 } from '@/types/score-history';
 
 export class ScoreHistoryService {
+  private static rdsClient = new AwsRdsClient();
+
   /**
    * Insert a new score history record
    */
   static async insertScore(data: ScoreHistoryInsert): Promise<ScoreHistoryRecord> {
-    const { data: result, error } = await supabase
-      .from('score_history')
-      .insert(data)
-      .select()
-      .single();
+    try {
+      const query = `
+        INSERT INTO score_history (
+          business_id, score_type, score_value, source, 
+          calculated_at, meta, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
+        RETURNING *
+      `;
+      
+      const params = [
+        data.business_id,
+        data.score_type,
+        data.score_value,
+        data.source,
+        data.calculated_at || new Date().toISOString(),
+        JSON.stringify(data.meta || {})
+      ];
 
-    if (error) {
-      throw new Error(`Failed to insert score history: ${error.message}`);
+      const result = await this.rdsClient.executeQuery(query, params);
+      
+      if (!result.records || result.records.length === 0) {
+        throw new Error('No record returned after insert');
+      }
+
+      return this.rdsClient.mapRecord(result.records[0]) as ScoreHistoryRecord;
+    } catch (error) {
+      throw new Error(`Failed to insert score history: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-
-    return result;
   }
 
   /**
    * Bulk insert multiple score history records
    */
   static async insertScores(data: ScoreHistoryInsert[]): Promise<ScoreHistoryRecord[]> {
-    const { data: result, error } = await supabase
-      .from('score_history')
-      .insert(data)
-      .select();
+    try {
+      const results: ScoreHistoryRecord[] = [];
+      
+      // Execute inserts in batches to avoid query size limits
+      const batchSize = 100;
+      for (let i = 0; i < data.length; i += batchSize) {
+        const batch = data.slice(i, i + batchSize);
+        const batchResults = await Promise.all(
+          batch.map(record => this.insertScore(record))
+        );
+        results.push(...batchResults);
+      }
 
-    if (error) {
-      throw new Error(`Failed to insert score history records: ${error.message}`);
+      return results;
+    } catch (error) {
+      throw new Error(`Failed to insert score history records: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-
-    return result;
   }
 
   /**
    * Query score history with filters
    */
   static async queryScoreHistory(query: ScoreHistoryQuery): Promise<ScoreHistoryRecord[]> {
-    let supabaseQuery = supabase
-      .from('score_history')
-      .select('*')
-      .order('calculated_at', { ascending: false });
+    try {
+      let sql = 'SELECT * FROM score_history WHERE 1=1';
+      const params: any[] = [];
+      let paramIndex = 1;
 
-    // Apply filters
-    if (query.business_id) {
-      supabaseQuery = supabaseQuery.eq('business_id', query.business_id);
-    }
-
-    if (query.score_type) {
-      if (Array.isArray(query.score_type)) {
-        supabaseQuery = supabaseQuery.in('score_type', query.score_type);
-      } else {
-        supabaseQuery = supabaseQuery.eq('score_type', query.score_type);
+      // Apply filters
+      if (query.business_id) {
+        sql += ` AND business_id = ?`;
+        params.push(query.business_id);
+        paramIndex++;
       }
-    }
 
-    if (query.source) {
-      if (Array.isArray(query.source)) {
-        supabaseQuery = supabaseQuery.in('source', query.source);
-      } else {
-        supabaseQuery = supabaseQuery.eq('source', query.source);
+      if (query.score_type) {
+        if (Array.isArray(query.score_type)) {
+          const placeholders = query.score_type.map(() => '?').join(',');
+          sql += ` AND score_type IN (${placeholders})`;
+          params.push(...query.score_type);
+          paramIndex += query.score_type.length;
+        } else {
+          sql += ` AND score_type = ?`;
+          params.push(query.score_type);
+          paramIndex++;
+        }
       }
-    }
 
-    if (query.date_from) {
-      supabaseQuery = supabaseQuery.gte('calculated_at', query.date_from);
-    }
+      if (query.source) {
+        if (Array.isArray(query.source)) {
+          const placeholders = query.source.map(() => '?').join(',');
+          sql += ` AND source IN (${placeholders})`;
+          params.push(...query.source);
+          paramIndex += query.source.length;
+        } else {
+          sql += ` AND source = ?`;
+          params.push(query.source);
+          paramIndex++;
+        }
+      }
 
-    if (query.date_to) {
-      supabaseQuery = supabaseQuery.lte('calculated_at', query.date_to);
-    }
+      if (query.date_from) {
+        sql += ` AND calculated_at >= ?`;
+        params.push(query.date_from);
+        paramIndex++;
+      }
 
-    if (query.limit) {
-      supabaseQuery = supabaseQuery.limit(query.limit);
-    }
+      if (query.date_to) {
+        sql += ` AND calculated_at <= ?`;
+        params.push(query.date_to);
+        paramIndex++;
+      }
 
-    if (query.offset) {
-      supabaseQuery = supabaseQuery.range(query.offset, query.offset + (query.limit || 50) - 1);
-    }
+      // Order by calculated_at descending
+      sql += ' ORDER BY calculated_at DESC';
 
-    // Execute the query
-    const result = await supabaseQuery;
-    
-    if (result.error) {
-      throw new Error(`Failed to query score history: ${result.error.message}`);
-    }
+      // Apply limit and offset
+      if (query.limit) {
+        sql += ` LIMIT ?`;
+        params.push(query.limit);
+        paramIndex++;
+      }
 
-    return result.data || [];
+      if (query.offset) {
+        sql += ` OFFSET ?`;
+        params.push(query.offset);
+        paramIndex++;
+      }
+
+      const result = await this.rdsClient.executeQuery(sql, params);
+      
+      return result.records?.map(record => 
+        this.rdsClient.mapRecord(record) as ScoreHistoryRecord
+      ) || [];
+    } catch (error) {
+      throw new Error(`Failed to query score history: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 
   /**
@@ -220,31 +270,76 @@ export class ScoreHistoryService {
    * Update a score history record
    */
   static async updateScore(id: string, data: ScoreHistoryUpdate): Promise<ScoreHistoryRecord> {
-    const { data: result, error } = await supabase
-      .from('score_history')
-      .update(data)
-      .eq('id', id)
-      .select()
-      .single();
+    try {
+      const updateFields: string[] = [];
+      const params: any[] = [];
+      let paramIndex = 1;
 
-    if (error) {
-      throw new Error(`Failed to update score history: ${error.message}`);
+      // Build dynamic update query
+      if (data.score_value !== undefined) {
+        updateFields.push(`score_value = ?`);
+        params.push(data.score_value);
+        paramIndex++;
+      }
+
+      if (data.source !== undefined) {
+        updateFields.push(`source = ?`);
+        params.push(data.source);
+        paramIndex++;
+      }
+
+      if (data.calculated_at !== undefined) {
+        updateFields.push(`calculated_at = ?`);
+        params.push(data.calculated_at);
+        paramIndex++;
+      }
+
+      if (data.meta !== undefined) {
+        updateFields.push(`meta = ?`);
+        params.push(JSON.stringify(data.meta));
+        paramIndex++;
+      }
+
+      updateFields.push(`updated_at = NOW()`);
+
+      if (updateFields.length === 1) { // Only updated_at
+        throw new Error('No fields to update');
+      }
+
+      const query = `
+        UPDATE score_history 
+        SET ${updateFields.join(', ')}
+        WHERE id = ?
+        RETURNING *
+      `;
+      
+      params.push(id);
+
+      const result = await this.rdsClient.executeQuery(query, params);
+      
+      if (!result.records || result.records.length === 0) {
+        throw new Error('Score history record not found');
+      }
+
+      return this.rdsClient.mapRecord(result.records[0]) as ScoreHistoryRecord;
+    } catch (error) {
+      throw new Error(`Failed to update score history: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-
-    return result;
   }
 
   /**
    * Delete a score history record
    */
   static async deleteScore(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('score_history')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      throw new Error(`Failed to delete score history: ${error.message}`);
+    try {
+      const query = 'DELETE FROM score_history WHERE id = ?';
+      const result = await this.rdsClient.executeQuery(query, [id]);
+      
+      if (result.numberOfRecordsUpdated === 0) {
+        throw new Error('Score history record not found');
+      }
+    } catch (error) {
+      throw new Error(`Failed to delete score history: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -252,34 +347,40 @@ export class ScoreHistoryService {
    * Get latest scores for a business
    */
   static async getLatestScores(businessId: string): Promise<Record<ScoreType, number | null>> {
-    const { data, error } = await supabase
-      .from('score_history')
-      .select('score_type, score_value, calculated_at')
-      .eq('business_id', businessId)
-      .order('calculated_at', { ascending: false });
+    try {
+      const query = `
+        SELECT score_type, score_value, calculated_at
+        FROM score_history
+        WHERE business_id = ?
+        ORDER BY calculated_at DESC
+      `;
+      
+      const result = await this.rdsClient.executeQuery(query, [businessId]);
+      const data = result.records?.map(record => 
+        this.rdsClient.mapRecord(record)
+      ) || [];
 
-    if (error) {
-      throw new Error(`Failed to get latest scores: ${error.message}`);
+      // Get the most recent score for each type
+      const latestScores: Record<string, number | null> = {};
+      const scoreTypes: ScoreType[] = [
+        'overall_visibility',
+        'google_presence',
+        'social_media',
+        'website_performance',
+        'review_management',
+        'local_seo',
+        'content_quality',
+        'competitive_position'
+      ];
+
+      scoreTypes.forEach(scoreType => {
+        const record = data.find((d: any) => d.score_type === scoreType);
+        latestScores[scoreType] = record ? record.score_value : null;
+      });
+
+      return latestScores as Record<ScoreType, number | null>;
+    } catch (error) {
+      throw new Error(`Failed to get latest scores: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-
-    // Get the most recent score for each type
-    const latestScores: Record<string, number | null> = {};
-    const scoreTypes: ScoreType[] = [
-      'overall_visibility',
-      'google_presence',
-      'social_media',
-      'website_performance',
-      'review_management',
-      'local_seo',
-      'content_quality',
-      'competitive_position'
-    ];
-
-    scoreTypes.forEach(scoreType => {
-      const record = data?.find(d => d.score_type === scoreType);
-      latestScores[scoreType] = record ? record.score_value : null;
-    });
-
-    return latestScores as Record<ScoreType, number | null>;
   }
 }

@@ -1,25 +1,18 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { User, Session } from '@supabase/supabase-js';
+import { getCurrentUser, signIn, signOut, signUp, confirmSignUp } from 'aws-amplify/auth';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { initializeCognito } from '@/services/cognito-auth';
 
-// Domain-Matrix für konsistente OAuth-Flows
-const OAUTH_DOMAINS = {
-  MAIN: 'https://matbakh.app',
-  WWW: 'https://www.matbakh.app',
-  SUPABASE_CALLBACK: 'https://uheksobnyedarrpgxhju.supabase.co/auth/v1/callback'
-} as const;
-
-// OAuth Redirect URLs - KORRIGIERT für Onboarding v2
-const OAUTH_REDIRECTS = {
-  ONBOARDING: `${OAUTH_DOMAINS.MAIN}/onboarding`,
-  DASHBOARD: `${OAUTH_DOMAINS.MAIN}/dashboard`,
-  AUTH_CALLBACK: `${OAUTH_DOMAINS.MAIN}/auth/callback`
-} as const;
+// AWS Cognito User Interface
+interface AWSUser {
+  id: string;
+  email: string;
+  name?: string;
+  attributes?: Record<string, any>;
+}
 
 interface AuthContextType {
-  user: User | null;
-  session: Session | null;
+  user: AWSUser | null;
   loading: boolean;
   isAdmin: boolean;
   hasCompletedUserProfile: boolean;
@@ -27,6 +20,8 @@ interface AuthContextType {
   signInWithFacebook: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  signUp: (email: string, password: string, attributes?: Record<string, any>) => Promise<{ error: any }>;
+  confirmSignUp: (email: string, code: string) => Promise<{ error: any }>;
   oauthError: string | null;
   // Modal functionality
   showAuthModal: boolean;
@@ -39,12 +34,9 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  console.log('AuthProvider: Starting component render');
-  console.log('AuthProvider: React available:', typeof React);
-  console.log('AuthProvider: useState available:', typeof useState);
-  
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  console.log('AWS AuthProvider: Starting component render');
+
+  const [user, setUser] = useState<AWSUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [hasCompletedUserProfile, setHasCompletedUserProfile] = useState(false);
@@ -56,333 +48,183 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const navigate = useNavigate();
   const location = useLocation();
 
-  // OAuth Event Logging Funktion
-  const logOAuthEvent = async (eventType: string, provider: string, success: boolean, errorMessage?: string, context?: any) => {
-    try {
-      await supabase.from('oauth_event_logs').insert({
-        event_type: eventType,
-        provider,
-        user_id: session?.user?.id || null,
-        success,
-        error_message: errorMessage || null,
-        context: context || {},
-        ip_address: null, // Frontend kann IP nicht ermitteln
-        user_agent: navigator.userAgent
-      } as any);
-    } catch (error) {
-      console.error('Failed to log OAuth event:', error);
-    }
-  };
-
-  // Google Token Speicherung
-  const storeGoogleTokens = async (session: Session) => {
-    try {
-      if (session.provider_token && session.provider_refresh_token) {
-        const { error } = await supabase
-          .from('google_oauth_tokens')
-          .upsert({
-            user_id: session.user.id,
-            google_user_id: session.user.user_metadata?.sub || session.user.id,
-            access_token: session.provider_token,
-            refresh_token: session.provider_refresh_token,
-            email: session.user.email,
-            scopes: ['profile', 'email'], // Basis-Scopes
-            consent_given: true,
-            consent_timestamp: new Date().toISOString(),
-            expires_at: new Date(Date.now() + 3600000).toISOString() // 1 Stunde
-          } as any);
-
-        if (error) {
-          console.error('Error storing Google tokens:', error);
-          await logOAuthEvent('token_storage_failed', 'google', false, error.message);
-        } else {
-          console.log('Google tokens stored successfully');
-          await logOAuthEvent('token_storage_success', 'google', true);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to store Google tokens:', error);
-      await logOAuthEvent('token_storage_error', 'google', false, error instanceof Error ? error.message : 'Unknown error');
-    }
-  };
-
-  // Facebook Token Speicherung
-  const storeFacebookTokens = async (session: Session) => {
-    try {
-      if (session.provider_token) {
-        const { error } = await supabase
-          .from('facebook_oauth_tokens')
-          .upsert({
-            user_id: session.user.id,
-            facebook_user_id: session.user.user_metadata?.sub || session.user.id,
-            access_token: session.provider_token,
-            email: session.user.email,
-            scopes: ['public_profile', 'email', 'pages_read_engagement'], // Facebook Scopes
-            consent_given: true,
-            consent_timestamp: new Date().toISOString(),
-            expires_at: new Date(Date.now() + 86400000).toISOString() // 24 Stunden
-          } as any);
-
-        if (error) {
-          console.error('Error storing Facebook tokens:', error);
-          await logOAuthEvent('token_storage_failed', 'facebook', false, error.message);
-        } else {
-          console.log('Facebook tokens stored successfully');
-          await logOAuthEvent('token_storage_success', 'facebook', true);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to store Facebook tokens:', error);
-      await logOAuthEvent('token_storage_error', 'facebook', false, error instanceof Error ? error.message : 'Unknown error');
-    }
-  };
-
+  // Initialize AWS Cognito on mount
   useEffect(() => {
-    console.log('AuthProvider: Initializing auth state');
-    
-    let mounted = true;
-    
-    // Initialize session first
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      if (!mounted) return;
-      
-      if (error) {
-        console.error('AuthProvider: Error getting session:', error);
-      }
-      console.log('AuthProvider: Initial session:', session?.user?.email || 'No session');
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    initializeCognito();
+  }, []);
 
-    // Set up auth state listener - only once
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!mounted) return;
-        
-        console.log('AuthProvider: Auth state changed:', event, session?.user?.email || 'No session');
-        setSession(session);
-        setUser(session?.user ?? null);
-        setOauthError(null);
+  // Check current user on mount
+  useEffect(() => {
+    console.log('AWS AuthProvider: Checking current user');
 
-        // Public route guard (VC and other public pages)
-        const urlParams = new URLSearchParams(location.search);
-        const forcePublic = urlParams.get('guest') === '1';
-        const publicPrefixes = [
-          '/', '/visibility', '/visibilitycheck', '/visibilitycheck/onboarding',
-          '/visibility-check', '/profile', '/company-profile', '/impressum', '/datenschutz', '/agb'
-        ];
-        const isOnPublicRoute = publicPrefixes.some(r => location.pathname === r || location.pathname.startsWith(r + '/'));
-        if (isOnPublicRoute || forcePublic) {
-          console.log('AuthProvider: public/VC route – skip redirects');
-          setLoading(false);
-          return;
-        }
-        
-        if (session?.user && event === 'SIGNED_IN') {
-          console.log('AuthProvider: User signed in, checking profile and provider');
-          
-          // Store provider tokens based on login method
-          if (session.user.app_metadata?.provider === 'google') {
-            await storeGoogleTokens(session);
-          } else if (session.user.app_metadata?.provider === 'facebook') {
-            await storeFacebookTokens(session);
-          }
-          
-          // Defer data fetching to prevent deadlocks
-          setTimeout(async () => {
-            if (!mounted) return;
-            
-            try {
-              // Check admin role from profiles table
-              const { data: profile } = await supabase
-                .from('profiles')
-                .select('role')
-                .eq('id', session.user.id as any)
-                .maybeSingle();
-                
-                setIsAdmin((profile as any)?.role === 'admin');
-                
-                // Check if user profile is completed
-                setHasCompletedUserProfile(!!profile && !!(profile as any).role);
-              
-              // Check if business profile exists and onboarding is completed
-              const { data: partner } = await supabase
-                .from('business_partners')
-                .select('id, onboarding_completed')
-                .eq('user_id', session.user.id as any)
-                .maybeSingle();
+    const checkCurrentUser = async () => {
+      try {
+        const currentUser = await getCurrentUser();
+        console.log('AWS AuthProvider: Current user found:', currentUser.username);
 
-              // Log auth event
-              await logOAuthEvent(
-                'login_success',
-                session.user.app_metadata?.provider || 'email',
-                true,
-                undefined,
-                { 
-                  has_partner: !!partner,
-                  onboarding_completed: (partner as any)?.onboarding_completed,
-                  partner_id: (partner as any)?.id,
-                  redirect_url: location.pathname
-                }
-              );
-              
-              // Public routes that don't require redirects (expanded)
-              const publicRoutes = [
-                '/',
-                '/business/partner',
-                '/visibility',
-                '/visibilitycheck',
-                '/visibilitycheck/onboarding',
-                '/visibilitycheck/onboarding/step1',
-                '/visibilitycheck/onboarding/step2',
-                '/visibilitycheck/confirm',
-                '/visibility-check',
-                '/profile',
-                '/company-profile',
-                '/impressum',
-                '/datenschutz',
-                '/agb'
-              ];
-              
-              const isOnPublicRoute = publicRoutes.some(route => 
-                location.pathname === route || location.pathname.startsWith(route + '/')
-              );
-              
-              console.log('AuthProvider: Current path:', location.pathname, 'isOnPublicRoute:', isOnPublicRoute);
-              
-              // 🔧 KEINE AUTOMATISCHEN REDIRECTS - User bleibt wo er ist
-              console.log('AuthProvider: User logged in, staying on current path:', location.pathname);
-            } catch (error) {
-              console.log('AuthProvider: Error checking partner record:', error);
-              
-              // Log auth event with error
-              await logOAuthEvent(
-                'login_error',
-                session.user.app_metadata?.provider || 'email',
-                false,
-                'Partner record check failed'
-              );
-            }
-          }, 100);
-        }
-        
+        const awsUser: AWSUser = {
+          id: currentUser.userId,
+          email: currentUser.username,
+          name: currentUser.signInDetails?.loginId,
+          attributes: {}
+        };
+
+        setUser(awsUser);
+
+        // Check admin role from user attributes or external service
+        // For now, set based on email domain or specific users
+        const adminEmails = ['info@matbakh.app', 'admin@matbakh.app'];
+        setIsAdmin(adminEmails.includes(currentUser.username));
+        setHasCompletedUserProfile(true);
+
+      } catch (error) {
+        console.log('AWS AuthProvider: No current user found');
+        setUser(null);
+        setIsAdmin(false);
+        setHasCompletedUserProfile(false);
+      } finally {
         setLoading(false);
       }
-    );
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
     };
-  }, []); // Empty dependency array to prevent multiple subscriptions
 
-  const signInWithGoogle = async () => {
-    console.log('AuthProvider: Starting Google OAuth sign in');
+    checkCurrentUser();
+  }, []);
+
+  const handleSignIn = async (email: string, password: string) => {
+    console.log('AWS AuthProvider: Starting email sign in');
     setOauthError(null);
-    
-    try {
-      // Log OAuth attempt
-      await logOAuthEvent('oauth_attempt', 'google', true, undefined, {
-        redirect_url: OAUTH_REDIRECTS.AUTH_CALLBACK,
-        scopes: ['profile', 'email'],
-        domain: OAUTH_DOMAINS.MAIN
-      });
 
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
+    try {
+      const result = await signIn({ username: email, password });
+
+      if (result.isSignedIn) {
+        // Get user details after successful sign in
+        const currentUser = await getCurrentUser();
+        const awsUser: AWSUser = {
+          id: currentUser.userId,
+          email: currentUser.username,
+          name: currentUser.signInDetails?.loginId,
+          attributes: {}
+        };
+
+        setUser(awsUser);
+
+        // Check admin role
+        const adminEmails = ['info@matbakh.app', 'admin@matbakh.app'];
+        setIsAdmin(adminEmails.includes(currentUser.username));
+        setHasCompletedUserProfile(true);
+
+        return { error: null };
+      }
+
+      return { error: new Error('Sign in incomplete') };
+    } catch (error) {
+      console.error('AWS AuthProvider: Email login error:', error);
+      setOauthError(error instanceof Error ? error.message : 'Login failed');
+      return { error };
+    }
+  };
+
+  const handleSignUp = async (email: string, password: string, attributes?: Record<string, any>) => {
+    console.log('AWS AuthProvider: Starting sign up');
+    setOauthError(null);
+
+    try {
+      const result = await signUp({
+        username: email,
+        password,
         options: {
-          // Minimale Scopes für initial setup
-          scopes: 'profile email openid',
-          // Korrigierte Redirect URL
-          redirectTo: OAUTH_REDIRECTS.AUTH_CALLBACK,
-          // Query parameters für debugging
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent'
+          userAttributes: {
+            email,
+            ...attributes
           }
         }
       });
-      
-      if (error) {
-        console.error('AuthProvider: Google OAuth error:', error);
-        setOauthError(`Google Login fehlgeschlagen: ${error.message}`);
-        await logOAuthEvent('oauth_error', 'google', false, error.message);
-        throw error;
-      }
 
-      console.log('AuthProvider: Google OAuth initiated successfully');
+      return { error: null };
+    } catch (error) {
+      console.error('AWS AuthProvider: Sign up error:', error);
+      setOauthError(error instanceof Error ? error.message : 'Sign up failed');
+      return { error };
+    }
+  };
+
+  const handleConfirmSignUp = async (email: string, code: string) => {
+    console.log('AWS AuthProvider: Confirming sign up');
+    setOauthError(null);
+
+    try {
+      await confirmSignUp({ username: email, confirmationCode: code });
+      return { error: null };
+    } catch (error) {
+      console.error('AWS AuthProvider: Confirm sign up error:', error);
+      setOauthError(error instanceof Error ? error.message : 'Confirmation failed');
+      return { error };
+    }
+  };
+
+  const signInWithGoogle = async () => {
+    console.log('AWS AuthProvider: Starting Google OAuth sign in');
+    setOauthError(null);
+
+    try {
+      // AWS Cognito OAuth with Google
+      const domain = 'matbakh-auth.auth.eu-central-1.amazoncognito.com';
+      const clientId = import.meta.env.VITE_COGNITO_USER_POOL_CLIENT_ID;
+      const redirectUri = encodeURIComponent(window.location.origin + '/auth/callback');
+
+      const oauthUrl = `https://${domain}/oauth2/authorize?` +
+        `identity_provider=Google&` +
+        `redirect_uri=${redirectUri}&` +
+        `response_type=code&` +
+        `client_id=${clientId}&` +
+        `scope=openid email profile`;
+
+      window.location.href = oauthUrl;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown OAuth error';
-      console.error('AuthProvider: OAuth exception:', errorMessage);
-      setOauthError(`OAuth Fehler: ${errorMessage}`);
-      await logOAuthEvent('oauth_exception', 'google', false, errorMessage);
+      console.error('AWS AuthProvider: Google OAuth error:', errorMessage);
+      setOauthError(`Google Login fehlgeschlagen: ${errorMessage}`);
       throw error;
     }
   };
 
   const signInWithFacebook = async () => {
-    console.log('AuthProvider: Starting Facebook OAuth sign in');
+    console.log('AWS AuthProvider: Starting Facebook OAuth sign in');
     setOauthError(null);
-    
+
     try {
-      // Log OAuth attempt
-      await logOAuthEvent('oauth_attempt', 'facebook', true, undefined, {
-        redirect_url: OAUTH_REDIRECTS.AUTH_CALLBACK,
-        scopes: ['public_profile', 'email'],
-        domain: OAUTH_DOMAINS.MAIN
-      });
+      // AWS Cognito OAuth with Facebook
+      const domain = 'matbakh-auth.auth.eu-central-1.amazoncognito.com';
+      const clientId = import.meta.env.VITE_COGNITO_USER_POOL_CLIENT_ID;
+      const redirectUri = encodeURIComponent(window.location.origin + '/auth/callback');
 
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'facebook',
-        options: {
-          // Facebook Scopes für Business-Profile - REDUZIERTE SCOPES
-          scopes: 'public_profile,email',
-          // Korrigierte Redirect URL
-          redirectTo: OAUTH_REDIRECTS.AUTH_CALLBACK,
-          // Query parameters für debugging
-          queryParams: {
-            display: 'popup'
-          }
-        }
-      });
-      
-      if (error) {
-        console.error('AuthProvider: Facebook OAuth error:', error);
-        setOauthError(`Facebook Login fehlgeschlagen: ${error.message}`);
-        await logOAuthEvent('oauth_error', 'facebook', false, error.message);
-        throw error;
-      }
+      const oauthUrl = `https://${domain}/oauth2/authorize?` +
+        `identity_provider=Facebook&` +
+        `redirect_uri=${redirectUri}&` +
+        `response_type=code&` +
+        `client_id=${clientId}&` +
+        `scope=openid email profile`;
 
-      console.log('AuthProvider: Facebook OAuth initiated successfully');
+      window.location.href = oauthUrl;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown OAuth error';
-      console.error('AuthProvider: OAuth exception:', errorMessage);
-      setOauthError(`OAuth Fehler: ${errorMessage}`);
-      await logOAuthEvent('oauth_exception', 'facebook', false, errorMessage);
+      console.error('AWS AuthProvider: Facebook OAuth error:', errorMessage);
+      setOauthError(`Facebook Login fehlgeschlagen: ${errorMessage}`);
       throw error;
     }
   };
 
-  const signIn = async (email: string, password: string) => {
-    console.log('AuthProvider: Starting email sign in');
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
-    
-    if (error) {
-      console.error('AuthProvider: Email login error:', error);
-    }
-    
-    return { error };
-  };
-
-  const signOut = async () => {
-    console.log('AuthProvider: Signing out');
-    const { error } = await supabase.auth.signOut();
-    if (!error) {
+  const handleSignOut = async () => {
+    console.log('AWS AuthProvider: Signing out');
+    try {
+      await signOut();
+      setUser(null);
+      setIsAdmin(false);
+      setHasCompletedUserProfile(false);
       navigate('/');
+    } catch (error) {
+      console.error('AWS AuthProvider: Sign out error:', error);
     }
   };
 
@@ -400,14 +242,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const value = {
     user,
-    session,
     loading,
     isAdmin,
     hasCompletedUserProfile,
     signInWithGoogle,
     signInWithFacebook,
-    signIn,
-    signOut,
+    signIn: handleSignIn,
+    signOut: handleSignOut,
+    signUp: handleSignUp,
+    confirmSignUp: handleConfirmSignUp,
     oauthError,
     // Modal values
     showAuthModal,
@@ -432,7 +275,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     '/company-profile',
     '/impressum',
     '/datenschutz',
-    '/agb'
+    '/agb',
+    '/persona-debug' // Add persona debug route
   ];
   const isOnPublicRouteRender = publicRoutesRender.some(route =>
     location.pathname === route || location.pathname.startsWith(route + '/')

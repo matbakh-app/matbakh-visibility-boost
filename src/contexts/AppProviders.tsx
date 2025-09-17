@@ -6,8 +6,9 @@
 import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
-import { CognitoAuthProvider } from './CognitoAuthContext';
-import { SimpleAuthProvider } from './SimpleAuthContext';
+import { AuthProvider } from './AuthContext'; // Verwende das bestehende AuthContext
+import { PersonaProvider } from './PersonaContext'; // NEW: Advanced Persona System
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import i18n from '../i18n';
 
 // QueryClient mit optimalen Einstellungen
@@ -24,12 +25,7 @@ const queryClient = new QueryClient({
   },
 });
 
-// Feature flag für Cognito Migration
-const USE_COGNITO = import.meta.env.VITE_USE_COGNITO === 'true';
-
-console.log('🔐 Auth Provider in AppProviders:', USE_COGNITO ? 'Cognito' : 'Legacy');
-
-const AuthProvider = USE_COGNITO ? CognitoAuthProvider : SimpleAuthProvider;
+console.log('🔐 Auth Provider in AppProviders: Legacy AuthContext (kompatibel)');
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -44,7 +40,9 @@ export const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
     <QueryClientProvider client={queryClient}>
       <I18nextProvider i18n={i18n}>
         <AuthProvider>
-          {children}
+          <PersonaProvider>
+            {children}
+          </PersonaProvider>
         </AuthProvider>
       </I18nextProvider>
     </QueryClientProvider>
@@ -59,7 +57,7 @@ export const ProviderErrorBoundary: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   return (
     <React.Suspense fallback={<div>Loading providers...</div>}>
-      <React.ErrorBoundary
+      <ErrorBoundary
         fallback={
           <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
             <h2 className="text-red-800 font-semibold">Provider Error</h2>
@@ -68,7 +66,7 @@ export const ProviderErrorBoundary: React.FC<{ children: React.ReactNode }> = ({
         }
       >
         {children}
-      </React.ErrorBoundary>
+      </ErrorBoundary>
     </React.Suspense>
   );
 };

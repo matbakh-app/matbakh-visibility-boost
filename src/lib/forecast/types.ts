@@ -4,14 +4,13 @@
 
 export type ForecastRange = 7 | 30 | 90;
 
-export type TrendDirection = 'up' | 'down' | 'flat';
+export type TrendDirection = 'rising' | 'falling' | 'stable';
 
 export interface ForecastPoint {
   date: string; // ISO Date
-  forecast_value: number;
-  confidence_low: number;
-  confidence_high: number;
-  trend: TrendDirection;
+  predicted_score: number;
+  confidence_lower: number;
+  confidence_upper: number;
 }
 
 export interface ScorePoint {

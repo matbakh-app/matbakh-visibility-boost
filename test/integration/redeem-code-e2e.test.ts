@@ -4,7 +4,7 @@
  * Tests the complete flow: Code Generation → Code Redemption → Database Updates
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(

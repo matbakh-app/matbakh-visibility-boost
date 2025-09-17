@@ -1,26 +1,26 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, jest } from '@jest/globals'
 
 // Test für Paket 2.1: AI-Service Integration
 describe('Enhanced Visibility Check - Paket 2.1', () => {
   const mockSupabaseClient = {
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
+    from: jest.fn(() => ({
+      select: jest.fn(() => ({
+        eq: jest.fn(() => ({
           data: [],
           error: null
         })),
-        limit: vi.fn(() => ({
+        limit: jest.fn(() => ({
           data: [],
           error: null
         }))
       })),
-      insert: vi.fn(() => ({ error: null })),
-      update: vi.fn(() => ({ error: null }))
+      insert: jest.fn(() => ({ error: null })),
+      update: jest.fn(() => ({ error: null }))
     }))
   }
 
   beforeEach(() => {
-    vi.clearAllMocks()
+    jest.clearAllMocks()
   })
 
   it('sollte Unterkategorien korrekt laden und Top-3 auswählen', async () => {
@@ -37,8 +37,8 @@ describe('Enhanced Visibility Check - Paket 2.1', () => {
     mockSupabaseClient.from.mockImplementation((table) => {
       if (table === 'gmb_categories') {
         return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => ({
+          select: jest.fn(() => ({
+            eq: jest.fn(() => ({
               data: mockSubcats,
               error: null
             }))
@@ -82,9 +82,9 @@ describe('Enhanced Visibility Check - Paket 2.1', () => {
     mockSupabaseClient.from.mockImplementation((table) => {
       if (table === 'industry_benchmarks') {
         return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              limit: vi.fn(() => ({
+          select: jest.fn(() => ({
+            eq: jest.fn(() => ({
+              limit: jest.fn(() => ({
                 data: mockBenchmarks,
                 error: null
               }))
@@ -141,17 +141,17 @@ describe('Enhanced Visibility Check - Paket 2.1', () => {
     mockSupabaseClient.from.mockImplementation((table) => {
       if (table === 'visibility_check_leads') {
         return {
-          update: vi.fn((data) => {
+          update: jest.fn((data) => {
             statusUpdates.push(data.status)
             return { 
-              eq: vi.fn(() => ({ error: null }))
+              eq: jest.fn(() => ({ error: null }))
             }
           })
         }
       }
       if (table === 'visibility_check_results') {
         return {
-          insert: vi.fn(() => ({ error: null }))
+          insert: jest.fn(() => ({ error: null }))
         }
       }
       return mockSupabaseClient.from()

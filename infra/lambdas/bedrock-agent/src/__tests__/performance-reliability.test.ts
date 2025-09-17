@@ -1,4 +1,8 @@
 /**
+ * @jest-environment node
+ */
+
+/**
  * Performance & Reliability System Tests
  * 
  * Comprehensive tests for monitoring, queuing, caching, and degradation

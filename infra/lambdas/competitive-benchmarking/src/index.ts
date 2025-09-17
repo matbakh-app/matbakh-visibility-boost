@@ -12,6 +12,12 @@ import {
   CompetitiveBenchmarkingEvent,
   CompetitiveBenchmarkingContext
 } from './types';
+import {
+  NoCompetitorsError,
+  InvalidPayloadError,
+  EngineFailureError,
+  ConfigurationError
+} from './errors';
 import { CompetitorDiscoveryEngine } from './competitor-discovery-engine';
 import { PlatformDataCollector } from './platform-data-collector';
 import { CompetitiveAnalysisEngine } from './competitive-analysis-engine';
@@ -33,6 +39,7 @@ export const handler = async (
   event: CompetitiveBenchmarkingEvent,
   _context: CompetitiveBenchmarkingContext
 ): Promise<APIGatewayProxyResult> => {
+  console.log('[DEBUG] 🟡 Handler start reached.');
   console.log('Competitive benchmarking request received:', JSON.stringify(event, null, 2));
 
   const startTime = Date.now();
@@ -41,7 +48,9 @@ export const handler = async (
 
   try {
     // Parse and validate request
+    console.log('DEBUG: About to parse request');
     const request = await parseRequest(event);
+    console.log('DEBUG: Request parsed successfully');
     console.log('Parsed request:', JSON.stringify(request, null, 2));
 
     // Check cache first
@@ -51,24 +60,40 @@ export const handler = async (
     if (cachedResult && !request.forceRefresh) {
       console.log('Returning cached result');
       cachedResult.cacheHit = true;
+      
+      // JTBD: Ensure requestId is always present for traceability
+      if (!cachedResult.requestId) {
+        cachedResult.requestId = `cached-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      }
+      
       return createSuccessResponse(cachedResult);
     }
 
     // Get configuration from secrets
+    console.log('DEBUG: About to get configuration');
     const config = await getConfiguration();
+    console.log('DEBUG: Configuration retrieved successfully');
 
     // Initialize engines
+    console.log('DEBUG: About to initialize engines');
     discoveryEngine = new CompetitorDiscoveryEngine(config.discovery);
     dataCollector = new PlatformDataCollector(config.scraping);
     const analysisEngine = new CompetitiveAnalysisEngine(config.analysis);
+    console.log('DEBUG: Engines initialized successfully');
 
     // Discover competitors
     console.log('Discovering competitors...');
-    const competitors = await discoveryEngine.discoverCompetitors(request);
-    console.log(`Found ${competitors.length} competitors`);
+    let competitors;
+    try {
+      competitors = await discoveryEngine.discoverCompetitors(request);
+      console.log(`Found ${competitors.length} competitors`);
+    } catch (error) {
+      throw new EngineFailureError('Competitor Discovery', error instanceof Error ? error.message : 'Unknown error');
+    }
 
     if (competitors.length === 0) {
-      return createErrorResponse(400, 'No competitors found in the specified area');
+      console.log('[DEBUG] ❌ No competitors found — throwing NoCompetitorsError');
+      throw new NoCompetitorsError(`${request.address} (radius: ${request.radius}m)`);
     }
 
     // Collect platform data for each competitor
@@ -88,7 +113,17 @@ export const handler = async (
 
     // Analyze competitors and generate insights
     console.log('Analyzing competitors...');
-    const analysis = await analysisEngine.analyzeBenchmarking(request, competitors, platformData);
+    let analysis;
+    try {
+      analysis = await analysisEngine.analyzeBenchmarking(request, competitors, platformData);
+      
+      // JTBD: Ensure requestId is always present for traceability
+      if (!analysis.requestId) {
+        analysis.requestId = `analysis-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      }
+    } catch (error) {
+      throw new EngineFailureError('Competitive Analysis', error instanceof Error ? error.message : 'Unknown error');
+    }
 
     // Cache the result
     await cacheResult(cacheKey, analysis);
@@ -102,12 +137,34 @@ export const handler = async (
     return createSuccessResponse(analysis);
 
   } catch (error) {
-    console.error('Competitive benchmarking failed:', error);
+    console.error('[ERROR] ❌ Uncaught error:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    const statusCode = getErrorStatusCode(error);
+    // JTBD: Clear error differentiation for reliable job completion
+    // Defensive error handling - robust against Jest context problems
+    if (error && typeof error === 'object') {
+      const err = error as any;
+      const name = err.name || err.constructor?.name || 'Error';
+      
+      console.log('[DEBUG] Error name detected:', name);
+      console.log('[DEBUG] Error message:', err.message);
+      console.log('[DEBUG] Error statusCode:', err.statusCode);
+      
+      switch (name) {
+        case 'NoCompetitorsError':
+        case 'InvalidPayloadError':
+          return createErrorResponse(400, err.message || 'Bad request');
+        case 'EngineFailureError':
+        case 'BenchmarkingError':
+        case 'ConfigurationError':
+          return createErrorResponse(err.statusCode || 500, err.message || 'Internal server error');
+      }
+    }
     
-    return createErrorResponse(statusCode, errorMessage);
+    // Fallback for unexpected errors
+    console.error('[ERROR] ❌ Unhandled error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error occurred';
+    return createErrorResponse(500, errorMessage);
 
   } finally {
     // Cleanup resources
@@ -125,6 +182,7 @@ export const handler = async (
  * Parse and validate the incoming request
  */
 async function parseRequest(event: CompetitiveBenchmarkingEvent): Promise<BenchmarkingRequest> {
+  console.log('[DEBUG] 📥 Raw event:', JSON.stringify(event));
   try {
     let requestData: any;
 
@@ -187,7 +245,7 @@ async function parseRequest(event: CompetitiveBenchmarkingEvent): Promise<Benchm
 
   } catch (error) {
     console.error('Request parsing failed:', error);
-    throw new Error(`Invalid request format: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new InvalidPayloadError(error instanceof Error ? error.message : 'Unknown parsing error');
   }
 }
 
@@ -249,7 +307,7 @@ async function getConfiguration(): Promise<{
 
   } catch (error) {
     console.error('Failed to get configuration:', error);
-    throw new Error(`Configuration error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new ConfigurationError(error instanceof Error ? error.message : 'Unknown configuration error');
   }
 }
 
@@ -345,27 +403,7 @@ async function storeResult(result: BenchmarkingResponse): Promise<void> {
   }
 }
 
-/**
- * Get appropriate HTTP status code for error
- */
-function getErrorStatusCode(error: unknown): number {
-  if (error instanceof Error) {
-    if (error.message.includes('Invalid request')) {
-      return 400;
-    }
-    if (error.message.includes('not found')) {
-      return 404;
-    }
-    if (error.message.includes('rate limit') || error.message.includes('quota')) {
-      return 429;
-    }
-    if (error.message.includes('timeout')) {
-      return 504;
-    }
-  }
-  
-  return 500; // Internal server error
-}
+// Removed getErrorStatusCode - now using BenchmarkingError classes for proper status mapping
 
 /**
  * Create success response
@@ -423,3 +461,4 @@ export const healthCheck = async (): Promise<APIGatewayProxyResult> => {
     })
   };
 };
+  

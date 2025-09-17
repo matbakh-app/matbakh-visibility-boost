@@ -1,28 +1,44 @@
-// Phase 1: Vereinfachter ProfileService für Phase 1 Testing
+/**
+ * AWS RDS ProfileService - Migrated from Supabase
+ * 
+ * @description Handles user profile data storage in AWS RDS
+ * @usage Planned integration with onboarding wizard and user profile management
+ * @status DEVELOPMENT - Ready for integration, awaiting UI connection
+ * @todo Add import to profile-api.ts or onboarding-manager.ts
+ */
 
-import { supabase } from '@/integrations/supabase/client';
+import { rdsClient } from '@/services/aws-rds-client';
 import type { OnboardingData, ServiceResponse } from '@/types/businessProfile';
 
 export class ProfileService {
   
   /**
-   * Phase 1: Einfache Datenspeicherung für Testing
+   * Save onboarding data to AWS RDS
    */
   static async saveOnboardingData(userId: string, data: OnboardingData): Promise<ServiceResponse<any>> {
     try {
-      // Phase 1: Lokal speichern für Testing
-      const profileData = {
-        user_id: userId,
-        company_name: data.company_name,
-        address: data.address,
-        phone: data.phone,
-        website: data.website,
-        description: data.description,
-        registration_type: 'email',
-        created_at: new Date().toISOString()
-      };
-
-      localStorage.setItem(`profile_${userId}`, JSON.stringify(profileData));
+      const profileData = await rdsClient.queryOne(
+        `INSERT INTO profiles (user_id, company_name, address, phone, website, description, registration_type, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
+         ON CONFLICT (user_id) 
+         DO UPDATE SET 
+           company_name = EXCLUDED.company_name,
+           address = EXCLUDED.address,
+           phone = EXCLUDED.phone,
+           website = EXCLUDED.website,
+           description = EXCLUDED.description,
+           updated_at = NOW()
+         RETURNING *`,
+        [
+          userId,
+          data.company_name,
+          data.address,
+          data.phone,
+          data.website,
+          data.description,
+          'email'
+        ]
+      );
 
       return {
         success: true,
@@ -41,13 +57,16 @@ export class ProfileService {
   }
 
   /**
-   * Phase 1: Einfaches Laden der Daten
+   * Load onboarding data from AWS RDS
    */
   static async getOnboardingData(userId: string): Promise<ServiceResponse<any>> {
     try {
-      const stored = localStorage.getItem(`profile_${userId}`);
+      const profileData = await rdsClient.queryOne(
+        'SELECT * FROM profiles WHERE user_id = $1',
+        [userId]
+      );
       
-      if (!stored) {
+      if (!profileData) {
         return {
           success: false,
           message: 'Keine Profildaten gefunden'
@@ -56,14 +75,53 @@ export class ProfileService {
 
       return {
         success: true,
-        data: JSON.parse(stored)
+        data: profileData
       };
 
     } catch (error) {
+      console.error('ProfileService: Error loading profile:', error);
       return {
         success: false,
-        error: 'Fehler beim Laden der Profildaten'
+        error: error instanceof Error ? error.message : 'Unknown error',
+        message: 'Fehler beim Laden der Profildaten'
       };
+    }
+  }
+
+  /**
+   * Delete profile data from AWS RDS
+   */
+  static async deleteProfile(userId: string): Promise<ServiceResponse<any>> {
+    try {
+      await rdsClient.query(
+        'DELETE FROM profiles WHERE user_id = $1',
+        [userId]
+      );
+
+      return {
+        success: true,
+        message: 'Profil erfolgreich gelöscht'
+      };
+
+    } catch (error) {
+      console.error('ProfileService: Error deleting profile:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        message: 'Fehler beim Löschen des Profils'
+      };
+    }
+  }
+
+  /**
+   * Test AWS RDS connection
+   */
+  static async testConnection(): Promise<boolean> {
+    try {
+      return await rdsClient.testConnection();
+    } catch (error) {
+      console.error('ProfileService: Connection test failed:', error);
+      return false;
     }
   }
 }

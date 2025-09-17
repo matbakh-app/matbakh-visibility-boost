@@ -63,8 +63,10 @@ const DEFAULT_OPTIONS: Required<UseS3FileAccessOptions> = {
 };
 
 // CloudFront distribution URL (for public files)
-const CLOUDFRONT_URL = import.meta.env.VITE_CLOUDFRONT_URL || 'https://files.matbakh.app';
-const API_BASE_URL = import.meta.env.VITE_PUBLIC_API_BASE || 'https://api.matbakh.app';
+// Statt import.meta.env:
+const env = (globalThis as any).importMetaEnv ?? process.env;
+const CLOUDFRONT_URL = env.VITE_CLOUDFRONT_URL || 'https://files.matbakh.app';
+const API_BASE_URL = env.VITE_PUBLIC_API_BASE || 'https://api.matbakh.app';
 
 /**
  * React hook for secure S3 file access and URL generation

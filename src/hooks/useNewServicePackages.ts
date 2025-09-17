@@ -1,4 +1,10 @@
 
+/**
+ * @deprecated Moved to unused/ - Service packages hook not currently integrated
+ * @todo Reactivate when pricing UI is implemented
+ * @migration Consider migrating from Supabase to AWS RDS when reactivating
+ */
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -28,7 +34,7 @@ export const useNewServicePackages = () => {
     queryKey: ['new-service-packages'],
     queryFn: async () => {
       console.log('useNewServicePackages: Starting fetch...');
-      
+
       const { data, error } = await supabase
         .from('service_packages')
         .select(`
@@ -43,20 +49,20 @@ export const useNewServicePackages = () => {
         console.error('useNewServicePackages: Database error:', error);
         throw new Error(`Fehler beim Laden der neuen Pakete: ${error.message}`);
       }
-      
+
       if (!data) {
         console.warn('useNewServicePackages: No data returned from database');
         return [];
       }
 
       console.log('useNewServicePackages: Total records from database:', data.length);
-      
+
       // Transform the data to ensure prices is always an array
       const transformedData = data.map(pkg => ({
         ...(pkg as any),
         prices: Array.isArray((pkg as any).prices) ? (pkg as any).prices : ((pkg as any).prices ? [(pkg as any).prices] : [])
       }));
-      
+
       return transformedData as NewServicePackage[];
     },
     retry: 3,
@@ -77,7 +83,7 @@ export const useServicePrices = (packageId: string) => {
       if (error) {
         throw new Error(`Fehler beim Laden der Preise: ${error.message}`);
       }
-      
+
       return (data as any) as ServicePrice[];
     },
     enabled: !!packageId,

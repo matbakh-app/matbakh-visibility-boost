@@ -1,6 +1,16 @@
 // Test setup file for Goal-Specific Recommendations Lambda
 import { jest } from '@jest/globals';
 
+// Type declarations for global test utilities
+declare global {
+  var mockDynamoResponse: (data: any) => any;
+  var mockDynamoError: (error: Error) => any;
+  var createMockRecommendationRequest: () => any;
+  var createMockRecommendation: () => any;
+  var createMockGoalProfile: () => any;
+  var createMockProgressRecord: () => any;
+}
+
 // Mock AWS SDK clients
 jest.mock('@aws-sdk/client-dynamodb', () => ({
   DynamoDBClient: jest.fn().mockImplementation(() => ({

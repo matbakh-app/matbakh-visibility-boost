@@ -2,7 +2,7 @@
 // Unit tests for forecasting engine according to specification
 // Requirements: B.3
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from '@jest/globals';
 import { ForecastEngine } from '../forecastEngine';
 import type { ScorePoint } from '../types';
 

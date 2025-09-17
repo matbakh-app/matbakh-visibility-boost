@@ -2,7 +2,7 @@
 // Unit tests for score-based recommendation triggering
 // Requirements: B.3
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from '@jest/globals';
 import { evaluateScoreTrend, evaluateScoreTrendWithContext } from '../recommendationTrigger';
 import { defaultThresholds, getContextualThresholds } from '../thresholds';
 import type { ScorePoint } from '@/types/score-history';

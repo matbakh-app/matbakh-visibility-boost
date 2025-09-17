@@ -1,22 +1,22 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, jest } from '@jest/globals'
 
 // Test für Phase 2.2.2: Ergebnis-Mapping & Persistierung der AI-Antwort
 describe('Enhanced Visibility Check - Phase 2.2.2', () => {
   const mockSupabaseClient = {
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
+    from: jest.fn(() => ({
+      select: jest.fn(() => ({
+        eq: jest.fn(() => ({
           data: [],
           error: null
         })),
-        limit: vi.fn(() => ({
+        limit: jest.fn(() => ({
           data: [],
           error: null
         }))
       })),
-      insert: vi.fn(() => ({ error: null })),
-      update: vi.fn(() => ({
-        eq: vi.fn(() => ({ error: null }))
+      insert: jest.fn(() => ({ error: null })),
+      update: jest.fn(() => ({
+        eq: jest.fn(() => ({ error: null }))
       }))
     }))
   }
@@ -61,7 +61,7 @@ describe('Enhanced Visibility Check - Phase 2.2.2', () => {
   }
 
   beforeEach(() => {
-    vi.clearAllMocks()
+    jest.clearAllMocks()
   })
 
   it('2.2.2 Mapping: sollte insertPayload korrekt aus aiAnalysis aufbauen', async () => {
@@ -121,16 +121,16 @@ describe('Enhanced Visibility Check - Phase 2.2.2', () => {
     
     // Mock Insert-Fehler
     const mockSupabaseWithError = {
-      from: vi.fn((table) => {
+      from: jest.fn((table) => {
         if (table === 'visibility_check_results') {
           return {
-            insert: vi.fn(() => ({ error: insertError }))
+            insert: jest.fn(() => ({ error: insertError }))
           }
         }
         if (table === 'visibility_check_leads') {
           return {
-            update: vi.fn(() => ({
-              eq: vi.fn(() => ({ error: null }))
+            update: jest.fn(() => ({
+              eq: jest.fn(() => ({ error: null }))
             }))
           }
         }
@@ -168,23 +168,23 @@ describe('Enhanced Visibility Check - Phase 2.2.2', () => {
       { metric_name: 'Average Rating', metric_value: 4.2, platform: 'google' }
     ]
 
-    const insertSpy = vi.fn(() => ({ error: null }))
-    const updateSpy = vi.fn(() => ({ eq: vi.fn(() => ({ error: null })) }))
+    const insertSpy = jest.fn(() => ({ error: null }))
+    const updateSpy = jest.fn(() => ({ eq: jest.fn(() => ({ error: null })) }))
 
     const mockSupabaseFullFlow = {
-      from: vi.fn((table) => {
+      from: jest.fn((table) => {
         if (table === 'gmb_categories') {
           return {
-            select: vi.fn(() => ({
-              eq: vi.fn(() => ({ data: mockSubcats, error: null }))
+            select: jest.fn(() => ({
+              eq: jest.fn(() => ({ data: mockSubcats, error: null }))
             }))
           }
         }
         if (table === 'industry_benchmarks') {
           return {
-            select: vi.fn(() => ({
-              eq: vi.fn(() => ({
-                limit: vi.fn(() => ({ data: mockBenchmarks, error: null }))
+            select: jest.fn(() => ({
+              eq: jest.fn(() => ({
+                limit: jest.fn(() => ({ data: mockBenchmarks, error: null }))
               }))
             }))
           }

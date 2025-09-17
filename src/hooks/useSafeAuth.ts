@@ -1,67 +1,41 @@
 /**
- * Sichere Auth-Hook mit 0-Fehler-Toleranz
- * Verhindert "useAuth must be used within AuthProvider" Crashes
+ * Safe Auth Hook - 0-Error Tolerance
+ * 
+ * @deprecated Use useAuthUnified instead
+ * @version 1.0.0 (deprecated)
+ * @since 2024
+ * @willBeRemovedIn v2.0
+ * 
+ * This hook will be removed in v2.0. Please migrate to useAuthUnified.
+ * Migration guide: docs/test-playbook-auth-migration.md
  */
 
-import { useContext } from 'react';
-import { CognitoAuthContext } from '@/contexts/CognitoAuthContext';
+import { useAuthUnified } from './useAuthUnified';
 
 export const useSafeAuth = () => {
+  // Show deprecation warning in development
+  if (process.env.NODE_ENV !== 'production') {
+    console.warn(
+      '⚠️ DEPRECATED: useSafeAuth is deprecated and will be removed in v2.0.\n' +
+      '   Please migrate to useAuthUnified instead.\n' +
+      '   Migration guide: docs/test-playbook-auth-migration.md'
+    );
+  }
+
   try {
-    const context = useContext(CognitoAuthContext);
-    
-    if (!context) {
-      console.warn('⚠️ useAuth called outside AuthProvider - returning fallback');
-      return {
-        user: null,
-        isAuthenticated: false,
-        isLoading: false,
-        error: null,
-        signIn: async () => { throw new Error('AuthProvider not available'); },
-        signOut: async () => { throw new Error('AuthProvider not available'); },
-        signUp: async () => { throw new Error('AuthProvider not available'); },
-        confirmSignUp: async () => { throw new Error('AuthProvider not available'); },
-        resetPassword: async () => { throw new Error('AuthProvider not available'); },
-        confirmResetPassword: async () => { throw new Error('AuthProvider not available'); },
-      };
-    }
-    
-    return context;
+    // Use the new, clean implementation
+    return useAuthUnified();
   } catch (error) {
-    console.error('❌ Auth context error:', error);
+    console.warn('⚠️ Auth system failed, returning safe fallback:', error);
     return {
       user: null,
       isAuthenticated: false,
       isLoading: false,
-      error: 'Auth context unavailable',
-      signIn: async () => { throw new Error('Auth context error'); },
-      signOut: async () => { throw new Error('Auth context error'); },
-      signUp: async () => { throw new Error('Auth context error'); },
-      confirmSignUp: async () => { throw new Error('Auth context error'); },
-      resetPassword: async () => { throw new Error('Auth context error'); },
-      confirmResetPassword: async () => { throw new Error('Auth context error'); },
+      error: 'Auth system unavailable',
+      signIn: async () => { throw new Error('Auth not available'); },
+      signOut: async () => { throw new Error('Auth not available'); },
     };
   }
 };
 
-/**
- * Komponente die Auth-Kontext erfordert
- */
-export const RequireAuthContext: React.FC<{ children: React.ReactNode }> = ({ 
-  children 
-}) => {
-  const auth = useSafeAuth();
-  
-  if (auth.error) {
-    return (
-      <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-        <div className="text-yellow-800 font-semibold">⚠️ AuthProvider fehlt</div>
-        <div className="text-yellow-600 text-sm">
-          Diese Komponente benötigt einen AuthProvider im Component Tree.
-        </div>
-      </div>
-    );
-  }
-  
-  return <>{children}</>;
-};
+// Komponente wurde nach src/components/SafeAuthLoader.tsx ausgelagert

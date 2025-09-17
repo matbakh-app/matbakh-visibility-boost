@@ -1,9 +1,9 @@
 // EventAnnotations Component Tests - Task 6.4.2.4.2.5
 // Unit tests for event rendering and positioning
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from '@jest/globals';
 import type { VisibilityEvent, ScorePoint } from '@/types/score-history';
-import { getScoreAtDate, filterEvents } from '../EventAnnotations';
+import { getScoreAtDate, filterEvents } from '@/utils/event-annotations-utils';
 
 describe('EventAnnotations Component', () => {
   const mockScoreData: ScorePoint[] = [

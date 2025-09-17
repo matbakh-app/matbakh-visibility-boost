@@ -4,7 +4,7 @@
  * Tests RLS policies, authorization, and data protection
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseAdmin = createClient(

@@ -1,6 +1,6 @@
 // test/integration/provider-tracking.test.ts
 
-import { expect, it, beforeAll, afterAll, describe } from 'vitest'
+import { expect, it, beforeAll, afterAll, describe } from '@jest/globals'
 import { createClient } from '@supabase/supabase-js'
 
 // Test environment config

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getVisibleNavItems, getNavLink, validateNavigationConfig } from '../navigation/NavigationConfig';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthUnified } from '@/hooks/useAuthUnified';
 import { isSafeTranslationKey } from '@/lib/i18n-validator';
 
 // 💡 Dieses File nur ändern, wenn NavigationConfig geändert wurde (Genehmigung!)
@@ -13,7 +13,7 @@ if (process.env.NODE_ENV === 'development') {
 
 const NavigationMenu: React.FC = () => {
   const { t, i18n } = useTranslation('navigation');
-  const { isAdmin } = useAuth();
+  const { isAdmin } = useAuthUnified();
   const location = useLocation();
   const [currentLanguage, setCurrentLanguage] = useState(i18n.language);
   const lng = (currentLanguage || 'de') as 'de' | 'en';

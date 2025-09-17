@@ -1,33 +1,33 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 
 // Mock Supabase client
 const mockSupabaseClient = {
-  from: vi.fn(() => ({
-    select: vi.fn(() => ({
-      eq: vi.fn(() => ({
-        single: vi.fn(() => Promise.resolve({ data: null, error: null })),
-        limit: vi.fn(() => ({
-          maybeSingle: vi.fn(() => Promise.resolve({ data: null, error: null }))
+  from: jest.fn(() => ({
+    select: jest.fn(() => ({
+      eq: jest.fn(() => ({
+        single: jest.fn(() => Promise.resolve({ data: null, error: null })),
+        limit: jest.fn(() => ({
+          maybeSingle: jest.fn(() => Promise.resolve({ data: null, error: null }))
         }))
       }))
     })),
-    insert: vi.fn(() => ({
-      select: vi.fn(() => ({
-        single: vi.fn(() => Promise.resolve({ data: { id: 'test-id' }, error: null }))
+    insert: jest.fn(() => ({
+      select: jest.fn(() => ({
+        single: jest.fn(() => Promise.resolve({ data: { id: 'test-id' }, error: null }))
       }))
     })),
-    update: vi.fn(() => ({
-      eq: vi.fn(() => Promise.resolve({ data: null, error: null }))
+    update: jest.fn(() => ({
+      eq: jest.fn(() => Promise.resolve({ data: null, error: null }))
     }))
   })),
   functions: {
-    invoke: vi.fn(() => Promise.resolve({ data: { downloadUrl: 'https://test.com/report.pdf' }, error: null }))
+    invoke: jest.fn(() => Promise.resolve({ data: { downloadUrl: 'https://test.com/report.pdf' }, error: null }))
   }
 };
 
 // Mock the todoGenerator
-vi.mock('@/lib/todoGenerator', () => ({
-  generateTodos: vi.fn((analysis, industry) => ({
+jest.mock('@/lib/todoGenerator', () => ({
+  generateTodos: jest.fn((analysis, industry) => ({
     todos: [
       {
         type: 'Google: Fotos fehlen',
@@ -41,13 +41,13 @@ vi.mock('@/lib/todoGenerator', () => ({
 }));
 
 // Mock the pdfReport
-vi.mock('@/lib/pdfReport', () => ({
-  createPdfReportAndSend: vi.fn(() => Promise.resolve('https://test.com/report.pdf'))
+jest.mock('@/lib/pdfReport', () => ({
+  createPdfReportAndSend: jest.fn(() => Promise.resolve('https://test.com/report.pdf'))
 }));
 
 describe('Enhanced Visibility Check Integration', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   it('should process complete visibility check flow', async () => {
@@ -134,7 +134,7 @@ describe('Enhanced Visibility Check Integration', () => {
     const { createPdfReportAndSend } = await import('@/lib/pdfReport');
     
     // Mock PDF generation failure
-    vi.mocked(createPdfReportAndSend).mockRejectedValueOnce(new Error('PDF generation failed'));
+    jest.mocked(createPdfReportAndSend).mockRejectedValueOnce(new Error('PDF generation failed'));
     
     const mockRequest = {
       leadId: 'lead-error',

@@ -1,7 +1,7 @@
 // TrendFilters Component Tests
 // Task 6.4.2.3 - Unit Tests for TrendFilters
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, jest } from '@jest/globals';
 import type { TrendFilters, ScoreType, BusinessUnit } from '@/types/score-history';
 import { mockBusinessUnits } from '@/data/analytics/mock-score-trend';
 
@@ -15,10 +15,10 @@ describe('TrendFilters Component', () => {
     businessUnit: undefined
   };
 
-  const mockOnChange = vi.fn();
+  const mockOnChange = jest.fn();
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   describe('Props Validation', () => {

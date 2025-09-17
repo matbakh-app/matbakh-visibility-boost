@@ -1,7 +1,7 @@
 // TrendChart Component Tests
 // Task 6.4.2.1 - Unit Tests for TrendChart
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from '@jest/globals';
 import { mockTrendData, mockVisibilityEvents } from '@/data/analytics/mock-score-trend';
 import type { ScoreType } from '@/types/score-history';
 
@@ -59,9 +59,10 @@ describe('TrendChart Component', () => {
     if (mockVisibilityEvents.length > 0) {
       const firstEvent = mockVisibilityEvents[0];
       expect(firstEvent).toHaveProperty('date');
-      expect(firstEvent).toHaveProperty('label');
+      expect(firstEvent).toHaveProperty('title');
       expect(firstEvent).toHaveProperty('type');
-      expect(['campaign', 'algorithm', 'reviews', 'other']).toContain(firstEvent.type);
+      expect(firstEvent).toHaveProperty('impact');
+      expect(['positive', 'negative', 'neutral']).toContain(firstEvent.impact);
     }
   });
 });

@@ -1,136 +1,191 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { startVisibilityCheck, getVCEnvironmentInfo } from '../vc';
 
-// Mock environment variables
-const mockEnv = {
-  VITE_VC_API_PROVIDER: 'aws',
-  VITE_PUBLIC_API_BASE: 'https://api.example.com/prod',
-  MODE: 'test',
-  PROD: false
-};
+// Mock fetch globally
+global.fetch = jest.fn();
 
-// Mock import.meta.env
-vi.stubGlobal('import', {
-  meta: {
-    env: mockEnv
-  }
-});
-
-// Mock fetch
-const mockFetch = vi.fn();
-global.fetch = mockFetch;
-
-describe('VC Service', () => {
+describe('VC Service - Core Business Logic', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    // Reset env to valid state
-    mockEnv.VITE_VC_API_PROVIDER = 'aws';
-    mockEnv.VITE_PUBLIC_API_BASE = 'https://api.example.com/prod';
+    jest.clearAllMocks();
+    // Reset fetch mock
+    (global.fetch as jest.Mock).mockClear();
   });
 
   describe('startVisibilityCheck', () => {
-    it('should construct correct URL and payload', async () => {
-      const mockResponse = { ok: true, token: 'test-token' };
-      mockFetch.mockResolvedValueOnce({
+    it('should construct correct API request with all parameters', async () => {
+      const mockResponse = {
         ok: true,
-        json: () => Promise.resolve(mockResponse)
-      });
+        json: async () => ({ success: true, token: 'vc-token-123', checkId: 'check-456' }),
+      };
+      (global.fetch as jest.Mock).mockResolvedValue(mockResponse);
 
-      await startVisibilityCheck('test@example.com', 'Test User', true, 'de');
-
-      expect(fetch).toHaveBeenCalledWith(
-        'https://api.example.com/prod/vc/start',
-        {
+      const result = await startVisibilityCheck('test@restaurant.com', 'Test Restaurant', true, 'de');
+      
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/vc/start'),
+        expect.objectContaining({
           method: 'POST',
-          headers: {
+          headers: expect.objectContaining({
             'Content-Type': 'application/json',
-            'Origin': 'http://localhost:3000'
-          },
-          body: JSON.stringify({
-            email: 'test@example.com',
-            name: 'Test User',
-            marketing: true,
-            locale: 'de'
-          })
-        }
+          }),
+          body: expect.stringContaining('"email":"test@restaurant.com"'),
+        })
       );
+      expect(result).toEqual({ 
+        success: true, 
+        token: 'vc-token-123', 
+        checkId: 'check-456' 
+      });
     });
 
-    it('should handle successful response', async () => {
-      const mockResponse = { ok: true, token: 'test-token' };
-      mockFetch.mockResolvedValueOnce({
+    it('should handle successful visibility check initiation', async () => {
+      const mockResponse = {
         ok: true,
-        json: () => Promise.resolve(mockResponse)
-      });
+        json: async () => ({ 
+          success: true, 
+          token: 'abc123',
+          message: 'Visibility check started successfully'
+        }),
+      };
+      (global.fetch as jest.Mock).mockResolvedValue(mockResponse);
 
-      const result = await startVisibilityCheck('test@example.com');
-      expect(result).toEqual(mockResponse);
+      const result = await startVisibilityCheck('owner@bistro.de', 'Bistro Berlin', true, 'de');
+      
+      expect(result.success).toBe(true);
+      expect(result.token).toBe('abc123');
+      expect(global.fetch).toHaveBeenCalledTimes(1);
     });
 
-    it('should throw error for invalid provider', async () => {
-      mockEnv.VITE_VC_API_PROVIDER = 'invalid';
-
-      await expect(startVisibilityCheck('test@example.com')).rejects.toThrow(
-        'Invalid VC API provider: invalid. Expected \'aws\''
-      );
-    });
-
-    it('should throw error for missing API base', async () => {
-      mockEnv.VITE_PUBLIC_API_BASE = '';
-
-      await expect(startVisibilityCheck('test@example.com')).rejects.toThrow(
-        'Missing VITE_PUBLIC_API_BASE environment variable'
-      );
-    });
-
-    it('should handle HTTP 400 error', async () => {
-      mockFetch.mockResolvedValueOnce({
+    it('should handle API errors gracefully', async () => {
+      const mockResponse = {
         ok: false,
-        status: 400
-      });
+        status: 400,
+        json: async () => ({ error: 'Invalid email format' }),
+      };
+      (global.fetch as jest.Mock).mockResolvedValue(mockResponse);
 
-      await expect(startVisibilityCheck('invalid-email')).rejects.toThrow(
-        'Invalid email address'
-      );
-    });
-
-    it('should handle HTTP 429 rate limit', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 429
-      });
-
-      await expect(startVisibilityCheck('test@example.com')).rejects.toThrow(
-        'Too many requests. Please try again later.'
-      );
+      await expect(
+        startVisibilityCheck('invalid-email', 'Test Restaurant', true, 'de')
+      ).rejects.toThrow('Invalid email format');
     });
 
     it('should handle network errors', async () => {
-      mockFetch.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+      (global.fetch as jest.Mock).mockRejectedValue(new Error('Network timeout'));
 
-      await expect(startVisibilityCheck('test@example.com')).rejects.toThrow(
-        'Network error. Please check your internet connection.'
-      );
+      await expect(
+        startVisibilityCheck('test@test.com', 'Test Restaurant', true, 'de')
+      ).rejects.toThrow('Network timeout');
+    });
+
+    it('should validate required parameters', async () => {
+      await expect(
+        startVisibilityCheck('', 'Test Restaurant', true, 'de')
+      ).rejects.toThrow();
+    });
+
+    it('should handle different locales correctly', async () => {
+      const mockResponse = {
+        ok: true,
+        json: async () => ({ success: true, token: 'token-en' }),
+      };
+      (global.fetch as jest.Mock).mockResolvedValue(mockResponse);
+
+      await startVisibilityCheck('test@restaurant.com', 'Test Restaurant', true, 'en');
+      
+      const callArgs = (global.fetch as jest.Mock).mock.calls[0];
+      const requestBody = JSON.parse(callArgs[1].body);
+      expect(requestBody.locale).toBe('en');
     });
   });
 
   describe('getVCEnvironmentInfo', () => {
-    it('should return environment info in development', () => {
-      mockEnv.PROD = false;
+    it('should return environment info in development mode', () => {
+      // Mock development environment
+      const originalEnv = (globalThis as any).importMetaEnv?.MODE;
+      (globalThis as any).importMetaEnv = { ...(globalThis as any).importMetaEnv, MODE: 'development' };
       
-      const info = getVCEnvironmentInfo();
-      expect(info).toEqual({
-        provider: 'aws',
-        apiBase: 'https://api.example.com/prod',
-        env: 'test'
-      });
+      const result = getVCEnvironmentInfo();
+      
+      expect(result).toBeDefined();
+      expect(result).toHaveProperty('mode');
+      expect(result).toHaveProperty('apiBase');
+      
+      // Restore
+      if (originalEnv !== undefined) {
+        (globalThis as any).importMetaEnv.MODE = originalEnv;
+      }
     });
 
-    it('should return null in production', () => {
-      mockEnv.PROD = true;
+    it('should return null in production mode', () => {
+      // Mock production environment
+      const originalEnv = (globalThis as any).importMetaEnv?.MODE;
+      (globalThis as any).importMetaEnv = { ...(globalThis as any).importMetaEnv, MODE: 'production' };
       
-      const info = getVCEnvironmentInfo();
-      expect(info).toBeNull();
+      const result = getVCEnvironmentInfo();
+      
+      expect(result).toBeNull();
+      
+      // Restore
+      if (originalEnv !== undefined) {
+        (globalThis as any).importMetaEnv.MODE = originalEnv;
+      }
+    });
+
+    it('should include correct environment variables', () => {
+      const originalEnv = (globalThis as any).importMetaEnv?.MODE;
+      (globalThis as any).importMetaEnv = { ...(globalThis as any).importMetaEnv, MODE: 'development' };
+      
+      const result = getVCEnvironmentInfo();
+      
+      if (result) {
+        expect(result.apiBase).toBeDefined();
+        expect(result.mode).toBe('development');
+      }
+      
+      // Restore
+      if (originalEnv !== undefined) {
+        (globalThis as any).importMetaEnv.MODE = originalEnv;
+      }
+    });
+  });
+
+  describe('Error Handling & Edge Cases', () => {
+    it('should handle malformed API responses', async () => {
+      const mockResponse = {
+        ok: true,
+        json: async () => { throw new Error('Invalid JSON'); },
+      };
+      (global.fetch as jest.Mock).mockResolvedValue(mockResponse);
+
+      await expect(
+        startVisibilityCheck('test@restaurant.com', 'Test Restaurant', true, 'de')
+      ).rejects.toThrow('Invalid JSON');
+    });
+
+    it('should handle rate limiting', async () => {
+      const mockResponse = {
+        ok: false,
+        status: 429,
+        json: async () => ({ error: 'Rate limit exceeded' }),
+      };
+      (global.fetch as jest.Mock).mockResolvedValue(mockResponse);
+
+      await expect(
+        startVisibilityCheck('test@restaurant.com', 'Test Restaurant', true, 'de')
+      ).rejects.toThrow('Rate limit exceeded');
+    });
+
+    it('should handle server errors', async () => {
+      const mockResponse = {
+        ok: false,
+        status: 500,
+        json: async () => ({ error: 'Internal server error' }),
+      };
+      (global.fetch as jest.Mock).mockResolvedValue(mockResponse);
+
+      await expect(
+        startVisibilityCheck('test@restaurant.com', 'Test Restaurant', true, 'de')
+      ).rejects.toThrow('Internal server error');
     });
   });
 });

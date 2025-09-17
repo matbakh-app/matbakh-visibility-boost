@@ -11,12 +11,12 @@ import PackageComparison from '@/components/PackageComparison';
 import TrustElements from '@/components/TrustElements';
 import PackageFAQ from '@/components/PackageFAQ';
 import { useUserJourney } from '@/services/UserJourneyManager';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthUnified } from '@/hooks/useAuthUnified';
 
 const BusinessLanding: React.FC = () => {
   const { t } = useTranslation('landing');
   const { setEntryPoint, setVCData } = useUserJourney();
-  const { user, openAuthModal } = useAuth();
+  const { user, openAuthModal } = useAuthUnified();
 
   const handleVCStart = (formData: any) => {
     // 1) Journey setzen

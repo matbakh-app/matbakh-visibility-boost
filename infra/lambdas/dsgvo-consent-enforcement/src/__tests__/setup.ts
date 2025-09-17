@@ -50,4 +50,6 @@ global.console = {
   log: jest.fn(),
   warn: jest.fn(),
   error: jest.fn()
-};
+};/
+/ Export to make this a module and prevent Jest "no tests" error
+export {};

@@ -1,4 +1,8 @@
 /**
+ * @jest-environment node
+ */
+
+/**
  * Comprehensive tests for the Bedrock AI Core Logging System
  */
 

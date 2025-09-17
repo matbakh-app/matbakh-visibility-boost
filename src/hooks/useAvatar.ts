@@ -121,7 +121,9 @@ export function useAvatar(options: UseAvatarOptions = {}): UseAvatarReturn {
 
     try {
       // Try to fetch current avatar from API/database
-      const API_BASE_URL = import.meta.env.VITE_PUBLIC_API_BASE || 'https://api.matbakh.app';
+      // Statt import.meta.env:
+      const env = (globalThis as any).importMetaEnv ?? process.env;
+      const API_BASE_URL = env.VITE_PUBLIC_API_BASE || 'https://api.matbakh.app';
       const authToken = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
       const response = await fetch(`${API_BASE_URL}/avatar/${entityType}/${entityId}`, {
         method: 'GET',
@@ -279,7 +281,9 @@ export function useAvatar(options: UseAvatarOptions = {}): UseAvatarReturn {
   const updateAvatarInDatabase = useCallback(async (newAvatarUrl: string) => {
     if (!entityId) return;
 
-    const API_BASE_URL = import.meta.env.VITE_PUBLIC_API_BASE || 'https://api.matbakh.app';
+    // Statt import.meta.env:
+    const env = (globalThis as any).importMetaEnv ?? process.env;
+    const API_BASE_URL = env.VITE_PUBLIC_API_BASE || 'https://api.matbakh.app';
     const authToken = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
     const response = await fetch(`${API_BASE_URL}/avatar/${entityType}/${entityId}`, {
       method: 'PUT',
@@ -308,7 +312,9 @@ export function useAvatar(options: UseAvatarOptions = {}): UseAvatarReturn {
 
     try {
       // Delete from database
-      const API_BASE_URL = import.meta.env.VITE_PUBLIC_API_BASE || 'https://api.matbakh.app';
+      // Statt import.meta.env:
+      const env = (globalThis as any).importMetaEnv ?? process.env;
+      const API_BASE_URL = env.VITE_PUBLIC_API_BASE || 'https://api.matbakh.app';
       const authToken = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
       const response = await fetch(`${API_BASE_URL}/avatar/${entityType}/${entityId}`, {
         method: 'DELETE',

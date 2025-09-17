@@ -98,3 +98,6 @@ afterAll(() => {
 afterEach(() => {
   jest.clearAllMocks();
 });
+// Export
+ to make this a module and prevent Jest "no tests" error
+export {};
