@@ -3,7 +3,7 @@
 // Matbakh 3.0 – updated for new service_packages / service_prices schema
 
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+// MIGRATION: Hook temporarily disabled - migrate to AWS services
 import { monitoring } from "@/utils/monitoring";
 
 /**

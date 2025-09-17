@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Loader2, Chrome } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { supabase } from '@/integrations/supabase/client';
+// MIGRATED: Supabase removed - use AWS services
 import { useToast } from '@/hooks/use-toast';
 
 export default function GoogleOAuth() {

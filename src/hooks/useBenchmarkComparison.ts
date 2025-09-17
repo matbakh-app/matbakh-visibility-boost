@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { BenchmarkComparisonService, BenchmarkComparison, ScoreBenchmark, IndustryBenchmarkRequest } from '../services/benchmark-comparison';
-import { supabase } from '../lib/supabase';
+// MIGRATED: Supabase removed - use AWS services
 
 interface UseBenchmarkComparisonOptions {
   businessId: string;

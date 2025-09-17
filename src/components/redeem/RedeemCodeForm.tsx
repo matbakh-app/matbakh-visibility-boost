@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { supabase } from '@/integrations/supabase/client'
+// MIGRATED: Supabase removed - use AWS services
 import { toast } from 'sonner'
 
 interface RedeemCodeFormProps {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+// MIGRATED: Supabase removed - use AWS services
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 

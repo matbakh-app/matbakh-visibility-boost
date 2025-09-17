@@ -999,7 +999,7 @@ export async function uploadMultipleFiles(
 }
 
 // DSGVO Compliance Functions
-import { supabase } from '@/integrations/supabase/client';
+// MIGRATED: Supabase removed - use AWS services
 
 /**
  * Delete all files for a user (DSGVO compliance)

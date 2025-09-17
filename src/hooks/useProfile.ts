@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { supabase } from '@/integrations/supabase/client'
+// MIGRATED: Supabase removed - use AWS services
 
 interface UserProfile {
   id: string

@@ -1,6 +1,6 @@
 
 import { useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+// MIGRATED: Supabase removed - use AWS services
 import { FacebookEventPayload, FacebookEventType } from '@/types/facebook-events';
 import { useLeadTracking } from './useLeadTracking';
 import { trackFacebookEvent, FacebookEvents } from '@/utils/facebookPixel';

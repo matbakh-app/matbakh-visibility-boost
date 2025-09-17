@@ -1,5 +1,6 @@
 
-import { supabase } from '@/integrations/supabase/client';
+// MIGRATED: Use OnboardingService instead
+import { OnboardingService } from '@/services/OnboardingService';
 import type { GmbCategory } from '@/hooks/useGmbCategories';
 
 export interface OnboardingValidationResult {

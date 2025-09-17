@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+// MIGRATED: Supabase removed - use AWS services
 import { Row, Insert, Update } from '@/integrations/supabase/db-helpers';
 
 // Enhanced Lead Data Types

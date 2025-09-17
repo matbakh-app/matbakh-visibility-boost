@@ -25,7 +25,7 @@ import {
   Eye,
   Shield
 } from 'lucide-react'
-import { supabase } from '@/integrations/supabase/client'
+// MIGRATED: Supabase removed - use AWS services
 
 // ================================================================
 // Types and Interfaces

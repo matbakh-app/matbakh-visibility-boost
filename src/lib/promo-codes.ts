@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client'
+// MIGRATED: Supabase removed - use AWS services
 import type { Database } from '@/integrations/supabase/types'
 
 type PromoCode = Database['public']['Tables']['promo_codes']['Row']

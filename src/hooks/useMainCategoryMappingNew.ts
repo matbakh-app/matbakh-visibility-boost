@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+// MIGRATED: Supabase removed - use AWS services
 
 export interface MainCategory {
   id: string;       // UUID

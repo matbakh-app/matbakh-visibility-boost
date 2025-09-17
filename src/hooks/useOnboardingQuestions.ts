@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+// MIGRATED: Supabase removed - use AWS services
 import type { Database } from '@/integrations/supabase/types';
 
 export interface OnboardingQuestion {

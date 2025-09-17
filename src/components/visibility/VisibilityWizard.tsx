@@ -5,7 +5,8 @@ import VisibilityStepOne from './VisibilityStepOne';
 import VisibilityStepTwo from './VisibilityStepTwo';
 import VisibilityStepThree from './VisibilityStepThree';
 import VisibilityResults from './VisibilityResults';
-import { supabase } from '@/integrations/supabase/client';
+// TODO: Migrate to AWS Lambda VC API  
+// Temporarily disabled during Supabase migration
 import { useEnhancedLeadTracking } from '@/hooks/useEnhancedLeadTracking';
 import type { AnalysisResult } from '@/types/visibility';
 

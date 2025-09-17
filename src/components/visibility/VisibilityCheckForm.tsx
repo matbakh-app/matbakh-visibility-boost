@@ -6,7 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Search, MapPin, Building2, Tag, TrendingUp, Globe, Facebook, Instagram, Mail } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+// TODO: Migrate to AWS Lambda VC API
+// Temporarily disabled during Supabase migration
 import { MATBAKH_CATEGORIES, getCategoriesForGmbType, type MatbakhCategory } from './MatbakhCategories';
 import VisibilityResults from './VisibilityResults';
 import type { AnalysisResult, VisibilityCheckData } from '@/types/visibility';

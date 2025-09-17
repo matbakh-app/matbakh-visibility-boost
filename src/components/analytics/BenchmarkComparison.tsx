@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Minus, Target, Award, AlertTriangle } from 'lucide-react';
 import { BenchmarkComparisonService, BenchmarkComparison, IndustryBenchmarkRequest } from '../../services/benchmark-comparison';
-import { supabase } from '../../lib/supabase';
+// MIGRATED: Supabase removed - use AWS services
 
 interface BenchmarkComparisonProps {
   businessId: string;

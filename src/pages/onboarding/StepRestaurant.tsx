@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { MapPin, Clock, Phone, Mail } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+// MIGRATED: Supabase removed - use AWS services
 
 const restaurantSchema = z.object({
   name: z.string().min(2, 'Name muss mindestens 2 Zeichen haben'),

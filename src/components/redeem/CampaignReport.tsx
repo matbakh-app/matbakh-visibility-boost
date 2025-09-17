@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { supabase } from '@/integrations/supabase/client'
+// MIGRATED: Supabase removed - use AWS services
 import { formatDistanceToNow } from 'date-fns'
 import { de } from 'date-fns/locale'
 

@@ -6,7 +6,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+// MIGRATION: Hook temporarily disabled - migrate to AWS services
 
 export interface NewServicePackage {
   id: string;

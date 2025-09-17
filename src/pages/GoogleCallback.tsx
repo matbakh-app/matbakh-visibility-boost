@@ -6,7 +6,7 @@ import { CheckCircle, XCircle, Loader2, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { supabase } from '@/integrations/supabase/client';
+// MIGRATED: Supabase removed - use AWS services
 import { useToast } from '@/hooks/use-toast';
 
 type CallbackState = 'loading' | 'success' | 'error' | 'consent';

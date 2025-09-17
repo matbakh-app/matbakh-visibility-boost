@@ -5,7 +5,8 @@
  * Make sure you're logged out (anonymous) when testing restrictions
  */
 
-import { supabase } from '@/integrations/supabase/client';
+// DEPRECATED: RLS smoke tests not needed with AWS RDS
+// This file is kept for reference but functionality is disabled
 
 // Test 1: Anonymous users should NOT be able to access sensitive tables
 export const testAnonRestrictions = async () => {

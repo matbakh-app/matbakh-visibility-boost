@@ -3,7 +3,7 @@
  * Implements adaptive UI system that adjusts based on available AI services
  */
 
-import { supabase } from '@/integrations/supabase/client';
+// MIGRATED: Supabase removed - use AWS services
 
 export interface AIService {
   id: string;

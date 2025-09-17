@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+// MIGRATED: Supabase removed - use AWS services
 import LoadingSkeleton from '@/components/LoadingSkeleton';
 
 interface OnboardingProgress {

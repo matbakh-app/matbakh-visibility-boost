@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+// MIGRATED: Supabase removed - use AWS services
 import { kpiMocks } from '@/mocks/kpi';
 
 const USE_MOCKS = import.meta.env.VITE_USE_MOCKS === 'true';

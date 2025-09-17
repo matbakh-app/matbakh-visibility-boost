@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+// MIGRATION: Hook temporarily disabled - migrate to AWS services
 import { GmbCategory } from '@/hooks/useOnboardingQuestions';
 import { RelatedCategory } from '@/hooks/useSubCategoriesWithCrossTags';
 

@@ -1,6 +1,6 @@
 
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+// MIGRATED: Supabase removed - use AWS services
 import { LeadEvent, LeadTodo, LeadSource, LeadCheckReport } from '@/types/facebook-events';
 import { useToast } from '@/hooks/use-toast';
 

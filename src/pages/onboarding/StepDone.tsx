@@ -10,7 +10,7 @@ import {
   Zap,
   ArrowRight
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+// MIGRATED: Supabase removed - use AWS services
 
 export default function StepDone() {
   const navigate = useNavigate();

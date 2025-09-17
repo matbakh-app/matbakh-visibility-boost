@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { X, Cookie, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { loadFacebookPixel, removeFacebookPixel } from '@/utils/facebookPixel';
-import { supabase } from '@/integrations/supabase/client';
+// MIGRATED: Supabase removed - use AWS services
 
 const CookieConsentBanner: React.FC = () => {
   const { t } = useTranslation('common');

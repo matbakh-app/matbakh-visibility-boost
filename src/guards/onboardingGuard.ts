@@ -1,5 +1,5 @@
 import { getFlagBool } from '@/utils/featureFlags';
-// import { supabase } from '@/integrations/supabase/client'; // REMOVED: Migrated to AWS
+// // MIGRATED: Supabase removed - use AWS services
 import type { Role } from '@/lib/rbac';
 
 const PUBLIC_WHITELIST: string[] = [
