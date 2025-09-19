@@ -218,7 +218,12 @@ describe('ForecastEngine', () => {
         });
       }
       
-      const quality = ForecastEngine.assessDataQuality(highVolatilityData);
+      // Use deterministic volatile data instead of random
+      const volatileSeries = [10, 100, 20, 110, 15, 120, 25, 105, 5, 115];
+      const quality = ForecastEngine.assessDataQuality(volatileSeries.map((score, i) => ({
+        date: new Date(2025, 0, i + 1).toISOString().split('T')[0],
+        score_value: score
+      })));
       
       // Should detect high volatility or have low quality score
       const hasVolatilityIssue = quality.issues.some(issue => 

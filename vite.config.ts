@@ -46,6 +46,17 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     rollupOptions: {
+      // Hard exclude permanent archive from build (Defence-in-Depth)
+      // Note: on-hold components are NOT excluded - they may be restored
+      external: [
+        /^src\/archive\/.*\/manual-archive\//,
+        /^src\/archive\/.*\/src\//,
+        /^src\/archive\/backup-files\//,
+        /^src\/archive\/legacy-auth\//,
+        /^src\/archive\/figma-demos\//,
+        /^src\/archive\/old-flows\//,
+        /^src\/archive\/old-profile-flow\//
+      ],
       output: {
         manualChunks: {
           // Core React libraries

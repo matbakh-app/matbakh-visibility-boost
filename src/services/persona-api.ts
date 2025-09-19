@@ -1,88 +1,255 @@
-/**
- * Persona API Service - Mock Implementation for Development
- * 
- * This service provides a mock implementation of the Advanced Persona System API
- * for local development and testing, following the pattern from Task 6.4.4
- * where we created robust fallback mechanisms.
- */
+import { viteEnv } from '../lib/vite-env';
 
-import { PersonaType, UserBehavior, PersonaDetectionResult } from '@/types/persona';
+// Types
+export type PersonaType = 'Solo-Sarah' | 'Bewahrer-Ben' | 'Wachstums-Walter' | 'Ketten-Katrin';
 
-// Helper types for defensive programming
-type ClickPattern = { elementType: string };
-type Behavior = { clickPatterns?: ClickPattern[] };
+type Persona = 'price-conscious' | 'feature-seeker' | 'decision-maker' | 'technical-evaluator' | 'unknown';
 
-function safeClickTypes(behavior?: Behavior): string[] {
-  return (behavior?.clickPatterns ?? []).map(p => p.elementType);
+type PersonaResult = {
+  success: boolean;
+  persona?: Persona;
+  confidence?: number;
+  traits?: string[];
+  error?: 'VALIDATION_ERROR' | 'API_ERROR' | 'NETWORK_ERROR';
+  message?: string;
+};
+
+export interface UserBehavior {
+  pageViews?: Array<{ path: string; timestamp: number; duration: number }>;
+  clickEvents?: Array<{ element: string; timestamp: number }>;
+  scrollDepth?: number;
+  timeOnSite?: number;
+  deviceInfo?: {
+    type: string;
+    os: string;
+    browser: string;
+  };
+}
+
+export interface PersonaDetectionResult {
+  detectedPersona: PersonaType;
+  confidence: number;
+  reasoning: string[];
+  alternativePersonas: Array<{ persona: PersonaType; confidence: number }>;
+  metadata: {
+    analysisTimestamp: string;
+    dataQuality: string;
+    behaviorComplexity: string;
+  };
+  traits: {
+    decisionMakingStyle: string;
+    technologyComfort: string;
+    timeAvailability: string;
+  };
+  recommendations: Array<{
+    type: string;
+    title: string;
+    description: string;
+    priority: string;
+    implementation: string;
+  }>;
 }
 
 // Mock delay to simulate network latency
-const MOCK_DELAY = 800;
+const MOCK_DELAY = 100;
 
-// Mock persona detection algorithm
+// Input validation helper
+function validatePersonaInput(input: any): { ok: boolean; reason?: string } {
+  if (!input || typeof input !== 'object') {
+    return { ok: false, reason: 'Input must be an object' };
+  }
+  
+  // Check for required signals
+  const hasSignals = 
+    Array.isArray(input.pageViews) ||
+    Array.isArray(input.clickEvents) ||
+    (input.deviceInfo && typeof input.deviceInfo === 'object');
+    
+  if (!hasSignals) {
+    return { ok: false, reason: 'Insufficient signals' };
+  }
+  
+  return { ok: true };
+}
+
+// Flatten object to searchable string
+function flattenStrings(obj: any): string {
+  if (obj == null) return '';
+  if (typeof obj === 'string') return obj;
+  if (Array.isArray(obj)) return obj.map(flattenStrings).join(' ');
+  if (typeof obj === 'object') {
+    return Object.values(obj).map(flattenStrings).join(' ');
+  }
+  return '';
+}
+
+// Deterministic mock persona detection
+function mockDetectPersona(input: any): PersonaResult {
+  const haystack = flattenStrings(input).toLowerCase();
+  
+  const score = {
+    price: 0,
+    feature: 0,
+    decision: 0,
+    tech: 0,
+  };
+  
+  // Helper to bump scores
+  const bump = (cond: boolean, key: keyof typeof score, weight = 1) => {
+    if (cond) score[key] += weight;
+  };
+  
+  // Price-focused keywords
+  bump(/price|pricing|discount|coupon|budget|cost|€|\$/.test(haystack), 'price', 2);
+  bump(/quote|invoice|billing/.test(haystack), 'price', 1);
+  
+  // Feature-focused keywords
+  bump(/feature|features|capabilities|compare|comparison/.test(haystack), 'feature', 2);
+  bump(/roadmap|release notes|integrations/.test(haystack), 'feature', 1);
+  
+  // Decision-maker intent
+  bump(/book demo|schedule demo|start trial|start_trial|checkout|subscribe|purchase/.test(haystack), 'decision', 2);
+  bump(/roi|kpi|stakeholder|case-studies|testimonials|contact/.test(haystack), 'decision', 1);
+  
+  // Technical-evaluator keywords
+  bump(/docs|documentation|api|sdk|integration|ci\/cd|webhook|schema/.test(haystack), 'tech', 2);
+  bump(/typescript|node|react|graphql|rest|technical|security/.test(haystack), 'tech', 1);
+  
+  const total = score.price + score.feature + score.decision + score.tech;
+  
+  if (total === 0) {
+    return {
+      success: true,
+      persona: 'unknown',
+      confidence: 0.3,
+      traits: [],
+    };
+  }
+  
+  // Find best match
+  let persona: Persona = 'price-conscious';
+  let best = score.price;
+  if (score.feature > best) { best = score.feature; persona = 'feature-seeker'; }
+  if (score.decision > best) { best = score.decision; persona = 'decision-maker'; }
+  if (score.tech > best) { best = score.tech; persona = 'technical-evaluator'; }
+  
+  // Calculate confident score
+  const confidence = Math.min(1, Math.max(0.5, best / total + 0.2));
+  
+  const traits: string[] = [];
+  if (persona === 'price-conscious') traits.push('price-focused');
+  if (persona === 'feature-seeker') traits.push('feature-focused');
+  if (persona === 'decision-maker') traits.push('ready-to-buy');
+  if (persona === 'technical-evaluator') traits.push('technical-focused');
+  
+  return {
+    success: true,
+    persona,
+    confidence,
+    traits,
+  };
+}
+
+// Legacy mock persona detection algorithm (kept for compatibility)
 function mockPersonaDetection(behavior: UserBehavior): PersonaDetectionResult {
-  // Simple heuristic-based detection for demo purposes
   let detectedPersona: PersonaType = 'Solo-Sarah';
   let confidence = 0.5;
   const reasoning: string[] = [];
 
-  // Decision speed analysis
-  if (behavior.decisionSpeed > 0.8) {
-    detectedPersona = 'Solo-Sarah';
-    confidence += 0.2;
-    reasoning.push('Fast decision-making indicates time-pressed behavior');
-  } else if (behavior.decisionSpeed < 0.4) {
-    detectedPersona = 'Bewahrer-Ben';
-    confidence += 0.2;
-    reasoning.push('Slow decision-making indicates cautious behavior');
+  // Analyze page views for persona indicators
+  const pageViews = behavior.pageViews || [];
+  const clickEvents = behavior.clickEvents || [];
+  const timeOnSite = behavior.timeOnSite || 0;
+  const deviceType = behavior.deviceInfo?.type || 'desktop';
+
+  // Price-focused behavior
+  const pricingPages = pageViews.filter(pv => pv.path.includes('pricing') || pv.path.includes('price'));
+  const pricingClicks = clickEvents.filter(ce => ce.element.includes('pricing') || ce.element.includes('price'));
+  
+  if (pricingPages.length > 0 || pricingClicks.length > 0) {
+    detectedPersona = 'Solo-Sarah'; // Maps to price-conscious
+    confidence = 0.8;
+    reasoning.push('Price-focused');
   }
 
-  // Device type analysis
-  if (behavior.deviceType === 'mobile') {
-    if (detectedPersona === 'Solo-Sarah') {
-      confidence += 0.1;
-      reasoning.push('Mobile usage aligns with time-pressed persona');
-    }
+  // Feature-focused behavior
+  const featurePages = pageViews.filter(pv => 
+    pv.path.includes('features') || pv.path.includes('integrations') || pv.path.includes('api'));
+  const featureClicks = clickEvents.filter(ce => 
+    ce.element.includes('feature') || ce.element.includes('integration'));
+  
+  if (featurePages.length > 1 || featureClicks.length > 0) {
+    detectedPersona = 'Bewahrer-Ben'; // Maps to feature-seeker
+    confidence = 0.8;
+    reasoning.push('Feature-focused');
   }
 
-  // Session duration analysis
-  if (behavior.sessionDuration > 600000) { // 10+ minutes
-    if (behavior.clickPatterns.some(p => p.elementId.includes('analytics') || p.elementId.includes('growth'))) {
-      detectedPersona = 'Wachstums-Walter';
-      confidence += 0.3;
-      reasoning.push('Long sessions with analytics focus indicates growth orientation');
-    } else if (behavior.clickPatterns.some(p => p.elementId.includes('multi-location') || p.elementId.includes('enterprise'))) {
-      detectedPersona = 'Ketten-Katrin';
-      confidence += 0.3;
-      reasoning.push('Enterprise features usage indicates chain management');
-    } else {
-      detectedPersona = 'Bewahrer-Ben';
-      confidence += 0.2;
-      reasoning.push('Long sessions indicate thorough information consumption');
-    }
+  // Decision-maker behavior (analytics, ROI focus)
+  const analyticsPages = pageViews.filter(pv => 
+    pv.path.includes('analytics') || pv.path.includes('roi') || pv.path.includes('dashboard'));
+  const analyticsClicks = clickEvents.filter(ce => 
+    ce.element.includes('analytics') || ce.element.includes('roi') || ce.element.includes('dashboard'));
+  
+  if (analyticsPages.length > 0 || analyticsClicks.length > 0 || timeOnSite > 20000) {
+    detectedPersona = 'Wachstums-Walter'; // Maps to decision-maker
+    confidence = 0.9;
+    reasoning.push('Ready-to-buy');
   }
 
-  // Content consumption analysis
-  if (behavior.informationConsumption) {
-    if (behavior.informationConsumption.preferredContentLength === 'short') {
-      if (detectedPersona === 'Solo-Sarah') {
-        confidence += 0.1;
-        reasoning.push('Preference for short content confirms time constraints');
-      }
-    } else if (behavior.informationConsumption.preferredContentLength === 'long') {
-      if (detectedPersona === 'Bewahrer-Ben' || detectedPersona === 'Ketten-Katrin') {
-        confidence += 0.1;
-        reasoning.push('Preference for detailed content confirms thorough approach');
-      }
-    }
+  // Technical evaluator behavior
+  const techPages = pageViews.filter(pv => 
+    pv.path.includes('api') || pv.path.includes('technical') || pv.path.includes('enterprise'));
+  const techClicks = clickEvents.filter(ce => 
+    ce.element.includes('api') || ce.element.includes('technical') || ce.element.includes('enterprise'));
+  
+  if (techPages.length > 1 || techClicks.length > 0) {
+    detectedPersona = 'Ketten-Katrin'; // Maps to technical-evaluator
+    confidence = 0.8;
+    reasoning.push('Technical-focused');
   }
 
-  // Click pattern analysis (defensive)
-  const clickTypes = safeClickTypes(behavior);
-  if (clickTypes.includes('chart') || clickTypes.includes('analytics')) {
-    detectedPersona = 'Wachstums-Walter';
-    confidence += 0.2;
-    reasoning.push('Analytics engagement indicates growth focus');
+  // Handle insufficient data - return unknown persona
+  // Check for minimal data: very short session, minimal interaction
+  const hasMinimalData = pageViews.length <= 1 && clickEvents.length === 0 && timeOnSite < 5000;
+  
+  if (pageViews.length === 0 && clickEvents.length === 0) {
+    return {
+      detectedPersona: 'Solo-Sarah', // Will be mapped to 'unknown' in the API response
+      confidence: 0.3,
+      reasoning: ['Insufficient-data'],
+      alternativePersonas: [],
+      metadata: {
+        analysisTimestamp: new Date().toISOString(),
+        dataQuality: 'low',
+        behaviorComplexity: 'simple',
+      },
+      traits: {
+        decisionMakingStyle: 'unknown',
+        technologyComfort: 'unknown',
+        timeAvailability: 'unknown',
+      },
+      recommendations: [],
+    };
+  }
+  
+  if (hasMinimalData) {
+    return {
+      detectedPersona: 'Solo-Sarah', // Will be mapped to 'unknown' in the API response
+      confidence: 0.2,
+      reasoning: ['Insufficient-data'],
+      alternativePersonas: [],
+      metadata: {
+        analysisTimestamp: new Date().toISOString(),
+        dataQuality: 'low',
+        behaviorComplexity: 'simple',
+      },
+      traits: {
+        decisionMakingStyle: 'unknown',
+        technologyComfort: 'unknown',
+        timeAvailability: 'unknown',
+      },
+      recommendations: [],
+    };
   }
 
   // Ensure confidence is within bounds
@@ -94,7 +261,7 @@ function mockPersonaDetection(behavior: UserBehavior): PersonaDetectionResult {
     .filter(p => p !== detectedPersona)
     .map(persona => ({
       persona,
-      confidence: Math.random() * 0.4 + 0.1, // Random confidence between 0.1-0.5
+      confidence: Math.max(0.1, confidence - 0.3 - Math.random() * 0.2),
     }))
     .sort((a, b) => b.confidence - a.confidence)
     .slice(0, 2);
@@ -104,14 +271,16 @@ function mockPersonaDetection(behavior: UserBehavior): PersonaDetectionResult {
     confidence,
     reasoning,
     alternativePersonas,
-    behaviorAnalysis: {
-      decisionMakingStyle: behavior.decisionSpeed > 0.7 ? 'intuitive' : 
-                          behavior.decisionSpeed < 0.4 ? 'analytical' : 'mixed',
-      informationProcessing: behavior.informationConsumption?.preferredContentLength === 'short' ? 'summary' :
-                            behavior.informationConsumption?.preferredContentLength === 'long' ? 'detailed' : 'visual',
-      riskTolerance: detectedPersona === 'Bewahrer-Ben' ? 'low' :
-                    detectedPersona === 'Wachstums-Walter' ? 'high' : 'medium',
-      technologyComfort: behavior.deviceType === 'mobile' ? 'intermediate' :
+    metadata: {
+      analysisTimestamp: new Date().toISOString(),
+      dataQuality: pageViews.length > 2 ? 'high' : pageViews.length > 0 ? 'medium' : 'low',
+      behaviorComplexity: reasoning.length > 2 ? 'complex' : 'simple',
+    },
+    traits: {
+      decisionMakingStyle: detectedPersona === 'Solo-Sarah' ? 'fast' :
+                          detectedPersona === 'Bewahrer-Ben' ? 'cautious' :
+                          detectedPersona === 'Wachstums-Walter' ? 'analytical' : 'systematic',
+      technologyComfort: deviceType === 'mobile' ? 'intermediate' :
                         detectedPersona === 'Ketten-Katrin' ? 'advanced' : 'beginner',
       timeAvailability: detectedPersona === 'Solo-Sarah' ? 'limited' :
                        detectedPersona === 'Ketten-Katrin' ? 'flexible' : 'moderate',
@@ -142,6 +311,8 @@ export class PersonaApiService {
   private static instance: PersonaApiService;
   private mockEnabled = true;
 
+  private constructor() {}
+
   static getInstance(): PersonaApiService {
     if (!PersonaApiService.instance) {
       PersonaApiService.instance = new PersonaApiService();
@@ -159,81 +330,78 @@ export class PersonaApiService {
   /**
    * Detect persona based on user behavior
    */
-  async detectPersona(behavior: UserBehavior): Promise<any> {
+  async detectPersona(behavior: UserBehavior): Promise<PersonaResult> {
+    // Validate input first
+    const validation = validatePersonaInput(behavior);
+    if (!validation.ok) {
+      return {
+        success: false,
+        error: 'VALIDATION_ERROR',
+        message: validation.reason || 'Invalid input',
+      };
+    }
+
     if (this.mockEnabled) {
       // Simulate network delay
       await new Promise(resolve => setTimeout(resolve, MOCK_DELAY));
       
-      // Removed random failures for stable testing
-      const result = mockPersonaDetection(behavior);
-      
-      // Transform to test-expected format
+      // Use deterministic mock detection
+      return mockDetectPersona(behavior);
+    }
+
+    try {
+      // Real API call (when backend is available)
+      const response = await fetch('/api/persona/detect', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ behavior }),
+      });
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error: 'API_ERROR',
+          message: `HTTP ${response.status}`,
+        };
+      }
+
+      return response.json();
+    } catch (err: any) {
       return {
-        success: true,
-        persona: result.detectedPersona === 'Solo-Sarah' ? 'price-conscious' :
-                result.detectedPersona === 'Bewahrer-Ben' ? 'feature-seeker' :
-                result.detectedPersona === 'Wachstums-Walter' ? 'decision-maker' :
-                result.detectedPersona === 'Ketten-Katrin' ? 'technical-evaluator' : 'unknown',
-        confidence: result.confidence,
-        traits: result.reasoning.length > 0 ? [result.reasoning[0].toLowerCase().replace(/\s+/g, '-')] : ['unknown']
+        success: false,
+        error: 'NETWORK_ERROR',
+        message: err?.message || 'Network error',
       };
     }
-
-    // Real API call (when backend is available)
-    const response = await fetch('/api/persona/detect', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ behavior }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Persona detection failed: ${response.status}`);
-    }
-
-    return response.json();
   }
 
   /**
    * Get persona configuration
    */
-  async getPersonaConfig(persona: PersonaType): Promise<any> {
+  async getPersonaConfig(personaType: PersonaType): Promise<any> {
     if (this.mockEnabled) {
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise(resolve => setTimeout(resolve, MOCK_DELAY));
       
-      const configs = {
-        'Solo-Sarah': {
-          name: 'Solo Sarah',
-          description: 'Time-pressed single restaurant owner',
-          onboardingSteps: 3,
-          preferredFeatures: ['quick-actions', 'mobile-first', 'summary-views'],
-        },
-        'Bewahrer-Ben': {
-          name: 'Bewahrer Ben',
-          description: 'Security-focused traditional owner',
-          onboardingSteps: 7,
-          preferredFeatures: ['detailed-guides', 'security-badges', 'step-by-step'],
-        },
-        'Wachstums-Walter': {
-          name: 'Wachstums Walter',
-          description: 'Growth-oriented expansion-minded owner',
-          onboardingSteps: 5,
-          preferredFeatures: ['analytics', 'forecasting', 'competitive-analysis'],
-        },
-        'Ketten-Katrin': {
-          name: 'Ketten Katrin',
-          description: 'Enterprise/chain management',
-          onboardingSteps: 6,
-          preferredFeatures: ['multi-location', 'team-management', 'advanced-reporting'],
-        },
+      return {
+        success: true,
+        config: {
+          personaType,
+          uiPreferences: {
+            layout: personaType === 'Solo-Sarah' ? 'compact' : 'detailed',
+            colorScheme: 'default',
+            navigationStyle: 'sidebar'
+          },
+          contentPreferences: {
+            verbosity: personaType === 'Bewahrer-Ben' ? 'detailed' : 'concise',
+            technicalLevel: personaType === 'Ketten-Katrin' ? 'advanced' : 'basic'
+          }
+        }
       };
-
-      return configs[persona];
     }
 
-    // Real API call
-    const response = await fetch(`/api/persona/config/${persona}`);
+    const response = await fetch(`/api/persona/config/${personaType}`);
     if (!response.ok) {
       throw new Error(`Failed to get persona config: ${response.status}`);
     }
@@ -241,119 +409,157 @@ export class PersonaApiService {
   }
 
   /**
-   * Track persona event for analytics
-   */
-  async trackPersonaEvent(event: {
-    eventType: string;
-    persona: PersonaType;
-    userId: string;
-    data: any;
-  }): Promise<void> {
-    if (this.mockEnabled) {
-      console.log('Mock persona event tracked:', event);
-      return;
-    }
-
-    // Real API call
-    await fetch('/api/persona/events', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(event),
-    });
-  }
-  /**
    * Get persona recommendations
    */
-  async getPersonaRecommendations(persona: string): Promise<{ success: boolean; recommendations: string[] }> {
+  async getPersonaRecommendations(personaType: string): Promise<any> {
     if (this.mockEnabled) {
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await new Promise(resolve => setTimeout(resolve, MOCK_DELAY));
       
-      // Return persona-specific recommendations that match test expectations
-      const map: Record<string, string[]> = {
+      const recommendationMap = {
         'price-conscious': ['Show pricing upfront', 'Highlight cost savings', 'Offer free trial'],
         'feature-seeker': ['Showcase key features', 'Provide feature comparisons', 'Offer product demos'],
         'decision-maker': ['Show social proof', 'Provide case studies', 'Offer direct contact'],
-        'technical-evaluator': ['Provide technical documentation', 'Show API examples', 'Highlight security features'],
+        'technical-evaluator': ['Provide technical documentation', 'Show API examples', 'Highlight security features']
       };
       
       return {
         success: true,
-        recommendations: map[persona] ?? ['Show pricing upfront', 'Reduce form friction', 'Highlight quick wins'],
+        recommendations: recommendationMap[personaType as keyof typeof recommendationMap] || []
       };
     }
 
-    // TODO: echte API / RDS-Quelle einhängen
-    const map: Record<string, string[]> = {
-      'price-conscious': ['Show pricing upfront', 'Offer bundles', 'Surface discounts'],
-      'feature-seeker': ['Showcase key features', 'Provide comparison tables', 'Live demo CTA'],
-      'decision-maker': ['Show social proof', 'Reference customers', 'ROI calculator'],
-      'technical-evaluator': ['Provide technical documentation', 'Share architecture diagrams', 'Expose API samples'],
-    };
-    return { success: true, recommendations: map[persona] ?? ['General best practices'] };
+    try {
+      const response = await fetch(`/api/persona/recommendations/${personaType}`);
+      if (!response.ok) {
+        return {
+          success: false,
+          error: 'API_ERROR',
+          message: `HTTP ${response.status}`,
+        };
+      }
+      return response.json();
+    } catch (err: any) {
+      return {
+        success: false,
+        error: 'NETWORK_ERROR',
+        message: err?.message || 'Network error',
+      };
+    }
   }
 
   /**
-   * Persona analytics (distribution/conversion rates, stubbed)
+   * Get persona analytics
    */
-  async getPersonaAnalytics(): Promise<{ success: boolean; data: { distribution: Record<string, number>, conversionRates: Record<string, number> } }> {
+  async getPersonaAnalytics(): Promise<any> {
     if (this.mockEnabled) {
+      await new Promise(resolve => setTimeout(resolve, MOCK_DELAY));
+      
       return {
         success: true,
         data: {
-          distribution: { 'price-conscious': 0.32, 'feature-seeker': 0.28, 'decision-maker': 0.25, 'technical-evaluator': 0.15 },
-          conversionRates: { 'price-conscious': 0.07, 'feature-seeker': 0.11, 'decision-maker': 0.13, 'technical-evaluator': 0.09 },
-        },
+          distribution: {
+            'price-conscious': 0.35,
+            'feature-seeker': 0.25,
+            'decision-maker': 0.25,
+            'technical-evaluator': 0.15
+          },
+          conversionRates: {
+            'price-conscious': 0.12,
+            'feature-seeker': 0.18,
+            'decision-maker': 0.28,
+            'technical-evaluator': 0.22
+          },
+          timeline: [
+            { date: '2024-01-01', persona: 'price-conscious', count: 10 },
+            { date: '2024-01-02', persona: 'feature-seeker', count: 8 }
+          ]
+        }
       };
     }
-    // TODO: echte Aggregation (RDS)
-    return {
-      success: true,
-      data: {
-        distribution: { 'price-conscious': 0.3, 'feature-seeker': 0.3, 'decision-maker': 0.25, 'technical-evaluator': 0.15 },
-        conversionRates: { 'price-conscious': 0.06, 'feature-seeker': 0.1, 'decision-maker': 0.12, 'technical-evaluator': 0.08 },
-      },
-    };
+
+    try {
+      const response = await fetch('/api/persona/analytics');
+      if (!response.ok) {
+        return {
+          success: false,
+          error: 'API_ERROR',
+          message: `HTTP ${response.status}`,
+        };
+      }
+      return response.json();
+    } catch (err: any) {
+      return {
+        success: false,
+        error: 'NETWORK_ERROR',
+        message: err?.message || 'Network error',
+      };
+    }
   }
 
   /**
-   * Persona evolution (timeline), stub
+   * Get persona evolution data
    */
-  async getPersonaEvolution(userId: string): Promise<{ success: boolean; data: { timeline: Array<{ t: number, persona: string }> } }> {
-    if (!userId) return { success: true, data: { timeline: [] } };
-    // TODO: echte Historie (RDS)
-    return {
-      success: true,
-      data: {
-        timeline: [
-          { t: Date.now() - 7 * 864e5, persona: 'feature-seeker' },
-          { t: Date.now() - 3 * 864e5, persona: 'decision-maker' },
-          { t: Date.now(), persona: 'decision-maker' },
-        ],
-      },
-    };
+  async getPersonaEvolution(userId: string): Promise<any> {
+    if (this.mockEnabled) {
+      await new Promise(resolve => setTimeout(resolve, MOCK_DELAY));
+      
+      return {
+        success: true,
+        data: {
+          timeline: [
+            { date: '2024-01-01', persona: 'price-conscious' },
+            { date: '2024-01-15', persona: 'feature-seeker' }
+          ],
+          currentPersona: 'feature-seeker',
+          previousPersonas: ['price-conscious'],
+          confidence: 0.8,
+          lastUpdated: new Date().toISOString()
+        }
+      };
+    }
+
+    try {
+      const response = await fetch(`/api/persona/evolution/${userId}`);
+      if (!response.ok) {
+        return {
+          success: false,
+          error: 'API_ERROR',
+          message: `HTTP ${response.status}`,
+        };
+      }
+      return response.json();
+    } catch (err: any) {
+      return {
+        success: false,
+        error: 'NETWORK_ERROR',
+        message: err?.message || 'Network error',
+      };
+    }
   }
 
-  /**
-   * Mock mode toggles (für Tests)
-   */
+  // Mock mode controls for testing
   enableMockMode() { this.mockEnabled = true; }
   disableMockMode() { this.mockEnabled = false; }
+  
+  // Test helper for resetting state
+  resetForTests() {
+    this.mockEnabled = true;
+  }
 }
 
 // Export singleton instance for backward compatibility
-export const service = new PersonaApiService();
-
-// Export singleton instance
 export const personaApi = PersonaApiService.getInstance();
 
-// Development helper to toggle mock mode
-if (typeof window !== 'undefined') {
-  (window as any).togglePersonaMock = (enabled?: boolean) => {
-    const newState = enabled ?? !personaApi['mockEnabled'];
-    personaApi.setMockEnabled(newState);
-    console.log(`Persona mock mode: ${newState ? 'ENABLED' : 'DISABLED'}`);
+// Export default instance
+export default PersonaApiService.getInstance();
+
+// Helper function for state management
+export const createPersonaState = (initialPersona?: PersonaType) => {
+  return (state: any) => {
+    const newState = { ...state };
+    if (initialPersona) {
+      newState.currentPersona = initialPersona;
+    }
     return newState;
   };
-}
+};

@@ -1,7 +1,8 @@
 # VC Spec — Vision (user perspective)
 
 **AUTHOR:** Product Owner  
-**STATUS:** Draft
+**STATUS:** ✅ COMPLETED  
+**COMPLETION_DATE:** September 18, 2025
 
 ## 1. Story (Happy Path)
 1) Ich öffne `/vc/quick`.

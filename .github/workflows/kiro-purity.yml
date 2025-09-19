@@ -1,0 +1,92 @@
+name: Kiro Purity Check
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main ]
+
+jobs:
+  purity:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run Kiro Purity Check
+        run: npm run kiro:purity:ci
+        env:
+          CI: true
+          
+      - name: Upload purity report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kiro-purity-report
+          path: reports/kiro-purity-*.json
+          retention-days: 30
+          
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request' && failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Find the latest report file
+            const reportsDir = 'reports';
+            if (fs.existsSync(reportsDir)) {
+              const files = fs.readdirSync(reportsDir)
+                .filter(f => f.startsWith('kiro-purity-working-'))
+                .sort()
+                .reverse();
+                
+              if (files.length > 0) {
+                const reportPath = path.join(reportsDir, files[0]);
+                const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+                
+                const comment = `## 🔍 Kiro Purity Check Results
+                
+**Overall Score:** ${report.score}/100 ${report.score >= 95 ? '✅' : '❌'}
+**Files Analyzed:** ${report.filesAnalyzed}
+**Violations:** ${report.violations}
+
+### Component Breakdown
+- **APIs:** ${report.components.apis.kiro}/${report.components.apis.total} Kiro (${report.components.apis.score}%)
+- **Auth:** ${report.components.auth.kiro}/${report.components.auth.total} Kiro (${report.components.auth.score}%)
+- **Dashboard:** ${report.components.dashboard.kiro}/${report.components.dashboard.total} Kiro (${report.components.dashboard.score}%)
+- **Upload:** ${report.components.upload.kiro}/${report.components.upload.total} Kiro (${report.components.upload.score}%)
+- **VC:** ${report.components.vc.kiro}/${report.components.vc.total} Kiro (${report.components.vc.score}%)
+
+${report.thresholdViolations && report.thresholdViolations.length > 0 ? 
+  `### ⚠️ Threshold Violations\n${report.thresholdViolations.map(v => `- ${v}`).join('\n')}` : 
+  ''}
+
+### 💡 Next Steps
+1. Review the violations in the detailed report
+2. Use the data adapter layer (\`src/lib/data/index.ts\`) for Supabase migrations
+3. Add \`// @kiro-allow supabase\` comments for transitional files
+4. Run \`npm run kiro:purity\` locally to test fixes
+
+[View detailed report in artifacts](${context.payload.pull_request.html_url}/checks)
+                `;
+                
+                github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: comment
+                });
+              }
+            }

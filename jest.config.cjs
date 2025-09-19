@@ -1,71 +1,47 @@
+/** @type {import('jest').Config} */
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
-
+  
+  // Transform configuration (fixes ts-jest warning)
+  transform: {
+    '^.+\\.tsx?$': ['ts-jest', { tsconfig: 'tsconfig.spec.json' }],
+  },
+  
+  // Setup files
+  setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
+  
   // Module resolution
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
   },
-
-  // Setup files
-  setupFiles: ['<rootDir>/src/polyfill-importmeta.js'],
-  setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
-
-  // Transform configuration
-  transform: {
-    '^.+\\.tsx?$': ['ts-jest', { tsconfig: 'tsconfig.json' }],
-    '^.+\\.(js|jsx)$': 'babel-jest',
-  },
-
-  // File extensions to consider
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
-
-  // Test file patterns
-  testMatch: [
-    '<rootDir>/src/**/__tests__/**/*.(ts|tsx|js)',
-    '<rootDir>/src/**/*.(test|spec).(ts|tsx|js)',
-    '<rootDir>/test/**/*.(test|spec).(ts|tsx|js)',
+  
+  // Test path ignore patterns (clean separation)
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '<rootDir>/src/archive/',     // archiviertes Zeug
+    '<rootDir>/archive/',         // alle Archive-Verzeichnisse
+    '<rootDir>/test/unit/',       // Deno-Tests -> separat laufen lassen
+    '<rootDir>/test/smoke/',      // Playwright-Tests -> separat laufen lassen
+    '<rootDir>/infra/',           // Lambda-Tests -> separat laufen lassen
   ],
-
+  
   // Coverage configuration
   collectCoverageFrom: [
     'src/**/*.(ts|tsx)',
-    'infra/**/*.(ts|tsx)',
     '!src/**/*.d.ts',
-    '!infra/**/*.d.ts',
+    '!src/archive/**',
   ],
-
-  // Ignore patterns
-  testPathIgnorePatterns: [
-    '/node_modules/',
-    '/dist/',
-    '/build/',
-    '/test/smoke/',
-    '/test/unit/sync-gmb.test.ts',
-    '/test/unit/sync-ga4.test.ts',
-  ],
-
-  // Module path ignore patterns
-  modulePathIgnorePatterns: [
-    '<rootDir>/dist/',
-    '<rootDir>/build/',
-  ],
-
+  
   // Transform ignore patterns for ESM modules
   transformIgnorePatterns: [
     '/node_modules/(?!(@aws-sdk|@testing-library|lucide-react|cheerio|jose|@sparticuz/chromium)/)',
   ],
-
+  
   // Clear mocks between tests
   clearMocks: true,
-
+  
   // Verbose output
   verbose: true,
-
-  // Global setup
-  globals: {
-    'ts-jest': {
-      useESM: true,
-    },
-  },
 };

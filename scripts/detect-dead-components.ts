@@ -14,7 +14,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import glob from 'glob';
+import fg from 'fast-glob';
 
 interface DeadComponent {
   name: string;

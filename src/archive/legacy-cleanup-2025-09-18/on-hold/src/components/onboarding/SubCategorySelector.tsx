@@ -1,0 +1,417 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import { ChevronDown } from 'lucide-react';
+import { useSubCategoriesWithCrossTags, type RelatedCategory } from '@/hooks/useSubCategoriesWithCrossTags';
+import { useMainCategoryMapping, slugToDisplay } from '@/hooks/useMainCategoryMapping';
+import EmptySubCategoriesMessage from './EmptySubCategoriesMessage';
+
+// RelatedCategory interface is now imported from the hook
+
+interface SubCategorySelectorProps {
+  selectedMainCategories: string[];     // slugs
+  selectedSubCategories: string[];   // ids
+  onSubCategoryChange: (ids: string[]) => void;
+  maxSelectionsPerMainCategory?: number;
+}
+
+export const SubCategorySelector: React.FC<SubCategorySelectorProps> = ({
+  selectedMainCategories,
+  selectedSubCategories,
+  onSubCategoryChange,
+  maxSelectionsPerMainCategory = 7
+}) => {
+  const { t, i18n } = useTranslation('onboarding');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [suggestionsByMainCategory, setSuggestionsByMainCategory] = useState<Record<string, RelatedCategory[]>>({});
+
+  /** 
+   * REFERENZ-PAUSCHALE: Stabile Arrays/Mappings
+   * Falls selectedMainCategories von Eltern als Spread/Array gebaut wird — memoisiere sie hier!
+   */
+  const safeMainCategories = useMemo(() => selectedMainCategories, [JSON.stringify(selectedMainCategories)]);
+  const safeSubCategories = useMemo(() => selectedSubCategories, [JSON.stringify(selectedSubCategories)]);
+
+  // Map slugs to UUIDs for the new hook
+  const { uuidsBySlugs } = useMainCategoryMapping();
+  const selectedMainCategoryUUIDs = uuidsBySlugs(safeMainCategories);
+
+  // Use a more stable dependency check for UUID arrays
+  const stableMainCategoryUUIDs = useMemo(() => selectedMainCategoryUUIDs, [JSON.stringify(selectedMainCategoryUUIDs)]);
+  // Use the updated hook with stable UUID support
+  const { 
+    allSubCategories, 
+    loading, 
+    filterCategories, 
+    logSearch 
+  } = useSubCategoriesWithCrossTags(stableMainCategoryUUIDs, i18n.language as 'de' | 'en');
+
+  /**
+   * Suggestions-Logik direkt, loop-proof im useEffect 
+   */
+  useEffect(() => {
+    // Lokales deterministic shuffle
+    function localShuffle<T>(arr: T[]) {
+      // Weil wir sonst in jeder render ein anderes Objekt kriegen!
+      const copy = arr.slice();
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    if (!allSubCategories.length || !safeMainCategories.length) {
+      setSuggestionsByMainCategory({});
+      return;
+    }
+
+    const newSuggestions: Record<string, RelatedCategory[]> = {};
+
+    for (const mainCategorySlug of safeMainCategories) {
+      const displayName = slugToDisplay[mainCategorySlug] || mainCategorySlug;
+      // Filter subcategories by selection + belonging/crossTag relation
+      const available = allSubCategories.filter(cat =>
+        !safeSubCategories.includes(cat.id) &&
+        (
+          cat.haupt_kategorie_name === displayName ||
+          (cat.crossTagIds && cat.crossTagIds.includes(displayName))
+        )
+      );
+      // Shuffle nur einmal pro run
+      newSuggestions[mainCategorySlug] = localShuffle(available).slice(0, 3);
+    }
+
+    // Only setState if suggestions actually changed
+    setSuggestionsByMainCategory(prev => {
+      const prevString = JSON.stringify(prev);
+      const newString = JSON.stringify(newSuggestions);
+      return prevString === newString ? prev : newSuggestions;
+    });
+  }, [
+    allSubCategories, 
+    safeMainCategories, 
+    safeSubCategories,
+    JSON.stringify(allSubCategories) // Extra stability check
+  ]);
+
+  /**
+   * Reshuffle-Button: Explizit, kein State/Prop als Dependency
+   */
+  const reshuffleSuggestions = () => {
+    // Gleiche lokale Shuffle-Logik wie oben (nur einmalig bei Klick)
+    const newSuggestions: Record<string, RelatedCategory[]> = {};
+    for (const mainCategorySlug of safeMainCategories) {
+      const displayName = slugToDisplay[mainCategorySlug] || mainCategorySlug;
+      const available = allSubCategories.filter(cat =>
+        !safeSubCategories.includes(cat.id) &&
+        (
+          cat.haupt_kategorie_name === displayName ||
+          (cat.crossTagIds && cat.crossTagIds.includes(displayName))
+        )
+      );
+      // Shuffle nur einmal pro call
+      const shuffled = available.slice();
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      newSuggestions[mainCategorySlug] = shuffled.slice(0, 3);
+    }
+    setSuggestionsByMainCategory(newSuggestions);
+  };
+
+  // Check how many categories are selected per main category
+  const getSelectedCountForMainCategory = (mainCategorySlug: string) => {
+    const displayName = slugToDisplay[mainCategorySlug] || mainCategorySlug;
+    
+    return safeSubCategories.filter(id => {
+      const cat = allSubCategories.find(c => c.id === id);
+      if (!cat) return false;
+      return cat.haupt_kategorie_name === displayName || 
+             (cat.crossTagIds && cat.crossTagIds.includes(displayName));
+    }).length;
+  };
+
+  // Handle category selection with logging and card replacement
+  const selectCategory = async (cat: RelatedCategory, fromMainCategory: string) => {
+    const currentCountForMain = getSelectedCountForMainCategory(fromMainCategory);
+    
+    if (currentCountForMain < maxSelectionsPerMainCategory) {
+      onSubCategoryChange([...safeSubCategories, cat.id]);
+      
+      // Log the selection for analytics
+      const allFiltered = filterCategories(searchTerm, safeSubCategories);
+      await logSearch(searchTerm, allFiltered.map(c => c.id), cat.id);
+      
+      // Clear search term after selection for better UX
+      setSearchTerm('');
+      
+      // After selection, replace the card with a new one (nachrutschen)
+      setTimeout(() => {
+        replaceSelectedCard(fromMainCategory, cat.id);
+      }, 100);
+    }
+  };
+
+  // Replace a selected card with a new one from the pool
+  const replaceSelectedCard = (mainCategorySlug: string, selectedCardId: string) => {
+    const displayName = slugToDisplay[mainCategorySlug] || mainCategorySlug;
+    
+    // Find all available categories for this main category (exclude currently selected ones)
+    const currentlySelected = [...safeSubCategories, selectedCardId];
+    const available = allSubCategories.filter(c => {
+      if (currentlySelected.includes(c.id)) return false;
+      
+      const belongsToMain = c.haupt_kategorie_name === displayName;
+      const hasMainInCrossTags = c.crossTagIds && c.crossTagIds.includes(displayName);
+      
+      return belongsToMain || hasMainInCrossTags;
+    });
+    
+    // Get current suggestions and remove the selected card
+    const currentSuggestions = suggestionsByMainCategory[mainCategorySlug] || [];
+    const remainingSuggestions = currentSuggestions.filter(c => c.id !== selectedCardId);
+    
+    // If we have available cards to replace with and we're below 3 cards
+    if (available.length > 0 && remainingSuggestions.length < 3) {
+      // Filter out cards already in suggestions
+      const newCards = available.filter(c => 
+        !currentSuggestions.some(existing => existing.id === c.id)
+      );
+      
+      if (newCards.length > 0) {
+        // Add one new random card with local shuffle
+        const shuffled = [...newCards];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        const newCard = shuffled[0];
+        
+        setSuggestionsByMainCategory(prev => ({
+          ...prev,
+          [mainCategorySlug]: [...remainingSuggestions, newCard]
+        }));
+      } else {
+        // No new cards available, just update with remaining suggestions
+        setSuggestionsByMainCategory(prev => ({
+          ...prev,
+          [mainCategorySlug]: remainingSuggestions
+        }));
+      }
+    } else {
+      // Just remove the selected card from suggestions
+      setSuggestionsByMainCategory(prev => ({
+        ...prev,
+        [mainCategorySlug]: remainingSuggestions
+      }));
+    }
+  };
+
+  const removeBadge = (id: string) => {
+    onSubCategoryChange(safeSubCategories.filter(x => x !== id));
+  };
+
+  // Filtered options for the dropdown - only show results if search term is provided
+  const filteredOptions = useMemo(() => {
+    const term = searchTerm.toLowerCase().trim();
+    
+    // CRITICAL: Only show dropdown results if user has typed at least 1 character
+    if (!term) return [];
+    
+    // Use the hook's filter function which includes cross-tags search
+    return filterCategories(term, safeSubCategories);
+  }, [searchTerm, filterCategories, safeSubCategories]);
+
+  // Show empty state if no subcategories are available
+  if (!loading && allSubCategories.length === 0 && safeMainCategories.length > 0) {
+    return <EmptySubCategoriesMessage selectedMainCategories={safeMainCategories} />;
+  }
+
+  return (
+    <div className="space-y-4">
+      <h3 className="text-lg font-medium">
+        {t('categorySelector.subCategory.title', 'Unterkategorien auswählen')}
+      </h3>
+      <p className="text-sm text-gray-600">
+        {t('categorySelector.subCategory.description', 'Verfeinern Sie Ihre Auswahl mit bis zu 7 Unterkategorien pro Hauptkategorie.')}
+      </p>
+
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            disabled={!selectedMainCategories.length || loading}
+            className="w-full justify-between"
+          >
+            {t('categorySelector.subCategory.searchPlaceholder', 'Unterkategorie suchen...')}
+            <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[var(--radix-popover-trigger-width)] max-w-md p-0" align="start">
+          <Command>
+            <CommandInput 
+              placeholder={t('categorySelector.subCategory.searchPlaceholder', 'Unterkategorie suchen...')}
+              value={searchTerm}
+              onValueChange={setSearchTerm}
+            />
+            <CommandList className="max-h-60">
+              <CommandEmpty>
+                {!searchTerm ? (
+                  t('categorySelector.subCategory.typeToSearch', 'Geben Sie mindestens 1 Zeichen ein...')
+                ) : loading ? (
+                  t('categorySelector.subCategory.loading', 'Lade Kategorien...')
+                ) : (
+                  t('categorySelector.subCategory.noResults', 'Keine Kategorien gefunden')
+                )}
+              </CommandEmpty>
+              {searchTerm && (
+                <CommandGroup>
+                  {filteredOptions.map(cat => (
+                    <CommandItem
+                      key={cat.id}
+                      value={cat.name}
+                      onSelect={() => selectCategory(cat, cat.haupt_kategorie_name || '')}
+                      className="cursor-pointer"
+                    >
+                      <div className="flex flex-col">
+                        <div className="font-medium">{cat.name}</div>
+                        {cat.description && (
+                          <div className="text-sm text-gray-500 mt-1">{cat.description}</div>
+                        )}
+                        {cat.crossTagIds && cat.crossTagIds.length > 0 && (
+                          <div className="text-xs text-blue-600 mt-1">
+                            Cross-Tags: {cat.crossTagIds.length} verbunden
+                          </div>
+                        )}
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+
+      {/* Selected badges */}
+      <div className="flex flex-wrap gap-2">
+        {selectedSubCategories.map(id => {
+          const cat = allSubCategories.find(c => c.id === id);
+          return (
+            cat && (
+              <span
+                key={id}
+                className="inline-flex items-center gap-x-0.5 rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700"
+              >
+                {cat.name}
+                <button
+                  type="button"
+                  className="group relative -mr-1 h-3.5 w-3.5 rounded-sm hover:bg-blue-600/20"
+                  onClick={() => removeBadge(id)}
+                >
+                  <span className="sr-only">Remove</span>
+                  <svg viewBox="0 0 14 14" className="h-3.5 w-3.5 stroke-blue-700/50 group-hover:stroke-blue-700/75">
+                    <path d="m4 4 6 6m0-6-6 6" />
+                  </svg>
+                </button>
+              </span>
+            )
+          );
+        })}
+      </div>
+
+      {/* Suggestion cards grouped by main category */}
+      {selectedMainCategories.length > 0 && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h4 className="text-md font-medium text-gray-900">
+              {t('categorySelector.subCategory.suggestions', 'Empfehlungen')}
+            </h4>
+            <Button
+              variant="outline"
+              size="sm"
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                reshuffleSuggestions();
+              }}
+              className="text-sm"
+            >
+              🎲 {t('categorySelector.subCategory.reshuffle', 'Neu mischen')}
+            </Button>
+          </div>
+
+          {selectedMainCategories.map(mainCategory => {
+            const suggestions = suggestionsByMainCategory[mainCategory] || [];
+            const selectedCount = getSelectedCountForMainCategory(mainCategory);
+            const maxReached = selectedCount >= maxSelectionsPerMainCategory;
+
+            return (
+              <div key={mainCategory} className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h5 className="text-sm font-medium text-gray-700">
+                    {mainCategory} ({selectedCount}/{maxSelectionsPerMainCategory})
+                  </h5>
+                  {maxReached && (
+                    <span className="text-xs text-amber-600">Maximum erreicht</span>
+                  )}
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {suggestions.map(cat => (
+                    <div 
+                      key={cat.id} 
+                      className={`border rounded-lg p-3 transition-all ${
+                        maxReached 
+                          ? 'opacity-50 cursor-not-allowed border-gray-200' 
+                          : 'hover:border-blue-300 hover:shadow-sm cursor-pointer'
+                      }`}
+                      onClick={() => !maxReached && selectCategory(cat, mainCategory)}
+                    >
+                      <h6 className="font-medium text-gray-900 text-sm">{cat.name}</h6>
+                      {cat.description && (
+                        <p className="text-xs text-gray-600 mt-1 line-clamp-2">{cat.description}</p>
+                      )}
+                      <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-2 ${
+                        cat.confidence === 'high' ? 'bg-green-100 text-green-800' :
+                        cat.confidence === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {cat.confidence === 'high' ? 'Empfohlen' : 
+                         cat.confidence === 'medium' ? 'Relevant' : 'Optional'}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+
+          {!loading && !allSubCategories.length && (
+            <div className="text-center text-sm text-gray-500 py-8">
+              {t('categorySelector.subCategory.selectMainFirst', 'Wählen Sie zuerst Hauptkategorien aus')}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Progress indicator with minimum requirement */}
+      <div className="text-sm text-gray-500">
+        {selectedSubCategories.length} {t('categorySelector.subCategory.selected', 'ausgewählt')}
+        {selectedMainCategories.length > 0 && (
+          <span className="ml-2">
+            (max. {selectedMainCategories.length * maxSelectionsPerMainCategory} möglich)
+          </span>
+        )}
+        {selectedSubCategories.length < 5 && (
+          <span className="text-amber-600 ml-2">(Mindestens 5 empfohlen)</span>
+        )}
+      </div>
+    </div>
+  );
+};

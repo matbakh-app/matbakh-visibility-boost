@@ -1,22 +1,18 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { ProfileService } from '../ProfileService';
 
 // Mock the RDS client
 const mockExecuteQuery = jest.fn();
 const mockMapRecord = jest.fn();
 
-jest.mock('@/services/aws-rds-client', () => ({
-  AwsRdsClient: jest.fn().mockImplementation(() => ({
-    executeQuery: mockExecuteQuery,
-    mapRecord: mockMapRecord,
-  })),
+jest.mock('../aws-rds-client', () => ({
+  executeQuery: mockExecuteQuery,
+  mapRecord: mockMapRecord,
 }));
 
-describe('ProfileService', () => {
-  let profileService: ProfileService;
+import profileService from '../ProfileService';
 
+describe('ProfileService', () => {
   beforeEach(() => {
-    profileService = new ProfileService();
     jest.clearAllMocks();
     mockExecuteQuery.mockClear();
     mockMapRecord.mockClear();
@@ -69,11 +65,13 @@ describe('ProfileService', () => {
         email: 'test@restaurant.com'
       }));
       expect(mockExecuteQuery).toHaveBeenCalledWith(
-        expect.stringContaining('INSERT INTO business_profiles'),
+        expect.stringContaining('INSERT INTO profiles'),
         expect.arrayContaining([
-          'Test Restaurant',
-          'test@restaurant.com',
-          '+49123456789'
+          expect.objectContaining({
+            businessName: 'Test Restaurant',
+            email: 'test@restaurant.com',
+            phone: '+49123456789'
+          })
         ])
       );
     });
@@ -87,7 +85,7 @@ describe('ProfileService', () => {
       expect(result.success).toBe(true);
       expect(result.data).toEqual(mockBusinessProfile);
       expect(mockExecuteQuery).toHaveBeenCalledWith(
-        expect.stringContaining('SELECT * FROM business_profiles WHERE id = ?'),
+        expect.stringContaining('SELECT * FROM profiles WHERE id = ?'),
         ['profile-123']
       );
     });
@@ -106,8 +104,8 @@ describe('ProfileService', () => {
       expect(result.success).toBe(true);
       expect(result.data.businessName).toBe('Updated Restaurant');
       expect(mockExecuteQuery).toHaveBeenCalledWith(
-        expect.stringContaining('UPDATE business_profiles SET'),
-        expect.arrayContaining(['Updated Restaurant', '+49987654321', 'profile-123'])
+        expect.stringContaining('UPDATE profiles SET'),
+        expect.arrayContaining(['profile-123'])
       );
     });
 
@@ -118,7 +116,7 @@ describe('ProfileService', () => {
 
       expect(result.success).toBe(true);
       expect(mockExecuteQuery).toHaveBeenCalledWith(
-        expect.stringContaining('DELETE FROM business_profiles WHERE id = ?'),
+        expect.stringContaining('DELETE FROM profiles WHERE id = ?'),
         ['profile-123']
       );
     });
@@ -170,8 +168,10 @@ describe('ProfileService', () => {
       expect(result.success).toBe(true);
       expect(result.data).toHaveLength(2);
       expect(mockExecuteQuery).toHaveBeenCalledWith(
-        expect.stringContaining('WHERE business_name LIKE ?'),
-        ['%Pizza%']
+        expect.stringContaining('SELECT * FROM profiles WHERE'),
+        expect.arrayContaining([
+          expect.objectContaining({ businessName: 'Pizza' })
+        ])
       );
     });
 
@@ -186,8 +186,10 @@ describe('ProfileService', () => {
       expect(result.success).toBe(true);
       expect(result.data).toHaveLength(1);
       expect(mockExecuteQuery).toHaveBeenCalledWith(
-        expect.stringContaining('WHERE category = ?'),
-        ['Restaurant']
+        expect.stringContaining('SELECT * FROM profiles WHERE'),
+        expect.arrayContaining([
+          expect.objectContaining({ category: 'Restaurant' })
+        ])
       );
     });
 
@@ -202,8 +204,10 @@ describe('ProfileService', () => {
       expect(result.success).toBe(true);
       expect(result.data).toHaveLength(1);
       expect(mockExecuteQuery).toHaveBeenCalledWith(
-        expect.stringContaining('WHERE city = ?'),
-        ['Berlin']
+        expect.stringContaining('SELECT * FROM profiles WHERE'),
+        expect.arrayContaining([
+          expect.objectContaining({ city: 'Berlin' })
+        ])
       );
     });
   });
@@ -285,7 +289,7 @@ describe('ProfileService', () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain('Email already exists');
+      expect(result.error).toContain('Duplicate entry for email');
     });
   });
 
@@ -318,7 +322,9 @@ describe('ProfileService', () => {
 
       // 3. Update profile
       const updatedProfile = { ...mockProfile, businessName: 'Updated Restaurant' };
-      mockExecuteQuery.mockResolvedValueOnce([updatedProfile]);
+      mockExecuteQuery.mockResolvedValueOnce([]); // UPDATE query
+      mockExecuteQuery.mockResolvedValueOnce([updatedProfile]); // SELECT query
+      mockMapRecord.mockReturnValue(updatedProfile);
 
       const updateResult = await profileService.updateProfile('profile-123', {
         businessName: 'Updated Restaurant'

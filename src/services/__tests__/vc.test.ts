@@ -15,6 +15,7 @@ describe('VC Service - Core Business Logic', () => {
     it('should construct correct API request with all parameters', async () => {
       const mockResponse = {
         ok: true,
+        text: async () => JSON.stringify({ success: true, token: 'vc-token-123', checkId: 'check-456' }),
         json: async () => ({ success: true, token: 'vc-token-123', checkId: 'check-456' }),
       };
       (global.fetch as jest.Mock).mockResolvedValue(mockResponse);
@@ -26,7 +27,7 @@ describe('VC Service - Core Business Logic', () => {
         expect.objectContaining({
           method: 'POST',
           headers: expect.objectContaining({
-            'Content-Type': 'application/json',
+            'content-type': 'application/json',
           }),
           body: expect.stringContaining('"email":"test@restaurant.com"'),
         })
@@ -41,6 +42,11 @@ describe('VC Service - Core Business Logic', () => {
     it('should handle successful visibility check initiation', async () => {
       const mockResponse = {
         ok: true,
+        text: async () => JSON.stringify({ 
+          success: true, 
+          token: 'abc123',
+          message: 'Visibility check started successfully'
+        }),
         json: async () => ({ 
           success: true, 
           token: 'abc123',
@@ -60,6 +66,7 @@ describe('VC Service - Core Business Logic', () => {
       const mockResponse = {
         ok: false,
         status: 400,
+        text: async () => JSON.stringify({ error: 'Invalid email format' }),
         json: async () => ({ error: 'Invalid email format' }),
       };
       (global.fetch as jest.Mock).mockResolvedValue(mockResponse);
@@ -86,6 +93,7 @@ describe('VC Service - Core Business Logic', () => {
     it('should handle different locales correctly', async () => {
       const mockResponse = {
         ok: true,
+        text: async () => JSON.stringify({ success: true, token: 'token-en' }),
         json: async () => ({ success: true, token: 'token-en' }),
       };
       (global.fetch as jest.Mock).mockResolvedValue(mockResponse);
@@ -153,6 +161,7 @@ describe('VC Service - Core Business Logic', () => {
     it('should handle malformed API responses', async () => {
       const mockResponse = {
         ok: true,
+        text: async () => 'invalid json',
         json: async () => { throw new Error('Invalid JSON'); },
       };
       (global.fetch as jest.Mock).mockResolvedValue(mockResponse);
@@ -166,6 +175,7 @@ describe('VC Service - Core Business Logic', () => {
       const mockResponse = {
         ok: false,
         status: 429,
+        text: async () => JSON.stringify({ error: true, reason: 'rate_limit' }),
         json: async () => ({ error: 'Rate limit exceeded' }),
       };
       (global.fetch as jest.Mock).mockResolvedValue(mockResponse);
@@ -179,6 +189,7 @@ describe('VC Service - Core Business Logic', () => {
       const mockResponse = {
         ok: false,
         status: 500,
+        text: async () => JSON.stringify({ error: true, reason: 'server' }),
         json: async () => ({ error: 'Internal server error' }),
       };
       (global.fetch as jest.Mock).mockResolvedValue(mockResponse);

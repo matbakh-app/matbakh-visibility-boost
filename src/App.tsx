@@ -15,6 +15,11 @@ const TestHome = lazy(() => import('@/pages/TestHome'));
 const AuthDebug = lazy(() => import('@/pages/AuthDebug'));
 const PersonaDebug = lazy(() => import('@/pages/PersonaDebug'));
 
+// VC Pages
+const VCQuick = lazy(() => import('@/pages/vc/VCQuick'));
+const VCResult = lazy(() => import('@/pages/vc/VCResult'));
+const VCResultDashboard = lazy(() => import('@/pages/vc/VCResultDashboard'));
+
 // SEO - disabled for now to avoid Helmet errors
 // import Canonical from '@/components/seo/Canonical';
 
@@ -37,6 +42,12 @@ function App() {
               <Route path="/test" element={<TestHome />} />
               <Route path="/auth-debug" element={<AuthDebug />} />
               <Route path="/persona-debug" element={<PersonaDebug />} />
+              
+              {/* VC (Visibility Check) Routes */}
+              <Route path="/vc/quick" element={<VCQuick />} />
+              <Route path="/vc/result" element={<VCResult />} />
+              <Route path="/vc/result/dashboard" element={<VCResultDashboard />} />
+              
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

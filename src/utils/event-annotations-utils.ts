@@ -3,77 +3,78 @@
 
 import type { VisibilityEvent, ScorePoint } from '@/types/score-history';
 
+export type ScorePoint = { date: string; score_value: number };
+
 /**
  * Helper function to find score value at event date
  */
-export const getScoreAtDate = (scoreData: ScorePoint[], eventDate: string): number => {
-  // Return default if no data
-  if (!scoreData || scoreData.length === 0) {
-    return 0;
-  }
+export const getScoreAtDate = (points: ScorePoint[], dateISO: string, defaultScore = 50): number => {
+  if (!points || points.length === 0) return defaultScore;
+  const target = new Date(dateISO).getTime();
 
-  // Find exact match first
-  const exactMatch = scoreData.find(point => point.date === eventDate);
-  if (exactMatch) {
-    return exactMatch.score;
-  }
+  // exact match
+  const exact = points.find(p => {
+    const pDate = new Date(p.date).toISOString().slice(0,10);
+    const targetDate = dateISO.slice(0,10);
+    return pDate === targetDate;
+  });
+  if (exact) return exact.score_value;
 
-  // If no exact match, interpolate between closest points
-  const sortedData = [...scoreData].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  const eventTime = new Date(eventDate).getTime();
-
-  // Find the two closest points
-  let beforePoint: ScorePoint | null = null;
-  let afterPoint: ScorePoint | null = null;
-
-  for (const point of sortedData) {
-    const pointTime = new Date(point.date).getTime();
-    if (pointTime <= eventTime) {
-      beforePoint = point;
-    } else if (pointTime > eventTime && !afterPoint) {
-      afterPoint = point;
-      break;
+  // nearest by absolute day diff
+  let best: ScorePoint | undefined;
+  let bestDiff = Number.POSITIVE_INFINITY;
+  for (const p of points) {
+    const d = Math.abs(new Date(p.date).getTime() - target);
+    if (d < bestDiff) {
+      best = p;
+      bestDiff = d;
     }
   }
+  return best?.score_value ?? defaultScore;
+};
 
-  // If we have both points, interpolate
-  if (beforePoint && afterPoint) {
-    const beforeTime = new Date(beforePoint.date).getTime();
-    const afterTime = new Date(afterPoint.date).getTime();
-    const ratio = (eventTime - beforeTime) / (afterTime - beforeTime);
-    return beforePoint.score + (afterPoint.score - beforePoint.score) * ratio;
-  }
-
-  // If only one point, use it
-  if (beforePoint) return beforePoint.score;
-  if (afterPoint) return afterPoint.score;
-
-  // Fallback
-  return 0;
+export type EventItem = {
+  id: string;
+  date: string;
+  title: string;
+  type: string;
+  impact?: 'positive' | 'negative' | 'neutral';
+  description?: string;
 };
 
 /**
  * Filter events based on date range and visible types
  */
 export const filterEvents = (
-  events: VisibilityEvent[],
-  dateRange?: { from: Date; to: Date },
-  visibleEventTypes?: string[]
-): VisibilityEvent[] => {
-  let filtered = [...events];
-
-  // Filter by date range
-  if (dateRange) {
-    filtered = filtered.filter(event => {
-      const eventDate = new Date(event.date);
-      return eventDate >= dateRange.from && eventDate <= dateRange.to;
+  events: EventItem[] = [],
+  range?: { from: Date; to: Date } | { start: string; end: string },
+  visibleTypes?: string[]
+): EventItem[] => {
+  let out = events;
+  if (range) {
+    let startTime: number, endTime: number;
+    
+    if ('from' in range && 'to' in range) {
+      // Handle Date objects
+      startTime = range.from.getTime();
+      endTime = range.to.getTime();
+    } else if ('start' in range && 'end' in range) {
+      // Handle string dates
+      startTime = new Date(range.start).getTime();
+      endTime = new Date(range.end).getTime();
+    } else {
+      return out;
+    }
+    
+    out = out.filter(ev => {
+      const t = new Date(ev.date).getTime();
+      return t >= startTime && t <= endTime;
     });
   }
-
-  // Filter by visible event types
-  if (visibleEventTypes && visibleEventTypes.length > 0) {
-    filtered = filtered.filter(event => visibleEventTypes.includes(event.type));
+  // Important: if visibleTypes provided but empty → no events
+  if (Array.isArray(visibleTypes)) {
+    if (visibleTypes.length === 0) return [];
+    out = out.filter(ev => visibleTypes.includes(ev.type));
   }
-
-  return filtered;
+  return out;
 };

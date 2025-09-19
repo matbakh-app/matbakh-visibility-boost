@@ -1,10 +1,10 @@
 # VC Spec — Requirements (canonical)
 
 **SPEC_ID:** VC-ONBOARDING  
-**STATUS:** Draft  
+**STATUS:** ✅ COMPLETED  
 **OWNER:** Kiro  
 **SOURCE_OF_TRUTH:** This file + vision.vc-spec.md  
-**LAST_UPDATED:** 2025-01-27
+**COMPLETION_DATE:** September 18, 2025
 
 ## 1. Intent
 Provide an email-only "VC Quick" entry flow to trigger DOI and land on the result page.
