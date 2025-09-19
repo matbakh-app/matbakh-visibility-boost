@@ -1,0 +1,43 @@
+name: Green Core Validation
+
+on:
+  pull_request:
+    branches: [ main, kiro-dev, aws-deploy ]
+  push:
+    branches: [ test/green-core-validation ]
+
+jobs:
+  green-core:
+    name: Green Core Tests (CI-Blocking)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        env:
+          CI: true
+          
+      - name: TypeScript Compilation
+        run: npx tsc --noEmit --skipLibCheck
+        
+      - name: Kiro System Purity Validation
+        run: |
+          npx jest --maxWorkers=50% --passWithNoTests \
+            --testPathPattern="src/lib/architecture-scanner/__tests__/kiro-system-purity-validator.test.ts" \
+            --testNamePattern="should validate a pure Kiro system" \
+            --testPathIgnorePatterns="archive|infra|test/unit|test/smoke|architecture-compliance-checker"
+            
+      - name: Persona Service Core Functions
+        run: |
+          npx jest --maxWorkers=50% --passWithNoTests \
+            --runTestsByPath src/services/__tests__/persona-api.test.ts
