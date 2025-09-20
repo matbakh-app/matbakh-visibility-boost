@@ -293,7 +293,7 @@ describe('PersonaApiService', () => {
 
       const result = await service.detectPersona(mockData);
       expect(result.success).toBe(false);
-      expect(result.error).toBe('API_ERROR');
+      expect(result.error).toContain('Internal server error');
       
       // Re-enable mock mode for other tests
       service.enableMockMode();
@@ -314,7 +314,7 @@ describe('PersonaApiService', () => {
 
       const result = await service.detectPersona(mockData);
       expect(result.success).toBe(false);
-      expect(result.error).toBe('NETWORK_ERROR');
+      expect(result.error).toContain('Network error');
       
       // Re-enable mock mode for other tests
       service.enableMockMode();
@@ -329,7 +329,7 @@ describe('PersonaApiService', () => {
 
       const result = await service.detectPersona(invalidData as any);
       expect(result.success).toBe(false);
-      expect(result.error).toBe('VALIDATION_ERROR');
+      expect(result.error).toContain('Invalid behavioral data');
     });
   });
 

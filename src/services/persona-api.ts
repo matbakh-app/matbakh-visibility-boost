@@ -314,7 +314,7 @@ export class PersonaApiService {
   async detectPersona(behavior: UserBehavior): Promise<PersonaResult> {
     const validation = validatePersonaInput(behavior);
     if (!validation.ok) {
-      return { success: false, error: 'VALIDATION_ERROR' };
+      return { success: false, error: 'Invalid behavioral data' };
     }
 
     // Mock-Mode → immer lokal
@@ -331,14 +331,18 @@ export class PersonaApiService {
       });
 
       if (!response.ok) {
-        return { success: false, error: 'API_ERROR' };
+        let errorMsg = `Persona detection failed: ${response.status}`;
+        try {
+          const data = await response.json();
+          if (data && data.error) errorMsg = data.error;
+        } catch {}
+        return { success: false, error: errorMsg };
       }
 
       const data = await response.json();
-      // defensive merge: Stelle sicher, dass success true gesetzt ist
       return { ...data, success: true };
     } catch (err: any) {
-      return { success: false, error: 'NETWORK_ERROR' };
+      return { success: false, error: err?.message || 'Network error' };
     }
   }
 
