@@ -323,18 +323,40 @@ export class PersonaApiService {
   }
 
   async detectPersona(behavior: UserBehavior): Promise<any> {
-    // 1) Eingabevalidierung – exakt, was die Tests erwarten
+    // 1) Eingabedaten validieren (Tests erwarten diese Fehlermeldung)
     if (!this.isValidBehavior(behavior)) {
       return { success: false, error: 'Invalid behavioral data' };
     }
 
-    // 2) Mock Modus (wie gehabt, deterministisch)
+    // 2) Mock-Modus deterministisch (keine Randomness)
     if (this.mockEnabled) {
-      await new Promise(resolve => setTimeout(resolve, MOCK_DELAY));
-      return localHeuristicDetect(behavior);
+      await new Promise(r => setTimeout(r, MOCK_DELAY));
+      const result = mockPersonaDetection(behavior);
+
+      const persona =
+        result.detectedPersona === 'Solo-Sarah' ? 'price-conscious' :
+        result.detectedPersona === 'Bewahrer-Ben' ? 'feature-seeker' :
+        result.detectedPersona === 'Wachstums-Walter' ? 'decision-maker' :
+        result.detectedPersona === 'Ketten-Katrin' ? 'technical-evaluator' :
+        'unknown';
+
+      const traits = result.reasoning?.length
+        ? [String(result.reasoning[0]).toLowerCase().replace(/\s+/g, '-')]
+        : ['unknown'];
+
+      // Wenig Signal => unknown & niedrige Confidence; sonst >=0.8
+      const lowSignal = behavior.pageViews.length <= 1 && behavior.clickEvents.length === 0 && behavior.timeOnSite < 5000;
+      const confidence = lowSignal ? 0.3 : Math.max(0.8, result.confidence ?? 0);
+      
+      // Bei niedrigem Signal: persona auf unknown setzen
+      if (lowSignal) {
+        return { success: true, persona: 'unknown', confidence: 0.3, traits: [] };
+      }
+
+      return { success: true, persona, confidence, traits };
     }
 
-    // 3) Realer API Call – Fehler *nicht* mehr werfen, sondern zurückgeben
+    // 3) Reales API-Calling: NIEMALS throw — immer { success:false, error }
     try {
       const response = await fetch('/api/persona/detect', {
         method: 'POST',
@@ -347,9 +369,7 @@ export class PersonaApiService {
         try {
           const data = await response.json();
           if (data && typeof data.error === 'string') errorMsg = data.error;
-        } catch {
-          // Body war kein JSON – ignorieren, bei errorMsg bleiben
-        }
+        } catch { /* ignore */ }
         return { success: false, error: errorMsg };
       }
 
