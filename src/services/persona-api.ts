@@ -1,4 +1,3 @@
-import { viteEnv } from '../lib/vite-env';
 
 // Types
 export type PersonaType = 'Solo-Sarah' | 'Bewahrer-Ben' | 'Wachstums-Walter' | 'Ketten-Katrin';
@@ -149,7 +148,7 @@ function mockPersonaDetection(behavior: UserBehavior): PersonaDetectionResult {
   // Price-focused behavior
   const pricingPages = pageViews.filter(pv => pv.path.includes('pricing') || pv.path.includes('price'));
   const pricingClicks = clickEvents.filter(ce => ce.element.includes('pricing') || ce.element.includes('price'));
-  
+
   if (pricingPages.length > 0 || pricingClicks.length > 0) {
     detectedPersona = 'Solo-Sarah'; // Maps to price-conscious
     confidence = 0.8;
@@ -157,11 +156,11 @@ function mockPersonaDetection(behavior: UserBehavior): PersonaDetectionResult {
   }
 
   // Feature-focused behavior
-  const featurePages = pageViews.filter(pv => 
-    pv.path.includes('features') || pv.path.includes('integrations') || pv.path.includes('api'));
-  const featureClicks = clickEvents.filter(ce => 
+  const featurePages = pageViews.filter(pv =>
+    pv.path.includes('features') || pv.path.includes('integrations'));
+  const featureClicks = clickEvents.filter(ce =>
     ce.element.includes('feature') || ce.element.includes('integration'));
-  
+
   if (featurePages.length > 1 || featureClicks.length > 0) {
     detectedPersona = 'Bewahrer-Ben'; // Maps to feature-seeker
     confidence = 0.8;
@@ -169,11 +168,11 @@ function mockPersonaDetection(behavior: UserBehavior): PersonaDetectionResult {
   }
 
   // Decision-maker behavior (analytics, ROI focus)
-  const analyticsPages = pageViews.filter(pv => 
+  const analyticsPages = pageViews.filter(pv =>
     pv.path.includes('analytics') || pv.path.includes('roi') || pv.path.includes('dashboard'));
-  const analyticsClicks = clickEvents.filter(ce => 
+  const analyticsClicks = clickEvents.filter(ce =>
     ce.element.includes('analytics') || ce.element.includes('roi') || ce.element.includes('dashboard'));
-  
+
   if (analyticsPages.length > 0 || analyticsClicks.length > 0 || timeOnSite > 20000) {
     detectedPersona = 'Wachstums-Walter'; // Maps to decision-maker
     confidence = 0.9;
@@ -181,11 +180,11 @@ function mockPersonaDetection(behavior: UserBehavior): PersonaDetectionResult {
   }
 
   // Technical evaluator behavior
-  const techPages = pageViews.filter(pv => 
+  const techPages = pageViews.filter(pv =>
     pv.path.includes('api') || pv.path.includes('technical') || pv.path.includes('enterprise'));
-  const techClicks = clickEvents.filter(ce => 
+  const techClicks = clickEvents.filter(ce =>
     ce.element.includes('api') || ce.element.includes('technical') || ce.element.includes('enterprise'));
-  
+
   if (techPages.length > 1 || techClicks.length > 0) {
     detectedPersona = 'Ketten-Katrin'; // Maps to technical-evaluator
     confidence = 0.8;
@@ -195,7 +194,7 @@ function mockPersonaDetection(behavior: UserBehavior): PersonaDetectionResult {
   // Handle insufficient data - return unknown persona
   // Check for minimal data: very short session, minimal interaction
   const hasMinimalData = pageViews.length <= 1 && clickEvents.length === 0 && timeOnSite < 5000;
-  
+
   if (pageViews.length === 0 && clickEvents.length === 0) {
     return {
       detectedPersona: 'Solo-Sarah', // Will be mapped to 'unknown' in the API response
@@ -215,7 +214,7 @@ function mockPersonaDetection(behavior: UserBehavior): PersonaDetectionResult {
       recommendations: [],
     };
   }
-  
+
   if (hasMinimalData) {
     return {
       detectedPersona: 'Solo-Sarah', // Will be mapped to 'unknown' in the API response
@@ -262,12 +261,12 @@ function mockPersonaDetection(behavior: UserBehavior): PersonaDetectionResult {
     },
     traits: {
       decisionMakingStyle: detectedPersona === 'Solo-Sarah' ? 'fast' :
-                          detectedPersona === 'Bewahrer-Ben' ? 'cautious' :
-                          detectedPersona === 'Wachstums-Walter' ? 'analytical' : 'systematic',
+        detectedPersona === 'Bewahrer-Ben' ? 'cautious' :
+          detectedPersona === 'Wachstums-Walter' ? 'analytical' : 'systematic',
       technologyComfort: deviceType === 'mobile' ? 'intermediate' :
-                        detectedPersona === 'Ketten-Katrin' ? 'advanced' : 'beginner',
+        detectedPersona === 'Ketten-Katrin' ? 'advanced' : 'beginner',
       timeAvailability: detectedPersona === 'Solo-Sarah' ? 'limited' :
-                       detectedPersona === 'Ketten-Katrin' ? 'flexible' : 'moderate',
+        detectedPersona === 'Ketten-Katrin' ? 'flexible' : 'moderate',
     },
     recommendations: [
       {
@@ -295,7 +294,7 @@ export class PersonaApiService {
   private static instance: PersonaApiService;
   private mockEnabled = true;
 
-  private constructor() {}
+  private constructor() { }
 
   static getInstance(): PersonaApiService {
     if (!PersonaApiService.instance) {
@@ -335,19 +334,23 @@ export class PersonaApiService {
 
       const persona =
         result.detectedPersona === 'Solo-Sarah' ? 'price-conscious' :
-        result.detectedPersona === 'Bewahrer-Ben' ? 'feature-seeker' :
-        result.detectedPersona === 'Wachstums-Walter' ? 'decision-maker' :
-        result.detectedPersona === 'Ketten-Katrin' ? 'technical-evaluator' :
-        'unknown';
+          result.detectedPersona === 'Bewahrer-Ben' ? 'feature-seeker' :
+            result.detectedPersona === 'Wachstums-Walter' ? 'decision-maker' :
+              result.detectedPersona === 'Ketten-Katrin' ? 'technical-evaluator' :
+                'unknown';
 
-      const traits = result.reasoning?.length
-        ? [String(result.reasoning[0]).toLowerCase().replace(/\s+/g, '-')]
-        : ['unknown'];
+      // NEU - Persona-basiert:
+      const traits =
+        persona === 'price-conscious' ? ['price-focused'] :
+        persona === 'feature-seeker' ? ['feature-focused'] :
+        persona === 'decision-maker' ? ['ready-to-buy'] :
+        persona === 'technical-evaluator' ? ['technical-focused'] :
+        ['unknown'];
 
       // Wenig Signal => unknown & niedrige Confidence; sonst >=0.8
       const lowSignal = behavior.pageViews.length <= 1 && behavior.clickEvents.length === 0 && behavior.timeOnSite < 5000;
       const confidence = lowSignal ? 0.3 : Math.max(0.8, result.confidence ?? 0);
-      
+
       // Bei niedrigem Signal: persona auf unknown setzen
       if (lowSignal) {
         return { success: true, persona: 'unknown', confidence: 0.3, traits: [] };
@@ -365,17 +368,19 @@ export class PersonaApiService {
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
+        const errorData = await response.json().catch(() => ({}));
         return {
           success: false,
-          error: error?.error ? String(error.error) : `Persona detection failed: ${response.status}`,
+          error: errorData.error || `Persona detection failed: ${response.status}`,
         };
       }
 
-      const data = await response.json();
-      return { ...data, success: true };
+      return await response.json();
     } catch (err: any) {
-      return { success: false, error: String(err.message || err) };
+      return {
+        success: false,
+        error: err.message || 'Unknown network error',
+      };
     }
   }
 
@@ -385,7 +390,7 @@ export class PersonaApiService {
   async getPersonaConfig(personaType: PersonaType): Promise<any> {
     if (this.mockEnabled) {
       await new Promise(resolve => setTimeout(resolve, MOCK_DELAY));
-      
+
       return {
         success: true,
         config: {
@@ -410,7 +415,7 @@ export class PersonaApiService {
         try {
           const data = await response.json();
           if (data && typeof data.error === 'string') errorMsg = data.error;
-        } catch {}
+        } catch { }
         return { success: false, error: errorMsg };
       }
       return response.json();
@@ -425,14 +430,14 @@ export class PersonaApiService {
   async getPersonaRecommendations(personaType: string): Promise<any> {
     if (this.mockEnabled) {
       await new Promise(resolve => setTimeout(resolve, MOCK_DELAY));
-      
+
       const recommendationMap = {
         'price-conscious': ['Show pricing upfront', 'Highlight cost savings', 'Offer free trial'],
         'feature-seeker': ['Showcase key features', 'Provide feature comparisons', 'Offer product demos'],
         'decision-maker': ['Show social proof', 'Provide case studies', 'Offer direct contact'],
         'technical-evaluator': ['Provide technical documentation', 'Show API examples', 'Highlight security features']
       };
-      
+
       return {
         success: true,
         recommendations: recommendationMap[personaType as keyof typeof recommendationMap] || []
@@ -446,7 +451,7 @@ export class PersonaApiService {
         try {
           const data = await response.json();
           if (data && typeof data.error === 'string') errorMsg = data.error;
-        } catch {}
+        } catch { }
         return { success: false, error: errorMsg };
       }
       return response.json();
@@ -461,7 +466,7 @@ export class PersonaApiService {
   async getPersonaAnalytics(): Promise<any> {
     if (this.mockEnabled) {
       await new Promise(resolve => setTimeout(resolve, MOCK_DELAY));
-      
+
       return {
         success: true,
         data: {
@@ -492,7 +497,7 @@ export class PersonaApiService {
         try {
           const data = await response.json();
           if (data && typeof data.error === 'string') errorMsg = data.error;
-        } catch {}
+        } catch { }
         return { success: false, error: errorMsg };
       }
       return response.json();
@@ -507,7 +512,7 @@ export class PersonaApiService {
   async getPersonaEvolution(userId: string): Promise<any> {
     if (this.mockEnabled) {
       await new Promise(resolve => setTimeout(resolve, MOCK_DELAY));
-      
+
       return {
         success: true,
         data: {
@@ -530,7 +535,7 @@ export class PersonaApiService {
         try {
           const data = await response.json();
           if (data && typeof data.error === 'string') errorMsg = data.error;
-        } catch {}
+        } catch { }
         return { success: false, error: errorMsg };
       }
       return response.json();
@@ -542,7 +547,7 @@ export class PersonaApiService {
   // Mock mode controls for testing
   enableMockMode() { this.mockEnabled = true; }
   disableMockMode() { this.mockEnabled = false; }
-  
+
   // Test helper for resetting state
   resetForTests() {
     this.mockEnabled = true;
