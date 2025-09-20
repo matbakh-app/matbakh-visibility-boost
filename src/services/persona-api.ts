@@ -5,14 +5,19 @@ export type PersonaType = 'Solo-Sarah' | 'Bewahrer-Ben' | 'Wachstums-Walter' | '
 
 type Persona = 'price-conscious' | 'feature-seeker' | 'decision-maker' | 'technical-evaluator' | 'unknown';
 
-type PersonaResult = {
-  success: boolean;
-  persona?: Persona;
-  confidence?: number;
-  traits?: string[];
-  error?: 'VALIDATION_ERROR' | 'API_ERROR' | 'NETWORK_ERROR';
-  message?: string;
+type PersonaSuccess = {
+  success: true;
+  persona: Persona;
+  confidence: number;
+  traits: string[];
 };
+
+type PersonaError = {
+  success: false;
+  error: string;
+};
+
+export type PersonaResult = PersonaSuccess | PersonaError;
 
 export interface UserBehavior {
   pageViews?: Array<{ path: string; timestamp: number; duration: number }>;
@@ -306,52 +311,34 @@ export class PersonaApiService {
     this.mockEnabled = enabled;
   }
 
-  async detectPersona(input: any): Promise<PersonaResult> {
-    const validation = validatePersonaInput(input);
+  async detectPersona(behavior: UserBehavior): Promise<PersonaResult> {
+    const validation = validatePersonaInput(behavior);
     if (!validation.ok) {
-      return { success: false, error: 'VALIDATION_ERROR', message: validation.reason || 'Invalid input' };
+      return { success: false, error: 'VALIDATION_ERROR' };
     }
 
     // Mock-Mode → immer lokal
     if (this.mockEnabled) {
-      return localHeuristicDetect(input);
+      await new Promise(res => setTimeout(res, MOCK_DELAY));
+      return localHeuristicDetect(behavior);
     }
 
     try {
       const response = await fetch('/api/persona/detect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ behavior: input }),
+        body: JSON.stringify({ behavior }),
       });
 
       if (!response.ok) {
-        return { success: false, error: 'API_ERROR', message: `HTTP ${response.status}` };
+        return { success: false, error: 'API_ERROR' };
       }
 
-      const data = await response.json() as Partial<PersonaResult>;
-
-      const validLabels: Persona[] = [
-        'price-conscious', 'feature-seeker', 'decision-maker', 'technical-evaluator', 'unknown'
-      ];
-      let persona: Persona = validLabels.includes(data.persona as Persona)
-        ? (data.persona as Persona)
-        : 'unknown';
-
-      let confidence = typeof data.confidence === 'number'
-        ? data.confidence
-        : (persona === 'unknown' ? 0.3 : 0.8);
-
-      if (persona !== 'unknown' && confidence < 0.71) confidence = 0.8;
-
-      let traits = Array.isArray(data.traits) ? data.traits.slice() : [];
-      if (persona === 'price-conscious' && !traits.includes('price-focused')) traits.push('price-focused');
-      if (persona === 'feature-seeker' && !traits.includes('feature-focused')) traits.push('feature-focused');
-      if (persona === 'decision-maker' && !traits.includes('ready-to-buy')) traits.push('ready-to-buy');
-      if (persona === 'technical-evaluator' && !traits.includes('technical-focused')) traits.push('technical-focused');
-
-      return { success: true, persona, confidence, traits };
+      const data = await response.json();
+      // defensive merge: Stelle sicher, dass success true gesetzt ist
+      return { ...data, success: true };
     } catch (err: any) {
-      return { success: false, error: 'NETWORK_ERROR', message: err?.message || 'Network error' };
+      return { success: false, error: 'NETWORK_ERROR' };
     }
   }
 

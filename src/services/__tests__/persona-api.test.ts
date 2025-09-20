@@ -9,6 +9,7 @@ describe('PersonaApiService', () => {
 
   beforeEach(() => {
     service = PersonaApiService.getInstance();
+    service.enableMockMode(); // Ensure mock mode is enabled by default
     jest.clearAllMocks();
     (global.fetch as jest.Mock).mockClear();
   });
@@ -320,10 +321,6 @@ describe('PersonaApiService', () => {
     });
 
     it('should validate input data', async () => {
-      service.disableMockMode();
-      
-      (global.fetch as jest.Mock).mockRejectedValue(new Error('Invalid input'));
-
       const invalidData = {
         // Missing required fields
         pageViews: null,
@@ -333,9 +330,6 @@ describe('PersonaApiService', () => {
       const result = await service.detectPersona(invalidData as any);
       expect(result.success).toBe(false);
       expect(result.error).toBe('VALIDATION_ERROR');
-      
-      // Re-enable mock mode for other tests
-      service.enableMockMode();
     });
   });
 
