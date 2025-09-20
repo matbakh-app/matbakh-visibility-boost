@@ -10,6 +10,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { PersonaType, UserBehavior, PersonaDetectionResult } from '@/types/persona';
+import { personaApi } from '@/services/persona-api';
 
 // Fallback persona when detection fails
 const FALLBACK_PERSONA: PersonaType = 'Solo-Sarah';
@@ -112,10 +113,28 @@ export function useSafePersona(): PersonaHookReturn {
         userId: behavior.userId === 'anonymous' ? 'test-user-123' : behavior.userId,
       };
       
-      const result: PersonaDetectionResult = await personaApi.detectPersona(testBehavior);
+      const result = await personaApi.detectPersona(testBehavior);
+      
+      if (!result.success) {
+        setState(prev => ({
+          ...prev,
+          isLoading: false,
+          error: result.error || 'Persona detection failed',
+        }));
+        return;
+      }
+      
+      // Map persona string to PersonaType
+      const personaMapping: Record<string, PersonaType> = {
+        'price-conscious': 'Solo-Sarah',
+        'feature-seeker': 'Bewahrer-Ben',
+        'decision-maker': 'Wachstums-Walter',
+        'technical-evaluator': 'Ketten-Katrin',
+        'unknown': FALLBACK_PERSONA,
+      };
       
       const newState = {
-        currentPersona: result.detectedPersona || FALLBACK_PERSONA,
+        currentPersona: personaMapping[result.persona] || FALLBACK_PERSONA,
         confidence: result.confidence || 0.5,
         isLoading: false,
         error: null,

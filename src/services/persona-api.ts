@@ -365,18 +365,17 @@ export class PersonaApiService {
       });
 
       if (!response.ok) {
-        let errorMsg = `Persona detection failed: ${response.status}`;
-        try {
-          const data = await response.json();
-          if (data && typeof data.error === 'string') errorMsg = data.error;
-        } catch { /* ignore */ }
-        return { success: false, error: errorMsg };
+        const error = await response.json().catch(() => ({}));
+        return {
+          success: false,
+          error: error?.error ? String(error.error) : `Persona detection failed: ${response.status}`,
+        };
       }
 
       const data = await response.json();
       return { ...data, success: true };
     } catch (err: any) {
-      return { success: false, error: err?.message || 'Network error' };
+      return { success: false, error: String(err.message || err) };
     }
   }
 
