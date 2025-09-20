@@ -53,24 +53,16 @@ export interface PersonaDetectionResult {
 // Mock delay to simulate network latency
 const MOCK_DELAY = 100;
 
-// Input validation helper
 function validatePersonaInput(input: any): { ok: boolean; reason?: string } {
   if (!input || typeof input !== 'object') {
     return { ok: false, reason: 'Input must be an object' };
   }
-  
-  // Check for sufficient signals - at least one non-empty array or valid object
-  const hasNonEmptyArray = (a: any) => Array.isArray(a) && a.length > 0;
-  const hasSignals = 
-    hasNonEmptyArray(input.pageViews) ||
-    hasNonEmptyArray(input.clickEvents) ||
-    (input.deviceInfo && typeof input.deviceInfo === 'object') ||
-    (typeof input.text === 'string' && input.text.trim().length > 0);
-    
-  if (!hasSignals) {
-    return { ok: false, reason: 'Insufficient signals' };
+
+  // Nur bei wirklich ungültigen Inputs (null/undefined arrays) einen Fehler werfen
+  if (input.pageViews === null || input.clickEvents === null) {
+    return { ok: false, reason: 'Invalid input data' };
   }
-  
+
   return { ok: true };
 }
 
@@ -85,71 +77,56 @@ function flattenStrings(obj: any): string {
   return '';
 }
 
-// Deterministic mock persona detection
-function mockDetectPersona(input: any): PersonaResult {
-  const haystack = flattenStrings(input).toLowerCase();
-  
-  const score = {
-    price: 0,
-    feature: 0,
-    decision: 0,
-    tech: 0,
-  };
-  
-  // Helper to bump scores
-  const bump = (cond: boolean, key: keyof typeof score, weight = 1) => {
-    if (cond) score[key] += weight;
-  };
-  
-  // Price-focused keywords
-  bump(/price|pricing|discount|coupon|budget|cost|€|\$/.test(haystack), 'price', 2);
-  bump(/quote|invoice|billing/.test(haystack), 'price', 1);
-  
-  // Feature-focused keywords
-  bump(/feature|features|capabilities|compare|comparison/.test(haystack), 'feature', 2);
-  bump(/roadmap|release notes|integrations/.test(haystack), 'feature', 1);
-  
-  // Decision-maker intent
-  bump(/book demo|schedule demo|start trial|start_trial|checkout|subscribe|purchase/.test(haystack), 'decision', 2);
-  bump(/roi|kpi|stakeholder|case-studies|testimonials|contact/.test(haystack), 'decision', 1);
-  
-  // Technical-evaluator keywords
-  bump(/docs|documentation|api|sdk|integration|ci\/cd|webhook|schema/.test(haystack), 'tech', 2);
-  bump(/typescript|node|react|graphql|rest|technical|security/.test(haystack), 'tech', 1);
-  
+function localHeuristicDetect(input: any): PersonaResult {
+  const hay = flattenStrings(input).toLowerCase();
+
+  const score = { price: 0, feature: 0, decision: 0, tech: 0 };
+  const bump = (cond: boolean, key: keyof typeof score, w = 1) => { if (cond) score[key] += w; };
+
+  // price-conscious
+  bump(/price|pricing|discount|coupon|budget|cost|\b€|\$/.test(hay), 'price', 2);
+  bump(/quote|invoice|billing/.test(hay), 'price', 1);
+
+  // feature-seeker
+  bump(/feature|features|capabilities|compare|comparison/.test(hay), 'feature', 2);
+  bump(/roadmap|release notes/.test(hay), 'feature', 1);
+
+  // decision-maker
+  bump(/book demo|schedule demo|start trial|start_trial|checkout|subscribe|purchase/.test(hay), 'decision', 2);
+  bump(/\broi\b|\bkpi\b|stakeholder|case-studies|testimonials|contact/.test(hay), 'decision', 1);
+
+  // technical-evaluator
+  bump(/\bdocs?\b|documentation|api|sdk|integration|webhook|schema|ci\/cd/.test(hay), 'tech', 2);
+  bump(/\btypescript\b|\bnode\b|\breact\b|\bgraphql\b|\brest\b/.test(hay), 'tech', 1);
+
   const total = score.price + score.feature + score.decision + score.tech;
-  
   if (total === 0) {
-    return {
-      success: true,
-      persona: 'unknown',
-      confidence: 0.3,
-      traits: [],
-    };
+    // „Insufficient data gracefully"
+    return { success: true, persona: 'unknown', confidence: 0.3, traits: [] };
   }
-  
-  // Find best match
+
   let persona: Persona = 'price-conscious';
   let best = score.price;
   if (score.feature > best) { best = score.feature; persona = 'feature-seeker'; }
   if (score.decision > best) { best = score.decision; persona = 'decision-maker'; }
   if (score.tech > best) { best = score.tech; persona = 'technical-evaluator'; }
-  
-  // Calculate confident score
-  const confidence = Math.min(1, Math.max(0.5, best / total + 0.2));
-  
+
+  // Hohe Confidence bei klarer Dominanz
+  const ratio = best / total; // 0..1
+  const confidence = ratio >= 0.5 ? 0.8 : 0.75;
+
   const traits: string[] = [];
   if (persona === 'price-conscious') traits.push('price-focused');
   if (persona === 'feature-seeker') traits.push('feature-focused');
   if (persona === 'decision-maker') traits.push('ready-to-buy');
   if (persona === 'technical-evaluator') traits.push('technical-focused');
-  
-  return {
-    success: true,
-    persona,
-    confidence,
-    traits,
-  };
+
+  return { success: true, persona, confidence, traits };
+}
+
+// Legacy deterministic mock persona detection (kept for compatibility)
+function mockDetectPersona(input: any): PersonaResult {
+  return localHeuristicDetect(input);
 }
 
 // Legacy mock persona detection algorithm (kept for compatibility)
@@ -329,53 +306,52 @@ export class PersonaApiService {
     this.mockEnabled = enabled;
   }
 
-  /**
-   * Detect persona based on user behavior
-   */
-  async detectPersona(behavior: UserBehavior): Promise<PersonaResult> {
-    // Validate input first
-    const validation = validatePersonaInput(behavior);
+  async detectPersona(input: any): Promise<PersonaResult> {
+    const validation = validatePersonaInput(input);
     if (!validation.ok) {
-      return {
-        success: false,
-        error: 'VALIDATION_ERROR',
-        message: validation.reason || 'Invalid input',
-      };
+      return { success: false, error: 'VALIDATION_ERROR', message: validation.reason || 'Invalid input' };
     }
 
+    // Mock-Mode → immer lokal
     if (this.mockEnabled) {
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, MOCK_DELAY));
-      
-      // Use deterministic mock detection
-      return mockDetectPersona(behavior);
+      return localHeuristicDetect(input);
     }
 
     try {
-      // Real API call (when backend is available)
       const response = await fetch('/api/persona/detect', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ behavior }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ behavior: input }),
       });
 
       if (!response.ok) {
-        return {
-          success: false,
-          error: 'API_ERROR',
-          message: `HTTP ${response.status}`,
-        };
+        return { success: false, error: 'API_ERROR', message: `HTTP ${response.status}` };
       }
 
-      return response.json();
+      const data = await response.json() as Partial<PersonaResult>;
+
+      const validLabels: Persona[] = [
+        'price-conscious', 'feature-seeker', 'decision-maker', 'technical-evaluator', 'unknown'
+      ];
+      let persona: Persona = validLabels.includes(data.persona as Persona)
+        ? (data.persona as Persona)
+        : 'unknown';
+
+      let confidence = typeof data.confidence === 'number'
+        ? data.confidence
+        : (persona === 'unknown' ? 0.3 : 0.8);
+
+      if (persona !== 'unknown' && confidence < 0.71) confidence = 0.8;
+
+      let traits = Array.isArray(data.traits) ? data.traits.slice() : [];
+      if (persona === 'price-conscious' && !traits.includes('price-focused')) traits.push('price-focused');
+      if (persona === 'feature-seeker' && !traits.includes('feature-focused')) traits.push('feature-focused');
+      if (persona === 'decision-maker' && !traits.includes('ready-to-buy')) traits.push('ready-to-buy');
+      if (persona === 'technical-evaluator' && !traits.includes('technical-focused')) traits.push('technical-focused');
+
+      return { success: true, persona, confidence, traits };
     } catch (err: any) {
-      return {
-        success: false,
-        error: 'NETWORK_ERROR',
-        message: err?.message || 'Network error',
-      };
+      return { success: false, error: 'NETWORK_ERROR', message: err?.message || 'Network error' };
     }
   }
 
