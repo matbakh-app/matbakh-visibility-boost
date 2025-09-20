@@ -59,11 +59,13 @@ function validatePersonaInput(input: any): { ok: boolean; reason?: string } {
     return { ok: false, reason: 'Input must be an object' };
   }
   
-  // Check for required signals
+  // Check for sufficient signals - at least one non-empty array or valid object
+  const hasNonEmptyArray = (a: any) => Array.isArray(a) && a.length > 0;
   const hasSignals = 
-    Array.isArray(input.pageViews) ||
-    Array.isArray(input.clickEvents) ||
-    (input.deviceInfo && typeof input.deviceInfo === 'object');
+    hasNonEmptyArray(input.pageViews) ||
+    hasNonEmptyArray(input.clickEvents) ||
+    (input.deviceInfo && typeof input.deviceInfo === 'object') ||
+    (typeof input.text === 'string' && input.text.trim().length > 0);
     
   if (!hasSignals) {
     return { ok: false, reason: 'Insufficient signals' };
@@ -401,11 +403,23 @@ export class PersonaApiService {
       };
     }
 
-    const response = await fetch(`/api/persona/config/${personaType}`);
-    if (!response.ok) {
-      throw new Error(`Failed to get persona config: ${response.status}`);
+    try {
+      const response = await fetch(`/api/persona/config/${personaType}`);
+      if (!response.ok) {
+        return {
+          success: false,
+          error: 'API_ERROR',
+          message: `HTTP ${response.status}`,
+        };
+      }
+      return response.json();
+    } catch (err: any) {
+      return {
+        success: false,
+        error: 'NETWORK_ERROR',
+        message: err?.message || 'Network error',
+      };
     }
-    return response.json();
   }
 
   /**
