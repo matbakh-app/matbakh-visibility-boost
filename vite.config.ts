@@ -49,8 +49,10 @@ export default defineConfig(({ mode }) => ({
       // Hard exclude permanent archive from build (Defence-in-Depth)
       // Note: on-hold components are NOT excluded - they may be restored
       external: [
+        /^src\/archive\//,
         /^src\/archive\/.*\/manual-archive\//,
         /^src\/archive\/.*\/src\//,
+        /^src\/archive\/.*\/on-hold\//,
         /^src\/archive\/backup-files\//,
         /^src\/archive\/legacy-auth\//,
         /^src\/archive\/figma-demos\//,
