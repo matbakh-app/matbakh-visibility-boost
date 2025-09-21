@@ -368,13 +368,16 @@ export class PersonaApiService {
       // Wenig Signal => unknown & niedrige Confidence; sonst >=0.8
       const lowSignal = behavior.pageViews.length <= 1 && behavior.clickEvents.length === 0 && behavior.timeOnSite < 5000;
       const confidence = lowSignal ? 0.3 : Math.max(0.8, result.confidence ?? 0);
+      
+      // Override persona to 'unknown' for low signal cases
+      const finalPersona = lowSignal ? 'unknown' : persona;
 
       // Bei niedrigem Signal: persona auf unknown setzen
       if (lowSignal) {
         return { success: true, persona: 'unknown', confidence: 0.3, traits: [] };
       }
 
-      return { success: true, persona, confidence, traits };
+      return { success: true, persona: finalPersona, confidence, traits };
     }
 
     // 3) Real API calling disabled - using mock mode only for now
