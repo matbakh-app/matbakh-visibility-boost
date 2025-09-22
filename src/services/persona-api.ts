@@ -376,7 +376,7 @@ export class PersonaApiService {
     // Price patterns (highest priority for price-specific terms)
     bump(/price|pricing|discount|coupon|budget|cost|\b€|\$|pricing-button/.test(hay), 'price', 3);
     bump(/price-comparison/.test(hay), 'price', 4); // Price comparison is clearly price-focused
-    
+
     // Feature patterns (avoid conflict with price-comparison)
     bump(/\bfeature\b|\bfeatures\b|capabilities|integrations|feature-details|integration-guide/.test(hay), 'feature', 3);
     bump(/\bcompare\b|\bcomparison\b/.test(hay) && !/price-comparison/.test(hay), 'feature', 2); // Only non-price comparisons

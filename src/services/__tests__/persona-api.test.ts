@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, jest } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import { PersonaApiService, personaApi } from '../persona-api';
 
 // Mock fetch
@@ -9,7 +9,8 @@ describe('PersonaApiService', () => {
 
   beforeEach(() => {
     service = PersonaApiService.getInstance();
-    service.enableMockMode();
+    service.enableMockMode(); // Ensure mock mode is enabled by default
+    service.resetForTests(); // Reset any internal state
     jest.clearAllMocks();
     ((global as any).fetch as jest.Mock).mockClear();
   });
@@ -18,6 +19,7 @@ describe('PersonaApiService', () => {
     it('should return the same instance', () => {
       const instance1 = PersonaApiService.getInstance();
       const instance2 = PersonaApiService.getInstance();
+
       expect(instance1).toBe(instance2);
       expect(instance1).toBe(personaApi);
     });
@@ -139,6 +141,7 @@ describe('PersonaApiService', () => {
   describe('Persona Recommendations', () => {
     it('should provide price-conscious recommendations', async () => {
       const recommendations = await service.getPersonaRecommendations('price-conscious');
+
       expect(recommendations.success).toBe(true);
       expect(recommendations.recommendations).toContain('Show pricing upfront');
       expect(recommendations.recommendations).toContain('Highlight cost savings');
@@ -147,6 +150,7 @@ describe('PersonaApiService', () => {
 
     it('should provide feature-seeker recommendations', async () => {
       const recommendations = await service.getPersonaRecommendations('feature-seeker');
+
       expect(recommendations.success).toBe(true);
       expect(recommendations.recommendations).toContain('Showcase key features');
       expect(recommendations.recommendations).toContain('Provide feature comparisons');
@@ -155,6 +159,7 @@ describe('PersonaApiService', () => {
 
     it('should provide decision-maker recommendations', async () => {
       const recommendations = await service.getPersonaRecommendations('decision-maker');
+
       expect(recommendations.success).toBe(true);
       expect(recommendations.recommendations).toContain('Show social proof');
       expect(recommendations.recommendations).toContain('Provide case studies');
@@ -163,6 +168,7 @@ describe('PersonaApiService', () => {
 
     it('should provide technical-evaluator recommendations', async () => {
       const recommendations = await service.getPersonaRecommendations('technical-evaluator');
+
       expect(recommendations.success).toBe(true);
       expect(recommendations.recommendations).toContain('Provide technical documentation');
       expect(recommendations.recommendations).toContain('Show API examples');
@@ -173,6 +179,7 @@ describe('PersonaApiService', () => {
   describe('Persona Analytics', () => {
     it('should track persona distribution', async () => {
       const analytics = await service.getPersonaAnalytics();
+
       expect(analytics.success).toBe(true);
       expect(analytics.data).toHaveProperty('distribution');
       expect(analytics.data.distribution).toHaveProperty('price-conscious');
@@ -183,6 +190,7 @@ describe('PersonaApiService', () => {
 
     it('should provide conversion rates by persona', async () => {
       const analytics = await service.getPersonaAnalytics();
+
       expect(analytics.success).toBe(true);
       expect(analytics.data).toHaveProperty('conversionRates');
       expect(analytics.data.conversionRates['decision-maker']).toBeGreaterThan(
@@ -193,6 +201,7 @@ describe('PersonaApiService', () => {
     it('should track persona evolution over time', async () => {
       const userId = 'user-123';
       const evolution = await service.getPersonaEvolution(userId);
+
       expect(evolution.success).toBe(true);
       expect(evolution.data).toHaveProperty('timeline');
       expect(evolution.data.timeline).toBeInstanceOf(Array);
@@ -202,6 +211,7 @@ describe('PersonaApiService', () => {
   describe('Mock Mode', () => {
     it('should work in mock mode when enabled', async () => {
       service.enableMockMode();
+
       const mockData = {
         pageViews: [{ path: '/pricing', timestamp: Date.now(), duration: 5000 }],
         clickEvents: [],
@@ -211,6 +221,7 @@ describe('PersonaApiService', () => {
       };
 
       const result = await service.detectPersona(mockData);
+
       expect(result.success).toBe(true);
       expect(['price-conscious', 'feature-seeker', 'decision-maker', 'technical-evaluator'])
         .toContain(result.persona);
@@ -218,6 +229,8 @@ describe('PersonaApiService', () => {
 
     it('should use real API when mock mode is disabled', async () => {
       service.disableMockMode();
+
+      // Mock successful API response
       ((global as any).fetch as jest.Mock).mockResolvedValue({
         ok: true,
         json: async () => ({
@@ -237,6 +250,7 @@ describe('PersonaApiService', () => {
       };
 
       const result = await service.detectPersona(mockData);
+
       expect(result.success).toBe(true);
       expect(result.persona).toBe('price-conscious');
       expect((global as any).fetch).toHaveBeenCalledWith(
@@ -246,13 +260,31 @@ describe('PersonaApiService', () => {
           headers: { 'Content-Type': 'application/json' }
         })
       );
+
+      // Re-enable mock mode for other tests
       service.enableMockMode();
     });
   });
 
   describe('Error Handling', () => {
+    beforeEach(() => {
+      // Ensure clean state for error handling tests
+      jest.clearAllMocks();
+      ((global as any).fetch as jest.Mock).mockClear();
+      service.resetForTests();
+    });
+
+    afterEach(() => {
+      // Always restore mock mode after error tests
+      service.enableMockMode();
+      jest.clearAllMocks();
+    });
+
     it('should handle API errors gracefully', async () => {
+      // Disable mock mode for this specific test
       service.disableMockMode();
+
+      // Setup fetch mock for API error scenario
       ((global as any).fetch as jest.Mock).mockResolvedValue({
         ok: false,
         status: 500,
@@ -268,13 +300,19 @@ describe('PersonaApiService', () => {
       };
 
       const result = await service.detectPersona(mockData);
+      
+      // Verify structured error response (not thrown exception)
+      expect(result).toBeDefined();
       expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
       expect(result.error).toContain('Internal server error');
-      service.enableMockMode();
     });
 
     it('should handle network errors', async () => {
+      // Disable mock mode for this specific test
       service.disableMockMode();
+
+      // Setup fetch mock for network error scenario
       ((global as any).fetch as jest.Mock).mockRejectedValue(new Error('Network error'));
 
       const mockData = {
@@ -286,25 +324,35 @@ describe('PersonaApiService', () => {
       };
 
       const result = await service.detectPersona(mockData);
+      
+      // Verify structured error response (not thrown exception)
+      expect(result).toBeDefined();
       expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
       expect(result.error).toContain('Network error');
-      service.enableMockMode();
     });
 
     it('should validate input data', async () => {
+      // This test uses mock mode (default)
       const invalidData = {
+        // Missing required fields
         pageViews: null,
         clickEvents: undefined
       };
 
       const result = await service.detectPersona(invalidData as any);
+      
+      // Verify structured error response
+      expect(result).toBeDefined();
       expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
       expect(result.error).toContain('Invalid behavioral data');
     });
   });
 
   describe('Integration Tests', () => {
     it('should complete full persona workflow', async () => {
+      // 1. Detect persona
       const behavioralData = {
         pageViews: [
           { path: '/pricing', timestamp: Date.now() - 1000, duration: 8000 }
@@ -320,10 +368,12 @@ describe('PersonaApiService', () => {
       const detectionResult = await service.detectPersona(behavioralData);
       expect(detectionResult.success).toBe(true);
 
+      // 2. Get recommendations for detected persona
       const recommendationsResult = await service.getPersonaRecommendations(detectionResult.persona);
       expect(recommendationsResult.success).toBe(true);
       expect(recommendationsResult.recommendations.length).toBeGreaterThan(0);
 
+      // 3. Track persona analytics
       const analyticsResult = await service.getPersonaAnalytics();
       expect(analyticsResult.success).toBe(true);
       expect(analyticsResult.data.distribution).toBeDefined();
