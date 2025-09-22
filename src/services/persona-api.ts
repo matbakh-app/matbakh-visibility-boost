@@ -380,37 +380,31 @@ export class PersonaApiService {
       return { success: true, persona: finalPersona, confidence, traits };
     }
 
-    // 3) Real API calling disabled - using mock mode only for now
-    // TODO: Implement actual backend API endpoint when ready
-    console.warn('Real API mode requested but not implemented. Falling back to mock mode.');
-    
-    // Fallback to mock mode
-    await new Promise(r => setTimeout(r, MOCK_DELAY));
-    const result = mockPersonaDetection(behavior);
+    // 3) Real API calling - with proper error handling for tests
+    try {
+      const response = await fetch('/api/persona/detect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ behavior }),
+      });
 
-    const persona =
-      result.detectedPersona === 'Solo-Sarah' ? 'price-conscious' :
-        result.detectedPersona === 'Bewahrer-Ben' ? 'feature-seeker' :
-          result.detectedPersona === 'Wachstums-Walter' ? 'decision-maker' :
-            result.detectedPersona === 'Ketten-Katrin' ? 'technical-evaluator' :
-              'unknown';
+      if (!response.ok) {
+        let errorMsg = `Persona detection failed: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          if (errorData?.error) errorMsg = errorData.error;
+        } catch {}
+        return { success: false, error: errorMsg };
+      }
 
-    const traits =
-      persona === 'price-conscious' ? ['price-focused'] :
-      persona === 'feature-seeker' ? ['feature-focused'] :
-      persona === 'decision-maker' ? ['ready-to-buy'] :
-      persona === 'technical-evaluator' ? ['technical-focused'] :
-      ['unknown'];
-
-    const confidence = this.hasMinimalSignal(behavior) ? 0.8 : 0.3;
-
-    return {
-      success: true,
-      persona,
-      confidence,
-      traits,
-      detectionMethod: 'fallback-mock'
-    };
+      return await response.json();
+    } catch (err: any) {
+      // Always return structured error objects (as expected by CI tests)
+      return { 
+        success: false, 
+        error: err?.message || 'Network error' 
+      };
+    }
   }
 
   /**

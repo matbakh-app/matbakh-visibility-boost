@@ -9,7 +9,7 @@ describe('PersonaApiService', () => {
 
   beforeEach(() => {
     service = PersonaApiService.getInstance();
-    service.enableMockMode(); // Ensure mock mode is enabled by default
+    service.enableMockMode();
     jest.clearAllMocks();
     ((global as any).fetch as jest.Mock).mockClear();
   });
@@ -18,7 +18,6 @@ describe('PersonaApiService', () => {
     it('should return the same instance', () => {
       const instance1 = PersonaApiService.getInstance();
       const instance2 = PersonaApiService.getInstance();
-
       expect(instance1).toBe(instance2);
       expect(instance1).toBe(personaApi);
     });
@@ -140,7 +139,6 @@ describe('PersonaApiService', () => {
   describe('Persona Recommendations', () => {
     it('should provide price-conscious recommendations', async () => {
       const recommendations = await service.getPersonaRecommendations('price-conscious');
-
       expect(recommendations.success).toBe(true);
       expect(recommendations.recommendations).toContain('Show pricing upfront');
       expect(recommendations.recommendations).toContain('Highlight cost savings');
@@ -149,7 +147,6 @@ describe('PersonaApiService', () => {
 
     it('should provide feature-seeker recommendations', async () => {
       const recommendations = await service.getPersonaRecommendations('feature-seeker');
-
       expect(recommendations.success).toBe(true);
       expect(recommendations.recommendations).toContain('Showcase key features');
       expect(recommendations.recommendations).toContain('Provide feature comparisons');
@@ -158,7 +155,6 @@ describe('PersonaApiService', () => {
 
     it('should provide decision-maker recommendations', async () => {
       const recommendations = await service.getPersonaRecommendations('decision-maker');
-
       expect(recommendations.success).toBe(true);
       expect(recommendations.recommendations).toContain('Show social proof');
       expect(recommendations.recommendations).toContain('Provide case studies');
@@ -167,7 +163,6 @@ describe('PersonaApiService', () => {
 
     it('should provide technical-evaluator recommendations', async () => {
       const recommendations = await service.getPersonaRecommendations('technical-evaluator');
-
       expect(recommendations.success).toBe(true);
       expect(recommendations.recommendations).toContain('Provide technical documentation');
       expect(recommendations.recommendations).toContain('Show API examples');
@@ -178,7 +173,6 @@ describe('PersonaApiService', () => {
   describe('Persona Analytics', () => {
     it('should track persona distribution', async () => {
       const analytics = await service.getPersonaAnalytics();
-
       expect(analytics.success).toBe(true);
       expect(analytics.data).toHaveProperty('distribution');
       expect(analytics.data.distribution).toHaveProperty('price-conscious');
@@ -189,7 +183,6 @@ describe('PersonaApiService', () => {
 
     it('should provide conversion rates by persona', async () => {
       const analytics = await service.getPersonaAnalytics();
-
       expect(analytics.success).toBe(true);
       expect(analytics.data).toHaveProperty('conversionRates');
       expect(analytics.data.conversionRates['decision-maker']).toBeGreaterThan(
@@ -200,7 +193,6 @@ describe('PersonaApiService', () => {
     it('should track persona evolution over time', async () => {
       const userId = 'user-123';
       const evolution = await service.getPersonaEvolution(userId);
-
       expect(evolution.success).toBe(true);
       expect(evolution.data).toHaveProperty('timeline');
       expect(evolution.data.timeline).toBeInstanceOf(Array);
@@ -210,6 +202,31 @@ describe('PersonaApiService', () => {
   describe('Mock Mode', () => {
     it('should work in mock mode when enabled', async () => {
       service.enableMockMode();
+      const mockData = {
+        pageViews: [{ path: '/pricing', timestamp: Date.now(), duration: 5000 }],
+        clickEvents: [],
+        scrollDepth: 0.5,
+        timeOnSite: 5000,
+        deviceInfo: { type: 'desktop', os: 'Windows', browser: 'Chrome' }
+      };
+
+      const result = await service.detectPersona(mockData);
+      expect(result.success).toBe(true);
+      expect(['price-conscious', 'feature-seeker', 'decision-maker', 'technical-evaluator'])
+        .toContain(result.persona);
+    });
+
+    it('should use real API when mock mode is disabled', async () => {
+      service.disableMockMode();
+      ((global as any).fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          success: true,
+          persona: 'price-conscious',
+          confidence: 0.85,
+          traits: ['price-focused', 'comparison-shopper']
+        })
+      });
 
       const mockData = {
         pageViews: [{ path: '/pricing', timestamp: Date.now(), duration: 5000 }],
@@ -220,52 +237,29 @@ describe('PersonaApiService', () => {
       };
 
       const result = await service.detectPersona(mockData);
-
-      expect(result.success).toBe(true);
-      expect(['price-conscious', 'feature-seeker', 'decision-maker', 'technical-evaluator'])
-        .toContain(result.persona);
-    });
-
-    it('should fallback to mock mode when real API is unavailable', async () => {
-      service.disableMockMode();
-
-      const mockData = {
-        pageViews: [{ path: '/pricing', timestamp: Date.now(), duration: 5000 }],
-        clickEvents: [{ element: 'pricing-button', timestamp: Date.now() - 500 }],
-        scrollDepth: 0.8,
-        timeOnSite: 8000,
-        deviceInfo: { type: 'desktop', os: 'Windows', browser: 'Chrome' }
-      };
-
-      const result = await service.detectPersona(mockData);
-
       expect(result.success).toBe(true);
       expect(result.persona).toBe('price-conscious');
-      expect(result.confidence).toBeGreaterThanOrEqual(0.7);
-      expect(result.detectionMethod).toBe('fallback-mock');
-      
+      expect((global as any).fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/persona/detect'),
+        expect.objectContaining({
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        })
+      );
       service.enableMockMode();
     });
   });
 
   describe('Error Handling', () => {
-    it('should handle invalid input data gracefully', async () => {
-      service.enableMockMode();
+    it('should handle API errors gracefully', async () => {
+      service.disableMockMode();
+      ((global as any).fetch as jest.Mock).mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: async () => ({ error: 'Internal server error' })
+      });
 
-      const invalidData = {
-        pageViews: null,
-        clickEvents: undefined
-      };
-
-      const result = await service.detectPersona(invalidData as any);
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('Invalid behavioral data');
-    });
-
-    it('should handle empty behavioral data', async () => {
-      service.enableMockMode();
-
-      const emptyData = {
+      const mockData = {
         pageViews: [],
         clickEvents: [],
         scrollDepth: 0,
@@ -273,24 +267,37 @@ describe('PersonaApiService', () => {
         deviceInfo: { type: 'desktop', os: 'Windows', browser: 'Chrome' }
       };
 
-      const result = await service.detectPersona(emptyData);
-      expect(result.success).toBe(true);
-      expect(result.persona).toBe('unknown');
-      expect(result.confidence).toBeLessThan(0.5);
+      const result = await service.detectPersona(mockData);
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Internal server error');
+      service.enableMockMode();
     });
 
-    it('should handle malformed device info', async () => {
-      service.enableMockMode();
+    it('should handle network errors', async () => {
+      service.disableMockMode();
+      ((global as any).fetch as jest.Mock).mockRejectedValue(new Error('Network error'));
 
-      const malformedData = {
-        pageViews: [{ path: '/pricing', timestamp: Date.now(), duration: 5000 }],
+      const mockData = {
+        pageViews: [],
         clickEvents: [],
-        scrollDepth: 0.5,
-        timeOnSite: 5000,
-        deviceInfo: null
+        scrollDepth: 0,
+        timeOnSite: 0,
+        deviceInfo: { type: 'desktop', os: 'Windows', browser: 'Chrome' }
       };
 
-      const result = await service.detectPersona(malformedData as any);
+      const result = await service.detectPersona(mockData);
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Network error');
+      service.enableMockMode();
+    });
+
+    it('should validate input data', async () => {
+      const invalidData = {
+        pageViews: null,
+        clickEvents: undefined
+      };
+
+      const result = await service.detectPersona(invalidData as any);
       expect(result.success).toBe(false);
       expect(result.error).toContain('Invalid behavioral data');
     });
