@@ -115,21 +115,21 @@ function localHeuristicDetect(input: any): PersonaResult {
   // Find the persona with the highest score (handle ties by preferring more specific patterns)
   let persona: Persona = 'price-conscious';
   let best = score.price;
-  
+
   // Technical has highest priority (most specific)
-  if (score.tech > best || (score.tech === best && score.tech > 0)) { 
-    best = score.tech; 
-    persona = 'technical-evaluator'; 
+  if (score.tech > best || (score.tech === best && score.tech > 0)) {
+    best = score.tech;
+    persona = 'technical-evaluator';
   }
   // Decision-maker has second priority
-  if (score.decision > best || (score.decision === best && score.decision > 0 && persona === 'price-conscious')) { 
-    best = score.decision; 
-    persona = 'decision-maker'; 
+  if (score.decision > best || (score.decision === best && score.decision > 0 && persona === 'price-conscious')) {
+    best = score.decision;
+    persona = 'decision-maker';
   }
   // Feature-seeker has third priority
-  if (score.feature > best || (score.feature === best && score.feature > 0 && persona === 'price-conscious')) { 
-    best = score.feature; 
-    persona = 'feature-seeker'; 
+  if (score.feature > best || (score.feature === best && score.feature > 0 && persona === 'price-conscious')) {
+    best = score.feature;
+    persona = 'feature-seeker';
   }
 
   // Hohe Confidence bei klarer Dominanz - erhöht für Tests (mindestens 0.7)
@@ -351,6 +351,28 @@ export class PersonaApiService {
     return signalCount >= 2;
   }
 
+  /**
+   * Validate input behavior data structure
+   */
+  private isValidBehavior(behavior: any): behavior is UserBehavior {
+    // Check if behavior object exists
+    if (!behavior || typeof behavior !== 'object') {
+      return false;
+    }
+
+    // Check required fields exist and are of correct type
+    if (!Array.isArray(behavior.pageViews) ||
+      !Array.isArray(behavior.clickEvents) ||
+      typeof behavior.scrollDepth !== 'number' ||
+      typeof behavior.timeOnSite !== 'number' ||
+      !behavior.deviceInfo ||
+      typeof behavior.deviceInfo !== 'object') {
+      return false;
+    }
+
+    return true;
+  }
+
   async detectPersona(behavior: UserBehavior): Promise<any> {
     // 1) Eingabedaten validieren (Tests erwarten diese Fehlermeldung)
     if (!this.isValidBehavior(behavior)) {
@@ -377,15 +399,22 @@ export class PersonaApiService {
       });
 
       if (!response.ok) {
-        let errorMsg = `Persona detection failed: ${response.status}`;
+        let errorMessage = `Persona detection failed: ${response.status}`;
         try {
-          const errorData = await response.json();
-          if (errorData?.error) errorMsg = errorData.error;
-        } catch { }
-        return { success: false, error: errorMsg };
+          const errorBody = await response.json();
+          if (errorBody && errorBody.error) {
+            errorMessage = errorBody.error;
+          }
+        } catch {}
+        return { success: false, error: errorMessage };
       }
 
-      return await response.json();
+      try {
+        const data = await response.json();
+        return { success: true, ...data };
+      } catch (err) {
+        return { success: false, error: 'Malformed response from API' };
+      }
     } catch (err: any) {
       // Always return structured error objects (as expected by CI tests)
       return {
