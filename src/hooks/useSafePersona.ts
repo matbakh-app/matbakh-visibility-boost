@@ -10,7 +10,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { PersonaType, UserBehavior, PersonaDetectionResult } from '@/types/persona';
-import { personaApi } from '@/services/persona-api';
 
 // Fallback persona when detection fails
 const FALLBACK_PERSONA: PersonaType = 'Solo-Sarah';
