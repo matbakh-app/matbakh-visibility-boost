@@ -99,8 +99,9 @@ function localHeuristicDetect(input: any): PersonaResult {
   bump(/book demo|schedule demo|start trial|start_trial|checkout|subscribe|purchase|case-studies|testimonials|contact-sales|schedule-demo/.test(hay), 'decision', 3);
   bump(/\broi\b|\bkpi\b|stakeholder/.test(hay), 'decision', 2);
 
-  // technical-evaluator - erweiterte Patterns für Tests
-  bump(/\bdocs?\b|documentation|api|sdk|integration|webhook|schema|ci\/cd|api-docs|technical|enterprise|api-reference|code-examples/.test(hay), 'tech', 3);
+  // technical-evaluator - erweiterte Patterns für Tests (höhere Gewichtung)
+  bump(/\bapi\b|api-docs|technical|enterprise|api-reference|code-examples|technical-documentation/.test(hay), 'tech', 5);
+  bump(/\bdocs?\b|documentation|sdk|integration|webhook|schema|ci\/cd/.test(hay), 'tech', 3);
   bump(/\btypescript\b|\bnode\b|\breact\b|\bgraphql\b|\brest\b/.test(hay), 'tech', 1);
 
   const total = score.price + score.feature + score.decision + score.tech;
@@ -348,36 +349,12 @@ export class PersonaApiService {
     // 2) Mock-Modus deterministisch (keine Randomness)
     if (this.mockEnabled) {
       await new Promise(r => setTimeout(r, MOCK_DELAY));
-      const result = mockPersonaDetection(behavior);
-
-      const persona =
-        result.detectedPersona === 'Solo-Sarah' ? 'price-conscious' :
-          result.detectedPersona === 'Bewahrer-Ben' ? 'feature-seeker' :
-            result.detectedPersona === 'Wachstums-Walter' ? 'decision-maker' :
-              result.detectedPersona === 'Ketten-Katrin' ? 'technical-evaluator' :
-                'unknown';
-
-      // NEU - Persona-basiert:
-      const traits =
-        persona === 'price-conscious' ? ['price-focused'] :
-        persona === 'feature-seeker' ? ['feature-focused'] :
-        persona === 'decision-maker' ? ['ready-to-buy'] :
-        persona === 'technical-evaluator' ? ['technical-focused'] :
-        ['unknown'];
-
-      // Wenig Signal => unknown & niedrige Confidence; sonst >=0.8
-      const lowSignal = behavior.pageViews.length <= 1 && behavior.clickEvents.length === 0 && behavior.timeOnSite < 5000;
-      const confidence = lowSignal ? 0.3 : Math.max(0.8, result.confidence ?? 0);
       
-      // Override persona to 'unknown' for low signal cases
-      const finalPersona = lowSignal ? 'unknown' : persona;
-
-      // Bei niedrigem Signal: persona auf unknown setzen
-      if (lowSignal) {
-        return { success: true, persona: 'unknown', confidence: 0.3, traits: [] };
-      }
-
-      return { success: true, persona: finalPersona, confidence, traits };
+      // Use the better heuristic detection function
+      const result = localHeuristicDetect(behavior);
+      
+      // Return the result directly as it's already in the correct format
+      return result;
     }
 
     // 3) Real API calling - with proper error handling for tests
