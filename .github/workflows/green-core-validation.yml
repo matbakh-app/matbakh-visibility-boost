@@ -9,6 +9,7 @@ on:
     branches: [ main, kiro-dev, aws-deploy ]
   push:
     branches: [ test/green-core-validation ]
+  workflow_dispatch:
 
 jobs:
   green-core:
@@ -20,6 +21,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
+          ref: test/green-core-validation
           fetch-depth: 0
           
       - name: Setup Node.js
@@ -34,15 +36,15 @@ jobs:
           CI: true
           
       # 🔎 Debug: Zeig mir exakt, was CI baut
+      - name: Debug persona-api snippet
+        run: sed -n '180,205p' src/services/persona-api.ts
+        
+      - name: Debug tests snippet
+        run: sed -n '55,110p' src/services/__tests__/persona-api.test.ts
+        
       - name: Sanity: print commit + snippets
         run: |
           echo "Commit SHA: $(git rev-parse HEAD)"
-          echo
-          echo "---- persona-api.test.ts (55-90) ----"
-          sed -n '55,90p' src/services/__tests__/persona-api.test.ts || true
-          echo
-          echo "---- persona-api.ts (180-205) ----"
-          sed -n '180,205p' src/services/persona-api.ts || true
           echo
           echo "---- Checks ----"
           (grep -n "toBeGreaterThanOrEqual(0\.7)" src/services/__tests__/persona-api.test.ts && echo "OK: >= 0.7 vorhanden") || echo "FEHLT: >= 0.7"
