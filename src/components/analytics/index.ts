@@ -14,3 +14,18 @@ export { EnhancedTooltip } from './EnhancedTooltip';
 export { ForecastChart } from './ForecastChart';
 export { ForecastControls } from './ForecastControls';
 export { ForecastDemo } from './ForecastDemo';
+
+// Performance Monitoring Components - Task 1: Real-time Performance Monitoring
+export { default as PerformanceMonitoringDashboard } from './PerformanceMonitoringDashboard';
+export { PerformanceMonitoringProvider, usePerformanceMonitoringContext, withPerformanceMonitoring } from './PerformanceMonitoringProvider';
+export { default as PerformanceWidget } from './PerformanceWidget';
+
+// Upload Monitoring Components
+export {
+    default as MonitoredFileUpload,
+    AvatarUpload,
+    LogoUpload,
+    DocumentUpload,
+    ImageUpload,
+    ReportUpload
+} from '../upload/MonitoredFileUpload';

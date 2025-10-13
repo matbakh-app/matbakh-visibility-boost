@@ -1,0 +1,127 @@
+> matbakh.app-Agenten (über Bedrock / AGP) sollen in Zukunft Meta Business Suite-Profile (Facebook & Instagram Business Accounts) der Restaurants lesen, bearbeiten und steuern,
+> 
+> 
+> sofern:
+> 
+> 1. du Meta’s **Graph API + Marketing API + Business Account API** korrekt integrierst,
+> 2. der Nutzer **explizit authentifiziert und zustimmt** (OAuth 2.0 Login with Facebook),
+> 3. dein System **die Tokens sicher verwaltet** (verschlüsselt, kurzlebig, refreshfähig),
+> 4. Aktionen **im Audit-Trail dokumentiert** und **genehmigungspflichtig** sind.
+
+---
+
+## ⚙️ Technische Grundlage
+
+### 1. **Authentifizierung & Berechtigungen**
+
+- Du nutzt **Meta OAuth 2.0** Login-Flow
+    
+    → Nutzer meldet sich mit Facebook / Instagram Business Account an
+    
+    → du erhältst ein temporäres `access_token` + `page_access_token` + `business_id`.
+    
+
+**Scopes**, die nötig wären:
+
+```
+pages_show_list
+pages_manage_metadata
+pages_manage_posts
+business_management
+instagram_basic
+instagram_manage_insights
+instagram_manage_comments
+
+```
+
+Diese Scopes erlauben:
+
+- Zugriff auf Seiteninformationen (Name, Öffnungszeiten, Impressum, Profilbild)
+- Bearbeiten von Unternehmensinfos
+- Posten, Planen und Löschen von Beiträgen
+- Auslesen von Insights (Reichweite, Engagement, Ads)
+- Verwalten von Kommentaren / Nachrichten (optional)
+
+---
+
+### 2. **Integration über Agent Gateway Protocol (AGP)**
+
+Sobald Bedrock-AGP aktiv ist, kannst du Meta-Steuerung als eigenen **AGP-Intent** definieren:
+
+| Intent | Beschreibung | Beispiel |
+| --- | --- | --- |
+| `meta.profile.update` | Profil-Infos aktualisieren (z. B. Öffnungszeiten, Beschreibung) | „Update Instagram bio text for @alshamrestaurant“ |
+| `meta.post.create` | Beitrag veröffentlichen oder planen | „Post daily special photo tomorrow 11 am“ |
+| `meta.comment.reply` | Kommentarverwaltung | „Reply to positive reviews with thanks message“ |
+| `meta.analytics.fetch` | Insights abrufen | „Get last week’s reach and engagement“ |
+
+Der Agent (z. B. Kiro → Bedrock → Meta Gateway) sendet Requests via Meta Graph API,
+
+das Audit-System dokumentiert jeden API-Call mit Request-Hash und Response-Digest.
+
+---
+
+### 3. **Rollen & Sicherheit**
+
+Damit keine unkontrollierten Änderungen passieren:
+
+- **Role-Based Access Control (RBAC)** pro Restaurant:
+    
+    → nur Besitzer oder autorisierte Manager dürfen Agentenaktionen freigeben.
+    
+- **AI Operations Audit Trail** loggt:
+    - Wer? (User / Agent ID)
+    - Wann?
+    - Was? (Intent + Parameter)
+    - Ergebnis (Success / Fail)
+- **Approval Layer**: bevor der Agent Änderungen schreibt, kann er ein „Preview“ im Dashboard anzeigen:
+    
+    *„Will you approve this change to your Instagram bio?“* → [Approve] / [Reject].
+    
+
+---
+
+### 4. **Datenschutz & DSGVO**
+
+- Tokens verschlüsselt speichern (KMS + Rotation alle 90 Tage)
+- Nur minimal erforderliche Daten abrufen („data minimization“)
+- Jeder Zugriff wird protokolliert (siehe `ai-operations-audit-trail-system.md`)
+- Möglichkeit zum **Revoke Access** direkt im Nutzer-Dashboard
+- Transparente Einwilligung im Login-Dialog („matbakh.app may manage your business page content on your behalf“)
+
+---
+
+### 5. **Beispiel-Architektur**
+
+```
+User Login → OAuth 2.0 Meta → matbakh.auth-service
+        ↓
+Kiro CLI / Dashboard → Bedrock Orchestrator
+        ↓
+AGP Intent: meta.profile.update
+        ↓
+Meta Graph API → Business Suite Endpoint
+        ↓
+AI Operations Audit Trail → S3 / RDS (Storage)
+
+```
+
+---
+
+## 📅 Empfohlener Zeitplan
+
+| Phase | Zeitpunkt | Ziel |
+| --- | --- | --- |
+| **Nach Bedrock-Stabilität (T+4 Wochen)** | OAuth-Integration & Meta SDK-Setup | Login / Token-Handling |
+| **Vor Gemini-Aktivierung** | Agent-Intents `meta.profile.*` implementieren | geprüfter API-Zugriff |
+| **Nach Gemini** | Context-basierte Automatisierung (z. B. „verbessere mein Profiltext basierend auf Bewertungen“) | AI-optimierte Content-Steuerung |
+
+---
+
+## 🧠 Fazit
+
+- ✅ *Ja*, technisch ist es möglich und sinnvoll.
+- ⚙️ Bedingung: OAuth 2.0 + Graph API-Integration + RBAC + Audit-Trail.
+- 🔐 Empfehlung: erst nach Bedrock-Stabilität, **vor** oder **parallel mit Gemini**,
+    
+    damit deine AI-Agents den Content bereits kontrolliert beeinflussen können.

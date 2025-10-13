@@ -1,6 +1,6 @@
 /**
  * AWS RDS Client for matbakh.app
- * Replaces Supabase client with direct AWS RDS connection
+ * Direct AWS RDS connection for database operations
  */
 
 interface RDSConfig {
@@ -23,13 +23,15 @@ export class AwsRdsClient {
 
   constructor() {
     this.config = {
-      host: process.env.RDS_HOST || 'matbakh-db.chq6q4cs0evx.eu-central-1.rds.amazonaws.com',
-      port: parseInt(process.env.RDS_PORT || '5432'),
-      database: process.env.RDS_DATABASE || 'postgres',
-      username: process.env.RDS_USER || 'postgres',
-      password: process.env.RDS_PASSWORD || '',
+      host:
+        process.env.RDS_HOST ||
+        "matbakh-db.chq6q4cs0evx.eu-central-1.rds.amazonaws.com",
+      port: parseInt(process.env.RDS_PORT || "5432"),
+      database: process.env.RDS_DATABASE || "postgres",
+      username: process.env.RDS_USER || "postgres",
+      password: process.env.RDS_PASSWORD || "",
       ssl: true,
-      region: process.env.AWS_REGION || 'eu-central-1'
+      region: process.env.AWS_REGION || "eu-central-1",
     };
   }
 
@@ -40,16 +42,16 @@ export class AwsRdsClient {
     try {
       // For now, simulate RDS connection with localStorage fallback
       // In production, this would use AWS RDS Data API or pg client
-      console.log('AWS RDS Query:', sql, params);
-      
+      console.log("AWS RDS Query:", sql, params);
+
       // Simulate database response
-      if (sql.includes('SELECT') && sql.includes('profiles')) {
+      if (sql.includes("SELECT") && sql.includes("profiles")) {
         const userId = params[0];
         const stored = localStorage.getItem(`profile_${userId}`);
         return stored ? [JSON.parse(stored)] : [];
       }
-      
-      if (sql.includes('INSERT') && sql.includes('profiles')) {
+
+      if (sql.includes("INSERT") && sql.includes("profiles")) {
         const profileData = {
           id: params[0],
           user_id: params[1],
@@ -59,14 +61,17 @@ export class AwsRdsClient {
           website: params[5],
           description: params[6],
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         };
-        
-        localStorage.setItem(`profile_${params[1]}`, JSON.stringify(profileData));
+
+        localStorage.setItem(
+          `profile_${params[1]}`,
+          JSON.stringify(profileData)
+        );
         return [profileData] as T[];
       }
-      
-      if (sql.includes('UPDATE') && sql.includes('profiles')) {
+
+      if (sql.includes("UPDATE") && sql.includes("profiles")) {
         const userId = params[params.length - 1]; // Last parameter is usually WHERE condition
         const stored = localStorage.getItem(`profile_${userId}`);
         if (stored) {
@@ -76,11 +81,15 @@ export class AwsRdsClient {
           return [updated] as T[];
         }
       }
-      
+
       return [] as T[];
     } catch (error) {
-      console.error('AWS RDS Client Error:', error);
-      throw new Error(`Database query failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error("AWS RDS Client Error:", error);
+      throw new Error(
+        `Database query failed: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   }
 
@@ -95,15 +104,17 @@ export class AwsRdsClient {
   /**
    * Execute multiple queries in a transaction
    */
-  async transaction<T>(callback: (client: AwsRdsClient) => Promise<T>): Promise<T> {
+  async transaction<T>(
+    callback: (client: AwsRdsClient) => Promise<T>
+  ): Promise<T> {
     try {
       // In production, this would start a database transaction
-      console.log('AWS RDS Transaction started');
+      console.log("AWS RDS Transaction started");
       const result = await callback(this);
-      console.log('AWS RDS Transaction committed');
+      console.log("AWS RDS Transaction committed");
       return result;
     } catch (error) {
-      console.log('AWS RDS Transaction rolled back');
+      console.log("AWS RDS Transaction rolled back");
       throw error;
     }
   }
@@ -111,12 +122,15 @@ export class AwsRdsClient {
   /**
    * Execute a query and return result in legacy format for compatibility
    */
-  async executeQuery(sql: string, params: any[] = []): Promise<{ records: any[], numberOfRecordsUpdated?: number }> {
+  async executeQuery(
+    sql: string,
+    params: any[] = []
+  ): Promise<{ records: any[]; numberOfRecordsUpdated?: number }> {
     try {
       const results = await this.query(sql, params);
       return {
         records: results,
-        numberOfRecordsUpdated: results.length
+        numberOfRecordsUpdated: results.length,
       };
     } catch (error) {
       throw error;
@@ -135,10 +149,10 @@ export class AwsRdsClient {
    */
   async testConnection(): Promise<boolean> {
     try {
-      await this.query('SELECT 1 as test');
+      await this.query("SELECT 1 as test");
       return true;
     } catch (error) {
-      console.error('AWS RDS Connection test failed:', error);
+      console.error("AWS RDS Connection test failed:", error);
       return false;
     }
   }

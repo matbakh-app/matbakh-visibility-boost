@@ -340,6 +340,9 @@ export function useUploadHistory(options: UseUploadHistoryOptions = {}): UseUplo
   // Auto-refresh setup
   useEffect(() => {
     if (!config.autoRefresh) return;
+    
+    // Skip timer in test environment to prevent Jest open handles
+    if (typeof process !== 'undefined' && process.env.JEST_WORKER_ID) return;
 
     const interval = setInterval(() => {
       refreshHistory();

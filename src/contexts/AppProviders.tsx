@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
 import { AuthProvider } from './AuthContext'; // Verwende das bestehende AuthContext
 import { PersonaProvider } from './PersonaContext'; // NEW: Advanced Persona System
+import { PerformanceMonitoringProvider } from '@/components/analytics/PerformanceMonitoringProvider';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import i18n from '../i18n';
 
@@ -41,7 +42,13 @@ export const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
       <I18nextProvider i18n={i18n}>
         <AuthProvider>
           <PersonaProvider>
-            {children}
+            <PerformanceMonitoringProvider
+              enableToastAlerts={true}
+              enableConsoleLogging={import.meta.env.DEV}
+              sampleRate={1.0}
+            >
+              {children}
+            </PerformanceMonitoringProvider>
           </PersonaProvider>
         </AuthProvider>
       </I18nextProvider>

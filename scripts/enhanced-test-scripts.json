@@ -1,0 +1,78 @@
+{
+  "enhanced-test-scripts": {
+    "comment": "Enhanced NPM Scripts for Comprehensive Testing Strategy",
+    
+    "green-core-tests": {
+      "test:green-core": "./scripts/run-green-core-tests.sh",
+      "test:green-core:verbose": "./scripts/run-green-core-tests.sh --verbose",
+      "test:green-core:ci": "CI=true ./scripts/run-green-core-tests.sh"
+    },
+    
+    "segmented-jest-tests": {
+      "test:jest": "jest --config jest.config.enhanced.cjs --selectProjects unit",
+      "test:jest:unit": "jest --config jest.config.enhanced.cjs --selectProjects unit --maxWorkers=50%",
+      "test:jest:integration": "jest --config jest.config.enhanced.cjs --selectProjects integration --maxWorkers=25%",
+      "test:jest:green-core": "jest --config jest.config.enhanced.cjs --selectProjects green-core",
+      "test:jest:coverage": "jest --config jest.config.enhanced.cjs --coverage --selectProjects unit,integration",
+      "test:jest:watch": "jest --config jest.config.enhanced.cjs --watch --selectProjects unit"
+    },
+    
+    "infrastructure-tests": {
+      "test:deno": "deno test test/unit --allow-read --allow-env",
+      "test:lambda": "cd infra/lambdas && npm test",
+      "test:lambda:security": "cd infra/lambdas && npm test -- --testNamePattern='Red Team|Security|PII'",
+      "test:cdk": "cd infra && npm test"
+    },
+    
+    "e2e-and-browser-tests": {
+      "test:smoke": "playwright test test/smoke",
+      "test:e2e": "playwright test test/e2e",
+      "test:e2e:headed": "playwright test test/e2e --headed",
+      "test:visual": "playwright test -c playwright.visual.config.ts",
+      "test:cross-browser": "playwright test -c playwright.cross-browser.config.ts",
+      "test:accessibility": "playwright test test/accessibility"
+    },
+    
+    "security-and-compliance": {
+      "test:security": "npm run test:lambda:security && npm run test:jest -- --testNamePattern='Security|PII|GDPR'",
+      "test:pii": "jest --testNamePattern='PII|redaction|privacy' --verbose",
+      "test:gdpr": "jest --testNamePattern='GDPR|compliance|consent' --verbose",
+      "test:audit": "npm run test:security && npm run test:pii && npm run test:gdpr"
+    },
+    
+    "ci-cd-workflows": {
+      "test:ci:pr": "npm run test:green-core:ci",
+      "test:ci:main": "npm run test:green-core:ci && npm run test:jest:unit && npm run test:jest:integration",
+      "test:ci:nightly": "npm run test:ci:main && npm run test:lambda && npm run test:e2e && npm run test:security",
+      "test:ci:release": "npm run test:ci:nightly && npm run test:visual && npm run test:cross-browser && npm run test:accessibility"
+    },
+    
+    "performance-and-monitoring": {
+      "test:performance": "lhci autorun",
+      "test:load": "npx tsx scripts/run-10x-load-test.ts",
+      "test:memory": "jest --logHeapUsage --detectOpenHandles",
+      "test:benchmark": "npm run test:performance && npm run test:load"
+    },
+    
+    "quarantine-management": {
+      "test:quarantine:list": "npx tsx scripts/test-quarantine-manager.ts list",
+      "test:quarantine:add": "npx tsx scripts/test-quarantine-manager.ts add",
+      "test:quarantine:remove": "npx tsx scripts/test-quarantine-manager.ts remove",
+      "test:quarantine:report": "npx tsx scripts/test-quarantine-manager.ts report"
+    },
+    
+    "comprehensive-suites": {
+      "test:all": "npm run test:green-core && npm run test:jest:unit && npm run test:jest:integration",
+      "test:full": "npm run test:all && npm run test:lambda && npm run test:e2e",
+      "test:complete": "npm run test:full && npm run test:security && npm run test:visual && npm run test:cross-browser",
+      "test:production-ready": "npm run test:complete && npm run test:performance && npm run test:accessibility"
+    },
+    
+    "development-helpers": {
+      "test:changed": "npx tsx scripts/test-selection-engine.ts --changed-files",
+      "test:impact": "npx tsx scripts/test-selection-engine.ts --impact-analysis",
+      "test:smart": "npx tsx scripts/test-selection-engine.ts --smart-selection",
+      "test:debug": "jest --runInBand --detectOpenHandles --forceExit --verbose"
+    }
+  }
+}

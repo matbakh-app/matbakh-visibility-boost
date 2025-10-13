@@ -1,12 +1,12 @@
 /**
- * AWS RDS OnboardingService - Migrated from Supabase
- * 
+ * AWS RDS OnboardingService
+ *
  * @description Handles partner onboarding data storage in AWS RDS
  * @usage Partner onboarding wizard and profile management
- * @status PRODUCTION - Migrated from Supabase
+ * @status PRODUCTION - AWS Native
  */
 
-import { rdsClient } from '@/services/aws-rds-client';
+import { rdsClient } from "@/services/aws-rds-client";
 
 export interface OnboardingAnswers {
   companyName: string;
@@ -33,11 +33,14 @@ export interface ServiceResponse<T> {
 }
 
 export class OnboardingService {
-  
   /**
    * Complete partner onboarding process
    */
-  static async completeOnboarding(userId: string, userEmail: string, answers: OnboardingAnswers): Promise<ServiceResponse<any>> {
+  static async completeOnboarding(
+    userId: string,
+    userEmail: string,
+    answers: OnboardingAnswers
+  ): Promise<ServiceResponse<any>> {
     try {
       // Start transaction
       return await rdsClient.transaction(async (client) => {
@@ -80,13 +83,13 @@ export class OnboardingService {
             JSON.stringify(answers.specialFeatures || []),
             JSON.stringify(answers.selectedServices || []),
             true,
-            'active',
-            JSON.stringify(answers.categories || [])
+            "active",
+            JSON.stringify(answers.categories || []),
           ]
         );
 
         if (!partner) {
-          throw new Error('Failed to create business partner');
+          throw new Error("Failed to create business partner");
         }
 
         // 2. Create or update business profile
@@ -109,7 +112,7 @@ export class OnboardingService {
             answers.address || null,
             answers.phone || null,
             answers.website || null,
-            answers.googleConnected || false
+            answers.googleConnected || false,
           ]
         );
 
@@ -134,33 +137,33 @@ export class OnboardingService {
               answers.kpiData.customerCount || null,
               answers.kpiData.avgOrderValue || null,
               answers.kpiData.conversionRate || null,
-              answers.kpiData.customerSatisfaction || null
+              answers.kpiData.customerSatisfaction || null,
             ]
           );
         }
 
         // 4. Save onboarding steps
         const onboardingSteps = [
-          { 
-            step_name: 'google_connection', 
-            data: { connected: answers.googleConnected }, 
-            completed: !!answers.googleConnected 
+          {
+            step_name: "google_connection",
+            data: { connected: answers.googleConnected },
+            completed: !!answers.googleConnected,
           },
-          { 
-            step_name: 'business_basics', 
-            data: answers, 
-            completed: true 
+          {
+            step_name: "business_basics",
+            data: answers,
+            completed: true,
           },
-          { 
-            step_name: 'service_selection', 
-            data: { services: answers.selectedServices }, 
-            completed: true 
+          {
+            step_name: "service_selection",
+            data: { services: answers.selectedServices },
+            completed: true,
           },
-          { 
-            step_name: 'kpi_input', 
-            data: answers.kpiData, 
-            completed: !!answers.kpiData 
-          }
+          {
+            step_name: "kpi_input",
+            data: answers.kpiData,
+            completed: !!answers.kpiData,
+          },
         ];
 
         for (const step of onboardingSteps) {
@@ -179,7 +182,7 @@ export class OnboardingService {
               step.step_name,
               JSON.stringify(step.data),
               step.completed,
-              step.completed ? new Date().toISOString() : null
+              step.completed ? new Date().toISOString() : null,
             ]
           );
         }
@@ -187,16 +190,15 @@ export class OnboardingService {
         return {
           success: true,
           data: partner,
-          message: 'Onboarding erfolgreich abgeschlossen'
+          message: "Onboarding erfolgreich abgeschlossen",
         };
       });
-
     } catch (error) {
-      console.error('OnboardingService: Error completing onboarding:', error);
+      console.error("OnboardingService: Error completing onboarding:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        message: 'Fehler beim Abschließen des Onboardings'
+        error: error instanceof Error ? error.message : "Unknown error",
+        message: "Fehler beim Abschließen des Onboardings",
       };
     }
   }
@@ -204,22 +206,24 @@ export class OnboardingService {
   /**
    * Get onboarding progress for a user
    */
-  static async getOnboardingProgress(userId: string): Promise<ServiceResponse<any>> {
+  static async getOnboardingProgress(
+    userId: string
+  ): Promise<ServiceResponse<any>> {
     try {
       const partner = await rdsClient.queryOne(
-        'SELECT * FROM business_partners WHERE user_id = $1',
+        "SELECT * FROM business_partners WHERE user_id = $1",
         [userId]
       );
 
       if (!partner) {
         return {
           success: false,
-          message: 'Kein Partner-Profil gefunden'
+          message: "Kein Partner-Profil gefunden",
         };
       }
 
       const steps = await rdsClient.query(
-        'SELECT * FROM partner_onboarding_steps WHERE partner_id = $1 ORDER BY created_at',
+        "SELECT * FROM partner_onboarding_steps WHERE partner_id = $1 ORDER BY created_at",
         [partner.id]
       );
 
@@ -228,16 +232,15 @@ export class OnboardingService {
         data: {
           partner,
           steps,
-          completed: partner.onboarding_completed
-        }
+          completed: partner.onboarding_completed,
+        },
       };
-
     } catch (error) {
-      console.error('OnboardingService: Error getting progress:', error);
+      console.error("OnboardingService: Error getting progress:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        message: 'Fehler beim Laden des Onboarding-Fortschritts'
+        error: error instanceof Error ? error.message : "Unknown error",
+        message: "Fehler beim Laden des Onboarding-Fortschritts",
       };
     }
   }
@@ -249,7 +252,7 @@ export class OnboardingService {
     try {
       return await rdsClient.testConnection();
     } catch (error) {
-      console.error('OnboardingService: Connection test failed:', error);
+      console.error("OnboardingService: Connection test failed:", error);
       return false;
     }
   }

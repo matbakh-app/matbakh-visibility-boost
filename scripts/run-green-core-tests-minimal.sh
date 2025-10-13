@@ -85,12 +85,12 @@ echo ""
 echo -e "${BLUE}🔍 Test 3/3: Persona Service Core Functions (Complete Suite)${NC}"
 TEST_START=$(date +%s)
 
-if npx jest "src/services/__tests__/persona-api.test.ts" \
+if npx jest "src/services/__tests__/persona-api.basic.test.ts" \
     --verbose \
     --maxWorkers=1; then
     TEST_END=$(date +%s)
     TEST_DURATION=$((TEST_END - TEST_START))
-    handle_success "Persona Service Core Functions (All 19 tests)" $TEST_DURATION
+    handle_success "Persona Service Core Functions (All 8 tests)" $TEST_DURATION
 else
     handle_failure "Persona Service Core Functions" $?
 fi

@@ -9,6 +9,37 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "localhost",
     port: 5173,
+    // Enhanced HMR configuration
+    hmr: {
+      overlay: true,
+      clientPort: 5173,
+    },
+    // Faster file watching
+    watch: {
+      usePolling: false,
+      interval: 100,
+      ignored: [
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/coverage/**',
+        '**/src/archive/**',
+        '**/.git/**',
+        '**/test-results/**',
+        '**/playwright-report/**'
+      ]
+    },
+    // Optimized middleware
+    middlewareMode: false,
+    // Faster startup
+    warmup: {
+      clientFiles: [
+        './src/main.tsx',
+        './src/App.tsx',
+        './src/components/**/*.tsx',
+        './src/hooks/**/*.ts',
+        './src/lib/**/*.ts'
+      ]
+    },
     headers: {
       'Content-Security-Policy': "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;"
     },
@@ -30,7 +61,16 @@ export default defineConfig(({ mode }) => ({
     },
   },
   plugins: [
-    react(),
+    react({
+      // Enhanced Fast Refresh configuration
+      fastRefresh: true,
+      // Include development helpers
+      include: "**/*.{jsx,tsx}",
+      // Optimize JSX runtime
+      jsxRuntime: 'automatic',
+      // Enable development optimizations
+      devTarget: 'esnext',
+    }),
     // mode === 'development' && componentTagger(), // Disabled - package not available
     mode === 'development' && visualizer({
       filename: 'stats.html',
@@ -44,6 +84,23 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  // Enhanced development optimizations
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      '@tanstack/react-query',
+      'lucide-react',
+      'clsx',
+      'tailwind-merge'
+    ],
+    exclude: ['@vite/client', '@vite/env'],
+    // Force pre-bundling of commonly used dependencies
+    force: mode === 'development'
+  },
+  // Enhanced caching for faster rebuilds
+  cacheDir: 'node_modules/.vite',
   build: {
     rollupOptions: {
       // Hard exclude permanent archive from build (Defence-in-Depth)
@@ -79,6 +136,10 @@ export default defineConfig(({ mode }) => ({
 
           // i18n
           i18n: ['i18next', 'react-i18next', 'i18next-browser-languagedetector'],
+
+          // Performance & Optimization
+          optimization: ['web-vitals'],
+          monitoring: ['@/lib/monitoring', '@/lib/performance-monitoring'],
 
           // Utils
           utils: ['clsx', 'tailwind-merge', 'date-fns'],

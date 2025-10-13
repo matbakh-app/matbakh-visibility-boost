@@ -39,7 +39,7 @@ export class TestCoverageAnalyzer {
       }
     }
 
-    const coveragePercentage = componentPaths.length > 0 
+    const coveragePercentage = componentPaths.length 
       ? (testedFiles.length / componentPaths.length) * 100 
       : 0;
 

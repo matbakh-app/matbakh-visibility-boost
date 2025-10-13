@@ -1,18 +1,16 @@
-// Score History Service
-// Task: 1.2 Migrate ScoreHistory service from Supabase to AWS RDS
-// Requirements: B.1, B.2
+// Score History Service - AWS RDS Native
+// Handles score history operations with AWS RDS backend
 
-import { AwsRdsClient } from './aws-rds-client';
-import type { 
-  ScoreHistoryRecord, 
-  ScoreHistoryInsert, 
-  ScoreHistoryUpdate,
-  ScoreHistoryQuery,
+import type {
   ScoreEvolutionData,
   ScoreHistoryAnalytics,
+  ScoreHistoryInsert,
+  ScoreHistoryQuery,
+  ScoreHistoryRecord,
+  ScoreHistoryUpdate,
   ScoreType,
-  ScoreSource
-} from '@/types/score-history';
+} from "@/types/score-history";
+import { AwsRdsClient } from "./aws-rds-client";
 
 export class ScoreHistoryService {
   private static rdsClient = new AwsRdsClient();
@@ -20,7 +18,9 @@ export class ScoreHistoryService {
   /**
    * Insert a new score history record
    */
-  static async insertScore(data: ScoreHistoryInsert): Promise<ScoreHistoryRecord> {
+  static async insertScore(
+    data: ScoreHistoryInsert
+  ): Promise<ScoreHistoryRecord> {
     try {
       const query = `
         INSERT INTO score_history (
@@ -29,57 +29,69 @@ export class ScoreHistoryService {
         ) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
         RETURNING *
       `;
-      
+
       const params = [
         data.business_id,
         data.score_type,
         data.score_value,
         data.source,
         data.calculated_at || new Date().toISOString(),
-        JSON.stringify(data.meta || {})
+        JSON.stringify(data.meta || {}),
       ];
 
       const result = await this.rdsClient.executeQuery(query, params);
-      
+
       if (!result.records || result.records.length === 0) {
-        throw new Error('No record returned after insert');
+        throw new Error("No record returned after insert");
       }
 
       return this.rdsClient.mapRecord(result.records[0]) as ScoreHistoryRecord;
     } catch (error) {
-      throw new Error(`Failed to insert score history: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to insert score history: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   }
 
   /**
    * Bulk insert multiple score history records
    */
-  static async insertScores(data: ScoreHistoryInsert[]): Promise<ScoreHistoryRecord[]> {
+  static async insertScores(
+    data: ScoreHistoryInsert[]
+  ): Promise<ScoreHistoryRecord[]> {
     try {
       const results: ScoreHistoryRecord[] = [];
-      
+
       // Execute inserts in batches to avoid query size limits
       const batchSize = 100;
       for (let i = 0; i < data.length; i += batchSize) {
         const batch = data.slice(i, i + batchSize);
         const batchResults = await Promise.all(
-          batch.map(record => this.insertScore(record))
+          batch.map((record) => this.insertScore(record))
         );
         results.push(...batchResults);
       }
 
       return results;
     } catch (error) {
-      throw new Error(`Failed to insert score history records: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to insert score history records: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   }
 
   /**
    * Query score history with filters
    */
-  static async queryScoreHistory(query: ScoreHistoryQuery): Promise<ScoreHistoryRecord[]> {
+  static async queryScoreHistory(
+    query: ScoreHistoryQuery
+  ): Promise<ScoreHistoryRecord[]> {
     try {
-      let sql = 'SELECT * FROM score_history WHERE 1=1';
+      let sql = "SELECT * FROM score_history WHERE 1=1";
       const params: any[] = [];
       let paramIndex = 1;
 
@@ -92,7 +104,7 @@ export class ScoreHistoryService {
 
       if (query.score_type) {
         if (Array.isArray(query.score_type)) {
-          const placeholders = query.score_type.map(() => '?').join(',');
+          const placeholders = query.score_type.map(() => "?").join(",");
           sql += ` AND score_type IN (${placeholders})`;
           params.push(...query.score_type);
           paramIndex += query.score_type.length;
@@ -105,7 +117,7 @@ export class ScoreHistoryService {
 
       if (query.source) {
         if (Array.isArray(query.source)) {
-          const placeholders = query.source.map(() => '?').join(',');
+          const placeholders = query.source.map(() => "?").join(",");
           sql += ` AND source IN (${placeholders})`;
           params.push(...query.source);
           paramIndex += query.source.length;
@@ -129,7 +141,7 @@ export class ScoreHistoryService {
       }
 
       // Order by calculated_at descending
-      sql += ' ORDER BY calculated_at DESC';
+      sql += " ORDER BY calculated_at DESC";
 
       // Apply limit and offset
       if (query.limit) {
@@ -145,12 +157,18 @@ export class ScoreHistoryService {
       }
 
       const result = await this.rdsClient.executeQuery(sql, params);
-      
-      return result.records?.map(record => 
-        this.rdsClient.mapRecord(record) as ScoreHistoryRecord
-      ) || [];
+
+      return (
+        result.records?.map(
+          (record) => this.rdsClient.mapRecord(record) as ScoreHistoryRecord
+        ) || []
+      );
     } catch (error) {
-      throw new Error(`Failed to query score history: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to query score history: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   }
 
@@ -158,8 +176,8 @@ export class ScoreHistoryService {
    * Get score evolution data for a specific business and score type
    */
   static async getScoreEvolution(
-    businessId: string, 
-    scoreType: ScoreType, 
+    businessId: string,
+    scoreType: ScoreType,
     days: number = 30
   ): Promise<ScoreEvolutionData> {
     const dateFrom = new Date();
@@ -169,29 +187,31 @@ export class ScoreHistoryService {
       business_id: businessId,
       score_type: scoreType,
       date_from: dateFrom.toISOString(),
-      limit: 100
+      limit: 100,
     });
 
     if (records.length === 0) {
       return {
         score_type: scoreType,
         data_points: [],
-        trend: 'stable',
+        trend: "stable",
         change_percentage: 0,
-        period_days: days
+        period_days: days,
       };
     }
 
     // Sort by date ascending for trend calculation
-    const sortedRecords = records.sort((a, b) => 
-      new Date(a.calculated_at).getTime() - new Date(b.calculated_at).getTime()
+    const sortedRecords = records.sort(
+      (a, b) =>
+        new Date(a.calculated_at).getTime() -
+        new Date(b.calculated_at).getTime()
     );
 
-    const dataPoints = sortedRecords.map(record => ({
+    const dataPoints = sortedRecords.map((record) => ({
       date: record.calculated_at,
       score: record.score_value,
       source: record.source,
-      confidence: record.meta?.confidence_score
+      confidence: record.meta?.confidence_score,
     }));
 
     // Calculate trend
@@ -199,9 +219,9 @@ export class ScoreHistoryService {
     const lastScore = sortedRecords[sortedRecords.length - 1].score_value;
     const changePercentage = ((lastScore - firstScore) / firstScore) * 100;
 
-    let trend: 'increasing' | 'decreasing' | 'stable' = 'stable';
+    let trend: "increasing" | "decreasing" | "stable" = "stable";
     if (Math.abs(changePercentage) > 5) {
-      trend = changePercentage > 0 ? 'increasing' : 'decreasing';
+      trend = changePercentage > 0 ? "increasing" : "decreasing";
     }
 
     return {
@@ -209,49 +229,67 @@ export class ScoreHistoryService {
       data_points: dataPoints,
       trend,
       change_percentage: changePercentage,
-      period_days: days
+      period_days: days,
     };
   }
 
   /**
    * Get comprehensive analytics for a business
    */
-  static async getBusinessAnalytics(businessId: string): Promise<ScoreHistoryAnalytics> {
+  static async getBusinessAnalytics(
+    businessId: string
+  ): Promise<ScoreHistoryAnalytics> {
     const scoreTypes: ScoreType[] = [
-      'overall_visibility',
-      'google_presence',
-      'social_media',
-      'website_performance',
-      'review_management'
+      "overall_visibility",
+      "google_presence",
+      "social_media",
+      "website_performance",
+      "review_management",
     ];
 
-    const evolutionPromises = scoreTypes.map(scoreType => 
+    const evolutionPromises = scoreTypes.map((scoreType) =>
       this.getScoreEvolution(businessId, scoreType, 30)
     );
 
     const scoreEvolution = await Promise.all(evolutionPromises);
 
     // Calculate overall trend
-    const overallEvolution = scoreEvolution.find(e => e.score_type === 'overall_visibility');
-    let overallTrend: 'improving' | 'declining' | 'stable' = 'stable';
-    
+    const overallEvolution = scoreEvolution.find(
+      (e) => e.score_type === "overall_visibility"
+    );
+    let overallTrend: "improving" | "declining" | "stable" = "stable";
+
     if (overallEvolution && Math.abs(overallEvolution.change_percentage) > 3) {
-      overallTrend = overallEvolution.change_percentage > 0 ? 'improving' : 'declining';
+      overallTrend =
+        overallEvolution.change_percentage > 0 ? "improving" : "declining";
     }
 
     // Generate insights
     const keyInsights: string[] = [];
     const recommendations: string[] = [];
 
-    scoreEvolution.forEach(evolution => {
+    scoreEvolution.forEach((evolution) => {
       if (evolution.data_points.length > 0) {
-        const latestScore = evolution.data_points[evolution.data_points.length - 1].score;
-        
-        if (evolution.trend === 'increasing') {
-          keyInsights.push(`${evolution.score_type} improved by ${evolution.change_percentage.toFixed(1)}%`);
-        } else if (evolution.trend === 'decreasing') {
-          keyInsights.push(`${evolution.score_type} declined by ${Math.abs(evolution.change_percentage).toFixed(1)}%`);
-          recommendations.push(`Focus on improving ${evolution.score_type} (current score: ${latestScore.toFixed(1)})`);
+        const latestScore =
+          evolution.data_points[evolution.data_points.length - 1].score;
+
+        if (evolution.trend === "increasing") {
+          keyInsights.push(
+            `${
+              evolution.score_type
+            } improved by ${evolution.change_percentage.toFixed(1)}%`
+          );
+        } else if (evolution.trend === "decreasing") {
+          keyInsights.push(
+            `${evolution.score_type} declined by ${Math.abs(
+              evolution.change_percentage
+            ).toFixed(1)}%`
+          );
+          recommendations.push(
+            `Focus on improving ${
+              evolution.score_type
+            } (current score: ${latestScore.toFixed(1)})`
+          );
         }
       }
     });
@@ -262,14 +300,17 @@ export class ScoreHistoryService {
       score_evolution: scoreEvolution,
       key_insights: keyInsights,
       recommendations: recommendations,
-      last_updated: new Date().toISOString()
+      last_updated: new Date().toISOString(),
     };
   }
 
   /**
    * Update a score history record
    */
-  static async updateScore(id: string, data: ScoreHistoryUpdate): Promise<ScoreHistoryRecord> {
+  static async updateScore(
+    id: string,
+    data: ScoreHistoryUpdate
+  ): Promise<ScoreHistoryRecord> {
     try {
       const updateFields: string[] = [];
       const params: any[] = [];
@@ -302,28 +343,33 @@ export class ScoreHistoryService {
 
       updateFields.push(`updated_at = NOW()`);
 
-      if (updateFields.length === 1) { // Only updated_at
-        throw new Error('No fields to update');
+      if (updateFields.length === 1) {
+        // Only updated_at
+        throw new Error("No fields to update");
       }
 
       const query = `
         UPDATE score_history 
-        SET ${updateFields.join(', ')}
+        SET ${updateFields.join(", ")}
         WHERE id = ?
         RETURNING *
       `;
-      
+
       params.push(id);
 
       const result = await this.rdsClient.executeQuery(query, params);
-      
+
       if (!result.records || result.records.length === 0) {
-        throw new Error('Score history record not found');
+        throw new Error("Score history record not found");
       }
 
       return this.rdsClient.mapRecord(result.records[0]) as ScoreHistoryRecord;
     } catch (error) {
-      throw new Error(`Failed to update score history: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to update score history: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   }
 
@@ -332,21 +378,27 @@ export class ScoreHistoryService {
    */
   static async deleteScore(id: string): Promise<void> {
     try {
-      const query = 'DELETE FROM score_history WHERE id = ?';
+      const query = "DELETE FROM score_history WHERE id = ?";
       const result = await this.rdsClient.executeQuery(query, [id]);
-      
+
       if (result.numberOfRecordsUpdated === 0) {
-        throw new Error('Score history record not found');
+        throw new Error("Score history record not found");
       }
     } catch (error) {
-      throw new Error(`Failed to delete score history: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to delete score history: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   }
 
   /**
    * Get latest scores for a business
    */
-  static async getLatestScores(businessId: string): Promise<Record<ScoreType, number | null>> {
+  static async getLatestScores(
+    businessId: string
+  ): Promise<Record<ScoreType, number | null>> {
     try {
       const query = `
         SELECT score_type, score_value, calculated_at
@@ -354,33 +406,36 @@ export class ScoreHistoryService {
         WHERE business_id = ?
         ORDER BY calculated_at DESC
       `;
-      
+
       const result = await this.rdsClient.executeQuery(query, [businessId]);
-      const data = result.records?.map(record => 
-        this.rdsClient.mapRecord(record)
-      ) || [];
+      const data =
+        result.records?.map((record) => this.rdsClient.mapRecord(record)) || [];
 
       // Get the most recent score for each type
       const latestScores: Record<string, number | null> = {};
       const scoreTypes: ScoreType[] = [
-        'overall_visibility',
-        'google_presence',
-        'social_media',
-        'website_performance',
-        'review_management',
-        'local_seo',
-        'content_quality',
-        'competitive_position'
+        "overall_visibility",
+        "google_presence",
+        "social_media",
+        "website_performance",
+        "review_management",
+        "local_seo",
+        "content_quality",
+        "competitive_position",
       ];
 
-      scoreTypes.forEach(scoreType => {
+      scoreTypes.forEach((scoreType) => {
         const record = data.find((d: any) => d.score_type === scoreType);
         latestScores[scoreType] = record ? record.score_value : null;
       });
 
       return latestScores as Record<ScoreType, number | null>;
     } catch (error) {
-      throw new Error(`Failed to get latest scores: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to get latest scores: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   }
 }

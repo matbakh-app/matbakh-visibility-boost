@@ -1,320 +1,465 @@
-# Design Document - S3 File Storage Migration (Phase A4)
+# S3 File Storage Migration Design
 
-## Overview
+## Architecture Overview
 
-Dieses Design-Dokument spezifiziert die vollständige Migration aller Dateispeicher-Funktionalitäten von Supabase Storage zu AWS S3. Das System wird eine saubere, zukunftsfähige und DSGVO-konforme Datei-Upload-Infrastruktur bereitstellen, die vollständig auf AWS basiert.
-
-## Architecture
-
-### High-Level Architecture
+### Current File Storage Architecture
 
 ```mermaid
 graph TB
-    subgraph "Frontend (React)"
-        UI[React Components]
-        Hooks[Custom Hooks]
-        Lib[S3 Upload Library]
+    Frontend[Frontend Application] --> API[Current API]
+    API --> LocalStorage[Local File Storage]
+    API --> Database[(Database)]
+
+    subgraph "Current Storage System"
+        LocalStorage --> FileSystem[File System]
+        FileSystem --> Backup[Manual Backups]
     end
-    
-    subgraph "AWS Lambda"
-        PresignedFn[matbakh-get-presigned-url]
-        AuthFn[Existing Auth Functions]
-    end
-    
-    subgraph "AWS S3"
-        UploadsB[matbakh-files-uploads]
-        ProfileB[matbakh-files-profile] 
-        ReportsB[matbakh-files-reports]
-    end
-    
-    subgraph "AWS RDS"
-        DB[(PostgreSQL 15.14)]
-    end
-    
-    subgraph "AWS CloudFront"
-        CDN[CloudFront Distribution]
-    end
-    
-    UI --> Hooks
-    Hooks --> Lib
-    Lib --> PresignedFn
-    PresignedFn --> UploadsB
-    PresignedFn --> ProfileB
-    PresignedFn --> ReportsB
-    PresignedFn --> DB
-    ReportsB --> CDN
-    CDN --> UI
+
+    Users[Users] --> Frontend
+
+    style LocalStorage fill:#ffcccc
+    style FileSystem fill:#ffcccc
+    style Backup fill:#ffcccc
 ```
 
-### Data Flow Architecture
+### Target S3 + CloudFront Architecture
+
+```mermaid
+graph TB
+    Frontend[Frontend Application] --> APIGateway[API Gateway]
+    APIGateway --> Lambda[Lambda Functions]
+
+    Lambda --> S3Primary[S3 Primary Bucket<br/>eu-central-1]
+    Lambda --> DynamoDB[(DynamoDB<br/>File Metadata)]
+
+    S3Primary --> CloudFront[CloudFront CDN]
+    S3Primary --> S3Replica[S3 Replica Bucket<br/>eu-west-1]
+
+    CloudFront --> EdgeLocations[Global Edge Locations]
+    EdgeLocations --> Users[Global Users]
+
+    subgraph "Image Processing"
+        Lambda --> LambdaEdge[Lambda@Edge]
+        LambdaEdge --> ImageOptimization[Image Optimization]
+    end
+
+    subgraph "Monitoring & Security"
+        CloudWatch[CloudWatch Logs]
+        KMS[AWS KMS Encryption]
+        IAM[IAM Access Control]
+    end
+
+    style S3Primary fill:#ccffcc
+    style CloudFront fill:#ccffcc
+    style EdgeLocations fill:#ccffcc
+```
+
+## Component Design Specifications
+
+### 1. S3 Storage Configuration Design
+
+#### Primary Bucket Configuration
+
+```yaml
+Bucket Configuration:
+  Name: matbakh-files-primary-eu-central-1
+  Region: eu-central-1
+  Versioning: Enabled
+  Encryption:
+    Type: SSE-KMS
+    Key: Customer Managed Key
+    KeyRotation: Annual
+
+  Lifecycle Policies:
+    - Rule: "Optimize Storage Classes"
+      Transitions:
+        - Days: 30, StorageClass: IA
+        - Days: 90, StorageClass: Glacier
+        - Days: 365, StorageClass: Deep Archive
+
+    - Rule: "Delete Incomplete Multipart Uploads"
+      AbortIncompleteMultipartUpload: 7 days
+
+    - Rule: "Delete Old Versions"
+      NoncurrentVersionExpiration: 90 days
+
+  CORS Configuration:
+    AllowedOrigins: ["https://matbakh.app", "https://*.matbakh.app"]
+    AllowedMethods: [GET, PUT, POST, DELETE, HEAD]
+    AllowedHeaders: ["*"]
+    ExposeHeaders: ["ETag", "x-amz-meta-*"]
+    MaxAgeSeconds: 3600
+
+  Notification Configuration:
+    CloudWatchEvents:
+      - Event: s3:ObjectCreated:*
+        Target: Lambda Function (ProcessUpload)
+      - Event: s3:ObjectRemoved:*
+        Target: Lambda Function (ProcessDeletion)
+```
+
+#### Cross-Region Replication Setup
 
 ```mermaid
 sequenceDiagram
-    participant U as User/Frontend
-    participant L as Lambda (Presigned)
-    participant S3 as S3 Bucket
-    participant RDS as PostgreSQL
-    participant CF as CloudFront
-    
-    U->>L: Request presigned URL
-    L->>RDS: Validate user & permissions
-    L->>L: Generate presigned URL (15min TTL)
-    L->>U: Return {uploadUrl, fileUrl}
-    U->>S3: PUT file to uploadUrl
-    S3->>U: Upload success
-    U->>RDS: Save file metadata
-    U->>CF: Request file (for reports)
-    CF->>S3: Fetch file
-    CF->>U: Deliver file
+    participant S3Primary as S3 Primary<br/>(eu-central-1)
+    participant S3Replica as S3 Replica<br/>(eu-west-1)
+    participant IAM as IAM Role
+
+    Note over S3Primary,S3Replica: Replication Configuration
+    S3Primary->>IAM: Assume Replication Role
+    IAM->>S3Primary: Grant Permissions
+    S3Primary->>S3Replica: Replicate Objects
+    S3Replica->>S3Primary: Confirm Replication
+
+    Note over S3Primary,S3Replica: Disaster Recovery
+    S3Primary->>S3Replica: Failover (if needed)
+    S3Replica->>S3Primary: Failback (when restored)
 ```
 
-## Components and Interfaces
+### 2. CloudFront CDN Design
 
-### 1. S3 Bucket Structure
-
-#### Bucket Configuration
-
-| Bucket Name | Purpose | Access Level | Lifecycle | CORS |
-|-------------|---------|--------------|-----------|------|
-| `matbakh-files-uploads` | User uploads, AI content | Private | Permanent | ✅ |
-| `matbakh-files-profile` | Avatars, logos, CM images | Semi-public | Permanent | ✅ |
-| `matbakh-files-reports` | VC reports, PDFs, snapshots | Public via link | 30 days | ✅ |
-
-#### Folder Structure
-
-```
-matbakh-files-uploads/
-├── user-uploads/{user_id}/
-├── ai-generated/{type}/
-└── temp/{session_id}/
-
-matbakh-files-profile/
-├── avatars/{user_id}/
-├── logos/{partner_id}/
-└── cm-images/{category}/
-
-matbakh-files-reports/
-├── vc-reports/{lead_id}/
-├── pdf-exports/{report_id}/
-└── tmp/{temp_id}/          # 7 days lifecycle
-```
-
-### 2. Lambda Function: matbakh-get-presigned-url
-
-#### Function Specification
-
-```typescript
-// Input Interface
-interface PresignedUrlRequest {
-  bucket: 'matbakh-files-uploads' | 'matbakh-files-profile' | 'matbakh-files-reports';
-  filename: string;
-  contentType: string;
-  folder?: string;
-  userId?: string;
-  partnerId?: string;
-}
-
-// Output Interface
-interface PresignedUrlResponse {
-  uploadUrl: string;      // Presigned PUT URL (15min TTL)
-  fileUrl: string;        // S3 object URL
-  publicUrl?: string;     // CloudFront URL (for reports)
-  expiresAt: string;      // ISO timestamp
-}
-```
-
-#### Lambda Configuration
+#### Distribution Configuration
 
 ```yaml
-Function: matbakh-get-presigned-url
-Runtime: nodejs20.x
-Memory: 256MB
-Timeout: 30s
-VPC: vpc-0c72fab3273a1be4f
-Layer: pg-client-layer:1
-Environment:
-  - DB_SECRET_NAME: matbakh-db-postgres
-  - CLOUDFRONT_DOMAIN: d1234567890.cloudfront.net
+CloudFront Distribution:
+  Origins:
+    - DomainName: matbakh-files-primary-eu-central-1.s3.eu-central-1.amazonaws.com
+      OriginPath: ""
+      CustomOriginConfig:
+        HTTPPort: 443
+        OriginProtocolPolicy: https-only
+        OriginSSLProtocols: [TLSv1.2]
+
+  DefaultCacheBehavior:
+    TargetOriginId: S3-matbakh-files-primary
+    ViewerProtocolPolicy: redirect-to-https
+    CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad # Managed-CachingOptimized
+    OriginRequestPolicyId: 88a5eaf4-2fd4-4709-b370-b4c650ea3fcf # Managed-S3Origin
+
+  CacheBehaviors:
+    - PathPattern: "/images/*"
+      CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+      TTL: 86400 # 24 hours
+
+    - PathPattern: "/documents/*"
+      CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+      TTL: 3600 # 1 hour
+
+    - PathPattern: "/temp/*"
+      CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+      TTL: 300 # 5 minutes
+
+  CustomErrorResponses:
+    - ErrorCode: 403
+      ResponseCode: 404
+      ResponsePagePath: "/404.html"
+    - ErrorCode: 404
+      ResponseCode: 404
+      ResponsePagePath: "/404.html"
+
+  Aliases:
+    - files.matbakh.app
+    - cdn.matbakh.app
+
+  ViewerCertificate:
+    AcmCertificateArn: "arn:aws:acm:us-east-1:ACCOUNT:certificate/CERT-ID"
+    SslSupportMethod: sni-only
+    MinimumProtocolVersion: TLSv1.2_2021
 ```
 
-### 3. Frontend Integration
+#### Edge Location Optimization
 
-#### S3 Upload Library (`src/lib/s3-upload.ts`)
+```mermaid
+graph TB
+    subgraph "Global Edge Network"
+        Frankfurt[Frankfurt Edge]
+        London[London Edge]
+        Paris[Paris Edge]
+        NewYork[New York Edge]
+        Tokyo[Tokyo Edge]
+    end
+
+    subgraph "Origin Infrastructure"
+        S3[S3 eu-central-1]
+        LambdaEdge[Lambda@Edge]
+    end
+
+    Frankfurt --> S3
+    London --> S3
+    Paris --> S3
+    NewYork --> S3
+    Tokyo --> S3
+
+    Frankfurt --> LambdaEdge
+    London --> LambdaEdge
+    Paris --> LambdaEdge
+
+    Users1[EU Users] --> Frankfurt
+    Users2[UK Users] --> London
+    Users3[US Users] --> NewYork
+    Users4[Asia Users] --> Tokyo
+```
+
+### 3. File Upload/Download API Design
+
+#### Presigned URL Generation
+
+```mermaid
+sequenceDiagram
+    participant Client as Frontend Client
+    participant API as API Gateway
+    participant Lambda as Lambda Function
+    participant S3 as S3 Bucket
+    participant Auth as Authentication
+
+    Note over Client,S3: File Upload Flow
+    Client->>API: Request Upload URL
+    API->>Auth: Validate User Token
+    Auth->>API: User Authorized
+    API->>Lambda: Generate Presigned URL
+    Lambda->>S3: Create Presigned URL
+    S3->>Lambda: Return Signed URL
+    Lambda->>API: Upload URL + Metadata
+    API->>Client: Presigned URL Response
+
+    Client->>S3: Direct Upload (PUT)
+    S3->>S3: Store File
+    S3->>Lambda: Trigger Processing
+    Lambda->>Client: Upload Complete Notification
+```
+
+#### Multipart Upload Implementation
 
 ```typescript
-export interface UploadOptions {
-  file: File;
-  bucket: BucketType;
-  folder?: string;
-  onProgress?: (progress: number) => void;
-  onSuccess?: (fileUrl: string) => void;
-  onError?: (error: Error) => void;
+interface MultipartUploadConfig {
+  bucketName: string;
+  keyName: string;
+  partSize: number; // Default: 5MB
+  maxConcurrency: number; // Default: 3
+  retryAttempts: number; // Default: 3
 }
 
-export interface UploadResult {
-  fileUrl: string;
-  publicUrl?: string;
+interface UploadProgress {
   uploadId: string;
+  totalParts: number;
+  completedParts: number;
+  bytesUploaded: number;
+  totalBytes: number;
+  percentage: number;
+  estimatedTimeRemaining: number;
 }
 
-// Main upload function
-export async function uploadToS3(options: UploadOptions): Promise<UploadResult>
-
-// Validation functions
-export function validateFile(file: File, maxSize: number): boolean
-export function validateMimeType(file: File, allowedTypes: string[]): boolean
-```
-
-#### Custom Hooks
-
-```typescript
-// useS3Upload Hook
-export function useS3Upload() {
-  return {
-    upload: (options: UploadOptions) => Promise<UploadResult>,
-    isUploading: boolean,
-    progress: number,
-    error: Error | null
-  };
-}
-
-// useAvatar Hook
-export function useAvatar(userId: string) {
-  return {
-    avatarUrl: string | null,
-    uploadAvatar: (file: File) => Promise<string>,
-    deleteAvatar: () => Promise<void>,
-    isLoading: boolean
-  };
+class MultipartUploadManager {
+  async initiateUpload(config: MultipartUploadConfig): Promise<string>;
+  async uploadPart(
+    uploadId: string,
+    partNumber: number,
+    data: Buffer
+  ): Promise<string>;
+  async completeUpload(
+    uploadId: string,
+    parts: CompletedPart[]
+  ): Promise<string>;
+  async abortUpload(uploadId: string): Promise<void>;
+  async getProgress(uploadId: string): Promise<UploadProgress>;
 }
 ```
 
-#### React Components
+### 4. Image Processing Pipeline Design
 
-```typescript
-// ImageUpload Component
-interface ImageUploadProps {
-  onUpload: (fileUrl: string) => void;
-  maxSize?: number;
-  acceptedTypes?: string[];
-  bucket: BucketType;
-  folder?: string;
-}
+#### Lambda@Edge Processing
 
-// FileInput Component  
-interface FileInputProps {
-  onUpload: (fileUrl: string) => void;
-  multiple?: boolean;
-  maxSize?: number;
-  bucket: BucketType;
-}
+```mermaid
+flowchart TD
+    A[Image Request] --> B{Cache Hit?}
+    B -->|Yes| C[Return Cached Image]
+    B -->|No| D[Lambda@Edge Trigger]
+
+    D --> E[Parse Request Parameters]
+    E --> F{Valid Parameters?}
+    F -->|No| G[Return Original]
+    F -->|Yes| H[Generate Optimized Image]
+
+    H --> I[Resize/Crop]
+    I --> J[Format Conversion]
+    J --> K[Quality Optimization]
+    K --> L[Cache Result]
+    L --> M[Return Optimized Image]
+
+    subgraph "Processing Options"
+        N[WebP/AVIF Conversion]
+        O[Responsive Sizes]
+        P[Quality Adjustment]
+        Q[Watermark Addition]
+    end
+
+    H --> N
+    H --> O
+    H --> P
+    H --> Q
 ```
 
-## Data Models
+#### Image Processing Configuration
 
-### RDS Schema Updates
+```yaml
+Image Processing Rules:
+  Formats:
+    Input: [JPEG, PNG, GIF, WebP, AVIF, TIFF]
+    Output: [JPEG, PNG, WebP, AVIF]
 
-#### New Table: user_uploads
+  Quality Settings:
+    JPEG: 85
+    WebP: 80
+    AVIF: 75
 
-```sql
-CREATE TABLE user_uploads (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL,
-  partner_id UUID,
-  filename TEXT NOT NULL,
-  original_filename TEXT NOT NULL,
-  s3_url TEXT NOT NULL,
-  s3_bucket TEXT NOT NULL,
-  s3_key TEXT NOT NULL,
-  content_type TEXT NOT NULL,
-  file_size BIGINT NOT NULL,
-  upload_type TEXT NOT NULL, -- 'avatar', 'document', 'image', 'report'
-  is_public BOOLEAN DEFAULT false,
-  uploaded_at TIMESTAMPTZ DEFAULT now(),
-  expires_at TIMESTAMPTZ,
-  metadata JSONB DEFAULT '{}',
-  
-  -- Indexes
-  INDEX idx_user_uploads_user_id (user_id),
-  INDEX idx_user_uploads_partner_id (partner_id),
-  INDEX idx_user_uploads_type (upload_type),
-  INDEX idx_user_uploads_expires (expires_at)
-);
+  Resize Options:
+    MaxWidth: 2048
+    MaxHeight: 2048
+    Sizes: [150, 300, 600, 1200, 1920]
+
+  Optimization:
+    Progressive: true
+    Strip: true # Remove metadata
+    Interlace: true
+
+  Caching:
+    TTL: 31536000 # 1 year
+    Vary: ["Accept", "User-Agent"]
 ```
 
-#### Updated Tables
+### 5. File Metadata Management
 
-```sql
--- Add S3 columns to existing tables
-ALTER TABLE business_profiles 
-ADD COLUMN avatar_s3_url TEXT,
-ADD COLUMN logo_s3_url TEXT;
+#### DynamoDB Schema Design
 
-ALTER TABLE visibility_check_leads
-ADD COLUMN report_s3_url TEXT,
-ADD COLUMN report_expires_at TIMESTAMPTZ;
+```yaml
+FileMetadata Table:
+  TableName: matbakh-file-metadata
+  PartitionKey: fileId (String)
+  SortKey: version (Number)
 
--- Migration script for existing data
-UPDATE business_profiles 
-SET avatar_s3_url = CASE 
-  WHEN avatar_url IS NOT NULL 
-  THEN 'https://matbakh-files-profile.s3.eu-central-1.amazonaws.com/avatars/' || id || '/avatar.jpg'
-  ELSE NULL 
-END;
+  Attributes:
+    fileId: String # UUID v4
+    version: Number # Version number
+    originalName: String # User-provided filename
+    mimeType: String # MIME type
+    size: Number # File size in bytes
+    checksum: String # SHA-256 checksum
+    s3Key: String # S3 object key
+    s3Bucket: String # S3 bucket name
+    uploadedBy: String # User ID
+    uploadedAt: String # ISO timestamp
+    tags: Map # User-defined tags
+    metadata: Map # System metadata
+    status: String # processing, ready, error
+
+  GlobalSecondaryIndexes:
+    - IndexName: UserFilesIndex
+      PartitionKey: uploadedBy
+      SortKey: uploadedAt
+
+    - IndexName: StatusIndex
+      PartitionKey: status
+      SortKey: uploadedAt
+
+  LocalSecondaryIndexes:
+    - IndexName: SizeIndex
+      PartitionKey: fileId
+      SortKey: size
+
+  TTL:
+    AttributeName: expiresAt
+    Enabled: true
 ```
 
-## Security & IAM Configuration
+#### File Lifecycle Management
 
-### IAM Policies
+```mermaid
+stateDiagram-v2
+    [*] --> Uploading
+    Uploading --> Processing : Upload Complete
+    Uploading --> Failed : Upload Error
 
-#### Lambda Execution Role
+    Processing --> Ready : Processing Complete
+    Processing --> Failed : Processing Error
+
+    Ready --> Archived : Lifecycle Policy
+    Ready --> Deleted : User Request
+
+    Archived --> Deleted : Retention Policy
+
+    Failed --> Retry : Manual Retry
+    Failed --> Deleted : Cleanup
+
+    Deleted --> [*]
+```
+
+## Security Design
+
+### Access Control Architecture
+
+```mermaid
+graph TB
+    subgraph "Authentication Layer"
+        Cognito[Amazon Cognito]
+        JWT[JWT Tokens]
+    end
+
+    subgraph "Authorization Layer"
+        IAM[IAM Policies]
+        ResourcePolicy[S3 Resource Policies]
+        PresignedURL[Presigned URLs]
+    end
+
+    subgraph "Encryption Layer"
+        KMS[AWS KMS]
+        TLS[TLS 1.3]
+        S3Encryption[S3 Server-Side Encryption]
+    end
+
+    Users --> Cognito
+    Cognito --> JWT
+    JWT --> IAM
+    IAM --> ResourcePolicy
+    ResourcePolicy --> PresignedURL
+
+    PresignedURL --> TLS
+    TLS --> S3Encryption
+    S3Encryption --> KMS
+```
+
+### IAM Policy Design
 
 ```json
 {
   "Version": "2012-10-17",
   "Statement": [
     {
+      "Sid": "AllowUserFileAccess",
       "Effect": "Allow",
-      "Action": [
-        "s3:PutObject",
-        "s3:PutObjectAcl",
-        "s3:GetObject"
-      ],
-      "Resource": [
-        "arn:aws:s3:::matbakh-files-uploads/*",
-        "arn:aws:s3:::matbakh-files-profile/*", 
-        "arn:aws:s3:::matbakh-files-reports/*"
-      ]
+      "Principal": {
+        "AWS": "arn:aws:iam::ACCOUNT:role/MatbakhUserRole"
+      },
+      "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"],
+      "Resource": "arn:aws:s3:::matbakh-files-primary-eu-central-1/users/${cognito-identity.amazonaws.com:sub}/*",
+      "Condition": {
+        "StringEquals": {
+          "s3:x-amz-server-side-encryption": "aws:kms"
+        },
+        "StringLike": {
+          "s3:x-amz-server-side-encryption-aws-kms-key-id": "arn:aws:kms:eu-central-1:ACCOUNT:key/*"
+        }
+      }
     },
     {
+      "Sid": "AllowPublicFileRead",
       "Effect": "Allow",
-      "Action": [
-        "secretsmanager:GetSecretValue"
-      ],
-      "Resource": "arn:aws:secretsmanager:eu-central-1:*:secret:matbakh-db-postgres-*"
-    }
-  ]
-}
-```
-
-#### S3 Bucket Policies
-
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "DenyDirectPublicAccess",
-      "Effect": "Deny",
       "Principal": "*",
       "Action": "s3:GetObject",
-      "Resource": [
-        "arn:aws:s3:::matbakh-files-uploads/*",
-        "arn:aws:s3:::matbakh-files-profile/*"
-      ],
+      "Resource": "arn:aws:s3:::matbakh-files-primary-eu-central-1/public/*",
       "Condition": {
-        "StringNotEquals": {
-          "aws:PrincipalServiceName": "cloudfront.amazonaws.com"
+        "StringEquals": {
+          "aws:Referer": ["https://matbakh.app/*", "https://*.matbakh.app/*"]
         }
       }
     }
@@ -322,327 +467,198 @@ END;
 }
 ```
 
-### CORS Configuration
+## Migration Strategy Design
 
-```json
-[
-  {
-    "AllowedOrigins": ["https://matbakh.app", "http://localhost:5173"],
-    "AllowedMethods": ["GET", "PUT", "HEAD"],
-    "AllowedHeaders": ["*"],
-    "MaxAgeSeconds": 3000,
-    "ExposeHeaders": ["ETag", "x-amz-meta-*"]
-  }
-]
+### Phase-Based Migration Approach
+
+```mermaid
+gantt
+    title S3 File Storage Migration Timeline
+    dateFormat  YYYY-MM-DD
+    section Phase 1: Infrastructure
+    S3 Bucket Setup           :setup, 2025-01-15, 3d
+    CloudFront Configuration  :cdn, after setup, 2d
+    IAM and Security         :security, after cdn, 2d
+
+    section Phase 2: API Development
+    Upload API Development   :upload, after security, 4d
+    Download API Development :download, after upload, 3d
+    Image Processing        :processing, after download, 3d
+
+    section Phase 3: Migration
+    Migration Scripts       :scripts, after processing, 3d
+    Data Transfer          :transfer, after scripts, 5d
+    Validation            :validate, after transfer, 2d
+
+    section Phase 4: Cutover
+    DNS Switch            :dns, after validate, 1d
+    Monitoring           :monitor, after dns, 2d
+    Cleanup             :cleanup, after monitor, 2d
 ```
 
-### Lifecycle Rules
+### Data Migration Pipeline
 
-```json
-{
-  "Rules": [
-    {
-      "ID": "expire-reports",
-      "Status": "Enabled",
-      "Filter": {
-        "Prefix": ""
-      },
-      "Expiration": {
-        "Days": 30
-      },
-      "Transitions": [
-        {
-          "Days": 7,
-          "StorageClass": "STANDARD_IA"
-        }
-      ]
-    },
-    {
-      "ID": "expire-temp-files",
-      "Status": "Enabled", 
-      "Filter": {
-        "Prefix": "tmp/"
-      },
-      "Expiration": {
-        "Days": 7
-      }
-    }
-  ]
-}
+```mermaid
+flowchart TD
+    A[Scan Current Storage] --> B[Create File Inventory]
+    B --> C[Generate Migration Plan]
+    C --> D[Start Migration Workers]
+
+    D --> E[Worker 1: Images]
+    D --> F[Worker 2: Documents]
+    D --> G[Worker 3: Other Files]
+
+    E --> H[Transfer to S3]
+    F --> H
+    G --> H
+
+    H --> I[Verify Checksum]
+    I --> J{Checksum Valid?}
+    J -->|Yes| K[Update Database]
+    J -->|No| L[Retry Transfer]
+    L --> H
+
+    K --> M[Generate CDN URLs]
+    M --> N[Test File Access]
+    N --> O{Access OK?}
+    O -->|Yes| P[Mark Complete]
+    O -->|No| Q[Investigate Issue]
+    Q --> N
+
+    P --> R[Migration Complete]
 ```
 
-## Error Handling
+### Rollback Strategy
 
-### Lambda Error Responses
+```mermaid
+sequenceDiagram
+    participant Admin as Administrator
+    participant Script as Rollback Script
+    participant DNS as DNS Management
+    participant S3 as S3 Storage
+    participant Original as Original Storage
 
-```typescript
-interface ErrorResponse {
-  error: string;
-  code: 'INVALID_FILE' | 'PERMISSION_DENIED' | 'QUOTA_EXCEEDED' | 'INTERNAL_ERROR';
-  message: string;
-  details?: any;
-}
+    Note over Admin,Original: Rollback Initiation
+    Admin->>Script: Execute Rollback
+    Script->>DNS: Switch DNS Back
+    DNS->>Original: Route Traffic
 
-// Error handling patterns
-try {
-  // Validate request
-  if (!isValidFileType(contentType)) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({
-        error: 'INVALID_FILE',
-        message: 'File type not allowed',
-        details: { allowedTypes: ALLOWED_MIME_TYPES }
-      })
-    };
-  }
-  
-  // Check user permissions
-  if (!await hasUploadPermission(userId, bucket)) {
-    return {
-      statusCode: 403,
-      body: JSON.stringify({
-        error: 'PERMISSION_DENIED',
-        message: 'User not authorized for this bucket'
-      })
-    };
-  }
-  
-} catch (error) {
-  console.error('Upload error:', error);
-  return {
-    statusCode: 500,
-    body: JSON.stringify({
-      error: 'INTERNAL_ERROR',
-      message: 'Upload service temporarily unavailable'
-    })
-  };
-}
+    Note over Admin,Original: Data Verification
+    Script->>Original: Verify Data Integrity
+    Original->>Script: Confirm Status
+    Script->>S3: Pause New Uploads
+
+    Note over Admin,Original: Cleanup
+    Script->>Admin: Rollback Complete
+    Admin->>Script: Confirm Cleanup
+    Script->>S3: Archive Migration Data
 ```
 
-### Frontend Error Handling
+## Performance Optimization Design
 
-```typescript
-// Error boundary for upload components
-export class UploadErrorBoundary extends React.Component {
-  handleError(error: Error, errorInfo: ErrorInfo) {
-    // Log to monitoring service
-    console.error('Upload error:', error, errorInfo);
-    
-    // Show user-friendly message
-    toast.error('Upload failed. Please try again.');
-  }
-}
-
-// Retry logic
-export async function uploadWithRetry(
-  options: UploadOptions, 
-  maxRetries: number = 3
-): Promise<UploadResult> {
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      return await uploadToS3(options);
-    } catch (error) {
-      if (attempt === maxRetries) throw error;
-      
-      // Exponential backoff
-      await new Promise(resolve => 
-        setTimeout(resolve, Math.pow(2, attempt) * 1000)
-      );
-    }
-  }
-}
-```
-
-## Testing Strategy
-
-### Unit Tests
-
-```typescript
-// Lambda function tests
-describe('matbakh-get-presigned-url', () => {
-  test('generates valid presigned URL for uploads bucket', async () => {
-    const event = {
-      body: JSON.stringify({
-        bucket: 'matbakh-files-uploads',
-        filename: 'test.jpg',
-        contentType: 'image/jpeg'
-      })
-    };
-    
-    const result = await handler(event);
-    expect(result.statusCode).toBe(200);
-    
-    const body = JSON.parse(result.body);
-    expect(body.uploadUrl).toMatch(/^https:\/\/matbakh-files-uploads\.s3/);
-    expect(body.fileUrl).toBeDefined();
-  });
-  
-  test('rejects invalid file types', async () => {
-    const event = {
-      body: JSON.stringify({
-        bucket: 'matbakh-files-uploads',
-        filename: 'malware.exe',
-        contentType: 'application/x-executable'
-      })
-    };
-    
-    const result = await handler(event);
-    expect(result.statusCode).toBe(400);
-  });
-});
-
-// Frontend hook tests
-describe('useS3Upload', () => {
-  test('uploads file successfully', async () => {
-    const { result } = renderHook(() => useS3Upload());
-    const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
-    
-    await act(async () => {
-      const uploadResult = await result.current.upload({
-        file,
-        bucket: 'matbakh-files-uploads'
-      });
-      
-      expect(uploadResult.fileUrl).toBeDefined();
-    });
-  });
-});
-```
-
-### Integration Tests
-
-```typescript
-// End-to-end upload test
-describe('S3 Upload Integration', () => {
-  test('complete upload workflow', async () => {
-    // 1. Request presigned URL
-    const presignedResponse = await fetch('/api/get-presigned-url', {
-      method: 'POST',
-      body: JSON.stringify({
-        bucket: 'matbakh-files-uploads',
-        filename: 'integration-test.jpg',
-        contentType: 'image/jpeg'
-      })
-    });
-    
-    const { uploadUrl, fileUrl } = await presignedResponse.json();
-    
-    // 2. Upload file to S3
-    const file = new File(['test data'], 'test.jpg', { type: 'image/jpeg' });
-    const uploadResponse = await fetch(uploadUrl, {
-      method: 'PUT',
-      body: file
-    });
-    
-    expect(uploadResponse.status).toBe(200);
-    
-    // 3. Verify file is accessible
-    const verifyResponse = await fetch(fileUrl);
-    expect(verifyResponse.status).toBe(200);
-  });
-});
-```
-
-## Performance Considerations
-
-### Optimization Strategies
-
-1. **Multipart Upload** für Dateien > 5MB
-2. **Parallel Uploads** für mehrere Dateien
-3. **Image Compression** vor Upload
-4. **CloudFront Caching** für häufig abgerufene Dateien
-5. **S3 Transfer Acceleration** für globale Nutzer
-
-### Monitoring & Metrics
-
-```typescript
-// CloudWatch Custom Metrics
-const metrics = {
-  'Upload.Success': 1,
-  'Upload.Duration': uploadTime,
-  'Upload.FileSize': file.size,
-  'Upload.Bucket': bucket
-};
-
-await cloudWatch.putMetricData({
-  Namespace: 'Matbakh/S3Upload',
-  MetricData: Object.entries(metrics).map(([name, value]) => ({
-    MetricName: name,
-    Value: value,
-    Unit: name.includes('Duration') ? 'Milliseconds' : 'Count'
-  }))
-}).promise();
-```
-
-## Deployment Strategy
-
-### Infrastructure as Code
+### Caching Strategy
 
 ```yaml
-# CloudFormation Template
-Resources:
-  MatbakhFilesUploads:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: matbakh-files-uploads
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-      LifecycleConfiguration:
-        Rules:
-          - Id: DeleteTempFiles
-            Status: Enabled
-            Filter:
-              Prefix: temp/
-            ExpirationInDays: 7
-      CorsConfiguration:
-        CorsRules:
-          - AllowedOrigins: ['https://matbakh.app']
-            AllowedMethods: [GET, PUT, HEAD]
-            AllowedHeaders: ['*']
-            MaxAge: 3000
+Caching Layers:
+  Browser Cache:
+    Static Assets: 1 year
+    Images: 30 days
+    Documents: 7 days
+
+  CloudFront Cache:
+    Images: 24 hours
+    Documents: 1 hour
+    API Responses: 5 minutes
+
+  Application Cache:
+    File Metadata: 15 minutes
+    User Permissions: 5 minutes
+    Presigned URLs: 1 hour
 ```
 
-### Deployment Steps
+### Performance Monitoring
 
-1. **S3 Buckets** erstellen mit CloudFormation
-2. **Lambda Function** deployen mit Layer
-3. **IAM Policies** konfigurieren
-4. **CloudFront Distribution** für Reports-Bucket
-5. **Frontend** mit neuen S3-Komponenten deployen
-6. **Database Migration** für Schema-Updates
-7. **Monitoring** und Alerts konfigurieren
+```mermaid
+graph TB
+    subgraph "Metrics Collection"
+        CloudWatch[CloudWatch Metrics]
+        XRay[AWS X-Ray Tracing]
+        CustomMetrics[Custom Application Metrics]
+    end
 
-## Migration Plan
+    subgraph "Performance KPIs"
+        UploadLatency[Upload Latency P95]
+        DownloadLatency[Download Latency P95]
+        CacheHitRate[CDN Cache Hit Rate]
+        ErrorRate[Error Rate]
+    end
 
-### Phase 1: Infrastructure Setup
-- S3 Buckets erstellen
-- Lambda Function deployen
-- IAM Policies konfigurieren
+    subgraph "Alerting"
+        Alarms[CloudWatch Alarms]
+        SNS[SNS Notifications]
+        PagerDuty[PagerDuty Integration]
+    end
 
-### Phase 2: Frontend Integration
-- S3 Upload Library implementieren
-- Custom Hooks entwickeln
-- UI Komponenten aktualisieren
+    CloudWatch --> UploadLatency
+    XRay --> DownloadLatency
+    CustomMetrics --> CacheHitRate
+    CloudWatch --> ErrorRate
 
-### Phase 3: Database Migration
-- Schema Updates durchführen
-- Bestehende Daten migrieren
-- Supabase Storage Calls entfernen
+    UploadLatency --> Alarms
+    DownloadLatency --> Alarms
+    CacheHitRate --> Alarms
+    ErrorRate --> Alarms
 
-### Phase 4: Testing & Validation
-- Unit Tests ausführen
-- Integration Tests durchführen
-- Performance Tests validieren
+    Alarms --> SNS
+    SNS --> PagerDuty
+```
 
-### Phase 5: Production Deployment
-- Staged Rollout
-- Monitoring aktivieren
-- Supabase Storage deaktivieren
+## Cost Optimization Design
+
+### Storage Class Optimization
+
+```mermaid
+flowchart TD
+    A[File Upload] --> B[Standard Storage]
+    B --> C{30 Days}
+    C --> D[Standard-IA]
+    D --> E{90 Days}
+    E --> F[Glacier Flexible]
+    F --> G{365 Days}
+    G --> H[Glacier Deep Archive]
+
+    I[Access Pattern Analysis] --> J{Frequently Accessed?}
+    J -->|Yes| K[Keep in Standard]
+    J -->|No| L[Move to IA/Glacier]
+
+    M[Cost Monitoring] --> N{Budget Exceeded?}
+    N -->|Yes| O[Optimize Storage Classes]
+    N -->|No| P[Continue Monitoring]
+```
+
+### Cost Monitoring Dashboard
+
+```yaml
+Cost Metrics:
+  Storage Costs:
+    - Standard Storage: $0.023/GB/month
+    - Standard-IA: $0.0125/GB/month
+    - Glacier Flexible: $0.004/GB/month
+    - Glacier Deep Archive: $0.00099/GB/month
+
+  Transfer Costs:
+    - CloudFront: $0.085/GB (first 10TB)
+    - S3 Transfer: $0.09/GB
+    - Cross-Region Replication: $0.02/GB
+
+  Request Costs:
+    - PUT/POST: $0.005/1000 requests
+    - GET/HEAD: $0.0004/1000 requests
+    - DELETE: Free
+
+  Processing Costs:
+    - Lambda@Edge: $0.0000006/request
+    - Image Processing: $0.0017/GB-second
+```
+
+This comprehensive design provides the technical foundation for migrating to S3 file storage while ensuring performance, security, scalability, and cost optimization. The design emphasizes zero data loss, improved global performance through CDN, and automated cost optimization through intelligent storage tiering.

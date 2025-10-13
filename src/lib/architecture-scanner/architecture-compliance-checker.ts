@@ -15,13 +15,15 @@ const ComplianceViolationSchema = z.object({
 const ComplianceReportSchema = z.object({
   timestamp: z.string(),
   totalFiles: z.number(),
+  totalViolations: z.number(),
   violations: z.array(ComplianceViolationSchema),
-  summary: z.object({
-    errors: z.number(),
-    warnings: z.number(),
+  violationsBySeverity: z.object({
+    error: z.number(),
+    warning: z.number(),
     info: z.number(),
-    totalViolations: z.number(),
   }),
+  violationsByCategory: z.record(z.number()).optional(),
+  summary: z.string(),
 });
 
 export type ComplianceViolation = z.infer<typeof ComplianceViolationSchema>;
@@ -40,20 +42,24 @@ export class ArchitectureComplianceChecker {
     this.projectRoot = projectRoot;
   }
 
-  async checkCompliance(): Promise<ComplianceReport> {
-    const context = await this.buildContext();
+  async checkCompliance(projectRoot?: string): Promise<ComplianceReport> {
+    // Use provided projectRoot or fall back to instance projectRoot
+    const rootPath = projectRoot || this.projectRoot;
+    const context = await this.buildContext(rootPath);
     const violations: ComplianceViolation[] = [];
 
     // Run all compliance checks
     violations.push(...await this.checkKiroPatterns(context));
     violations.push(...await this.checkNamingConventions(context));
     violations.push(...await this.checkEfficientImports(context));
+    violations.push(...await this.checkComponentStructure(context));
 
     return this.generateReport(violations, context.files.length);
   }
 
-  private async buildContext(): Promise<ComplianceContext> {
-    const files = await this.getAllFiles();
+  private async buildContext(projectRoot?: string): Promise<ComplianceContext> {
+    const rootPath = projectRoot || this.projectRoot;
+    const files = await this.getAllFiles(rootPath);
     const fileContents = new Map<string, string>();
 
     for (const file of files) {
@@ -68,11 +74,12 @@ export class ArchitectureComplianceChecker {
     return {
       files,
       fileContents,
-      projectRoot: this.projectRoot,
+      projectRoot: rootPath,
     };
   }
 
-  private async getAllFiles(): Promise<string[]> {
+  private async getAllFiles(projectRoot?: string): Promise<string[]> {
+    const rootPath = projectRoot || this.projectRoot;
     const files: string[] = [];
     const extensions = ['.ts', '.tsx', '.js', '.jsx'];
 
@@ -100,7 +107,7 @@ export class ArchitectureComplianceChecker {
       }
     };
 
-    await walkDir(this.projectRoot);
+    await walkDir(rootPath);
     return files;
   }
 
@@ -187,11 +194,42 @@ export class ArchitectureComplianceChecker {
           violations.push({
             ruleId: 'efficient-imports',
             severity: 'info',
-            message: 'Consider using specific imports instead of wildcard imports',
+            message: 'Consider using specific imports instead of wildcard imports to enable tree shaking',
             file: relativePath,
             line: i + 1,
           });
         }
+      }
+    }
+
+    return violations;
+  }
+
+  private async checkComponentStructure(context: ComplianceContext): Promise<ComplianceViolation[]> {
+    const violations: ComplianceViolation[] = [];
+
+    // Check component files in src/components/**/*.{ts,tsx}
+    const componentFiles = context.files.filter(file => 
+      file.includes('/components/') && (file.endsWith('.ts') || file.endsWith('.tsx'))
+    );
+
+    for (const file of componentFiles) {
+      const content = context.fileContents.get(file);
+      if (!content) continue;
+
+      const relativePath = path.relative(this.projectRoot, file);
+      
+      // Check for exports
+      const hasDefaultExport = /export\s+default\s+/.test(content);
+      const hasNamedExport = /export\s+(const|function|class|interface|type)\s+/.test(content);
+      
+      if (!hasDefaultExport && !hasNamedExport) {
+        violations.push({
+          ruleId: 'proper-component-structure',
+          severity: 'warning',
+          message: 'Component should have a default or named export',
+          file: relativePath,
+        });
       }
     }
 
@@ -207,16 +245,21 @@ export class ArchitectureComplianceChecker {
       { error: 0, warning: 0, info: 0 }
     );
 
+    const violationsByCategory = violations.reduce((acc, violation) => {
+      acc[violation.ruleId] = (acc[violation.ruleId] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const summary = violations.length === 0 ? 'compliance check passed' : 'violations found';
+
     return {
       timestamp: new Date().toISOString(),
       totalFiles,
+      totalViolations: violations.length,
       violations,
-      summary: {
-        errors: violationsBySeverity.error,
-        warnings: violationsBySeverity.warning,
-        info: violationsBySeverity.info,
-        totalViolations: violations.length,
-      },
+      violationsBySeverity,
+      violationsByCategory,
+      summary,
     };
   }
 }

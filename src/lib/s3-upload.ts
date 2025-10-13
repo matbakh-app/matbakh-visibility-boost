@@ -4,18 +4,21 @@
 
 // Note: Using Web Crypto API instead of Node.js crypto for browser compatibility
 
-import { 
-  recordUploadSuccess, 
-  recordUploadFailure, 
-  recordPresignedUrlRequest,
-  recordValidationError,
-  type BucketType as MonitoringBucketType,
-  type UploadType,
-  type ErrorType
-} from './monitoring';
+import {
+    recordPresignedUrlRequest,
+    recordUploadFailure,
+    recordUploadSuccess,
+    recordValidationError,
+    type ErrorType,
+    type BucketType as MonitoringBucketType,
+    type UploadType,
+} from "./monitoring";
 
 // Types
-export type BucketType = 'matbakh-files-uploads' | 'matbakh-files-profile' | 'matbakh-files-reports';
+export type BucketType =
+  | "matbakh-files-uploads"
+  | "matbakh-files-profile"
+  | "matbakh-files-reports";
 
 export interface UploadOptions {
   file: File;
@@ -66,21 +69,30 @@ export interface MultipartUploadPart {
 // Configuration
 // Statt import.meta.env:
 const env = (globalThis as any).importMetaEnv ?? process.env;
-const API_BASE_URL = env.VITE_PUBLIC_API_BASE || 'https://api.matbakh.app';
-const PRESIGNED_URL_ENDPOINT = env.VITE_PRESIGNED_URL_ENDPOINT || 
-  'https://mgnmda4fdc7pd33znjxoocpcqe0vpcby.lambda-url.eu-central-1.on.aws/';
+const API_BASE_URL = env.VITE_PUBLIC_API_BASE || "https://api.matbakh.app";
+const PRESIGNED_URL_ENDPOINT =
+  env.VITE_PRESIGNED_URL_ENDPOINT ||
+  "https://mgnmda4fdc7pd33znjxoocpcqe0vpcby.lambda-url.eu-central-1.on.aws/";
 
 // File validation constants
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const MULTIPART_THRESHOLD = 5 * 1024 * 1024; // 5MB - threshold for multipart upload
 const ALLOWED_MIME_TYPES = {
-  images: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/avif'],
-  documents: ['application/pdf', 'text/plain', 'text/csv', 'application/json'],
+  images: [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/gif",
+    "image/webp",
+    "image/svg+xml",
+    "image/avif",
+  ],
+  documents: ["application/pdf", "text/plain", "text/csv", "application/json"],
   office: [
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'application/vnd.ms-excel',
-    'application/msword',
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.ms-excel",
+    "application/msword",
   ],
 };
 
@@ -95,7 +107,7 @@ const IMAGE_COMPRESSION_SETTINGS = {
   maxWidth: 1920,
   maxHeight: 1080,
   quality: 0.8, // 80% quality
-  format: 'image/jpeg' as const,
+  format: "image/jpeg" as const,
 };
 
 /**
@@ -124,11 +136,11 @@ export async function compressImage(
 
   return new Promise((resolve, reject) => {
     const img = new Image();
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
 
     if (!ctx) {
-      reject(new Error('Canvas context not available'));
+      reject(new Error("Canvas context not available"));
       return;
     }
 
@@ -159,7 +171,7 @@ export async function compressImage(
         (blob) => {
           URL.revokeObjectURL(img.src);
           if (!blob) {
-            reject(new Error('Image compression failed'));
+            reject(new Error("Image compression failed"));
             return;
           }
 
@@ -178,7 +190,7 @@ export async function compressImage(
 
     img.onerror = () => {
       URL.revokeObjectURL(img.src);
-      reject(new Error('Failed to load image for compression'));
+      reject(new Error("Failed to load image for compression"));
     };
 
     // Load image
@@ -190,7 +202,7 @@ export async function compressImage(
  * Generate file preview (data URL for images, metadata for others)
  */
 export async function generateFilePreview(file: File): Promise<{
-  type: 'image' | 'document' | 'unknown';
+  type: "image" | "document" | "unknown";
   preview?: string; // Data URL for images
   metadata: {
     name: string;
@@ -202,7 +214,7 @@ export async function generateFilePreview(file: File): Promise<{
   const metadata = {
     name: file.name,
     size: formatFileSize(file.size),
-    type: file.type || 'unknown',
+    type: file.type || "unknown",
     lastModified: new Date(file.lastModified).toLocaleDateString(),
   };
 
@@ -212,26 +224,27 @@ export async function generateFilePreview(file: File): Promise<{
       const preview = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = (e) => resolve(e.target?.result as string);
-        reader.onerror = () => reject(new Error('Failed to read file'));
+        reader.onerror = () => reject(new Error("Failed to read file"));
         reader.readAsDataURL(file);
       });
 
       return {
-        type: 'image',
+        type: "image",
         preview,
         metadata,
       };
     } catch (error) {
-      console.warn('Failed to generate image preview:', error);
+      console.warn("Failed to generate image preview:", error);
     }
   }
 
   // For documents, just return metadata
-  const isDocument = ALLOWED_MIME_TYPES.documents.includes(file.type) ||
+  const isDocument =
+    ALLOWED_MIME_TYPES.documents.includes(file.type) ||
     ALLOWED_MIME_TYPES.office.includes(file.type);
 
   return {
-    type: isDocument ? 'document' : 'unknown',
+    type: isDocument ? "document" : "unknown",
     metadata,
   };
 }
@@ -240,13 +253,13 @@ export async function generateFilePreview(file: File): Promise<{
  * Format file size in human readable format
  */
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
+  if (bytes === 0) return "0 Bytes";
 
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }
 
 /**
@@ -254,16 +267,18 @@ export function formatFileSize(bytes: number): string {
  */
 async function calculateSHA256(file: File): Promise<string> {
   const buffer = await file.arrayBuffer();
-  const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 /**
  * Convert hex checksum to base64 for S3 headers
  */
 function hexToBase64(hexString: string): string {
-  const bytes = new Uint8Array(hexString.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)));
+  const bytes = new Uint8Array(
+    hexString.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16))
+  );
   return btoa(String.fromCharCode(...bytes));
 }
 
@@ -277,19 +292,24 @@ async function calculateMD5(file: File): Promise<string> {
 
   // For now, return empty string - MD5 calculation would need additional library
   // In production, implement proper MD5 calculation
-  console.warn('MD5 calculation not implemented in browser - using SHA256 instead');
-  return '';
+  console.warn(
+    "MD5 calculation not implemented in browser - using SHA256 instead"
+  );
+  return "";
 }
 
 /**
  * Validate file before upload
  */
-export function validateFile(file: File, maxSize: number = MAX_FILE_SIZE): { valid: boolean; error?: string } {
-  const bucketType = 'uploads' as MonitoringBucketType; // Default for validation
+export function validateFile(
+  file: File,
+  maxSize: number = MAX_FILE_SIZE
+): { valid: boolean; error?: string } {
+  const bucketType = "uploads" as MonitoringBucketType; // Default for validation
 
   // Check file size
   if (file.size > maxSize) {
-    recordValidationError('file_size', bucketType);
+    recordValidationError("file_size", bucketType);
     return {
       valid: false,
       error: `File size exceeds maximum limit of ${maxSize / (1024 * 1024)}MB`,
@@ -298,7 +318,7 @@ export function validateFile(file: File, maxSize: number = MAX_FILE_SIZE): { val
 
   // Check MIME type
   if (!ALL_ALLOWED_TYPES.includes(file.type)) {
-    recordValidationError('file_type', bucketType);
+    recordValidationError("file_type", bucketType);
     return {
       valid: false,
       error: `File type ${file.type} is not allowed`,
@@ -307,10 +327,10 @@ export function validateFile(file: File, maxSize: number = MAX_FILE_SIZE): { val
 
   // Check filename
   if (file.name.length > 255) {
-    recordValidationError('file_name', bucketType);
+    recordValidationError("file_name", bucketType);
     return {
       valid: false,
-      error: 'Filename is too long (max 255 characters)',
+      error: "Filename is too long (max 255 characters)",
     };
   }
 
@@ -318,10 +338,10 @@ export function validateFile(file: File, maxSize: number = MAX_FILE_SIZE): { val
   const suspiciousPatterns = [/\.\./g, /[<>:"|?*]/g, /^\./g];
   for (const pattern of suspiciousPatterns) {
     if (pattern.test(file.name)) {
-      recordValidationError('file_name', bucketType);
+      recordValidationError("file_name", bucketType);
       return {
         valid: false,
-        error: 'Filename contains invalid characters',
+        error: "Filename contains invalid characters",
       };
     }
   }
@@ -335,14 +355,14 @@ export function validateFile(file: File, maxSize: number = MAX_FILE_SIZE): { val
 export async function checkNetworkConnectivity(): Promise<boolean> {
   try {
     // Try to fetch a small resource to check connectivity
-    const response = await fetch('/favicon.ico', {
-      method: 'HEAD',
-      cache: 'no-cache',
-      signal: AbortSignal.timeout(5000) // 5 second timeout
+    const response = await fetch("/favicon.ico", {
+      method: "HEAD",
+      cache: "no-cache",
+      signal: AbortSignal.timeout(5000), // 5 second timeout
     });
     return response.ok;
   } catch (error) {
-    console.warn('Network connectivity check failed:', error);
+    console.warn("Network connectivity check failed:", error);
     return false;
   }
 }
@@ -353,32 +373,32 @@ export async function checkNetworkConnectivity(): Promise<boolean> {
 export function getUserFriendlyErrorMessage(error: Error): string {
   const message = error.message.toLowerCase();
 
-  if (message.includes('network') || message.includes('fetch')) {
-    return 'Upload failed due to network issues. Please check your internet connection and try again.';
+  if (message.includes("network") || message.includes("fetch")) {
+    return "Upload failed due to network issues. Please check your internet connection and try again.";
   }
 
-  if (message.includes('authentication') || message.includes('unauthorized')) {
-    return 'Authentication required. Please log in and try again.';
+  if (message.includes("authentication") || message.includes("unauthorized")) {
+    return "Authentication required. Please log in and try again.";
   }
 
-  if (message.includes('file size') || message.includes('too large')) {
-    return 'File is too large. Please choose a file smaller than 10MB.';
+  if (message.includes("file size") || message.includes("too large")) {
+    return "File is too large. Please choose a file smaller than 10MB.";
   }
 
-  if (message.includes('file type') || message.includes('not allowed')) {
-    return 'File type not supported. Please choose a valid image or document file.';
+  if (message.includes("file type") || message.includes("not allowed")) {
+    return "File type not supported. Please choose a valid image or document file.";
   }
 
-  if (message.includes('timeout')) {
-    return 'Upload timed out. Please try again with a smaller file or check your connection.';
+  if (message.includes("timeout")) {
+    return "Upload timed out. Please try again with a smaller file or check your connection.";
   }
 
-  if (message.includes('abort')) {
-    return 'Upload was cancelled.';
+  if (message.includes("abort")) {
+    return "Upload was cancelled.";
   }
 
   // Return original message if no specific pattern matches
-  return error.message || 'Upload failed. Please try again.';
+  return error.message || "Upload failed. Please try again.";
 }
 
 /**
@@ -386,16 +406,17 @@ export function getUserFriendlyErrorMessage(error: Error): string {
  */
 function getAuthToken(): string | null {
   // Try to get from localStorage first
-  const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+  const token =
+    localStorage.getItem("auth_token") || sessionStorage.getItem("auth_token");
   if (token) {
     return token;
   }
 
   // Try to get from cookie
-  const cookies = document.cookie.split(';');
+  const cookies = document.cookie.split(";");
   for (const cookie of cookies) {
-    const [name, value] = cookie.trim().split('=');
-    if (name === 'auth_token' || name === 'access_token') {
+    const [name, value] = cookie.trim().split("=");
+    if (name === "auth_token" || name === "access_token") {
       return value;
     }
   }
@@ -406,22 +427,27 @@ function getAuthToken(): string | null {
 /**
  * Request presigned URL from Lambda function
  */
-async function requestPresignedUrl(request: PresignedUrlRequest): Promise<PresignedUrlResponse> {
+async function requestPresignedUrl(
+  request: PresignedUrlRequest
+): Promise<PresignedUrlResponse> {
   const startTime = Date.now();
-  const bucketType = request.bucket.replace('matbakh-files-', '') as MonitoringBucketType;
+  const bucketType = request.bucket.replace(
+    "matbakh-files-",
+    ""
+  ) as MonitoringBucketType;
 
   const authToken = getAuthToken();
   if (!authToken) {
     await recordPresignedUrlRequest(bucketType, false);
-    throw new Error('Authentication required - please log in');
+    throw new Error("Authentication required - please log in");
   }
 
   try {
     const response = await fetch(PRESIGNED_URL_ENDPOINT, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authToken}`,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${authToken}`,
       },
       body: JSON.stringify(request),
     });
@@ -431,7 +457,9 @@ async function requestPresignedUrl(request: PresignedUrlRequest): Promise<Presig
     if (!response.ok) {
       await recordPresignedUrlRequest(bucketType, false, duration);
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+      throw new Error(
+        errorData.message || `HTTP ${response.status}: ${response.statusText}`
+      );
     }
 
     await recordPresignedUrlRequest(bucketType, true, duration);
@@ -458,43 +486,49 @@ async function uploadPart(
     // Handle cancellation
     if (signal) {
       if (signal.aborted) {
-        reject(new Error('Upload was cancelled before starting'));
+        reject(new Error("Upload was cancelled before starting"));
         return;
       }
 
-      signal.addEventListener('abort', () => {
+      signal.addEventListener("abort", () => {
         xhr.abort();
-        reject(new Error('Upload was cancelled'));
+        reject(new Error("Upload was cancelled"));
       });
     }
 
-    xhr.addEventListener('load', () => {
+    xhr.addEventListener("load", () => {
       if (xhr.status === 200) {
-        const etag = xhr.getResponseHeader('ETag');
+        const etag = xhr.getResponseHeader("ETag");
         if (etag) {
-          resolve(etag.replace(/"/g, '')); // Remove quotes from ETag
+          resolve(etag.replace(/"/g, "")); // Remove quotes from ETag
         } else {
           reject(new Error(`No ETag received for part ${partNumber}`));
         }
       } else {
-        reject(new Error(`Part ${partNumber} upload failed with status ${xhr.status}: ${xhr.statusText}`));
+        reject(
+          new Error(
+            `Part ${partNumber} upload failed with status ${xhr.status}: ${xhr.statusText}`
+          )
+        );
       }
     });
 
-    xhr.addEventListener('error', () => {
-      reject(new Error(`Part ${partNumber} upload failed due to network error`));
+    xhr.addEventListener("error", () => {
+      reject(
+        new Error(`Part ${partNumber} upload failed due to network error`)
+      );
     });
 
-    xhr.addEventListener('abort', () => {
+    xhr.addEventListener("abort", () => {
       reject(new Error(`Part ${partNumber} upload was aborted`));
     });
 
     xhr.timeout = 30 * 60 * 1000; // 30 minutes timeout
-    xhr.addEventListener('timeout', () => {
+    xhr.addEventListener("timeout", () => {
       reject(new Error(`Part ${partNumber} upload timed out`));
     });
 
-    xhr.open('PUT', uploadUrl);
+    xhr.open("PUT", uploadUrl);
     xhr.send(partData);
   });
 }
@@ -509,14 +543,14 @@ async function completeMultipartUpload(
 ): Promise<void> {
   const authToken = getAuthToken();
   if (!authToken) {
-    throw new Error('Authentication required');
+    throw new Error("Authentication required");
   }
 
   const response = await fetch(`${API_BASE_URL}/complete-multipart-upload`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${authToken}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${authToken}`,
     },
     body: JSON.stringify({
       multipartUploadId,
@@ -527,7 +561,7 @@ async function completeMultipartUpload(
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'Failed to complete multipart upload');
+    throw new Error(errorData.message || "Failed to complete multipart upload");
   }
 }
 
@@ -540,8 +574,12 @@ async function uploadMultipart(
   onProgress?: (progress: number) => void,
   signal?: AbortSignal
 ): Promise<void> {
-  if (!presignedResponse.isMultipart || !presignedResponse.partUrls || !presignedResponse.multipartUploadId) {
-    throw new Error('Invalid multipart upload response');
+  if (
+    !presignedResponse.isMultipart ||
+    !presignedResponse.partUrls ||
+    !presignedResponse.multipartUploadId
+  ) {
+    throw new Error("Invalid multipart upload response");
   }
 
   const partSize = 5 * 1024 * 1024; // 5MB parts
@@ -583,7 +621,11 @@ async function uploadMultipart(
   }
 
   // Complete the multipart upload
-  await completeMultipartUpload(presignedResponse.multipartUploadId, parts, presignedResponse.fileUrl);
+  await completeMultipartUpload(
+    presignedResponse.multipartUploadId,
+    parts,
+    presignedResponse.fileUrl
+  );
 }
 
 /**
@@ -607,19 +649,19 @@ async function uploadToS3(
     // Handle cancellation
     if (signal) {
       if (signal.aborted) {
-        reject(new Error('Upload was cancelled before starting'));
+        reject(new Error("Upload was cancelled before starting"));
         return;
       }
 
-      signal.addEventListener('abort', () => {
+      signal.addEventListener("abort", () => {
         xhr.abort();
-        reject(new Error('Upload was cancelled'));
+        reject(new Error("Upload was cancelled"));
       });
     }
 
     // Track upload progress
     if (onProgress) {
-      xhr.upload.addEventListener('progress', (event) => {
+      xhr.upload.addEventListener("progress", (event) => {
         if (event.lengthComputable) {
           const progress = (event.loaded / event.total) * 100;
           onProgress(progress);
@@ -627,40 +669,46 @@ async function uploadToS3(
       });
     }
 
-    xhr.addEventListener('load', () => {
+    xhr.addEventListener("load", () => {
       if (xhr.status === 200) {
         resolve();
       } else {
-        reject(new Error(`Upload failed with status ${xhr.status}: ${xhr.statusText}`));
+        reject(
+          new Error(
+            `Upload failed with status ${xhr.status}: ${xhr.statusText}`
+          )
+        );
       }
     });
 
-    xhr.addEventListener('error', () => {
-      reject(new Error('Upload failed due to network error'));
+    xhr.addEventListener("error", () => {
+      reject(new Error("Upload failed due to network error"));
     });
 
-    xhr.addEventListener('abort', () => {
-      reject(new Error('Upload was aborted'));
+    xhr.addEventListener("abort", () => {
+      reject(new Error("Upload was aborted"));
     });
 
     // Set timeout for upload (30 minutes max)
     xhr.timeout = 30 * 60 * 1000;
-    xhr.addEventListener('timeout', () => {
-      reject(new Error('Upload timed out after 30 minutes'));
+    xhr.addEventListener("timeout", () => {
+      reject(new Error("Upload timed out after 30 minutes"));
     });
 
-    xhr.open('PUT', presignedResponse.uploadUrl);
+    xhr.open("PUT", presignedResponse.uploadUrl);
 
     // Set required headers
     if (presignedResponse.requiredHeaders) {
-      Object.entries(presignedResponse.requiredHeaders).forEach(([key, value]) => {
-        xhr.setRequestHeader(key, value);
-      });
+      Object.entries(presignedResponse.requiredHeaders).forEach(
+        ([key, value]) => {
+          xhr.setRequestHeader(key, value);
+        }
+      );
     }
 
     // If presign didn't include Content-Type and we have a file type
-    if (!presignedResponse.requiredHeaders?.['Content-Type'] && file.type) {
-      xhr.setRequestHeader('Content-Type', file.type);
+    if (!presignedResponse.requiredHeaders?.["Content-Type"] && file.type) {
+      xhr.setRequestHeader("Content-Type", file.type);
     }
 
     xhr.send(file);
@@ -670,17 +718,21 @@ async function uploadToS3(
 /**
  * Commit upload metadata to database
  */
-async function commitUpload(uploadId: string, fileUrl: string, checksum?: string): Promise<void> {
+async function commitUpload(
+  uploadId: string,
+  fileUrl: string,
+  checksum?: string
+): Promise<void> {
   const authToken = getAuthToken();
   if (!authToken) {
-    throw new Error('Authentication required');
+    throw new Error("Authentication required");
   }
 
   const response = await fetch(`${API_BASE_URL}/upload/commit`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${authToken}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${authToken}`,
     },
     body: JSON.stringify({
       uploadId,
@@ -691,7 +743,7 @@ async function commitUpload(uploadId: string, fileUrl: string, checksum?: string
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'Failed to commit upload');
+    throw new Error(errorData.message || "Failed to commit upload");
   }
 }
 
@@ -708,7 +760,11 @@ export async function uploadWithCompression(
     };
   }
 ): Promise<UploadResult> {
-  const { compressImages = true, compressionOptions, ...uploadOptions } = options;
+  const {
+    compressImages = true,
+    compressionOptions,
+    ...uploadOptions
+  } = options;
   let { file } = uploadOptions;
 
   // Compress image if enabled and file is an image
@@ -719,10 +775,14 @@ export async function uploadWithCompression(
       // Only use compressed version if it's actually smaller
       if (compressedFile.size < file.size) {
         file = compressedFile;
-        console.log(`Image compressed: ${formatFileSize(uploadOptions.file.size)} → ${formatFileSize(file.size)}`);
+        console.log(
+          `Image compressed: ${formatFileSize(
+            uploadOptions.file.size
+          )} → ${formatFileSize(file.size)}`
+        );
       }
     } catch (error) {
-      console.warn('Image compression failed, using original file:', error);
+      console.warn("Image compression failed, using original file:", error);
     }
   }
 
@@ -732,33 +792,49 @@ export async function uploadWithCompression(
 /**
  * Main upload function with enhanced security and integrity checks
  */
-export async function uploadToS3Enhanced(options: UploadOptions): Promise<UploadResult> {
-  const { file, bucket, folder, onProgress, onSuccess, onError, validateChecksum = true, signal } = options;
-  
+export async function uploadToS3Enhanced(
+  options: UploadOptions
+): Promise<UploadResult> {
+  const {
+    file,
+    bucket,
+    folder,
+    onProgress,
+    onSuccess,
+    onError,
+    validateChecksum = true,
+    signal,
+  } = options;
+
   const startTime = Date.now();
-  const bucketType = bucket.replace('matbakh-files-', '') as MonitoringBucketType;
-  
+  const bucketType = bucket.replace(
+    "matbakh-files-",
+    ""
+  ) as MonitoringBucketType;
+
   // Determine upload type based on file type and folder
-  let uploadType: UploadType = 'other';
+  let uploadType: UploadType = "other";
   if (ALLOWED_MIME_TYPES.images.includes(file.type)) {
-    if (folder?.includes('avatar')) uploadType = 'avatar';
-    else if (folder?.includes('logo')) uploadType = 'logo';
-    else uploadType = 'image';
+    if (folder?.includes("avatar")) uploadType = "avatar";
+    else if (folder?.includes("logo")) uploadType = "logo";
+    else uploadType = "image";
   } else if (ALLOWED_MIME_TYPES.documents.includes(file.type)) {
-    if (folder?.includes('report')) uploadType = 'report';
-    else uploadType = 'document';
+    if (folder?.includes("report")) uploadType = "report";
+    else uploadType = "document";
   }
 
   try {
     // Check network connectivity first
     const isConnected = await checkNetworkConnectivity();
     if (!isConnected) {
-      throw new Error('No internet connection detected. Please check your network and try again.');
+      throw new Error(
+        "No internet connection detected. Please check your network and try again."
+      );
     }
 
     // Check if upload was cancelled before starting
     if (signal?.aborted) {
-      throw new Error('Upload was cancelled');
+      throw new Error("Upload was cancelled");
     }
 
     // Validate file
@@ -776,13 +852,18 @@ export async function uploadToS3Enhanced(options: UploadOptions): Promise<Upload
       checksumSHA256 = await calculateSHA256(file);
       onProgress?.(10); // 10% - checksum calculated
 
-      console.log(`File checksum calculated: ${checksumSHA256.substring(0, 8)}...`);
+      console.log(
+        `File checksum calculated: ${checksumSHA256.substring(0, 8)}...`
+      );
 
       // MD5 calculation (optional, for Content-MD5 header)
       try {
         contentMD5 = await calculateMD5(file);
       } catch (md5Error) {
-        console.warn('MD5 calculation failed, continuing without Content-MD5:', md5Error);
+        console.warn(
+          "MD5 calculation failed, continuing without Content-MD5:",
+          md5Error
+        );
       }
     }
 
@@ -803,25 +884,37 @@ export async function uploadToS3Enhanced(options: UploadOptions): Promise<Upload
     onProgress?.(25); // 25% - presigned URL received
 
     // Upload file to S3
-    await uploadToS3(file, presignedResponse, (uploadProgress) => {
-      // Map upload progress to 25-90% range
-      const mappedProgress = 25 + (uploadProgress * 0.65);
-      onProgress?.(mappedProgress);
-    }, signal);
+    await uploadToS3(
+      file,
+      presignedResponse,
+      (uploadProgress) => {
+        // Map upload progress to 25-90% range
+        const mappedProgress = 25 + uploadProgress * 0.65;
+        onProgress?.(mappedProgress);
+      },
+      signal
+    );
 
     onProgress?.(90); // 90% - upload complete
 
     // Commit upload metadata (optional - can be handled by S3 event)
     try {
-      await commitUpload(presignedResponse.uploadId, presignedResponse.fileUrl, checksumSHA256);
+      await commitUpload(
+        presignedResponse.uploadId,
+        presignedResponse.fileUrl,
+        checksumSHA256
+      );
     } catch (commitError) {
-      console.warn('Failed to commit upload metadata (will be handled by S3 event):', commitError);
+      console.warn(
+        "Failed to commit upload metadata (will be handled by S3 event):",
+        commitError
+      );
     }
 
     onProgress?.(100); // 100% - complete
 
     const duration = Date.now() - startTime;
-    
+
     // Record successful upload
     await recordUploadSuccess(bucketType, uploadType, file.size, duration);
 
@@ -834,30 +927,55 @@ export async function uploadToS3Enhanced(options: UploadOptions): Promise<Upload
 
     onSuccess?.(result);
     return result;
-
   } catch (error) {
     const duration = Date.now() - startTime;
-    const originalError = error instanceof Error ? error : new Error('Unknown upload error');
-    
+    const originalError =
+      error instanceof Error ? error : new Error("Unknown upload error");
+
     // Categorize error for monitoring
-    let errorType: ErrorType = 'unknown_error';
+    let errorType: ErrorType = "unknown_error";
     const message = originalError.message.toLowerCase();
-    
-    if (message.includes('validation') || message.includes('file size') || message.includes('file type')) {
-      errorType = 'validation_error';
-    } else if (message.includes('network') || message.includes('fetch') || message.includes('timeout')) {
-      errorType = 'network_error';
-    } else if (message.includes('permission') || message.includes('403') || message.includes('unauthorized')) {
-      errorType = 'permission_error';
-    } else if (message.includes('quota') || message.includes('limit') || message.includes('exceeded')) {
-      errorType = 'quota_error';
-    } else if (message.includes('500') || message.includes('server') || message.includes('internal')) {
-      errorType = 'server_error';
+
+    if (
+      message.includes("validation") ||
+      message.includes("file size") ||
+      message.includes("file type")
+    ) {
+      errorType = "validation_error";
+    } else if (
+      message.includes("network") ||
+      message.includes("fetch") ||
+      message.includes("timeout")
+    ) {
+      errorType = "network_error";
+    } else if (
+      message.includes("permission") ||
+      message.includes("403") ||
+      message.includes("unauthorized")
+    ) {
+      errorType = "permission_error";
+    } else if (
+      message.includes("quota") ||
+      message.includes("limit") ||
+      message.includes("exceeded")
+    ) {
+      errorType = "quota_error";
+    } else if (
+      message.includes("500") ||
+      message.includes("server") ||
+      message.includes("internal")
+    ) {
+      errorType = "server_error";
     }
-    
+
     // Record failed upload
-    await recordUploadFailure(bucketType, uploadType, errorType, originalError.message);
-    
+    await recordUploadFailure(
+      bucketType,
+      uploadType,
+      errorType,
+      originalError.message
+    );
+
     const userFriendlyMessage = getUserFriendlyErrorMessage(originalError);
     const uploadError = new Error(userFriendlyMessage);
 
@@ -882,7 +1000,7 @@ export async function uploadWithRetry(
     try {
       return await uploadToS3Enhanced(options);
     } catch (error) {
-      lastError = error instanceof Error ? error : new Error('Unknown error');
+      lastError = error instanceof Error ? error : new Error("Unknown error");
 
       if (attempt === maxRetries) {
         break;
@@ -890,9 +1008,12 @@ export async function uploadWithRetry(
 
       // Exponential backoff
       const delay = Math.pow(2, attempt) * 1000;
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
 
-      console.warn(`Upload attempt ${attempt} failed, retrying in ${delay}ms:`, lastError.message);
+      console.warn(
+        `Upload attempt ${attempt} failed, retrying in ${delay}ms:`,
+        lastError.message
+      );
     }
   }
 
@@ -921,23 +1042,30 @@ export async function uploadWithRetryAndRecovery(
       if (attempt > 1) {
         const isConnected = await checkNetworkConnectivity();
         if (!isConnected) {
-          throw new Error('Network connection lost. Please check your internet connection.');
+          throw new Error(
+            "Network connection lost. Please check your internet connection."
+          );
         }
       }
 
       return await uploadToS3Enhanced(options);
     } catch (error) {
-      lastError = error instanceof Error ? error : new Error('Unknown error');
+      lastError = error instanceof Error ? error : new Error("Unknown error");
 
       // Don't retry if upload was cancelled
-      if (lastError.message.includes('cancelled') || lastError.message.includes('aborted')) {
+      if (
+        lastError.message.includes("cancelled") ||
+        lastError.message.includes("aborted")
+      ) {
         throw lastError;
       }
 
       // Don't retry validation errors
-      if (lastError.message.includes('File size') ||
-        lastError.message.includes('File type') ||
-        lastError.message.includes('Authentication required')) {
+      if (
+        lastError.message.includes("File size") ||
+        lastError.message.includes("File type") ||
+        lastError.message.includes("Authentication required")
+      ) {
         throw lastError;
       }
 
@@ -950,9 +1078,12 @@ export async function uploadWithRetryAndRecovery(
       const jitter = Math.random() * 1000; // Add randomness to prevent thundering herd
       const delay = baseDelay + jitter;
 
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
 
-      console.warn(`Upload attempt ${attempt} failed, retrying in ${Math.round(delay)}ms:`, lastError.message);
+      console.warn(
+        `Upload attempt ${attempt} failed, retrying in ${Math.round(delay)}ms:`,
+        lastError.message
+      );
     }
   }
 
@@ -976,7 +1107,7 @@ export async function uploadMultipleFiles(
 
     // Check if batch upload was cancelled
     if (signal?.aborted) {
-      throw new Error('Batch upload was cancelled');
+      throw new Error("Batch upload was cancelled");
     }
 
     try {
@@ -998,8 +1129,7 @@ export async function uploadMultipleFiles(
   return results;
 }
 
-// DSGVO Compliance Functions
-// MIGRATED: Supabase removed - use AWS services
+// DSGVO Compliance Functions - AWS Native
 
 /**
  * Delete all files for a user (DSGVO compliance)
@@ -1013,46 +1143,51 @@ export async function deleteUserFiles(userId: string): Promise<{
   const errors: string[] = [];
 
   try {
-    // Get all user files from database
-    const { data: userFiles, error } = await supabase
-      .from('user_uploads')
-      .select('id, s3_url, s3_key, s3_bucket')
-      .eq('user_id', userId);
+    // Get all user files from AWS RDS
+    const response = await fetch(`/api/user-uploads?userId=${userId}`, {
+      headers: { 'Authorization': `Bearer ${await this.getAuthToken()}` }
+    });
+    const userFiles = await response.json();
+      .eq("user_id", userId);
 
     if (error) {
       throw new Error(`Failed to fetch user files: ${error.message}`);
     }
 
     if (!userFiles || userFiles.length === 0) {
-      console.log('User data deletion', { userId, deletedFiles: [], message: 'No files found' });
+      console.log("User data deletion", {
+        userId,
+        deletedFiles: [],
+        message: "No files found",
+      });
       return { success: true, deletedFiles: [], errors: [] };
     }
 
     // Delete files from S3
     for (const file of userFiles) {
       try {
-        const s3Key = file.s3_key || file.s3_url.split('/').pop();
-        
+        const s3Key = file.s3_key || file.s3_url.split("/").pop();
+
         // Call Lambda function to delete from S3
         const authToken = getAuthToken();
         if (authToken) {
           const response = await fetch(`${API_BASE_URL}/delete-file`, {
-            method: 'DELETE',
+            method: "DELETE",
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${authToken}`,
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${authToken}`,
             },
             body: JSON.stringify({
               bucket: file.s3_bucket,
-              key: s3Key
-            })
+              key: s3Key,
+            }),
           });
 
           if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
           }
         }
-        
+
         deletedFiles.push(s3Key);
       } catch (s3Error) {
         errors.push(`Failed to delete ${file.s3_key}: ${s3Error}`);
@@ -1060,48 +1195,54 @@ export async function deleteUserFiles(userId: string): Promise<{
     }
 
     // Remove database records
-    const { error: deleteError } = await supabase
-      .from('user_uploads')
-      .delete()
-      .eq('user_id', userId);
+    const deleteResponse = await fetch(`/api/user-uploads?userId=${userId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${await this.getAuthToken()}` }
+    });
+      .eq("user_id", userId);
 
     if (deleteError) {
       errors.push(`Failed to delete database records: ${deleteError.message}`);
     }
 
     // Also clean up profile-related files
-    const { error: profileError } = await supabase
-      .from('business_profiles')
-      .update({ 
-        avatar_s3_url: null, 
-        logo_s3_url: null 
+    const profileResponse = await fetch(`/api/business-profiles/${userId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${await this.getAuthToken()}`
+      },
+      body: JSON.stringify({
+        avatar_s3_url: null,
+        logo_s3_url: null,
       })
-      .eq('user_id', userId);
+      .eq("user_id", userId);
 
     if (profileError) {
       errors.push(`Failed to clean profile files: ${profileError.message}`);
     }
 
     // Log for audit trail
-    console.log('User data deletion', {
+    console.log("User data deletion", {
       userId,
       deletedFiles,
       errors,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     return {
       success: errors.length === 0,
       deletedFiles,
-      errors
+      errors,
     };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('User data deletion failed', { userId, error: errorMessage });
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    console.error("User data deletion failed", { userId, error: errorMessage });
     return {
       success: false,
       deletedFiles,
-      errors: [errorMessage]
+      errors: [errorMessage],
     };
   }
 }
@@ -1113,7 +1254,7 @@ export async function generatePresignedUrl(options: {
   bucket: BucketType;
   filename: string;
   contentType: string;
-  operation: 'upload' | 'download';
+  operation: "upload" | "download";
   userId?: string;
   folder?: string;
 }): Promise<{
@@ -1126,27 +1267,27 @@ export async function generatePresignedUrl(options: {
 }> {
   try {
     // Log access for audit trail
-    console.log('File access', {
+    console.log("File access", {
       userId: options.userId,
       filename: options.filename,
       operation: options.operation,
       bucket: options.bucket,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     const authToken = getAuthToken();
     if (!authToken) {
       return {
         success: false,
-        error: 'AUTHENTICATION_REQUIRED'
+        error: "AUTHENTICATION_REQUIRED",
       };
     }
 
     const response = await fetch(PRESIGNED_URL_ENDPOINT, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authToken}`,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${authToken}`,
       },
       body: JSON.stringify({
         bucket: options.bucket,
@@ -1154,41 +1295,44 @@ export async function generatePresignedUrl(options: {
         contentType: options.contentType,
         operation: options.operation,
         userId: options.userId,
-        folder: options.folder
-      })
+        folder: options.folder,
+      }),
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       return {
         success: false,
-        error: errorData.error || 'PERMISSION_DENIED'
+        error: errorData.error || "PERMISSION_DENIED",
       };
     }
 
     const data = await response.json();
-    
+
     // Calculate expiration based on operation
     const now = new Date();
-    const expirationMinutes = options.operation === 'upload' ? 15 : 24 * 60;
+    const expirationMinutes = options.operation === "upload" ? 15 : 24 * 60;
     const expiresAt = new Date(now.getTime() + expirationMinutes * 60 * 1000);
 
     return {
       success: true,
-      uploadUrl: options.operation === 'upload' ? data.uploadUrl : undefined,
-      downloadUrl: options.operation === 'download' ? data.downloadUrl || data.uploadUrl : undefined,
+      uploadUrl: options.operation === "upload" ? data.uploadUrl : undefined,
+      downloadUrl:
+        options.operation === "download"
+          ? data.downloadUrl || data.uploadUrl
+          : undefined,
       fileUrl: data.fileUrl,
-      expiresAt: expiresAt.toISOString()
+      expiresAt: expiresAt.toISOString(),
     };
   } catch (error) {
-    console.error('Presigned URL generation failed', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-      options
+    console.error("Presigned URL generation failed", {
+      error: error instanceof Error ? error.message : "Unknown error",
+      options,
     });
-    
+
     return {
       success: false,
-      error: 'INTERNAL_ERROR'
+      error: "INTERNAL_ERROR",
     };
   }
 }
@@ -1196,12 +1340,16 @@ export async function generatePresignedUrl(options: {
 /**
  * Validate file access permissions
  */
-export async function validateFileAccess(fileId: string, userId: string): Promise<boolean> {
+export async function validateFileAccess(
+  fileId: string,
+  userId: string
+): Promise<boolean> {
   try {
-    const { data, error } = await supabase
-      .from('user_uploads')
-      .select('user_id, is_public')
-      .eq('id', fileId)
+    const response = await fetch(`/api/user-uploads/${fileId}`, {
+      headers: { 'Authorization': `Bearer ${await this.getAuthToken()}` }
+    });
+    const data = await response.json();
+      .eq("id", fileId)
       .single();
 
     if (error || !data) {
@@ -1211,7 +1359,7 @@ export async function validateFileAccess(fileId: string, userId: string): Promis
     // Allow access if file is public or user owns the file
     return data.is_public || data.user_id === userId;
   } catch (error) {
-    console.error('File access validation failed', { fileId, userId, error });
+    console.error("File access validation failed", { fileId, userId, error });
     return false;
   }
 }
@@ -1223,7 +1371,7 @@ export function logFileAccess(options: {
   userId?: string;
   fileId?: string;
   filename: string;
-  operation: 'upload' | 'download' | 'delete';
+  operation: "upload" | "download" | "delete";
   success: boolean;
   error?: string;
 }): void {
@@ -1236,10 +1384,10 @@ export function logFileAccess(options: {
     success: options.success,
     error: options.error,
     userAgent: navigator.userAgent,
-    ip: 'client-side' // IP would be logged server-side
+    ip: "client-side", // IP would be logged server-side
   };
 
-  console.log('File access audit', logEntry);
+  console.log("File access audit", logEntry);
 
   // In production, this would also send to a logging service
   // Example: send to CloudWatch, Datadog, etc.

@@ -1,5 +1,5 @@
 import { getFlagBool } from '@/utils/featureFlags';
-// // MIGRATED: Supabase removed - use AWS services
+// AWS Cognito authentication guard
 import type { Role } from '@/lib/rbac';
 
 const PUBLIC_WHITELIST: string[] = [
@@ -19,12 +19,13 @@ async function getCurrentUserRole(): Promise<Role> {
     // For now, return viewer to prevent auth errors
     return 'viewer';
     
-    // const { data: { user } } = await supabase.auth.getUser();
+    // AWS Cognito user authentication would be implemented here
+    // const user = await Auth.currentAuthenticatedUser();
     // if (!user) return 'viewer';
 
-    // const { data: profile } = await supabase
-    //   .from('user_profiles')
-    //   .select('role')
+    // const response = await fetch('/api/user-profile', {
+    //   headers: { 'Authorization': `Bearer ${user.signInUserSession.idToken.jwtToken}` }
+    // });
       .eq('id', user.id)
       .maybeSingle();
 

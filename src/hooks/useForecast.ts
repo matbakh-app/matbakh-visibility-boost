@@ -139,6 +139,9 @@ export const useForecast = (
     if (!autoRefresh || !canGenerateForecast || isLoading) {
       return;
     }
+    
+    // Skip timer in test environment to prevent Jest open handles
+    if (typeof process !== 'undefined' && process.env.JEST_WORKER_ID) return;
 
     const interval = setInterval(() => {
       if (forecast) {

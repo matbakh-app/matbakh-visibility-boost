@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 // MIGRATION: Hook temporarily disabled - migrate to AWS services
 import { GmbCategory } from '@/hooks/useOnboardingQuestions';
 import { RelatedCategory } from '@/hooks/useSubCategoriesWithCrossTags';
@@ -34,8 +34,13 @@ export const useSmartCategorySelection = (options: SmartSelectionOptions) => {
     setError(null);
 
     try {
-      const { data, error } = await supabase.functions.invoke('ai-category-tagging', {
-        body: {
+      const response = await fetch('/api/ai-category-tagging', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(await Auth.currentSession()).getIdToken().getJwtToken()}`
+        },
+        body: JSON.stringify({
           businessDescription: options.businessDescription,
           businessName: options.businessName || '',
           availableCategories: options.availableCategories.map(cat => ({
@@ -90,8 +95,13 @@ export const useSmartCategorySelection = (options: SmartSelectionOptions) => {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('enhanced-visibility-check', {
-        body: {
+      const response = await fetch('/api/enhanced-visibility-check', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(await Auth.currentSession()).getIdToken().getJwtToken()}`
+        },
+        body: JSON.stringify({
           action: 'get_subcategory_suggestions',
           mainCategories: options.selectedMainCategories,
           businessDescription: options.businessDescription || '',

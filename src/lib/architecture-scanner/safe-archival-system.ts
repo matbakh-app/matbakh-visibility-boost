@@ -261,7 +261,7 @@ export class SafeArchivalSystem {
         dependencies: component.dependencies,
         dependents: dependents.map(d => d.path),
         migrationPath: this.findMigrationPath(component),
-        isResolved: dependents.length === 0 || this.hasMigrationPath(component)
+        isResolved: this.checkDependencyResolved(component, dependents)
       });
     }
     
@@ -273,6 +273,24 @@ export class SafeArchivalSystem {
     
     console.log(`✅ Resolved ${mappings.length} dependency mappings`);
     return mappings;
+  }
+
+  /**
+   * Check if a component's dependencies are resolved
+   */
+  private static checkDependencyResolved(component: LegacyComponent, dependents: LegacyComponent[]): boolean {
+    // If component has active backend dependencies, it's not resolved
+    if (component.backendDependencies && component.backendDependencies.some(dep => dep.isActive)) {
+      return false;
+    }
+    
+    // If no dependents and no active backend deps, it's resolved
+    if (dependents.length === 0) {
+      return true;
+    }
+    
+    // If has migration path, it's resolved
+    return this.hasMigrationPath(component);
   }
 
   /**

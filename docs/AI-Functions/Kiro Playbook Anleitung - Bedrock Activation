@@ -1,0 +1,354 @@
+Kiro-Playbook-Anleitung (SOP) mit Guardrails, konkreten Tasks, Approval-Gates, Beispiel-Kommandos und DoD/AK für jeden Schritt. Damit kann Bedrock (über Kiro) die Visibility-Funktionen voll implementieren, fehlende Integrationen schließen und sauber live gehen – inklusive Autopilot für UMC, Google-Anbindung, Dashboards, OAuth, Onboarding und VC-Tests.
+
+Kiro Playbook – Bedrock steuert matbakh.app End-to-End
+
+Rollen & Modi
+
+Actor: BedrockSupportManager (über Kiro orchestriert)
+
+Modus: SAFE_CHANGE (Architektur/Code nur mit Approval)
+
+Approval-Policy: 5-Level Gate (Design → Code → Sec/PII → Perf/SLO → Release)
+
+Feature Flags (Prod default)
+
+VITE_ENABLE_BEDROCK_SUPPORT_MODE=true
+VITE_ENABLE_INTELLIGENT_ROUTING=true
+UMC_ENABLE_AUTOPILOT=true
+UMC_ENABLE_META_PUBLISH=false # bleibt false bis Live-Testslot
+UMC_ENABLE_GBP_PUBLISH=false # dito
+ENABLE_META_MONITOR=true
+
+Phase 0 – Bootstrap (einmalig)
+
+Ziel: Bedrock bekommt Kontext & Grenzen, Kiro verankert Approval-Gates.
+
+Kiro:
+
+kiro init --project matbakh.app --env production
+kiro policy apply ./.kiro/policies/approval-5level.yaml
+kiro secrets sync aws,cognito,rds,cloudfront,meta,google
+kiro feature-flags sync ./config/feature-flags.production.json
+
+Guardrails
+
+NO direct prod DB DDL ohne „DB-Migration“ Ticket
+
+NO public endpoint change ohne Route53/CloudFront Plan + Rollback
+
+All commits → PR → require po-cto-approval
+
+Phase 1 – Projekt verstehen & Ziele erkennen
+
+Aufgabe: Codebasis, Master-Specs, Flags, aktuelle Live-Routen scannen.
+Kiro Prompts (Bedrock):
+
+"Audit codebase & docs; summarize modules, flags, env, critical paths.
+Identify visibility features, UMC pipeline, adapters, risk hotspots.
+Output: ARCH_SUMMARY.md + TODO backlog."
+
+Kiro:
+
+kiro audit repo --paths "docs/, src/, infra/, scripts/"
+kiro generate summary --out ./docs/ARCH_SUMMARY.md
+
+DoD
+
+ARCH_SUMMARY.md mit: Orchestrator, UMC, VC, Auth, Routing, Infra
+
+Risiko-Liste (Top 10) + empfohlene Reihenfolge zur Abarbeitung
+
+Phase 2 – AWS Infrastruktur kontrollieren & Altlasten aufräumen
+
+Ziel: Alte Version(en) trennen, Dead Routes/Backends kappen, nur AWS aktiv.
+
+Subtasks
+
+DNS/CloudFront/Origins
+
+S3 Web Buckets (nur aktueller Build)
+
+\*\*RDS Endpoints (nur matbakh-db…eu-central-1.rds.amazonaws.com)
+
+Cognito (nur aktuelle User Pool + App Clients)
+
+Supabase/Vercel: hart trennen (APIs, OAuth, Webhooks)
+
+Kiro:
+
+kiro aws inspect cloudfront,s3,route53,cognito,rds --region eu-central-1 --export ./reports/aws-inventory.json
+kiro aws diff desired ./infra/state/desired.json ./reports/aws-inventory.json --plan ./reports/cleanup.plan.json
+kiro change apply ./reports/cleanup.plan.json --require-approval level:design
+
+Spezial: „Old Public Site“ Abschaltung
+
+kiro web scan --domains "matbakh.app,www.matbakh.app" --find "legacy signatures"
+kiro route cutover --cloudfront E2W4JULEW8BXSD --origin s3://matbakhvcstack-webbucket... --blue-green
+
+DoD
+
+Kein Traffic auf alte Supabase/Vercel-Routen
+
+200/301 nur von CloudFront → aktuelle S3 Origin
+
+Smoke-Tests (5/5) grün
+
+Phase 3 – Fehlende Integrationen für den Start fertigstellen
+
+Targets
+
+UMC Backbone: generate → render → schedule → publish Endpunkte
+
+Meta Adapter (Sandbox), Google Business Profile Adapter (Sandbox)
+
+TemplateService (interne Speicherung je Nutzer, kein Canva/Figma)
+
+Kiro:
+
+kiro task create "UMC-01 Backend Skeleton"
+kiro scaffold api --module umc --endpoints generate,render,schedule,publish --auth cognito
+kiro scaffold lib --name template-service --path src/lib/umc/template-service.ts
+kiro test run --group umc --watch
+kiro pr open --title "feat(umc): backbone + template storage" --require-approval level:code
+
+DoD
+
+Unit/E2E grün, API swagger verfügbar
+
+S3+RDS Storage für Templates, DSGVO (KMS) aktiv
+
+Meta/GBP Sandbox-Publish dry-run möglich (Flags noch OFF)
+
+Phase 4 – Blue/Green Cutover: Neue UI live, alte UI weg
+
+Ziel: Sichere Umschaltung via Blue/Green + Canary (10% → 100%)
+
+Kiro:
+
+kiro build web --env production
+kiro deploy web --strategy blue-green --canary 10 --cloudfront E2W4...
+kiro check web --paths "/", "/login", "/dashboard", "/vc"
+kiro promote web --to green --after-checks
+
+Rollback Plan
+
+kiro promote web --to blue
+
+DoD
+
+P95 Web API < 300ms (cached), Gen P95 ≤ 1.5s
+
+Errors < 1% während Canary
+
+Alte UI nicht mehr erreichbar
+
+Phase 5 – Google integrieren (GBP, Maps/Places, optional Ads)
+
+Schritte
+
+OAuth Consent + Scopes (intern, minimale Scopes)
+
+GBP Post & Media Publish (Sandbox)
+
+Places/Maps für Location Insights (nur Read)
+
+Rate Limits, Quotas, Costs guardrailen
+
+Kiro:
+
+kiro google connect --scopes "business.manage,places.readonly"
+kiro adapter deploy --name google-gbp --sandbox
+kiro test run --group google-adapters
+kiro pr open --title "feat: google gbp + places adapters" --require-approval level:secpii
+
+DoD
+
+Sandbox-Publish OK, Logs/Audit Trail vollständig
+
+Backoff/Retry/Circuit Breaker implementiert
+
+Phase 6 – Dashboards einrichten (Ops + Business)
+
+Ops
+
+CloudWatch/X-Ray: latency, errors, throttles, cost
+
+Meta-Monitor (<15s) aktiviert
+
+Business
+
+Visibility KPI (Impressions, CTR, GBP/Meta Posts)
+
+UMC Autopilot Performance (post-level metrics)
+
+Kiro:
+
+kiro dashboards apply ./dashboards/cloudwatch/_.json
+kiro dashboards apply ./dashboards/business/_.json
+kiro alarm set --name "P95>1.5s" --threshold 1500 --metric p95_gen_ms
+
+DoD
+
+Dashboards sichtbar, Alarme aktiv
+
+Weekly Report Job geplant
+
+Phase 7 – User Profile einrichten
+
+Ziel: Profilspeicher inkl. Template-Vault je User, DSGVO-Export/Erase.
+
+Kiro:
+
+kiro db migrate --label "profile+templates"
+kiro seed run profiles
+kiro privacy enable --features export,erasure,consent-audit
+
+DoD
+
+CRUD Profile + Template-Vault funktionsfähig
+
+Privacy-Flows testbar (export, erase)
+
+Phase 8 – OAuth & Anmeldung (Cognito)
+
+Konfiguration
+
+Cognito Hosted UI / Custom UI
+
+Socials (optional später), Start: Email/Pass + Magic Link
+
+Kiro:
+
+kiro auth setup --cognito --app-client web --redirect "https://matbakh.app/callback"
+kiro auth enable --flows "USER_SRP_AUTH,MAGIC_LINK"
+kiro test run --group auth
+
+DoD
+
+Sign-up, Sign-in, PW-Reset, Magic Link grün
+
+Token Guards im Backend
+
+Phase 9 – Onboarding einrichten (persona-sensitiv, zero-friction)
+
+Ziel: Kein Template-Picker, Ein-Knopf-Erlebnis: „Erstelle meinen Wochenpost“.
+
+Kiro:
+
+kiro scaffold flows --module onboarding --personas solo,ben,walter,karin
+kiro abtest create "onboarding-wow" --variants A,B --metric time_to_first_success
+
+DoD
+
+„Aha“ innerhalb 5 Min (erste Vorschau bzw. Post-Plan)
+
+Tracking + A/B aktiv
+
+Phase 10 – VC-Test einrichten (Visibility Component)
+
+Ziel: Erste VC-End-to-End Probe (Location Insights read-only, GBP/Meta publish sandbox OFF)
+
+Kiro:
+
+kiro vc test --scenario "single-location starter" --sandbox --collect-metrics
+kiro report create --name "vc-smoke-2025-10-xx.md"
+
+DoD
+
+VC KPI-Pipeline liefert Werte
+
+Kein externes Publish ohne Freigabe
+
+Best-Practice Reihenfolge (optimiert)
+
+Infra Cleanup (Phase 2)
+
+UMC Backbone + Template Vault (Phase 3 & 7)
+
+Blue/Green Cutover (Phase 4)
+
+Auth + Onboarding (Phase 8 & 9)
+
+Google/Meta Adapter (Sandbox) (Phase 5)
+
+Dashboards/Alarme + Meta-Monitor (Phase 6)
+
+VC-Test (Phase 10)
+
+Autopilot Publish schrittweise aktivieren (Flags → Canary Markets)
+
+Approval-Gates (verbindlich)
+
+Gate 1 – Design: Architekturänderungen, DNS/Route, Adapter-Scopes
+
+Gate 2 – Code: PR-Reviews (lint, tests, coverage)
+
+Gate 3 – Sec/PII: Scopes, Logs, PII-redaction, GDPR
+
+Gate 4 – Perf/SLO: P95 Targets, error rate, canary metrics
+
+Gate 5 – Release: Change record, rollback plan, comms
+
+Kiro:
+
+kiro approve --gate design --pr 123
+kiro approve --gate code --pr 123
+kiro approve --gate secpii --change scopes-google
+kiro approve --gate perf --report ./reports/canary.json
+kiro release tag v2025.10.UMC
+
+Risk Controls & Rollbacks
+
+Traffic Guard: Canary 10%/30%/100% + automatic rollback on
+
+error_rate > 2% (5m)
+
+p95_gen_ms > 1500 (10m)
+
+5xx bursts > threshold
+
+Cost Guard: API quota + Bedrock cost thresholds ($5/$10/$25)
+
+Publish Guard: UMC\_\*\_PUBLISH=false bis Sandbox-Run OK
+
+Data Guard: Backups (RDS snapshot pre-migration), S3 versioning on
+
+Was Bedrock sofort tun darf (ohne Rückfrage)
+
+Read-Only Audits, Lint/Tests, Non-Prod Builds
+
+Schreiben in feature branches + PR eröffnen
+
+Sandbox-Adapter Tests (kein echtes Publish)
+
+Dashboards erstellen, Alarme konfigurieren
+
+Was Bedrock nur mit Approval tun darf
+
+DNS/CloudFront Umschaltung
+
+Auth-Flows live anpassen
+
+GBP/Meta echtes Publishing aktivieren
+
+DB-DDL in Prod
+
+Kosten-relevante Limits erhöhen
+
+TL;DR: Deine 3 Sofort-Kommandos
+
+# 1) Inventar & Cleanup-Plan
+
+kiro aws inspect cloudfront,s3,route53,cognito,rds --region eu-central-1 --export ./reports/aws.json
+kiro aws diff desired ./infra/state/desired.json ./reports/aws.json --plan ./reports/cleanup.plan.json
+
+# 2) UMC Backbone + Template Vault
+
+kiro scaffold api --module umc --endpoints generate,render,schedule,publish
+kiro scaffold lib --name template-service --path src/lib/umc/template-service.ts
+kiro pr open --title "feat(umc): backbone + template storage"
+
+# 3) Blue/Green Canary & Dashboards
+
+kiro deploy web --strategy blue-green --canary 10 --cloudfront E2W4JULEW8BXSD
+kiro dashboards apply ./dashboards/cloudwatch/\*.json

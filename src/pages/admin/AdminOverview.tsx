@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect, useState } from "react";
 
 export default function AdminOverview() {
   const [stats, setStats] = useState<any>(null);
-  
+
   useEffect(() => {
     fetch("/functions/v1/admin-overview")
       .then(r => r.json())
@@ -26,7 +26,7 @@ export default function AdminOverview() {
           Letzte Aktualisierung: {new Date().toLocaleTimeString('de-DE')}
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {statItems.map(item => (
           <Card key={item.key}>
@@ -102,6 +102,12 @@ export default function AdminOverview() {
               </button>
               <button className="w-full text-left p-2 hover:bg-gray-50 rounded text-sm">
                 → Content Queue
+              </button>
+              <button
+                className="w-full text-left p-2 hover:bg-gray-50 rounded text-sm"
+                onClick={() => window.location.href = '/admin/bedrock-activation'}
+              >
+                → Bedrock Activation
               </button>
             </div>
           </CardContent>

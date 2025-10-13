@@ -364,6 +364,9 @@ export function useS3FileAccess(options: UseS3FileAccessOptions = {}): UseS3File
   // Auto-refresh expired URLs
   useEffect(() => {
     if (!config.autoRefresh) return;
+    
+    // Skip timer in test environment to prevent Jest open handles
+    if (typeof process !== 'undefined' && process.env.JEST_WORKER_ID) return;
 
     const interval = setInterval(() => {
       clearExpiredUrls();

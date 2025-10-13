@@ -6,6 +6,23 @@
  */
 
 // Note: CloudWatch client removed - using server-side metrics endpoint instead
+import { sendMetrics, flushQueue } from '@/lib/monitoring-transport';
+
+// Helper function to safely get environment variables
+function getEnvVar(key: string, defaultValue: string = ''): string {
+  // Try import.meta.env first (Vite)
+  if (typeof window !== 'undefined' && (window as any).import?.meta?.env) {
+    return (window as any).import.meta.env[key] || defaultValue;
+  }
+  
+  // Try global import.meta.env (Jest mock)
+  if (typeof globalThis !== 'undefined' && (globalThis as any).import?.meta?.env) {
+    return (globalThis as any).import.meta.env[key] || defaultValue;
+  }
+  
+  // Fallback to process.env
+  return process.env[key] || defaultValue;
+}
 
 // Metric namespace
 const NAMESPACE = 'Matbakh/S3Upload';
@@ -53,14 +70,16 @@ import { viteEnv } from './env';
 export async function publishMetric(data: MetricData): Promise<void> {
   try {
     // Only publish metrics in production or when explicitly enabled
-    const enableMetrics = process.env.NODE_ENV === 'production' || viteEnv('VITE_ENABLE_METRICS', false);
+    const enableMetrics = process.env.NODE_ENV === 'production' || 
+                         getEnvVar('VITE_ENABLE_METRICS', 'false') === 'true' ||
+                         process.env.VITE_ENABLE_METRICS === 'true';
     if (!enableMetrics) {
       console.log('Metrics disabled in development:', data);
       return;
     }
 
     // Use server-side metrics endpoint instead of direct CloudWatch calls
-    const metricsEndpoint = import.meta.env.VITE_METRICS_ENDPOINT || 'https://api.matbakh.app/metrics';
+    const metricsEndpoint = getEnvVar('VITE_METRICS_ENDPOINT', 'https://api.matbakh.app/metrics');
     
     const response = await fetch(metricsEndpoint, {
       method: 'POST',
@@ -238,39 +257,16 @@ class MetricsBatch {
 
   async flush(): Promise<void> {
     if (this.metrics.length === 0) return;
-
     const batch = this.metrics.splice(0, this.batchSize);
-    
-    try {
-      if (process.env.NODE_ENV === 'production' || import.meta.env.VITE_ENABLE_METRICS) {
-        const metricsEndpoint = import.meta.env.VITE_METRICS_ENDPOINT || 'https://api.matbakh.app/metrics';
-        
-        const response = await fetch(metricsEndpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            metrics: batch.map(metric => ({
-              metricName: metric.metricName,
-              value: metric.value,
-              unit: metric.unit || 'Count',
-              dimensions: metric.dimensions,
-              timestamp: metric.timestamp?.toISOString() || new Date().toISOString(),
-            })),
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Metrics API error: ${response.status}`);
-        }
-      }
-    } catch (error) {
-      console.warn('Failed to publish metric batch:', error);
-    }
+    const endpoint = getEnvVar('VITE_METRICS_ENDPOINT', 'https://api.matbakh.app/metrics');
+    await sendMetrics({ metrics: batch.map(m => ({ ...m, ns: 'Matbakh/Perf' })) }, endpoint);
+    flushQueue(endpoint);
   }
 
   private startAutoFlush(): void {
+    // Skip timer in test environment to prevent Jest open handles
+    if (typeof process !== 'undefined' && process.env.JEST_WORKER_ID) return;
+    
     this.timer = setInterval(() => {
       this.flush();
     }, this.flushInterval);
@@ -287,46 +283,141 @@ class MetricsBatch {
 // Global metrics batch instance
 export const metricsBatch = new MetricsBatch();
 
+// --- NEW: robuste Größenerkennung -------------------------------------------
+
+type SizeExtractor<T extends any[], R> = (args: T, result?: R) => number | undefined | null;
+
 /**
- * Performance monitoring decorator for upload functions
+ * Versucht, die Dateigröße (Bytes) aus Args/Result zu bestimmen.
+ * Deckt typische Fälle ab: File/Blob, Buffer/ArrayBuffer, base64, Request/Response, S3-SDK-Result etc.
+ */
+export function inferFileSizeBytes(args: any[], result?: any): number | undefined {
+  // 1) Direkter File/Blob in den Args
+  for (const a of args) {
+    if (a && typeof a === 'object') {
+      // Browser: File/Blob
+      if (typeof (a as any).size === 'number' && (a instanceof Blob || a instanceof File || a.type || a.name)) {
+        return (a as any).size;
+      }
+      // Node: Buffer
+      if (typeof (a as any).length === 'number' && Buffer.isBuffer?.(a)) {
+        return (a as Buffer).length;
+      }
+      // ArrayBuffer
+      if ((a as ArrayBuffer)?.byteLength) {
+        return (a as ArrayBuffer).byteLength;
+      }
+      // Options-Objekt mit expliziter Größe
+      if (typeof (a as any).fileSizeBytes === 'number') {
+        return (a as any).fileSizeBytes;
+      }
+      // Request/Fetch Body mit Content-Length Header
+      if ((a as Request)?.headers?.get?.('content-length')) {
+        const v = Number((a as Request).headers.get('content-length'));
+        if (Number.isFinite(v)) return v;
+      }
+      // S3 PutObjectCommandInput: Body kann Buffer/Uint8Array/stream sein
+      if ((a as any).Body) {
+        const body = (a as any).Body;
+        if (typeof body?.length === 'number') return body.length;             // Buffer / Uint8Array
+        if (body?.byteLength) return body.byteLength;                          // ArrayBuffer
+        if (typeof body?.size === 'number') return body.size;                  // Blob
+        // Streams haben selten Länge – dann fällt es unten auf "unknown"
+      }
+    }
+  }
+
+  // 2) Ergebnis-Objekte tragen manchmal Größe (custom)
+  if (result && typeof result === 'object') {
+    if (typeof (result as any).uploadedSize === 'number') {
+      return (result as any).uploadedSize;
+    }
+    if (typeof (result as any).size === 'number') {
+      return (result as any).size;
+    }
+    // S3 ManagedUpload: kein Size-Feld – ggf. aus Input ermittelt
+  }
+
+  // 3) Fallback: Content-Length Header einer Response (nur wenn direkt hochgeladen wurde)
+  if ((result as Response)?.headers?.get?.('content-length')) {
+    const v = Number((result as Response).headers.get('content-length'));
+    if (Number.isFinite(v)) return v;
+  }
+
+  return undefined; // unbekannt
+}
+
+// --- UPDATED: Decorator mit Size-Extractor & korrektem recordUploadSuccess ---
+
+/**
+ * Dekoriert eine Upload-Funktion und misst Dauer/Erfolg + korrekte Dateigröße.
+ * - Extrahiert Größe automatisch (siehe inferFileSizeBytes)
+ * - Optional: custom sizeExtractor für Spezialfälle
  */
 export function monitorUploadPerformance<T extends any[], R>(
   bucket: BucketType,
   uploadType: UploadType,
-  fn: (...args: T) => Promise<R>
+  fn: (...args: T) => Promise<R>,
+  opts?: {
+    sizeExtractor?: SizeExtractor<T, R>;
+    onMeasuredSizeBytes?: (bytes: number | undefined) => void; // optional callback
+  }
 ) {
   return async (...args: T): Promise<R> => {
     const startTime = Date.now();
-    
+    let sizeBytes: number | undefined;
+
     try {
       const result = await fn(...args);
       const duration = Date.now() - startTime;
-      
-      // Assume success if no error thrown
-      await recordUploadSuccess(bucket, uploadType, 0, duration);
-      
+
+      // Reihenfolge: custom extractor > auto inference
+      sizeBytes =
+        (opts?.sizeExtractor && opts.sizeExtractor(args, result)) ??
+        inferFileSizeBytes(args, result);
+
+      // optional callback (z.B. UI-Telemetry)
+      opts?.onMeasuredSizeBytes?.(sizeBytes);
+
+      await recordUploadSuccess(
+        bucket,
+        uploadType,
+        typeof sizeBytes === 'number' && Number.isFinite(sizeBytes) ? sizeBytes : 0,
+        duration
+      );
+
       return result;
     } catch (error) {
       const duration = Date.now() - startTime;
-      
-      // Categorize error
+
+      // Beim Fehler lohnt es sich trotzdem, Größe zu protokollieren, falls ableitbar
+      try {
+        sizeBytes = (opts?.sizeExtractor && opts.sizeExtractor(args)) ?? inferFileSizeBytes(args);
+        opts?.onMeasuredSizeBytes?.(sizeBytes);
+      } catch { /* ignore size errors */ }
+
       let errorType: ErrorType = 'unknown_error';
       if (error instanceof Error) {
-        if (error.message.includes('validation')) {
-          errorType = 'validation_error';
-        } else if (error.message.includes('network') || error.message.includes('fetch')) {
-          errorType = 'network_error';
-        } else if (error.message.includes('permission') || error.message.includes('403')) {
-          errorType = 'permission_error';
-        } else if (error.message.includes('quota') || error.message.includes('limit')) {
-          errorType = 'quota_error';
-        } else if (error.message.includes('500') || error.message.includes('server')) {
-          errorType = 'server_error';
-        }
+        const msg = error.message.toLowerCase();
+        if (msg.includes('validation')) errorType = 'validation_error';
+        else if (msg.includes('network') || msg.includes('fetch')) errorType = 'network_error';
+        else if (msg.includes('permission') || msg.includes('403')) errorType = 'permission_error';
+        else if (msg.includes('quota') || msg.includes('limit')) errorType = 'quota_error';
+        else if (msg.includes('500') || msg.includes('server')) errorType = 'server_error';
       }
-      
+
       await recordUploadFailure(bucket, uploadType, errorType, error instanceof Error ? error.message : String(error));
-      
+
+      // Metric für „Attempted Size" - auch bei Fehlern die geplante Größe erfassen
+      if (typeof sizeBytes === 'number' && Number.isFinite(sizeBytes)) {
+        await publishMetric({
+          metricName: 'UploadAttemptSize',
+          value: sizeBytes,
+          unit: 'Bytes',
+          dimensions: { Bucket: bucket, UploadType: uploadType },
+        });
+      }
+
       throw error;
     }
   };
@@ -384,5 +475,12 @@ export async function performHealthCheck(): Promise<{
 if (typeof window !== 'undefined') {
   window.addEventListener('beforeunload', () => {
     metricsBatch.destroy();
+  });
+  
+  window.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      const endpoint = getEnvVar('VITE_METRICS_ENDPOINT', 'https://api.matbakh.app/metrics');
+      flushQueue(endpoint);
+    }
   });
 }

@@ -1,0 +1,575 @@
+40c934690af2ef853d358e0922a2d439
+/**
+ * Global Jest Setup – Test Infrastructure
+ * -----------------------------------------
+ * Polyfills, global mocks & cleanup for consistent test execution.
+ * Pure CommonJS for Jest compatibility.
+ * 
+ * Enhanced with:
+ * - Custom Jest matchers for business logic validation
+ * - Comprehensive test isolation and cleanup
+ * - Performance monitoring for slow tests
+ * - Intelligent console output management
+ */
+
+// -------------------------------
+// Test Configuration & Timeouts
+// -------------------------------
+jest.setTimeout(30000); // 30 seconds default timeout
+
+// Set shorter timeout for unit tests, longer for integration tests
+const originalIt = global.it;
+global.it = (name, fn, timeout) => {
+  // Auto-detect test type and set appropriate timeout
+  if (name.includes('integration') || name.includes('e2e')) {
+    return originalIt(name, fn, timeout || 60000); // 60s for integration tests
+  } else if (name.includes('performance') || name.includes('stress')) {
+    return originalIt(name, fn, timeout || 120000); // 2 minutes for performance tests
+  } else {
+    return originalIt(name, fn, timeout || 10000); // 10s for unit tests
+  }
+};
+
+// ✅ CommonJS-style requires for Jest
+require("@testing-library/jest-dom");
+const fetchMock = require("jest-fetch-mock");
+const { TextDecoder, TextEncoder } = require("util");
+
+// Polyfills
+globalThis.TextEncoder = TextEncoder;
+globalThis.TextDecoder = TextDecoder;
+
+// Enable fetch mocking
+fetchMock.enableMocks();
+
+// ✅ Schritt 3: Global Fallback Mock für useMicroservices (LÖST DEN BUG!)
+jest.mock('@/hooks/useMicroservices', () => ({
+  useMicroservices: () => ({
+    services: [],
+    meshStatus: 'mocked',
+    costAnalysis: {},
+    discoveryStats: {},
+    isLoading: false,
+    error: null,
+    scaleService: jest.fn(),
+    deployService: jest.fn(),
+    removeService: jest.fn(),
+    updateServiceConfig: jest.fn(),
+    refreshData: jest.fn(),
+    getServiceHealth: jest.fn(),
+    getTotalCost: jest.fn(() => 0),
+    getHealthyServicesCount: jest.fn(() => 0),
+    getUnhealthyServicesCount: jest.fn(() => 0),
+  }),
+}));
+
+// -------------------------------
+// Mock von import.meta.env für Hooks und Services
+// -------------------------------
+const mockImportMetaEnv = {
+  VITE_CLOUDFRONT_URL: "https://test-cdn.cloudfront.net",
+  VITE_VC_API_PROVIDER: "aws",
+  VITE_PUBLIC_API_BASE: "https://test-api.matbakh.app",
+  VITE_METRICS_SAMPLE_RATE: "1",
+  VITE_APP_VERSION: "1.0.0-test",
+  MODE: "test",
+  DEV: false,
+  PROD: false,
+  SSR: false,
+};
+
+// Mock import.meta for Jest
+globalThis.import = {
+  meta: {
+    env: mockImportMetaEnv,
+  },
+};
+
+// Also set as globalThis.importMetaEnv for backward compatibility
+globalThis.importMetaEnv = mockImportMetaEnv;
+
+// Optional: alias für vite typische Nutzung
+process.env.VITE_CLOUDFRONT_URL = "https://test-cdn.cloudfront.net";
+process.env.VITE_VC_API_PROVIDER = "aws";
+process.env.VITE_PUBLIC_API_BASE = "https://test-api.matbakh.app";
+process.env.VITE_METRICS_SAMPLE_RATE = "1";
+process.env.VITE_APP_VERSION = "1.0.0-test";
+
+// -------------------------------
+// Polyfill crypto.subtle.digest (jsdom-compatible)
+// -------------------------------
+if (!globalThis.crypto || !globalThis.crypto.subtle) {
+  globalThis.crypto = {
+    subtle: {
+      digest: jest.fn().mockResolvedValue(new Uint8Array(32)),
+    },
+    getRandomValues: (arr) => {
+      for (let i = 0; i < arr.length; i++) {
+        arr[i] = Math.floor(Math.random() * 256);
+      }
+      return arr;
+    },
+  };
+}
+
+// Polyfill performance.now
+global.performance = {
+  now: jest.fn(() => Date.now()),
+};
+
+// Polyfill AbortSignal.timeout (Node <18)
+if (!AbortSignal.timeout) {
+  AbortSignal.timeout = jest.fn().mockImplementation((delay) => {
+    const controller = new AbortController();
+    setTimeout(() => controller.abort(), delay);
+    return controller.signal;
+  });
+}
+
+// -------------------------------
+// Global AWS SDK Mocks
+// -------------------------------
+
+// Main RDS Client Mock
+const mockExecuteQuery = jest.fn();
+const mockMapRecord = jest.fn((record) => record);
+
+jest.mock("@/services/aws-rds-client", () => {
+  return {
+    AwsRdsClient: jest.fn().mockImplementation(() => ({
+      executeQuery: mockExecuteQuery,
+      mapRecord: mockMapRecord,
+    })),
+  };
+});
+
+// CloudWatch Mock
+jest.mock("@aws-sdk/client-cloudwatch", () => ({
+  CloudWatchClient: jest.fn(),
+  PutMetricDataCommand: jest.fn(),
+}));
+
+// SNS Mock
+jest.mock("@aws-sdk/client-sns", () => ({
+  SNSClient: jest.fn(),
+  PublishCommand: jest.fn(),
+}));
+
+// Additional AWS SDK Mocks (only for installed packages)
+// Note: Only mock packages that are actually installed to avoid module resolution errors
+
+// Mock AWS SDK packages conditionally
+try {
+  require.resolve("@aws-sdk/client-ecs");
+  jest.mock("@aws-sdk/client-ecs", () => ({
+    ECSClient: jest.fn(),
+    CreateServiceCommand: jest.fn(),
+    UpdateServiceCommand: jest.fn(),
+    DeleteServiceCommand: jest.fn(),
+  }));
+} catch (e) {
+  // Package not installed, skip mock
+}
+
+try {
+  require.resolve("@aws-sdk/client-application-auto-scaling");
+  jest.mock("@aws-sdk/client-application-auto-scaling", () => ({
+    ApplicationAutoScalingClient: jest.fn(),
+    RegisterScalableTargetCommand: jest.fn(),
+    PutScalingPolicyCommand: jest.fn(),
+  }));
+} catch (e) {
+  // Package not installed, skip mock
+}
+
+try {
+  require.resolve("@aws-sdk/client-comprehend");
+  jest.mock("@aws-sdk/client-comprehend", () => ({
+    ComprehendClient: jest.fn(),
+    DetectSentimentCommand: jest.fn(),
+    DetectPiiEntitiesCommand: jest.fn(),
+  }));
+} catch (e) {
+  // Package not installed, skip mock
+}
+
+try {
+  require.resolve("@aws-sdk/client-bedrock-runtime");
+  jest.mock("@aws-sdk/client-bedrock-runtime", () => ({
+    BedrockRuntimeClient: jest.fn(),
+    InvokeModelCommand: jest.fn(),
+  }));
+} catch (e) {
+  // Package not installed, skip mock
+}
+
+// -------------------------------
+// Expose mocks globally
+// -------------------------------
+global.mockExecuteQuery = mockExecuteQuery;
+global.mockMapRecord = mockMapRecord;
+
+// -------------------------------
+// Custom Jest Matchers for Business Logic
+// -------------------------------
+expect.extend({
+  toBeOneOf(received, validOptions) {
+    const pass = validOptions.includes(received);
+    if (pass) {
+      return {
+        message: () => `expected ${received} not to be one of ${validOptions.join(', ')}`,
+        pass: true,
+      };
+    } else {
+      return {
+        message: () => `expected ${received} to be one of ${validOptions.join(', ')}`,
+        pass: false,
+      };
+    }
+  },
+
+  toBeValidUUID(received) {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const pass = typeof received === 'string' && uuidRegex.test(received);
+    if (pass) {
+      return {
+        message: () => `expected ${received} not to be a valid UUID`,
+        pass: true,
+      };
+    } else {
+      return {
+        message: () => `expected ${received} to be a valid UUID`,
+        pass: false,
+      };
+    }
+  },
+
+  toBeValidTimestamp(received) {
+    const pass = !isNaN(Date.parse(received));
+    if (pass) {
+      return {
+        message: () => `expected ${received} not to be a valid timestamp`,
+        pass: true,
+      };
+    } else {
+      return {
+        message: () => `expected ${received} to be a valid timestamp`,
+        pass: false,
+      };
+    }
+  },
+
+  toBeWithinRange(received, min, max) {
+    const pass = received >= min && received <= max;
+    if (pass) {
+      return {
+        message: () => `expected ${received} not to be within range ${min}-${max}`,
+        pass: true,
+      };
+    } else {
+      return {
+        message: () => `expected ${received} to be within range ${min}-${max}`,
+        pass: false,
+      };
+    }
+  }
+});
+
+// -------------------------------
+// Global Test Helpers (Encapsulated)
+// -------------------------------
+const TestHelpers = {
+  createMockFile: (name, type, content = "test content") => {
+    return new File([content], name, { type });
+  },
+
+  createMockResponse: (data, ok = true) => {
+    return {
+      ok,
+      json: () => Promise.resolve(data),
+      text: () => Promise.resolve(JSON.stringify(data)),
+      status: ok ? 200 : 400,
+      statusText: ok ? "OK" : "Bad Request",
+    };
+  },
+
+  createMockContext: (overrides = {}) => {
+    return {
+      id: 'test-context-id',
+      createdAt: new Date(),
+      relevanceScore: 0.5,
+      ...overrides
+    };
+  },
+
+  createMockBusinessData: (overrides = {}) => {
+    return {
+      businessName: 'Test Restaurant',
+      location: 'Test City',
+      category: 'restaurant',
+      ...overrides
+    };
+  },
+
+  // Performance test helper
+  measureExecutionTime: async (fn) => {
+    const start = performance.now();
+    const result = await fn();
+    const end = performance.now();
+    return {
+      result,
+      executionTime: end - start
+    };
+  }
+};
+
+// Expose helpers globally but encapsulated
+global.TestHelpers = TestHelpers;
+
+// Backward compatibility
+global.createMockFile = TestHelpers.createMockFile;
+global.createMockResponse = TestHelpers.createMockResponse;
+
+// -------------------------------
+// Global Default Mocks for React Hooks
+// -------------------------------
+
+// Default mock data for useMicroservices hook
+const defaultMicroservicesData = {
+  services: [],
+  meshStatus: {
+    meshName: 'test-mesh',
+    region: 'eu-central-1',
+    status: 'active',
+    virtualServices: 0,
+    virtualRouters: 0,
+    virtualNodes: 0,
+    lastUpdated: new Date(),
+    errors: [],
+  },
+  costAnalysis: {
+    totalMonthlyCost: 0,
+    budgetUtilization: 0,
+    recommendations: [],
+    lastUpdated: new Date(),
+  },
+  discoveryStats: {
+    totalServices: 0,
+    healthyServices: 0,
+    unhealthyServices: 0,
+    averageResponseTime: 0,
+    servicesByEnvironment: new Map(),
+    servicesByRegion: new Map(),
+    lastUpdated: new Date(),
+  },
+  isLoading: false,
+  error: null,
+  scaleService: jest.fn(),
+  deployService: jest.fn(),
+  removeService: jest.fn(),
+  updateServiceConfig: jest.fn(),
+  refreshData: jest.fn(),
+  getServiceHealth: jest.fn(),
+  getTotalCost: jest.fn(() => 0),
+  getHealthyServicesCount: jest.fn(() => 0),
+  getUnhealthyServicesCount: jest.fn(() => 0),
+};
+
+// Make available globally for tests
+global.defaultMicroservicesData = defaultMicroservicesData;
+
+// -------------------------------
+// Enhanced Test Isolation & Cleanup
+// -------------------------------
+// Open Handles Tracking for Test Isolation
+// -------------------------------
+let testStartTime;
+
+// Track active intervals and timeouts for cleanup
+global.activeIntervals = new Set();
+global.activeTimeouts = new Set();
+
+// Override setInterval to track active intervals
+const originalSetInterval = global.setInterval;
+global.setInterval = (callback, delay, ...args) => {
+  const id = originalSetInterval(callback, delay, ...args);
+  global.activeIntervals.add(id);
+  return id;
+};
+
+// Override clearInterval to remove from tracking
+const originalClearInterval = global.clearInterval;
+global.clearInterval = (id) => {
+  global.activeIntervals.delete(id);
+  return originalClearInterval(id);
+};
+
+// Override setTimeout to track active timeouts
+const originalSetTimeout = global.setTimeout;
+global.setTimeout = (callback, delay, ...args) => {
+  const id = originalSetTimeout(callback, delay, ...args);
+  global.activeTimeouts.add(id);
+  return id;
+};
+
+// Override clearTimeout to remove from tracking
+const originalClearTimeout = global.clearTimeout;
+global.clearTimeout = (id) => {
+  global.activeTimeouts.delete(id);
+  return originalClearTimeout(id);
+};
+
+beforeEach(() => {
+  testStartTime = performance.now();
+
+  // Reset all mocks to clean state
+  jest.clearAllMocks();
+  mockExecuteQuery.mockReset();
+  mockMapRecord.mockReset();
+  fetchMock.resetMocks();
+
+  // Reset global state
+  if (global.testState) {
+    global.testState = {};
+  }
+
+  // Clear any existing intervals/timeouts
+  global.activeIntervals.forEach(id => clearInterval(id));
+  global.activeTimeouts.forEach(id => clearTimeout(id));
+  global.activeIntervals.clear();
+  global.activeTimeouts.clear();
+
+  // Reset timers if any tests use fake timers
+  if (jest.isMockFunction(setTimeout)) {
+    jest.clearAllTimers();
+  }
+});
+
+afterEach(() => {
+  const testEndTime = performance.now();
+  const testDuration = testEndTime - testStartTime;
+
+  // Log slow tests (>5 seconds) for performance monitoring
+  if (testDuration > 5000) {
+    console.warn(`⚠️ Slow test detected: ${testDuration.toFixed(2)}ms`);
+  }
+
+  // Comprehensive cleanup
+  jest.clearAllMocks();
+  mockExecuteQuery.mockReset();
+  mockMapRecord.mockReset();
+  fetchMock.resetMocks();
+
+  // Clean up any global test state
+  if (global.testState) {
+    global.testState = {};
+  }
+
+  // Clean up any DOM changes (for React tests)
+  if (document.body) {
+    document.body.innerHTML = '';
+  }
+
+  // Force cleanup of any remaining intervals/timeouts
+  global.activeIntervals.forEach(id => {
+    try {
+      clearInterval(id);
+    } catch (e) {
+      // Ignore errors during cleanup
+    }
+  });
+  global.activeTimeouts.forEach(id => {
+    try {
+      clearTimeout(id);
+    } catch (e) {
+      // Ignore errors during cleanup
+    }
+  });
+  global.activeIntervals.clear();
+  global.activeTimeouts.clear();
+
+  // Reset console methods if they were mocked
+  if (jest.isMockFunction(console.log)) {
+    console.log.mockRestore();
+  }
+  if (jest.isMockFunction(console.error)) {
+    console.error.mockRestore();
+  }
+
+  // Clean up any pending promises or timers
+  if (jest.isMockFunction(setTimeout)) {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
+  }
+});
+
+// -------------------------------
+// Enhanced Console Management for Tests
+// -------------------------------
+const originalConsole = {
+  warn: console.warn,
+  error: console.error,
+  log: console.log,
+  info: console.info
+};
+
+// Suppress noisy console warnings but allow important ones
+console.warn = (...args) => {
+  const msg = String(args[0] ?? "");
+
+  // Suppress known noisy warnings
+  const suppressPatterns = [
+    "React Router Future Flag Warning",
+    "Failed to read file",
+    "Warning: ReactDOM.render is deprecated",
+    "Warning: componentWillReceiveProps has been renamed",
+    "Warning: componentWillMount has been renamed",
+    "act(...) is not supported in production builds"
+  ];
+
+  if (suppressPatterns.some(pattern => msg.includes(pattern))) {
+    return;
+  }
+
+  originalConsole.warn(...args);
+};
+
+// Suppress console.log in tests unless explicitly enabled
+console.log = (...args) => {
+  const msg = String(args[0] ?? "");
+
+  // Allow test-specific logs
+  if (process.env.JEST_VERBOSE === 'true' || msg.startsWith('TEST:')) {
+    originalConsole.log(...args);
+    return;
+  }
+
+  // Suppress performance test logs unless they indicate problems
+  if (msg.includes('Test:') && (msg.includes('FAIL') || msg.includes('ERROR'))) {
+    originalConsole.log(...args);
+    return;
+  }
+
+  // Suppress other logs in tests
+};
+
+// Keep error logging but format it better
+console.error = (...args) => {
+  const msg = String(args[0] ?? "");
+
+  // Always show actual errors
+  if (msg.includes('Error:') || msg.includes('TypeError:') || msg.includes('ReferenceError:')) {
+    originalConsole.error('🔴 TEST ERROR:', ...args);
+    return;
+  }
+
+  originalConsole.error(...args);
+};
+
+// Restore console methods after all tests
+afterAll(() => {
+  console.warn = originalConsole.warn;
+  console.error = originalConsole.error;
+  console.log = originalConsole.log;
+  console.info = originalConsole.info;
+});

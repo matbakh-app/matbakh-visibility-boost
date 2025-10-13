@@ -1,0 +1,291 @@
+name: Quality Assurance Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 6 * * 1' # Weekly on Monday at 6 AM
+
+jobs:
+  ai-code-review:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v40
+        with:
+          files: |
+            src/**/*.{ts,tsx,js,jsx}
+
+      - name: Run AI Code Review
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "Changed files: ${{ steps.changed-files.outputs.all_changed_files }}"
+          npm run qa:code-review -- ${{ steps.changed-files.outputs.all_changed_files }}
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Upload code review results
+        if: steps.changed-files.outputs.any_changed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-review-results
+          path: qa-reports/code-review-*.json
+          retention-days: 7
+
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Install Snyk CLI
+        run: npm install -g snyk
+
+      - name: Authenticate Snyk
+        run: snyk auth ${{ secrets.SNYK_TOKEN }}
+        if: secrets.SNYK_TOKEN != ''
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Run Snyk security scan
+        run: snyk test --json > snyk-results.json || true
+        if: secrets.SNYK_TOKEN != ''
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Run custom security scan
+        run: npm run qa:security
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Upload security scan results
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-scan-results
+          path: |
+            qa-reports/security-*.json
+            snyk-results.json
+          retention-days: 30
+
+  accessibility-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Install Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Build application
+        run: npm run build
+
+      - name: Start application
+        run: npm run preview &
+        env:
+          PORT: 5173
+
+      - name: Wait for application
+        run: npx wait-on http://localhost:5173
+
+      - name: Run accessibility tests
+        run: npx playwright test test/accessibility/axe.spec.ts
+        env:
+          BASE_URL: http://localhost:5173
+
+      - name: Upload accessibility test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: accessibility-test-results
+          path: qa-reports/accessibility-*.json
+          retention-days: 30
+
+  quality-gates:
+    runs-on: ubuntu-latest
+    needs: [security-scan]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Run tests with coverage
+        run: npm run test:coverage
+
+      - name: Run ESLint
+        run: npm run lint -- --format json --output-file eslint-results.json
+        continue-on-error: true
+
+      - name: Setup SonarQube Scanner
+        uses: warchant/setup-sonar-scanner@v7
+        if: secrets.SONAR_TOKEN != ''
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Run SonarQube analysis
+        run: |
+          sonar-scanner \
+            -Dsonar.projectKey=matbakh-app \
+            -Dsonar.organization=matbakh \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
+            -Dsonar.eslint.reportPaths=eslint-results.json
+        if: secrets.SONAR_TOKEN != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Run quality gates
+        run: npm run qa:quality-gates
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Upload quality gate results
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-gate-results
+          path: |
+            qa-reports/quality-*.json
+            coverage/
+            eslint-results.json
+          retention-days: 30
+
+  qa-summary:
+    runs-on: ubuntu-latest
+    needs: [ai-code-review, security-scan, accessibility-test, quality-gates]
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: qa-artifacts/
+
+      - name: Generate QA summary report
+        run: npm run qa:summary
+        env:
+          ARTIFACTS_PATH: qa-artifacts/
+
+      - name: Upload QA summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-summary-report
+          path: |
+            qa-reports/summary-*.md
+            qa-reports/summary-*.json
+          retention-days: 90
+
+      - name: Comment PR with QA results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            try {
+              const summaryPath = path.join('qa-reports', 'summary-latest.md');
+              if (fs.existsSync(summaryPath)) {
+                const summary = fs.readFileSync(summaryPath, 'utf8');
+                
+                await github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: `## 🔍 Quality Assurance Report\n\n${summary}`
+                });
+              }
+            } catch (error) {
+              console.error('Failed to post QA summary:', error);
+            }
+
+      - name: Set QA status
+        if: github.event_name == 'pull_request'
+        run: |
+          if [ -f "qa-reports/summary-latest.json" ]; then
+            QA_STATUS=$(node -e "
+              const report = JSON.parse(require('fs').readFileSync('qa-reports/summary-latest.json', 'utf8'));
+              console.log(report.overallStatus);
+            ")
+            
+            if [ "$QA_STATUS" = "failed" ]; then
+              echo "QA checks failed"
+              exit 1
+            elif [ "$QA_STATUS" = "warning" ]; then
+              echo "QA checks passed with warnings"
+              exit 0
+            else
+              echo "QA checks passed"
+              exit 0
+            fi
+          fi
+
+  notify-results:
+    runs-on: ubuntu-latest
+    needs: [qa-summary]
+    if: always() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    steps:
+      - name: Notify Slack on failure
+        if: needs.qa-summary.result == 'failure'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          text: "🚨 Quality Assurance checks failed on ${{ github.ref }}"
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: Notify Slack on success
+        if: needs.qa-summary.result == 'success'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          text: "✅ Quality Assurance checks passed on ${{ github.ref }}"
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}

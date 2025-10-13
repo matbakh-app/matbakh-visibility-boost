@@ -1,0 +1,371 @@
+name: Matbakh Deployment Automation
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      slot:
+        description: 'Target slot (auto-detect if not specified)'
+        required: false
+        type: choice
+        options:
+          - blue
+          - green
+      artifact:
+        description: 'Existing artifact name (creates new if not specified)'
+        required: false
+        type: string
+      skip_health_gates:
+        description: 'Skip health gate checks'
+        required: false
+        default: false
+        type: boolean
+      dry_run:
+        description: 'Dry run (validate without deploying)'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  # Build and test job
+  build-and-test:
+    runs-on: ubuntu-latest
+    outputs:
+      build-artifacts: ${{ steps.build.outputs.artifacts }}
+      test-results: ${{ steps.test.outputs.results }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run type checking
+        run: npx tsc --noEmit
+
+      - name: Run unit tests
+        run: npm test -- --coverage --watchAll=false
+
+      - name: Run integration tests
+        run: npm run test:integration
+
+      - name: Build application
+        id: build
+        run: |
+          npm run build
+          echo "artifacts=dist/" >> $GITHUB_OUTPUT
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: dist/
+          retention-days: 7
+
+      - name: Run security scan
+        run: npm audit --audit-level=high
+
+  # Deployment job for development (automatic)
+  deploy-development:
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    environment: development
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: dist/
+
+      - name: Deploy to development
+        run: |
+          npm run deploy:dev \
+            --auto-approve
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: eu-central-1
+
+  # Deployment job for staging (automatic on main)
+  deploy-staging:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    environment: staging
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: dist/
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+
+      - name: Deploy to staging
+        run: |
+          npm run deploy:staging \
+            --auto-approve
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: eu-central-1
+
+      - name: Run smoke tests
+        run: npm run test:smoke -- --env staging
+
+      - name: Notify deployment success
+        if: success()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          text: 'Staging deployment completed successfully! 🚀'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify deployment failure
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          text: 'Staging deployment failed! ❌'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # Manual deployment job (workflow_dispatch)
+  deploy-manual:
+    if: github.event_name == 'workflow_dispatch'
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: dist/
+
+      - name: Run pre-deployment validation
+        if: github.event.inputs.environment == 'production'
+        run: |
+          npm run test:e2e
+          npm run test:performance
+          npm run test:security
+
+      - name: Deploy (dry run)
+        if: github.event.inputs.dry_run == 'true'
+        run: |
+          npm run deploy \
+            --env ${{ github.event.inputs.environment }} \
+            ${{ github.event.inputs.slot && format('--slot {0}', github.event.inputs.slot) || '' }} \
+            ${{ github.event.inputs.artifact && format('--artifact {0}', github.event.inputs.artifact) || '' }} \
+            ${{ github.event.inputs.skip_health_gates == 'true' && '--skip-health-gates' || '' }} \
+            --dry-run
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: eu-central-1
+
+      - name: Deploy (actual)
+        if: github.event.inputs.dry_run == 'false'
+        run: |
+          npm run deploy \
+            --env ${{ github.event.inputs.environment }} \
+            ${{ github.event.inputs.slot && format('--slot {0}', github.event.inputs.slot) || '' }} \
+            ${{ github.event.inputs.artifact && format('--artifact {0}', github.event.inputs.artifact) || '' }} \
+            ${{ github.event.inputs.skip_health_gates == 'true' && '--skip-health-gates' || '' }} \
+            --auto-approve
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: eu-central-1
+
+      - name: Run post-deployment tests
+        if: github.event.inputs.dry_run == 'false'
+        run: npm run test:smoke -- --env ${{ github.event.inputs.environment }}
+
+      - name: Create deployment summary
+        if: always()
+        run: |
+          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Strategy**: ${{ github.event.inputs.strategy }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Dry Run**: ${{ github.event.inputs.dry_run }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+
+  # Production deployment (requires manual approval)
+  deploy-production:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [build-and-test, deploy-staging]
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: dist/
+
+      - name: Run comprehensive pre-production tests
+        run: |
+          npm run test:e2e
+          npm run test:performance
+          npm run test:security
+          npm run test:accessibility
+
+      - name: Create production deployment plan
+        run: |
+          npx tsx scripts/deploy-one-click.ts \
+            --env production \
+            --strategy blue-green \
+            --dry-run
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy to production
+        run: |
+          npm run deploy:prod \
+            --auto-approve
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: eu-central-1
+
+      - name: Run production smoke tests
+        run: npm run test:smoke -- --env production
+
+      - name: Monitor deployment health
+        run: |
+          # Wait 5 minutes and check deployment health
+          sleep 300
+          npx tsx scripts/check-deployment-health.ts --env production
+
+      - name: Notify production deployment
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: |
+            Production deployment ${{ job.status }}!
+            Commit: ${{ github.sha }}
+            Author: ${{ github.actor }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # Rollback job (manual trigger only)
+  rollback:
+    if: github.event_name == 'workflow_dispatch' && contains(github.event.inputs.environment, 'rollback')
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Execute rollback
+        run: |
+          npm run deploy:rollback \
+            --env production \
+            --reason "Manual rollback via GitHub Actions"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: eu-central-1
+
+      - name: Verify rollback
+        run: npm run test:smoke -- --env production
+
+      - name: Notify rollback
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: 'Production rollback ${{ job.status }}!'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

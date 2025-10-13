@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import { PersonaApiService, personaApi } from '../persona-api';
+import { PersonaApiService, personaApi } from '../../persona-api';
 
 // Mock fetch
-(global as any).fetch = require('jest').fn();
+import { jest } from '@jest/globals';
+(global as any).fetch = jest.fn();
 
 describe('PersonaApiService - Failing Tests', () => {
   let service: PersonaApiService;

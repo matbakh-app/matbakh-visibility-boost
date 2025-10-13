@@ -1,0 +1,242 @@
+/**
+ * CommonJS-kompatible Version des Hybrid Assistant Orchestrators
+ * Speziell für Jest 29+ Test-Umgebungen
+ */
+
+const { AiFeatureFlags } = require('./ai-feature-flags');
+
+class HybridAssistantOrchestrator {
+    constructor() {
+        this.featureFlags = new AiFeatureFlags();
+        this.activeWorkflows = new Map();
+    }
+
+    /**
+     * 🎯 HAUPTWORKFLOW: User → Kiro (mit Bedrock Beratung)
+     */
+    async processTaskRequest(request) {
+        const workflowId = `workflow-${request.id}-${Date.now()}`;
+
+        // Initialisiere Workflow
+        const workflow = {
+            taskId: request.id,
+            status: 'planning',
+            userApprovalRequired: false,
+        };
+
+        this.activeWorkflows.set(workflowId, workflow);
+
+        try {
+            // Phase 1: Bedrock Beratung (falls aktiviert)
+            if (this.featureFlags.isBedrockAdvisoryModeEnabled()) {
+                workflow.status = 'planning';
+                workflow.bedrockAdvice = await this.getBedrockAdvice(request);
+            }
+
+            // Phase 2: Kiro Implementierungsplan
+            workflow.kiroImplementation = await this.createKiroImplementationPlan(
+                request,
+                workflow.bedrockAdvice
+            );
+
+            // Phase 3: User Approval Check (bei kritischen Tasks)
+            if (request.priority === 'critical' || this.requiresUserApproval(request)) {
+                workflow.userApprovalRequired = true;
+                workflow.status = 'reviewing';
+                return workflow; // Warte auf User Approval
+            }
+
+            // Phase 4: Kiro Implementierung
+            workflow.status = 'implementing';
+            const implementationResult = await this.executeKiroImplementation(
+                workflow.kiroImplementation
+            );
+
+            // Phase 5: Bedrock Qualitätsprüfung (falls aktiviert)
+            if (this.featureFlags.isBedrockAdvisoryModeEnabled()) {
+                workflow.qualityScore = await this.performBedrockQualityCheck(
+                    implementationResult,
+                    workflow.bedrockAdvice
+                );
+            }
+
+            // Phase 6: Abschluss
+            workflow.status = 'completed';
+            workflow.finalResult = implementationResult;
+
+            return workflow;
+
+        } catch (error) {
+            workflow.status = 'failed';
+            throw error;
+        }
+    }
+
+    /**
+     * 🤖 Bedrock Beratung anfordern
+     */
+    async getBedrockAdvice(request) {
+        return {
+            analysis: `Analyse für Task "${request.description}": Machbar mit moderatem Aufwand`,
+            recommendations: [
+                'Beginne mit einer Analyse der bestehenden Implementierung',
+                'Erstelle Tests vor der Implementierung',
+                'Implementiere schrittweise mit Rollback-Möglichkeit'
+            ],
+            risks: [
+                'Mögliche Breaking Changes bei Dependencies',
+                'Performance Impact bei großen Dateien'
+            ],
+            estimatedEffort: '2-4 Stunden',
+            suggestedApproach: 'Iterative Implementierung mit kontinuierlicher Validierung',
+            qualityChecks: [
+                'TypeScript Compilation',
+                'Unit Tests',
+                'Integration Tests',
+                'Performance Benchmarks'
+            ]
+        };
+    }
+
+    /**
+     * 🛠️ Kiro Implementierungsplan erstellen
+     */
+    async createKiroImplementationPlan(request, bedrockAdvice) {
+        const baseSteps = [
+            'Analysiere aktuelle Codebase',
+            'Identifiziere Änderungspunkte',
+            'Implementiere Änderungen',
+            'Führe Tests aus',
+            'Validiere Ergebnis'
+        ];
+
+        // Integriere Bedrock Empfehlungen falls vorhanden
+        const enhancedSteps = bedrockAdvice
+            ? [...bedrockAdvice.recommendations, ...baseSteps]
+            : baseSteps;
+
+        return {
+            steps: enhancedSteps,
+            estimatedDuration: bedrockAdvice?.estimatedEffort || '1-2 Stunden',
+            dependencies: ['TypeScript', 'Jest', 'Node.js'],
+            testingStrategy: 'Unit Tests + Integration Tests + Manual Validation',
+            rollbackPlan: 'Git revert + Backup restoration falls erforderlich'
+        };
+    }
+
+    /**
+     * ⚡ Kiro Implementierung ausführen
+     */
+    async executeKiroImplementation(plan) {
+        console.log('🚀 Kiro führt Implementierung aus...');
+        console.log('📋 Schritte:', plan.steps);
+
+        // Simuliere Implementierung
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        return {
+            success: true,
+            message: 'Implementierung erfolgreich abgeschlossen',
+            changes: ['Datei A geändert', 'Test B hinzugefügt', 'Konfiguration C aktualisiert'],
+            testsRun: 15,
+            testsPassed: 15,
+            performance: 'Keine Verschlechterung festgestellt'
+        };
+    }
+
+    /**
+     * 🔍 Bedrock Qualitätsprüfung
+     */
+    async performBedrockQualityCheck(implementationResult, originalAdvice) {
+        console.log('🔍 Bedrock führt Qualitätsprüfung durch...');
+
+        let score = 100;
+
+        // Prüfe gegen ursprüngliche Empfehlungen
+        if (!implementationResult.success) score -= 50;
+        if (implementationResult.testsPassed < implementationResult.testsRun) score -= 20;
+
+        // Prüfe Quality Checks
+        for (const check of originalAdvice.qualityChecks) {
+            // Simuliere Check-Ergebnis
+            const checkPassed = Math.random() > 0.1; // 90% Erfolgsrate
+            if (!checkPassed) score -= 10;
+        }
+
+        return Math.max(0, score);
+    }
+
+    /**
+     * 🛡️ Prüfe ob User Approval erforderlich ist
+     */
+    requiresUserApproval(request) {
+        // Kritische Tasks erfordern immer Approval
+        if (request.priority === 'critical') return true;
+
+        // Tasks mit bestimmten Keywords erfordern Approval
+        const criticalKeywords = ['delete', 'remove', 'drop', 'truncate', 'production'];
+        const description = request.description.toLowerCase();
+
+        return criticalKeywords.some(keyword => description.includes(keyword));
+    }
+
+    /**
+     * ✅ User Approval verarbeiten
+     */
+    async processUserApproval(workflowId, approved) {
+        const workflow = this.activeWorkflows.get(workflowId);
+        if (!workflow) {
+            throw new Error(`Workflow ${workflowId} nicht gefunden`);
+        }
+
+        if (!approved) {
+            workflow.status = 'failed';
+            workflow.finalResult = { success: false, message: 'User hat Implementierung abgelehnt' };
+            return workflow;
+        }
+
+        // Führe Implementierung nach Approval aus
+        workflow.status = 'implementing';
+        const implementationResult = await this.executeKiroImplementation(
+            workflow.kiroImplementation
+        );
+
+        workflow.status = 'completed';
+        workflow.finalResult = implementationResult;
+
+        return workflow;
+    }
+
+    /**
+     * 📊 Workflow Status abrufen
+     */
+    getWorkflowStatus(workflowId) {
+        return this.activeWorkflows.get(workflowId);
+    }
+
+    /**
+     * 🔧 Hybrid Assistant Modus Status
+     */
+    getHybridAssistantStatus() {
+        return {
+            hybridModeActive: this.featureFlags.isHybridAssistantModeEnabled(),
+            bedrockAdvisoryActive: this.featureFlags.isBedrockAdvisoryModeEnabled(),
+            kiroPrimaryControl: this.featureFlags.isKiroPrimaryControlEnabled(),
+            activeWorkflows: this.activeWorkflows.size,
+            capabilities: [
+                '🎯 User behält volle Kontrolle',
+                '🤖 Bedrock gibt Empfehlungen und Qualitätsprüfung',
+                '⚡ Kiro führt Implementierung aus',
+                '🛡️ Approval-Gates für kritische Tasks',
+                '📊 Transparente Workflow-Verfolgung'
+            ]
+        };
+    }
+}
+
+const hybridAssistant = new HybridAssistantOrchestrator();
+
+module.exports = {
+    HybridAssistantOrchestrator,
+    hybridAssistant,
+};

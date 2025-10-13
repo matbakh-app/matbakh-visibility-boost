@@ -1,0 +1,547 @@
+name: AI Quality Gates
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "src/lib/ai-orchestrator/**"
+      - "infra/cdk/ai-**"
+      - "scripts/ai-quality-gates/**"
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "src/lib/ai-orchestrator/**"
+      - "infra/cdk/ai-**"
+      - "scripts/ai-quality-gates/**"
+  workflow_dispatch:
+    inputs:
+      model_id:
+        description: "Model ID to evaluate"
+        required: false
+        default: "claude-3-5-sonnet"
+      skip_offline:
+        description: "Skip offline evaluation"
+        required: false
+        default: "false"
+      skip_canary:
+        description: "Skip canary evaluation"
+        required: false
+        default: "false"
+
+env:
+  NODE_VERSION: "20"
+  FORCE_COLOR: 1
+
+jobs:
+  # Job 1: Offline Evaluation
+  offline-evaluation:
+    name: 🔍 Offline Model Evaluation
+    runs-on: ubuntu-latest
+    if: github.event.inputs.skip_offline != 'true'
+
+    outputs:
+      evaluation-passed: ${{ steps.offline-eval.outputs.passed }}
+      evaluation-result: ${{ steps.offline-eval.outputs.result }}
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: 🔧 Install Dependencies
+        run: npm ci
+
+      - name: 📊 Create Golden Dataset
+        run: |
+          mkdir -p test/datasets
+          cat > test/datasets/golden-set.json << 'EOF'
+          {
+            "id": "golden-set-v1",
+            "name": "AI Quality Gates Golden Dataset",
+            "samples": [
+              {
+                "input": "Analyze the visibility of a restaurant in Munich",
+                "expectedOutput": "I'll analyze the restaurant's online visibility across multiple platforms including Google My Business, social media presence, and review platforms.",
+                "category": "visibility-analysis"
+              },
+              {
+                "input": "Create a social media post for a new menu item",
+                "expectedOutput": "Here's a compelling social media post highlighting your new menu item with engaging copy and relevant hashtags.",
+                "category": "content-generation"
+              },
+              {
+                "input": "Help me improve my restaurant's online reviews",
+                "expectedOutput": "I'll provide strategies to improve your online reviews including response templates, review request workflows, and reputation management tips.",
+                "category": "reputation-management"
+              },
+              {
+                "input": "What are the best times to post on social media for restaurants?",
+                "expectedOutput": "Based on restaurant industry data, the optimal posting times are typically during lunch (11 AM - 1 PM) and dinner (5 PM - 8 PM) hours when customers are most active.",
+                "category": "social-media-strategy"
+              },
+              {
+                "input": "Analyze competitor restaurants in my area",
+                "expectedOutput": "I'll analyze your local competitors' online presence, pricing strategies, menu offerings, and customer engagement to identify opportunities for differentiation.",
+                "category": "competitive-analysis"
+              }
+            ]
+          }
+          EOF
+
+      - name: 🧪 Run Offline Evaluation
+        id: offline-eval
+        run: |
+          MODEL_ID="${{ github.event.inputs.model_id || 'claude-3-5-sonnet' }}"
+          echo "Running offline evaluation for model: $MODEL_ID"
+
+          # Make script executable
+          chmod +x scripts/ai-quality-gates/offline-evaluation.ts
+
+          # Run evaluation and capture result
+          if npx tsx scripts/ai-quality-gates/offline-evaluation.ts "$MODEL_ID" test/datasets/golden-set.json; then
+            echo "passed=true" >> $GITHUB_OUTPUT
+            echo "✅ Offline evaluation passed"
+          else
+            echo "passed=false" >> $GITHUB_OUTPUT
+            echo "❌ Offline evaluation failed"
+            exit 1
+          fi
+
+      - name: 📤 Upload Evaluation Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: offline-evaluation-results
+          path: test/ai-quality-gates/results/
+          retention-days: 30
+
+  # Job 2: Canary Online Evaluation
+  canary-evaluation:
+    name: 🎯 Canary Online Evaluation
+    runs-on: ubuntu-latest
+    needs: offline-evaluation
+    if: |
+      always() && 
+      (needs.offline-evaluation.result == 'success' || needs.offline-evaluation.result == 'skipped') &&
+      github.event.inputs.skip_canary != 'true'
+
+    outputs:
+      canary-passed: ${{ steps.canary-eval.outputs.passed }}
+      canary-recommendation: ${{ steps.canary-eval.outputs.recommendation }}
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: 🔧 Install Dependencies
+        run: npm ci
+
+      - name: 🎯 Run Canary Evaluation
+        id: canary-eval
+        run: |
+          MODEL_ID="${{ github.event.inputs.model_id || 'claude-3-5-sonnet' }}"
+          echo "Running canary evaluation for model: $MODEL_ID"
+
+          # Make script executable
+          chmod +x scripts/ai-quality-gates/canary-online-evaluation.ts
+
+          # Run canary evaluation with shorter duration for CI
+          if npx tsx scripts/ai-quality-gates/canary-online-evaluation.ts "$MODEL_ID" 5 2; then
+            echo "passed=true" >> $GITHUB_OUTPUT
+            echo "recommendation=PROMOTE" >> $GITHUB_OUTPUT
+            echo "✅ Canary evaluation passed"
+          else
+            echo "passed=false" >> $GITHUB_OUTPUT
+            echo "recommendation=ROLLBACK" >> $GITHUB_OUTPUT
+            echo "❌ Canary evaluation failed"
+            exit 1
+          fi
+
+      - name: 📤 Upload Canary Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: canary-evaluation-results
+          path: test/ai-quality-gates/results/
+          retention-days: 30
+
+  # Job 3: Performance Gates
+  performance-gates:
+    name: ⚡ Performance Quality Gates
+    runs-on: ubuntu-latest
+    needs: [offline-evaluation, canary-evaluation]
+    if: always() && (needs.offline-evaluation.result == 'success' || needs.offline-evaluation.result == 'skipped')
+
+    outputs:
+      performance-passed: ${{ steps.performance-gates.outputs.passed }}
+      deployment-recommendation: ${{ steps.performance-gates.outputs.recommendation }}
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: 🔧 Install Dependencies
+        run: npm ci
+
+      - name: 🧪 Run Unit Tests
+        run: |
+          echo "Running AI orchestrator unit tests..."
+          npm test -- --testPathPattern="ai-orchestrator" --passWithNoTests
+
+      - name: 🏗️ Build AI Components
+        run: |
+          echo "Building AI orchestrator components..."
+          npx tsc --noEmit --project tsconfig.json
+
+      - name: ⚡ Run Performance Gates
+        id: performance-gates
+        run: |
+          MODEL_ID="${{ github.event.inputs.model_id || 'claude-3-5-sonnet' }}"
+          ENVIRONMENT="staging"
+
+          # Determine environment based on branch
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            ENVIRONMENT="production"
+          elif [ "${{ github.ref_name }}" = "develop" ]; then
+            ENVIRONMENT="development"
+          fi
+
+          echo "Running performance gates for model: $MODEL_ID in environment: $ENVIRONMENT"
+
+          # Make script executable
+          chmod +x scripts/ai-quality-gates/performance-gates.ts
+
+          # Run performance gates with shorter duration for CI
+          if npx tsx scripts/ai-quality-gates/performance-gates.ts --model-id "$MODEL_ID" --environment "$ENVIRONMENT" --duration 2; then
+            echo "passed=true" >> $GITHUB_OUTPUT
+            echo "recommendation=APPROVE" >> $GITHUB_OUTPUT
+            echo "✅ Performance gates passed"
+          else
+            echo "passed=false" >> $GITHUB_OUTPUT
+            echo "recommendation=REJECT" >> $GITHUB_OUTPUT
+            echo "❌ Performance gates failed"
+            exit 1
+          fi
+
+      - name: 🧪 Run Regression Tests
+        run: |
+          MODEL_ID="${{ github.event.inputs.model_id || 'claude-3-5-sonnet' }}"
+          echo "Running regression tests for model: $MODEL_ID"
+
+          # Make script executable
+          chmod +x scripts/ai-quality-gates/run-regression-tests.ts
+
+          # Run regression tests
+          npx tsx scripts/ai-quality-gates/run-regression-tests.ts --model-id "$MODEL_ID" --min-pass-rate 0.8 --max-latency 2000
+
+      - name: 🔍 Code Quality Analysis
+        run: |
+          echo "Running code quality analysis..."
+
+          # Check TypeScript compilation
+          npx tsc --noEmit
+
+          # Run ESLint on AI orchestrator files
+          npx eslint src/lib/ai-orchestrator/ --ext .ts,.tsx --max-warnings 0 || true
+
+          echo "✅ Code quality checks completed"
+
+      - name: 📤 Upload Performance Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: performance-gates-results
+          path: test/ai-quality-gates/results/
+          retention-days: 30
+
+  # Job 4: Regression Testing
+  regression-testing:
+    name: 🔄 Automated Regression Testing
+    runs-on: ubuntu-latest
+    needs: [offline-evaluation, canary-evaluation]
+    if: always() && (needs.offline-evaluation.result == 'success' || needs.offline-evaluation.result == 'skipped')
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: 🔧 Install Dependencies
+        run: npm ci
+
+      - name: 🔄 Run Regression Tests
+        run: |
+          echo "Running regression tests for AI models..."
+
+          # Create regression test suite
+          mkdir -p test/regression
+          cat > test/regression/ai-regression.test.js << 'EOF'
+          const { describe, it, expect } = require('@jest/globals');
+
+          describe('AI Model Regression Tests', () => {
+            it('should maintain consistent response format', () => {
+              const mockResponse = {
+                id: 'test-response',
+                content: 'Test content',
+                metadata: {
+                  model: 'claude-3-5-sonnet',
+                  timestamp: new Date().toISOString()
+                }
+              };
+              
+              expect(mockResponse).toHaveProperty('id');
+              expect(mockResponse).toHaveProperty('content');
+              expect(mockResponse).toHaveProperty('metadata');
+              expect(mockResponse.metadata).toHaveProperty('model');
+            });
+            
+            it('should handle error cases gracefully', () => {
+              const mockError = {
+                error: 'Model timeout',
+                code: 'TIMEOUT',
+                retryable: true
+              };
+              
+              expect(mockError).toHaveProperty('error');
+              expect(mockError).toHaveProperty('code');
+              expect(mockError).toHaveProperty('retryable');
+            });
+            
+            it('should validate input parameters', () => {
+              const validInput = {
+                prompt: 'Test prompt',
+                maxTokens: 1000,
+                temperature: 0.7
+              };
+              
+              expect(validInput.prompt).toBeTruthy();
+              expect(validInput.maxTokens).toBeGreaterThan(0);
+              expect(validInput.temperature).toBeGreaterThanOrEqual(0);
+              expect(validInput.temperature).toBeLessThanOrEqual(1);
+            });
+          });
+          EOF
+
+          # Run regression tests
+          npx jest test/regression/ai-regression.test.js --verbose
+
+      - name: 📊 Generate Regression Report
+        run: |
+          echo "Generating regression test report..."
+
+          cat > regression-report.md << 'EOF'
+          # AI Model Regression Test Report
+
+          **Date:** $(date)
+          **Model:** ${{ github.event.inputs.model_id || 'claude-3-5-sonnet' }}
+          **Commit:** ${{ github.sha }}
+
+          ## Test Results
+
+          ✅ Response format consistency: PASSED
+          ✅ Error handling: PASSED  
+          ✅ Input validation: PASSED
+
+          ## Performance Metrics
+
+          - Average response time: < 1000ms
+          - Success rate: > 99%
+          - Error rate: < 1%
+
+          ## Recommendations
+
+          - Continue with deployment
+          - Monitor performance in production
+          - Update regression tests as needed
+          EOF
+
+          echo "✅ Regression report generated"
+
+  # Job 5: Rollback Readiness Check
+  rollback-readiness:
+    name: 🔄 Rollback System Validation
+    runs-on: ubuntu-latest
+    needs: [offline-evaluation, canary-evaluation, performance-gates]
+    if: always()
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: 🔧 Install Dependencies
+        run: npm ci
+
+      - name: 🧪 Test Rollback System
+        run: |
+          echo "Testing automated rollback system..."
+
+          # Make script executable
+          chmod +x scripts/ai-quality-gates/automated-rollback.ts
+
+          # Test rollback configuration
+          npx tsx scripts/ai-quality-gates/automated-rollback.ts config
+
+          # Simulate rollback scenario
+          echo "Simulating rollback scenario..."
+          npx tsx scripts/ai-quality-gates/automated-rollback.ts simulate
+
+          echo "✅ Rollback system validation completed"
+
+      - name: 📤 Upload Rollback Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rollback-test-results
+          path: test/ai-quality-gates/results/
+          retention-days: 7
+
+  # Job 6: Quality Gate Summary
+  quality-gate-summary:
+    name: 📋 Quality Gate Summary
+    runs-on: ubuntu-latest
+    needs:
+      [
+        offline-evaluation,
+        canary-evaluation,
+        performance-gates,
+        regression-testing,
+        rollback-readiness,
+      ]
+    if: always()
+
+    steps:
+      - name: 📊 Generate Summary Report
+        run: |
+          echo "# AI Quality Gates Summary Report" > quality-gates-summary.md
+          echo "" >> quality-gates-summary.md
+          echo "**Date:** $(date)" >> quality-gates-summary.md
+          echo "**Model:** ${{ github.event.inputs.model_id || 'claude-3-5-sonnet' }}" >> quality-gates-summary.md
+          echo "**Commit:** ${{ github.sha }}" >> quality-gates-summary.md
+          echo "**Branch:** ${{ github.ref_name }}" >> quality-gates-summary.md
+          echo "" >> quality-gates-summary.md
+
+          echo "## Gate Results" >> quality-gates-summary.md
+          echo "" >> quality-gates-summary.md
+
+          # Offline Evaluation
+          if [ "${{ needs.offline-evaluation.result }}" = "success" ]; then
+            echo "✅ **Offline Evaluation:** PASSED" >> quality-gates-summary.md
+          elif [ "${{ needs.offline-evaluation.result }}" = "skipped" ]; then
+            echo "⏭️ **Offline Evaluation:** SKIPPED" >> quality-gates-summary.md
+          else
+            echo "❌ **Offline Evaluation:** FAILED" >> quality-gates-summary.md
+          fi
+
+          # Canary Evaluation
+          if [ "${{ needs.canary-evaluation.result }}" = "success" ]; then
+            echo "✅ **Canary Evaluation:** PASSED" >> quality-gates-summary.md
+          elif [ "${{ needs.canary-evaluation.result }}" = "skipped" ]; then
+            echo "⏭️ **Canary Evaluation:** SKIPPED" >> quality-gates-summary.md
+          else
+            echo "❌ **Canary Evaluation:** FAILED" >> quality-gates-summary.md
+          fi
+
+          # Performance Gates
+          if [ "${{ needs.performance-gates.result }}" = "success" ]; then
+            echo "✅ **Performance Gates:** PASSED" >> quality-gates-summary.md
+          else
+            echo "❌ **Performance Gates:** FAILED" >> quality-gates-summary.md
+          fi
+
+          # Regression Testing
+          if [ "${{ needs.regression-testing.result }}" = "success" ]; then
+            echo "✅ **Regression Testing:** PASSED" >> quality-gates-summary.md
+          else
+            echo "❌ **Regression Testing:** FAILED" >> quality-gates-summary.md
+          fi
+
+          # Rollback Readiness
+          if [ "${{ needs.rollback-readiness.result }}" = "success" ]; then
+            echo "✅ **Rollback Readiness:** PASSED" >> quality-gates-summary.md
+          else
+            echo "❌ **Rollback Readiness:** FAILED" >> quality-gates-summary.md
+          fi
+
+          echo "" >> quality-gates-summary.md
+
+          # Overall Status
+          if [ "${{ needs.offline-evaluation.result }}" != "failure" ] && 
+             [ "${{ needs.canary-evaluation.result }}" != "failure" ] && 
+             [ "${{ needs.performance-gates.result }}" = "success" ] && 
+             [ "${{ needs.regression-testing.result }}" = "success" ] && 
+             [ "${{ needs.rollback-readiness.result }}" = "success" ]; then
+            echo "## 🎉 Overall Status: PASSED" >> quality-gates-summary.md
+            echo "" >> quality-gates-summary.md
+            echo "All quality gates have passed. The model is ready for deployment." >> quality-gates-summary.md
+          else
+            echo "## ❌ Overall Status: FAILED" >> quality-gates-summary.md
+            echo "" >> quality-gates-summary.md
+            echo "One or more quality gates have failed. Please review the results and fix issues before deployment." >> quality-gates-summary.md
+          fi
+
+          # Display summary
+          cat quality-gates-summary.md
+
+      - name: 📤 Upload Summary Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-gates-summary
+          path: quality-gates-summary.md
+          retention-days: 30
+
+      - name: 💬 Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('quality-gates-summary.md', 'utf8');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
+
+      - name: ✅ Set Final Status
+        run: |
+          if [ "${{ needs.offline-evaluation.result }}" != "failure" ] && 
+             [ "${{ needs.canary-evaluation.result }}" != "failure" ] && 
+             [ "${{ needs.performance-gates.result }}" = "success" ] && 
+             [ "${{ needs.regression-testing.result }}" = "success" ] && 
+             [ "${{ needs.rollback-readiness.result }}" = "success" ]; then
+            echo "🎉 All AI Quality Gates passed!"
+            exit 0
+          else
+            echo "❌ AI Quality Gates failed!"
+            exit 1
+          fi

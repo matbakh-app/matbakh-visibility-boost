@@ -184,7 +184,7 @@ run_tests() {
         log_info "Running test suite..."
         
         # Run tests with coverage
-        if npm run test -- --run --coverage; then
+        if npm run test:coverage; then
             log_success "All tests passed"
         else
             log_warning "Some tests failed - review test output"

@@ -1,0 +1,520 @@
+# Unified Media Composer (UMC)
+
+## Geschäftsziele
+
+- 1-Klick Wochenpost: „Erstelle & veröffentliche meine Posts für diese Woche.“
+- 0 Setup-Aufwand für Betriebe (Logo, Farben, Tonalität werden einmalig erkannt/gespeichert).
+- Autopilot: generiert, plant, veröffentlicht, analysiert – wiederholt sich wöchentlich.
+- Kanäle: **Instagram, Facebook** (Meta Graph API) + **Google Business Profile** (kurz: GBP) + (optional) **TikTok**.
+
+---
+
+# Architektur (High Level)
+
+**Kiro** orchestriert den Flow (Jobs, Flags, Health, Audit):
+
+**Bedrock** liefert Inhalte/Layouts/Varianten →
+
+**Template Engine** (Canva API / Headless Templates) rendert Visuals →
+
+**Channel Adapters** posten (Meta/GBP) →
+
+**Insights Engine** sammelt Metriken →
+
+**Learning Loop** verbessert nächste Iterationen.
+
+Sequenz:
+
+1. `POST /api/umc/campaigns/generate` → Bedrock (Text + kreative Varianten)
+2. `POST /api/umc/assets/render` → Canva API (oder Headless Fallback)
+3. `POST /api/umc/schedule` → Plant Slots je Kanal/Persona
+4. `POST /api/umc/publish` → Meta/GBP Adapters
+5. `POST /api/umc/ingest-insights` → KPIs sammeln
+6. `POST /api/umc/learn` → nächsten Zyklus anpassen
+
+---
+
+# Feature Flags (AiFeatureFlags)
+
+- `UMC_ENABLE_AUTOPILOT` (default: false)
+- `UMC_ENABLE_META_PUBLISH` (default: true)
+- `UMC_ENABLE_GBP_PUBLISH` (default: true)
+- `UMC_CANVA_ENABLED` (default: true; Fallback auf Headless)
+- `UMC_APPROVAL_REQUIRED` (default: true; Kunde klickt „Freigeben“)
+- `UMC_EXPERIMENTAL_VARIANTS` (default: false; A/B Textexperimente)
+
+---
+
+# Umgebungsvariablen (Secrets via AWS SSM/Secrets Manager)
+
+- `META_APP_ID`, `META_APP_SECRET`, `META_PAGE_ACCESS_TOKEN`
+- `GOOGLE_GBP_SERVICE_ACCOUNT_JSON` (oder Secret ARN)
+- `CANVA_API_KEY`
+- `BEDROCK_REGION` (z. B. eu-central-1), `BEDROCK_MODEL_CLAUDE=claude-3-5-sonnet`, `BEDROCK_MODEL_TITAN_IMAGE=titan-image-generator-v2`
+- `UMC_CDN_BASE` (für gehostete Assets, optional CloudFront/S3)
+- `UMC_WEBHOOK_SECRET` (Meta/GBP Webhooks)
+- `UMC_DEFAULT_LOCALE=de-DE`
+
+---
+
+# Datenmodell (vereinfacht)
+
+**Table `channel_accounts`**
+
+- id, business_id, provider (`meta|gbp`)
+- credentials_ref (secret pointer), status
+
+**Table `campaigns`**
+
+- id, business_id, period_start, period_end, goal (`reach|engagement|offer`)
+- status (`draft|ready|scheduled|published|failed`)
+- strategy_json (Personas, Posting-Kadenz, Themen)
+
+**Table `posts`**
+
+- id, campaign_id, channel (`instagram|facebook|gbp`)
+- caption_text, hashtags, call_to_action
+- asset_refs (array), scheduled_at, published_at, status
+
+**Table `assets`**
+
+- id, type (`image|video|carousel`), source (`canva|headless`)
+- url (CDN), meta (colors, template_id), checksum
+
+**Table `insights`**
+
+- id, post_id, impressions, reach, clicks, saves, comments, ctr, cvr, collected_at
+
+**Table `style_guides`**
+
+- business_id, logo_url, brand_colors, tone_of_voice, fonts, prohibited_phrases
+
+---
+
+# API-Design (Backend, TS)
+
+```tsx
+// POST /api/umc/campaigns/generate
+type GenerateRequest = {
+  businessId: string;
+  locale?: string; // de-DE default
+  period?: { start: string; end: string };
+  goal?: "reach" | "engagement" | "offer";
+};
+type GenerateResponse = { campaignId: string; postsPreview: PostPreview[] };
+
+// POST /api/umc/assets/render
+type RenderRequest = {
+  campaignId: string;
+  posts: Array<{
+    postId: string;
+    templateKey: string;
+    variables: Record<string, string>;
+  }>;
+};
+type RenderResponse = {
+  assets: Array<{ postId: string; assetId: string; url: string }>;
+};
+
+// POST /api/umc/schedule
+type ScheduleRequest = {
+  campaignId: string;
+  timezone?: string;
+  auto?: boolean;
+};
+type ScheduleResponse = {
+  scheduled: Array<{ postId: string; channel: string; scheduledAt: string }>;
+};
+
+// POST /api/umc/publish
+type PublishRequest = { campaignId: string; dryRun?: boolean };
+type PublishResponse = {
+  results: Array<{
+    postId: string;
+    channel: string;
+    status: "ok" | "error";
+    extId?: string;
+    error?: string;
+  }>;
+};
+
+// POST /api/umc/ingest-insights (Webhook/Batch)
+type IngestRequest = { provider: "meta" | "gbp"; payload: unknown };
+type IngestResponse = { ok: boolean };
+
+// POST /api/umc/learn
+type LearnRequest = { campaignId: string };
+type LearnResponse = { recommendations: string[] };
+```
+
+---
+
+# Orchestrator (Kiro-Job) – Pseudocode
+
+```tsx
+async function runWeeklyUMC(businessId: string) {
+  if (!flags.isEnabled("UMC_ENABLE_AUTOPILOT")) return;
+
+  const campaign = await api.generateCampaign({
+    businessId,
+    goal: "engagement",
+  });
+  const { postsPreview } = campaign;
+
+  // Render assets
+  const renderPlan = postsPreview.map((p) => ({
+    postId: p.id,
+    templateKey: pickTemplate(p, businessId),
+    variables: buildTemplateVars(p, businessId),
+  }));
+  await api.renderAssets({
+    campaignId: campaign.campaignId,
+    posts: renderPlan,
+  });
+
+  // Optional Approval
+  if (flags.isEnabled("UMC_APPROVAL_REQUIRED")) {
+    await notifyOwnerForApproval(campaign.campaignId);
+    return;
+  }
+
+  await api.schedule({ campaignId: campaign.campaignId, auto: true });
+  await api.publish({ campaignId: campaign.campaignId });
+
+  // Insights will arrive via webhooks; learning runs nightly:
+  scheduleAt("02:15", () => api.learn({ campaignId: campaign.campaignId }));
+}
+```
+
+---
+
+# Bedrock Prompting (Content-Generierung)
+
+**System-Prompt (Claude 3.5 Sonnet, de-DE):**
+
+> Du bist ein erfahrener Social-Media-Redakteur für Gastronomie.
+>
+> Ziele: lokale Reichweite, klare CTA, präzise Hashtags, 600–900 Zeichen, kein „Protz“.
+>
+> Markenstimme: {tone_of_voice}.
+>
+> Restaurant: {name}, Stadt: {city}. Besondere Stärken: {usps}.
+>
+> Erzeuge 3 Varianten pro Thema: Hook, Body, CTA, 5–8 Hashtags (lowercase, deutsch, lokal).
+>
+> Rückgabe als JSON: [{theme, caption, hashtags[]}].
+>
+> Vermeide Übertreibungen, halte rechtliche Claims sauber. Kein Duzen/Siezen mischen.
+
+**User-Prompt (Variablen):**
+
+- Anlass (Woche/Thema), Menühighlights, Öffnungszeiten, Ziel (z. B. Reservierungen), Event-Termine, Saisonalität (z. B. spätsommer).
+
+**Moderations-/Compliance-Check (Bedrock/Guardrails):**
+
+- Blocke verbotene Begriffe, Wettbewerbsvergleiche mit falschen Behauptungen, Gesundheits-Claims.
+
+---
+
+# Template-Rendering
+
+**Canva API Pfad** (wenn aktiv):
+
+- Hinterlege Template-IDs pro Format (IG Quadrat, IG Story, FB Landscape).
+- Variablen: `headline`, `subline`, `price`, `logo_url`, `brand_color_primary`, `qr_url`.
+- Rendere PNG/JPG → speichere in S3 → füge URL in `assets`.
+
+**Headless Fallback**:
+
+- Node-Canvas + vordefiniertes JSON-Layout (Schrift, Padding, Farbflächen).
+- Nutze Markenfarben & Logo (aus `style_guides`).
+
+---
+
+# Channel-Adapter
+
+**Meta Graph API**
+
+- Instagram: `/v19.0/{ig_business_account_id}/media` → create media → `/publish`.
+- Facebook: `/v19.0/{page_id}/photos` oder `/feed`.
+- Media Upload: aus `assets.url`
+- Captions: `caption_text`\n\n`#hashtags`
+- Webhooks: Insights (impressions, reach, engagement)
+
+**Google Business Profile**
+
+- `locations/*/localPosts`: `summary`, `callToAction`, `media`.
+- Kategorie-Automation (optional, saisonal): GBP `primaryCategory` Update (separater Guarded Task).
+
+---
+
+# Kiro: Health, Monitoring, Audit
+
+- Health Checks: Canva, Meta, GBP, Bedrock → `/api/umc/health`
+- Circuit Breaker je Provider (Backoff, Quoten)
+- Audit Trail: jede Entscheidung/jeder Publish mit `correlationId`
+- Metrics (Prometheus):
+  - `umc_generation_latency_ms`
+  - `umc_render_success_rate`
+  - `umc_publish_success_rate`
+  - `umc_engagement_rate_avg`
+  - `umc_autopilot_coverage` (% Posts ohne manuellen Eingriff)
+
+---
+
+# Tests & Abnahme
+
+**Unit**
+
+- Prompt-Formatter, Hashtag-Generator, Template-Var-Mapper, Time-Picker (Posting-Zeiten)
+
+**Integration**
+
+- Meta Sandbox Posting (dry-run), Canva Mock, Bedrock Stub
+- Retry/Backoff bei 429/5xx
+
+**E2E (Smoke)**
+
+- `npx tsx scripts/umc-smoke.ts --business <id> --dry-run`
+- Erwartet: 3 Posts generiert, 3 Assets gerendert, 3 Schedules erstellt
+
+**Akzeptanzkriterien (MVP)**
+
+- 95%+ erfolgreiche Asset-Renders (Canva + Fallback zusammen)
+- 99% erfolgreiche Publish-Requests (mit Retry bis 3x; ansonsten Ticket)
+- Erste Insights binnen 24h aggregiert
+- 15%+ Engagement-Lift nach 4 Wochen (gegen Basislinie)
+
+---
+
+# Rollout & Rollback
+
+**Rollout**
+
+1. Flags off → Deploy
+2. Pilot-Mandanten whitelisten (`businessId` allowlist)
+3. Flags on (nur Generate+Render)
+4. Nach 3 Tagen: Scheduling on
+5. Nach 7 Tagen: Publish on (nur IG/FB), GBP nach 2 Wochen
+
+**Rollback (<5 Min)**
+
+- Flags off: `UMC_ENABLE_META_PUBLISH`, `UMC_ENABLE_AUTOPILOT`
+- Queue leeren, offene Jobs in „draft“ setzen
+- Monitoring prüfen
+
+---
+
+# JIRA-ähnliche Tickets (konkret an Teams)
+
+**UMC-01 (Backend): Content Orchestrator**
+
+- Endpunkte `generate/render/schedule/publish/ingest-insights/learn`
+- S3-Storage, Secrets, Audit
+- DoD: E2E-Smoke grün
+
+**UMC-02 (Adapters): Meta & GBP**
+
+- OAuth/Token-Mgmt, Post, Media, Insights, Webhooks
+- DoD: Sandbox-Post sichtbar, Insights ingested
+
+**UMC-03 (Templates): Canva + Headless**
+
+- Template-IDs, Variablen-Mapping, Fallback-Renderer
+- DoD: 3 Formate pro Post, CI-Snapshot-Tests
+
+**UMC-04 (Bedrock): Prompts & Guardrails**
+
+- System/User-Prompts, PII/Compliance-Filter
+- DoD: 3 Varianten JSON-sauber, keine verbotenen Claims
+
+**UMC-05 (Kiro): Jobs, Flags, Health**
+
+- Wöchentlicher Autopilot-Job, Circuit-Breaker, Dashboard
+- DoD: Health OK, Retry-Policy validiert
+
+**UMC-06 (Insights Engine):**
+
+- KPIs speichern, Normalisieren, Baseline/Lift berechnen
+- DoD: Report API liefert 7/30-Tage KPIs
+
+**UMC-07 (Approval UI – minimal):**
+
+- „Vorschau → Freigeben“ Komponente
+- DoD: Freigabe setzt `status=ready` und triggert Scheduling
+
+---
+
+# Beispiel: Minimaler Prompt-Call (TS, Bedrock SDK)
+
+```tsx
+const prompt = buildGermanGastroPrompt(businessProfile, weeklyTheme);
+const res = await bedrock.invokeClaude({
+  model: process.env.BEDROCK_MODEL_CLAUDE!,
+  temperature: 0.5,
+  system: SYSTEM_PROMPT_DE,
+  input: prompt,
+});
+const variants = JSON.parse(res.text); // [{theme, caption, hashtags}]
+```
+
+---
+
+# Beispiel: Headless-Render Fallback (Schema)
+
+```tsx
+const layout = {
+  width: 1080,
+  height: 1080,
+  bg: brand.primary,
+  layers: [
+    { type: "image", src: logoUrl, x: 48, y: 48, w: 160 },
+    {
+      type: "text",
+      value: headline,
+      x: 64,
+      y: 280,
+      font: "Inter-Bold",
+      size: 72,
+      color: "#fff",
+    },
+    {
+      type: "text",
+      value: subline,
+      x: 64,
+      y: 380,
+      font: "Inter-Medium",
+      size: 36,
+      color: "#fff",
+    },
+    { type: "qr", data: bookingUrl, x: 880, y: 880, size: 160 },
+  ],
+};
+```
+
+---
+
+## Nächste Schritte (heute ausführbar)
+
+1. **Flags & Secrets** in AWS (SSM/Secrets Manager) anlegen
+2. **UMC-01 Backend Skeleton** (Endpunkte + S3 + Audit)
+3. **UMC-04 Bedrock Prompts** (System + User, Guardrails)
+4. **UMC-03 Headless Renderer** (ein Template, 1080×1080)
+5. **UMC-02 Meta Adapter** (Sandbox-Publish, dry-run)
+6. **Kiro Job** „`umc-weekly`“ anlegen (nur Generate→Render, ohne Publish)
+
+# Ergänzungen/Ausrichtung
+
+## 🧩 **Unified Media Composer (UMC) – Template Intelligence Architecture**
+
+### 🎯 **Ziel**
+
+Nutzer sollen **keine Designs manuell suchen, hochladen oder auswählen** müssen.
+
+Das System erkennt automatisch, welche Art von Design benötigt wird, greift auf interne Vorlagen zu – oder erstellt neue Designs selbständig über Bedrock.
+
+---
+
+## 🧠 **1. Template Intelligence Layer**
+
+### 🔒 **Lokale Template-Speicherung**
+
+- Alle Vorlagen werden **im Nutzerprofil auf matbakh.app** gespeichert:
+  - Struktur: `users/{id}/templates/{category}/{template_id}.json`
+  - Inhalte: Layout-Metadaten, Stilparameter, Textfelder, Farbsets, Branding-Information
+- Kein externer Anbieter (Canva, Figma) notwendig.
+- Zugriff via `TemplateService` mit Bedrock-kompatiblem JSON-Format.
+
+### ⚙️ **Automatische Auswahl**
+
+1. **Persona Context Engine** erkennt den passenden Stil (z. B. Solo-Sarah → einfach & freundlich, Ketten-Katrin → clean & corporate).
+2. **Campaign Intent Analyzer** prüft Thema & Ziel (z. B. Lunch-Post, Feiertagsangebot, Neueröffnung).
+3. **Template Ranker (Bandit-Logik)** wählt das am besten performende Layout pro Nutzerziel.
+
+Wenn kein passendes Template existiert →
+
+🧠 **Bedrock generiert ein neues („Design Bootstrap“) Template**
+
+und speichert es sofort persistent im Profil.
+
+---
+
+## 🧰 **2. Template Structure & Metadata**
+
+Beispiel eines gespeicherten Templates (JSON):
+
+```json
+{
+  "template_id": "spring_promo_01",
+  "owner": "user_123",
+  "persona": "Solo-Sarah",
+  "category": "seasonal",
+  "layout": "two-column",
+  "color_scheme": ["#FF6600", "#F5F5F5", "#000000"],
+  "typography": "OpenSans-Bold",
+  "image_slots": 2,
+  "text_slots": {
+    "headline": "Frühling auf dem Teller!",
+    "subtext": "Neue saisonale Gerichte ab Montag."
+  },
+  "style_signature": "friendly_light",
+  "performance_score": 0.82
+}
+```
+
+---
+
+## 🤖 **3. Automatische Auswahl & Regeneration**
+
+- Bedrock erhält beim Content-Briefing automatisch Zugriff auf:
+  - Nutzer-Persona
+  - letzte Kampagnenleistung (Engagement/CTR)
+  - gespeicherte Templates (Top 3 nach Performance)
+- Wenn ein Template älter als 30 Tage ist oder < 80 % Engagement erreicht:
+  → System löst „Template Refresh“ aus und erstellt neue Variante.
+- Keine manuelle Aktion nötig; Nutzer sieht nur das Ergebnis („Autopilot“).
+
+---
+
+## 🧱 **4. Speicherung & Zugriff**
+
+| Komponente                    | Beschreibung                                                                |
+| ----------------------------- | --------------------------------------------------------------------------- |
+| **RDS / S3 Hybrid Store**     | Templates werden versioniert in S3 gespeichert, Metadaten in RDS.           |
+| **Template Indexer (Lambda)** | Prüft beim Login und vor UMC-Job, welche Templates aktiv sind.              |
+| **Template Cache (Redis)**    | Für häufige Zugriffe (Render-Preview) in < 50 ms abrufbar.                  |
+| **Security**                  | DSGVO-konforme Verschlüsselung per AWS KMS; Templates sind Nutzer-eigentum. |
+
+---
+
+## 💡 **5. User Experience**
+
+- Kein „Template-Picker“ sichtbar.
+- Nur ein Button: **„Erstelle meinen Wochenpost“**
+- System zeigt Vorschau mit automatisch generiertem Design & Text.
+- Nutzer kann (optional) ändern, aber **nicht muss**.
+
+---
+
+## 🚀 **6. Vorteile**
+
+✅ Keine Abhängigkeit von Drittanbietern
+
+✅ DSGVO-konforme, lokale Speicherung
+
+✅ Vollautomatische Designauswahl & Generierung
+
+✅ Performance-Feedback-Loop (lernt aus erfolgreichen Kampagnen)
+
+✅ Reine KI-Autonomie – „Set and Forget“-Prinzip
+
+---
+
+## 🔧 **7. Nächster Umsetzungsschritt**
+
+**Task UMC-03 Update: Internal Template Storage & Autonomy**
+
+- Neues Modul: `src/lib/umc/template-service.ts`
+- S3-Buckets vorbereiten (`matbakh-umc-templates`)
+- Bedrock Prompt: `generate_template_from_context`
+- Kiro-Job aktualisieren: `umc-orchestrator` → Template → Render → Publish

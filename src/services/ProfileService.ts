@@ -88,7 +88,7 @@ const profileService = {
   async getProfileCompletion(p: BusinessProfile) {
     const fields = ['businessName', 'email', 'phone', 'address', 'city', 'category', 'website'] as const;
     const filled = fields.filter(f => (p as any)[f]).length;
-    return Math.round((filled / fields.length) * 100);
+    return fields.length ? Math.round((filled / fields.length) * 100) : 0;
   },
 
   async getMissingFields(p: BusinessProfile) {

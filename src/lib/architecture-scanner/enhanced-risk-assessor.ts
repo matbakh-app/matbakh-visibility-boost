@@ -436,7 +436,7 @@ export class EnhancedRiskAssessor {
     if (totalRiskScore >= 80) {
       riskLevel = 'critical';
       safeToArchive = false;
-      reason = 'Critical system component with multiple high-risk factors';
+      reason = 'Critical system component';
       confidence = 0.95;
     } else if (totalRiskScore >= 50) {
       riskLevel = 'high';
@@ -478,7 +478,7 @@ export class EnhancedRiskAssessor {
       
       if (hasAlternatives && totalRiskScore < 40) {
         safeToArchive = true;
-        reason = 'Legacy component with clear migration path';
+        reason = 'Kiro alternative available';
         confidence = Math.min(confidence + 0.1, 0.95);
       }
     }

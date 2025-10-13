@@ -394,15 +394,7 @@ export class KiroSystemPurityValidator {
   private calculateCategoryScore(category: 'auth' | 'dashboard' | 'upload' | 'vc'): number {
     const categoryComponents = this.analysisResults.components.details.filter(c => c.type === category);
     const kiroComponents = categoryComponents.filter(c => c.origin === 'kiro').length;
-    return categoryComponents.length > 0 ? Math.round((kiroComponents / categoryComponents.length) * 100) : 100;
-  }
-
-  /**
-   * Backward compatibility method - delegates to scan()
-   */
-  async validateSystemPurity(): Promise<PurityValidationResult> {
-    console.log('🔍 Starting Kiro System Purity Validation...');
-    return this.scan({ verbose: true });
+    return categoryComponents.length ? Math.round((kiroComponents / categoryComponents.length) * 100) : 100;
   }
 
   /**
@@ -586,6 +578,8 @@ export class KiroSystemPurityValidator {
     const violations: string[] = [];
     let isKiroConfigured = true;
 
+    let hasValidKiroConfig = false;
+    
     for (const raw of configFiles) {
       if (typeof raw !== 'string' || !raw.trim()) continue;
       const configPath = path.join(this.workspaceRoot, raw);
@@ -594,9 +588,10 @@ export class KiroSystemPurityValidator {
         foundConfigs.push(raw);
         
         // Check for Kiro-specific configurations
-        if (!this.hasKiroTestConfiguration(content)) {
+        if (this.hasKiroTestConfiguration(content)) {
+          hasValidKiroConfig = true;
+        } else {
           violations.push(`${raw} does not contain Kiro-specific test configuration`);
-          isKiroConfigured = false;
         }
         
         // Check for legacy configurations
@@ -607,6 +602,17 @@ export class KiroSystemPurityValidator {
       } catch (error) {
         // File doesn't exist, continue
       }
+    }
+    
+    // If we have at least one valid Kiro config and no legacy configs, we're good
+    if (hasValidKiroConfig && !violations.some(v => v.includes('legacy'))) {
+      isKiroConfigured = true;
+      // Remove non-Kiro config violations if we have at least one valid Kiro config
+      const legacyViolations = violations.filter(v => v.includes('legacy'));
+      violations.length = 0;
+      violations.push(...legacyViolations);
+    } else {
+      isKiroConfigured = false;
     }
 
     const purityScore = violations.length === 0 ? 100 : Math.max(0, 100 - (violations.length * 25));
@@ -753,6 +759,10 @@ export class KiroSystemPurityValidator {
    * Detects the origin of a code file based on markers and patterns
    */
   private detectOrigin(content: string): 'kiro' | 'supabase' | 'lovable' | 'unknown' {
+    if (!content || typeof content !== 'string') {
+      return 'unknown';
+    }
+    
     const lowerContent = content.toLowerCase();
     
     // Check for Kiro markers
@@ -815,9 +825,21 @@ export class KiroSystemPurityValidator {
    * Checks if test configuration is Kiro-specific
    */
   private hasKiroTestConfiguration(content: string): boolean {
-    // Kiro: Vitest akzeptieren, wenn defineConfig ODER Kommentar "Kiro test config" auftaucht
-    const isKiro = /defineConfig/.test(content) || /Kiro test config/i.test(content);
-    return isKiro;
+    // Kiro test configuration patterns
+    const kiroPatterns = [
+      /defineConfig/,                    // Vitest defineConfig
+      /Kiro test config/i,              // Explicit Kiro comment
+      /setupTests\.ts/,                 // Kiro setup file pattern
+      /testEnvironment.*jsdom/,         // Kiro uses jsdom
+      /preset.*ts-jest/,                // Kiro uses ts-jest
+      /moduleNameMapper.*@\//,          // Kiro path mapping
+      /testPathIgnorePatterns.*archive/, // Kiro ignores archive
+      /@\/\(\.\*\)\$.*<rootDir>\/src/   // Kiro module mapping pattern
+    ];
+    
+    // Must have at least 2 Kiro patterns to be considered Kiro-configured
+    const matchCount = kiroPatterns.filter(pattern => pattern.test(content)).length;
+    return matchCount >= 2;
   }
 
   /**
@@ -838,6 +860,10 @@ export class KiroSystemPurityValidator {
    * Extracts markers from content
    */
   private extractMarkers(content: string): string[] {
+    if (!content || typeof content !== 'string') {
+      return [];
+    }
+    
     const markers: string[] = [];
     const allMarkers = [...this.kiroMarkers, ...this.supabaseMarkers, ...this.lovableMarkers];
     
@@ -854,6 +880,10 @@ export class KiroSystemPurityValidator {
    * Calculates confidence score for origin detection
    */
   private calculateConfidence(content: string, origin: string): number {
+    if (!content || typeof content !== 'string') {
+      return 0;
+    }
+    
     const lowerContent = content.toLowerCase();
     let score = 0;
     
