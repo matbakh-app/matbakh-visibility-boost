@@ -1,0 +1,19 @@
+{
+  "enabled": true,
+  "name": "Provider Compliance Cache Validator",
+  "description": "Validates that all AI providers are compliant with current no-training agreements, even for cached sessions or older feature flags. Runs complianceCache.validate() on commit and blocks non-compliant cache entries while supporting --force-release override with audit logging.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/lib/ai-orchestrator/provider-agreement-compliance.ts",
+      "src/hooks/useProviderCompliance.tsx",
+      "docs/compliance.md",
+      "docs/release-guidance.md"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "When changes are detected in AI provider compliance files, validate that:\n\n1. All providers have active, non-expired agreements (< 180 days since last verification)\n2. No legacy \"allow-training\": true flags are active in any configuration\n3. Provider contract status is valid (active, not expired)\n4. Cache entries are compliant with current no-training policies\n5. Run complianceCache.validate() and block commit if non-compliant entries found\n\nIf validation fails:\n- Block the commit with clear error message showing which providers/cache entries are non-compliant\n- Provide diff showing problematic configurations\n- Suggest remediation steps (update agreements, clear cache, disable legacy flags)\n\nIf --force-release flag is detected:\n- Allow commit to proceed but create audit log entry with:\n  - Timestamp and user who forced the release\n  - List of compliance violations that were overridden\n  - Justification requirement for audit trail\n\nAcceptance Criteria:\n✅ All providers compliant → Commit allowed\n❌ Provider with expired/invalid agreement → Blocked with remediation hints\n🔓 --force-release flag → Commit allowed with mandatory audit log entry\n\nFocus on maintaining compliance with no-training agreements while providing emergency override capability for critical releases."
+  }
+}

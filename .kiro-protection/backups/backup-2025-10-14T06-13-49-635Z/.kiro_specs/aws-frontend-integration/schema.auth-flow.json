@@ -1,0 +1,314 @@
+{
+  "authFlow": {
+    "name": "matbakh-cognito-auth-flow",
+    "version": "1.0",
+    "description": "Complete authentication flow for matbakh.app using AWS Cognito",
+    
+    "flows": {
+      "registration": {
+        "steps": [
+          {
+            "step": 1,
+            "name": "user_input",
+            "description": "User enters email, password, and basic info",
+            "component": "RegistrationForm",
+            "validation": {
+              "email": "required|email",
+              "password": "required|min:8|complexity",
+              "given_name": "optional|string|max:50",
+              "family_name": "optional|string|max:50"
+            },
+            "nextStep": "cognito_signup"
+          },
+          {
+            "step": 2,
+            "name": "cognito_signup",
+            "description": "Create user in Cognito User Pool",
+            "service": "AWS Cognito",
+            "action": "Auth.signUp()",
+            "attributes": [
+              "email",
+              "given_name", 
+              "family_name",
+              "custom:locale",
+              "custom:user_role"
+            ],
+            "nextStep": "email_verification"
+          },
+          {
+            "step": 3,
+            "name": "email_verification",
+            "description": "User confirms email with verification code",
+            "component": "EmailVerificationForm",
+            "service": "AWS Cognito",
+            "action": "Auth.confirmSignUp()",
+            "nextStep": "post_confirmation_trigger"
+          },
+          {
+            "step": 4,
+            "name": "post_confirmation_trigger",
+            "description": "Lambda trigger creates user profile in RDS",
+            "service": "AWS Lambda",
+            "function": "post-confirmation-trigger",
+            "actions": [
+              "create_user_profile_in_rds",
+              "send_welcome_email",
+              "log_user_confirmation"
+            ],
+            "nextStep": "authentication_complete"
+          },
+          {
+            "step": 5,
+            "name": "authentication_complete",
+            "description": "User is authenticated and redirected to dashboard",
+            "component": "Dashboard",
+            "tokens": ["id_token", "access_token", "refresh_token"],
+            "redirect": "/dashboard"
+          }
+        ]
+      },
+      
+      "login": {
+        "steps": [
+          {
+            "step": 1,
+            "name": "user_input",
+            "description": "User enters email and password",
+            "component": "LoginForm",
+            "validation": {
+              "email": "required|email",
+              "password": "required"
+            },
+            "nextStep": "cognito_signin"
+          },
+          {
+            "step": 2,
+            "name": "cognito_signin",
+            "description": "Authenticate with Cognito",
+            "service": "AWS Cognito",
+            "action": "Auth.signIn()",
+            "mfa_support": true,
+            "nextStep": "token_validation"
+          },
+          {
+            "step": 3,
+            "name": "token_validation",
+            "description": "Validate and store tokens",
+            "service": "Frontend",
+            "actions": [
+              "validate_jwt_tokens",
+              "store_tokens_in_memory",
+              "schedule_token_refresh"
+            ],
+            "nextStep": "post_authentication_trigger"
+          },
+          {
+            "step": 4,
+            "name": "post_authentication_trigger",
+            "description": "Update last login timestamp",
+            "service": "AWS Lambda",
+            "function": "post-authentication-trigger",
+            "actions": [
+              "update_last_login",
+              "sync_user_attributes"
+            ],
+            "nextStep": "authentication_complete"
+          },
+          {
+            "step": 5,
+            "name": "authentication_complete",
+            "description": "User is authenticated and redirected",
+            "component": "Dashboard",
+            "tokens": ["id_token", "access_token", "refresh_token"],
+            "redirect": "/dashboard"
+          }
+        ]
+      },
+      
+      "token_refresh": {
+        "steps": [
+          {
+            "step": 1,
+            "name": "token_expiry_detected",
+            "description": "System detects token will expire soon",
+            "trigger": "5_minutes_before_expiry",
+            "nextStep": "silent_refresh"
+          },
+          {
+            "step": 2,
+            "name": "silent_refresh",
+            "description": "Refresh tokens using refresh token",
+            "service": "AWS Cognito",
+            "action": "Auth.currentSession()",
+            "background": true,
+            "nextStep": "update_tokens"
+          },
+          {
+            "step": 3,
+            "name": "update_tokens",
+            "description": "Update tokens in application state",
+            "service": "Frontend",
+            "actions": [
+              "update_token_storage",
+              "reschedule_refresh_timer",
+              "notify_components"
+            ],
+            "nextStep": "refresh_complete"
+          }
+        ]
+      },
+      
+      "logout": {
+        "steps": [
+          {
+            "step": 1,
+            "name": "user_logout_request",
+            "description": "User clicks logout button",
+            "component": "LogoutButton",
+            "nextStep": "cognito_signout"
+          },
+          {
+            "step": 2,
+            "name": "cognito_signout",
+            "description": "Sign out from Cognito",
+            "service": "AWS Cognito",
+            "action": "Auth.signOut()",
+            "global": true,
+            "nextStep": "clear_local_state"
+          },
+          {
+            "step": 3,
+            "name": "clear_local_state",
+            "description": "Clear all tokens and user data",
+            "service": "Frontend",
+            "actions": [
+              "clear_tokens_from_memory",
+              "clear_refresh_token_cookie",
+              "clear_user_state",
+              "cancel_refresh_timers"
+            ],
+            "nextStep": "redirect_to_login"
+          },
+          {
+            "step": 4,
+            "name": "redirect_to_login",
+            "description": "Redirect user to login page",
+            "component": "LoginPage",
+            "redirect": "/login"
+          }
+        ]
+      },
+      
+      "password_reset": {
+        "steps": [
+          {
+            "step": 1,
+            "name": "forgot_password_request",
+            "description": "User requests password reset",
+            "component": "ForgotPasswordForm",
+            "validation": {
+              "email": "required|email"
+            },
+            "nextStep": "send_reset_code"
+          },
+          {
+            "step": 2,
+            "name": "send_reset_code",
+            "description": "Send password reset code via email",
+            "service": "AWS Cognito",
+            "action": "Auth.forgotPassword()",
+            "nextStep": "verify_reset_code"
+          },
+          {
+            "step": 3,
+            "name": "verify_reset_code",
+            "description": "User enters reset code and new password",
+            "component": "ResetPasswordForm",
+            "validation": {
+              "code": "required|numeric|length:6",
+              "new_password": "required|min:8|complexity"
+            },
+            "nextStep": "confirm_password_reset"
+          },
+          {
+            "step": 4,
+            "name": "confirm_password_reset",
+            "description": "Confirm password reset with Cognito",
+            "service": "AWS Cognito",
+            "action": "Auth.forgotPasswordSubmit()",
+            "nextStep": "password_reset_complete"
+          },
+          {
+            "step": 5,
+            "name": "password_reset_complete",
+            "description": "Password reset successful, redirect to login",
+            "component": "LoginPage",
+            "message": "Password reset successful. Please log in with your new password.",
+            "redirect": "/login"
+          }
+        ]
+      }
+    },
+    
+    "error_handling": {
+      "common_errors": [
+        {
+          "error": "UserNotConfirmedException",
+          "description": "User email not verified",
+          "action": "redirect_to_verification",
+          "user_message": "Please verify your email address to continue."
+        },
+        {
+          "error": "NotAuthorizedException",
+          "description": "Invalid credentials",
+          "action": "show_error_message",
+          "user_message": "Invalid email or password. Please try again."
+        },
+        {
+          "error": "UserNotFoundException",
+          "description": "User does not exist",
+          "action": "show_error_message",
+          "user_message": "No account found with this email address."
+        },
+        {
+          "error": "TooManyRequestsException",
+          "description": "Rate limit exceeded",
+          "action": "show_retry_message",
+          "user_message": "Too many attempts. Please try again in a few minutes."
+        },
+        {
+          "error": "NetworkError",
+          "description": "Network connectivity issues",
+          "action": "show_retry_button",
+          "user_message": "Connection error. Please check your internet connection and try again."
+        }
+      ]
+    },
+    
+    "security_measures": {
+      "token_storage": {
+        "id_token": "memory_only",
+        "access_token": "memory_only", 
+        "refresh_token": "secure_cookie_production_localStorage_development"
+      },
+      "token_expiry": {
+        "id_token": "1_hour",
+        "access_token": "1_hour",
+        "refresh_token": "30_days"
+      },
+      "refresh_strategy": {
+        "trigger": "5_minutes_before_expiry",
+        "method": "silent_background_refresh",
+        "fallback": "redirect_to_login"
+      },
+      "csrf_protection": {
+        "enabled": true,
+        "method": "samesite_cookies"
+      },
+      "xss_protection": {
+        "enabled": true,
+        "method": "content_security_policy"
+      }
+    }
+  }
+}

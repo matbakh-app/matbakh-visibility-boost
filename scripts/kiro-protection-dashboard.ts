@@ -386,7 +386,8 @@ class KiroProtectionDashboard {
     const status = await this.getProtectionStatus();
     const reportPath = "docs/kiro-protection-status.json";
 
-    require("fs").writeFileSync(reportPath, JSON.stringify(status, null, 2));
+    const fs = await import("fs");
+    fs.writeFileSync(reportPath, JSON.stringify(status, null, 2));
     console.log(`📊 Protection status report generated: ${reportPath}`);
   }
 }

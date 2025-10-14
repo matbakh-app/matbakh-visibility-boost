@@ -1,0 +1,19 @@
+{
+  "enabled": true,
+  "name": "GCV Test Sync & Doc Checks",
+  "description": "Ensures Green Core Validation (GCV) tests are automatically synchronized when new features are integrated and handles on-hold documents properly. Monitors test files and documentation for consistency, blocks commits when new tests aren't tracked in GCV index, and manages document deduplication during feature releases.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "test/**/*.test.ts",
+      "test/green-core-validation/gcv-tests.json",
+      "docs/on-hold/**/*.md",
+      "docs/**/*.md"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Analyze the changed files for GCV test synchronization and on-hold document handling:\n\n1. **GCV Test Synchronization:**\n   - Check if new .test.ts files have been added to test/ directory\n   - Verify if these new tests are registered in test/green-core-validation/gcv-tests.json\n   - For any new tests not in GCV index, create entries with: path, createdAt, tags, status: \"active\"\n   - Block commits if new tests are missing from GCV tracking (unless --skip-gcv-sync-check flag is used)\n\n2. **On-Hold Document Processing:**\n   - When docs/**/*.md files are modified (new features), check for matching docs/on-hold/**/*.md files\n   - If matching on-hold documents exist, mark them as archived (status: \"archived\", archivedAt: timestamp)\n   - Create doc-merge suggestions instead of new documents\n   - Add automatic comment to release guidance about archived on-hold documents\n   - Warn about active on-hold documents that haven't been reviewed\n\n3. **Document Deduplication:**\n   - Prevent duplicate documentation of the same feature\n   - Check for feature name/topic overlap between new docs and on-hold docs\n   - Suggest consolidation when duplicates are detected\n\n4. **Output Format:**\n   - List any GCV synchronization actions needed\n   - Report on-hold document archival actions\n   - Provide release guidance notes for documentation changes\n   - Include manual override flags if needed (--skip-gcv-sync-check, --on-hold-allow-new)\n\nFocus on maintaining test coverage consistency and preventing documentation fragmentation during feature integration."
+  }
+}

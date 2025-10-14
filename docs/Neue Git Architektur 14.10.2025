@@ -1,0 +1,123 @@
+Das ist ein sehr guter und reifer Schritt – du willst jetzt in eine **produktive Git-Trennung mit täglichem Backup-Safety-Net** übergehen.
+Hier ist der Plan, den ich dir vorschlage – konkret, sicher und ohne Overhead:
+
+---
+
+## 🧱 Zielarchitektur
+
+| Ebene                          | Zweck                                                                                        |
+| ------------------------------ | -------------------------------------------------------------------------------------------- |
+| **`matbakh-visibility-live`**  | *Produktiv-Repository*, stabil, unverändert, direkt mit Frontend / CI / Deployment verbunden |
+| **`matbakh-visibility-dev`**   | *Entwicklungs-Repository*, enthält neue Features, Hooks, Kiro-/Bedrock-Erweiterungen         |
+| **Automatisches Daily-Backup** | Zip- oder tar-Snapshot der Dev-Repo, 7 Tage History, z. B. unter `backups/daily/YYYY-MM-DD/` |
+
+---
+
+## 🪜 Schritt-für-Schritt-Plan
+
+### **1️⃣ Letzten Stand sichern (aktuelle Repo)**
+
+```bash
+# Manuelles Komplett-Backup
+mkdir -p backups/manual
+tar -czf backups/manual/full-backup-$(date +"%Y-%m-%dT%H-%M-%S").tar.gz \
+  . --exclude=node_modules --exclude=.git --exclude=backups
+```
+
+→ legt einen vollständigen Snapshot deines aktuellen Zustands ab.
+
+---
+
+### **2️⃣ „Live“-Repo abtrennen**
+
+Im Git-Root:
+
+```bash
+# Neues Remote-Repo (z. B. GitHub, AWS CodeCommit, oder lokal)
+git clone . ../matbakh-visibility-live
+cd ../matbakh-visibility-live
+git remote remove origin  # falls du das gleiche Remote nutzt
+git branch -M main
+```
+
+* Diese Kopie bleibt dein **Frontend-Live-Repo**.
+* Verbinde es später nur mit deinem **Deployment-Pipeline**-Account (z. B. AWS Amplify / Vercel).
+
+---
+
+### **3️⃣ Dev-Repo vorbereiten**
+
+Zurück ins ursprüngliche Repo:
+
+```bash
+cd ../matbakh-visibility-boost.20250920
+git remote set-url origin <DEV_REPO_URL>  # falls du ein separates Remote nutzt
+git push origin main
+```
+
+→ Hier arbeitest du künftig an Features, neuen Modulen etc.
+
+---
+
+### **4️⃣ Tägliches Backup automatisieren**
+
+Erstelle ein einfaches Shell-Skript (z. B. `scripts/daily-backup.sh`):
+
+```bash
+#!/bin/bash
+BACKUP_DIR="backups/daily/$(date +%Y-%m-%d)"
+mkdir -p "$BACKUP_DIR"
+
+tar -czf "$BACKUP_DIR/repo-$(date +%H-%M-%S).tar.gz" \
+  . --exclude=node_modules --exclude=.git --exclude=backups
+
+# Alte Backups >7 Tage löschen
+find backups/daily/ -type d -mtime +7 -exec rm -rf {} \; 2>/dev/null
+echo "✅ Backup created at $BACKUP_DIR"
+```
+
+Mache es ausführbar:
+
+```bash
+chmod +x scripts/daily-backup.sh
+```
+
+Und plane es mit **cron**:
+
+```bash
+crontab -e
+# Täglich um 03:00 Uhr
+0 3 * * * cd /path/to/matbakh-visibility-boost.20250920 && ./scripts/daily-backup.sh >> logs/backup.log 2>&1
+```
+
+---
+
+### **5️⃣ Synchronisations-Strategie**
+
+| Ziel                                   | Vorgehen                                                                                                            |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **Neue getestete Features übernehmen** | Im Dev-Repo auf Feature-Branch entwickeln → nach Tests per `git diff` oder `git cherry-pick` auf Live-Repo anwenden |
+| **Hotfix für Live nötig**              | Direkt im Live-Repo fixen, dann per `git pull` in Dev übernehmen                                                    |
+| **Monitoring & Audit**                 | Kiro / Protection-System bleibt aktiv nur in Dev-Repo                                                               |
+
+---
+
+### **6️⃣ Optionale Extras**
+
+* Tägliches Backup-Log in `docs/backup-history.md`
+* Automatische E-Mail/Slack-Benachrichtigung bei erfolgreichem Backup
+* AWS S3 Sync:
+
+  ```bash
+  aws s3 sync backups/daily s3://matbakh-backups/daily --delete
+  ```
+
+---
+
+**erstelle ein kompaktes Automations-Bundle** (3 Dateien):
+
+1. `scripts/daily-backup.sh`
+2. `scripts/verify-backup.ts` (prüft Integrität der letzten 7 Backups)
+3. `scripts/sync-live-repo.sh` (überträgt getestete Commits ins Live-Repo)
+
+→ Damit wäre deine **zwei-Repo-Strategie + tägliche Sicherung + Integritätsprüfung** komplett automatisiert.

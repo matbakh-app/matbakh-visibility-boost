@@ -1,0 +1,432 @@
+# Production Deployment Calendar Configuration
+# This file defines the deployment scheduling policies, approval workflows,
+# and operational procedures for production deployments.
+
+version: "1.0.0"
+updated: "2025-01-14"
+
+# Deployment Scheduling Policies
+scheduling:
+  # Minimum advance notice required for production deployments
+  minimum_advance_hours: 24
+
+  # Maximum deployment duration allowed
+  maximum_duration_hours: 8
+
+  # Preferred deployment windows
+  preferred_windows:
+    - name: "Weekend Early Morning"
+      days: ["saturday", "sunday"]
+      hours: "02:00-06:00"
+      timezone: "UTC"
+      priority: "high"
+
+    - name: "Weekday Off-Hours"
+      days: ["monday", "tuesday", "wednesday", "thursday", "friday"]
+      hours: "02:00-06:00"
+      timezone: "UTC"
+      priority: "medium"
+
+  # Blackout periods (no deployments allowed)
+  blackout_periods:
+    - name: "Holiday Season"
+      start: "2025-12-20T00:00:00Z"
+      end: "2025-01-05T00:00:00Z"
+      reason: "Reduced support availability during holidays"
+      severity: "high"
+
+    - name: "Black Friday Weekend"
+      start: "2025-11-28T00:00:00Z"
+      end: "2025-12-02T00:00:00Z"
+      reason: "High traffic period - no changes allowed"
+      severity: "critical"
+
+    - name: "End of Quarter"
+      recurring: true
+      pattern: "last_week_of_quarter"
+      reason: "Financial reporting period - stability required"
+      severity: "medium"
+
+# Stakeholder Approval Workflow
+approval_workflow:
+  # Required approvers for production deployments
+  required_approvers:
+    - role: "release_team_lead"
+      email: "release-team@matbakh.app"
+      name: "Release Team Lead"
+      required: true
+      order: 1
+
+    - role: "engineering_manager"
+      email: "engineering@matbakh.app"
+      name: "Engineering Manager"
+      required: true
+      order: 2
+
+    - role: "security_officer"
+      email: "security@matbakh.app"
+      name: "Security Officer"
+      required: true
+      order: 3
+
+    - role: "operations_manager"
+      email: "operations@matbakh.app"
+      name: "Operations Manager"
+      required: true
+      order: 4
+
+    - role: "cto"
+      email: "cto@matbakh.app"
+      name: "CTO"
+      required: true
+      order: 5
+
+  # Approval policies
+  policies:
+    # All approvers must approve before deployment can proceed
+    require_all_approvals: true
+
+    # Approval timeout (deployments auto-cancelled if not approved in time)
+    approval_timeout_hours: 72
+
+    # Allow conditional approvals (with conditions that must be met)
+    allow_conditional_approvals: true
+
+    # Require re-approval if deployment is rescheduled
+    require_reapproval_on_reschedule: true
+
+# Pre-deployment Validation Checks
+validation_checks:
+  infrastructure:
+    - name: "AWS Bedrock Access"
+      command: "aws bedrock list-foundation-models --region eu-central-1"
+      timeout_seconds: 30
+      required: true
+
+    - name: "Feature Flag Infrastructure"
+      command: "npm run test:feature-flags"
+      timeout_seconds: 60
+      required: true
+
+    - name: "CloudWatch Monitoring"
+      command: "aws cloudwatch describe-dashboards --region eu-central-1"
+      timeout_seconds: 30
+      required: true
+
+    - name: "VPC and Security Groups"
+      command: "aws ec2 describe-security-groups --region eu-central-1"
+      timeout_seconds: 30
+      required: true
+
+  code_quality:
+    - name: "Unit Tests"
+      command: "npm test -- --run --coverage"
+      timeout_seconds: 300
+      required: true
+      coverage_threshold: 90
+
+    - name: "TypeScript Compilation"
+      command: "npx tsc --noEmit"
+      timeout_seconds: 60
+      required: true
+
+    - name: "Linting"
+      command: "npm run lint"
+      timeout_seconds: 60
+      required: true
+
+    - name: "Security Scan"
+      command: "npm audit --audit-level moderate"
+      timeout_seconds: 120
+      required: true
+
+  security:
+    - name: "Penetration Testing"
+      command: "npx tsx scripts/run-direct-bedrock-penetration-test.ts"
+      timeout_seconds: 300
+      required: true
+
+    - name: "PII Detection Validation"
+      command: "npm test -- --testPathPattern=pii-detection"
+      timeout_seconds: 120
+      required: true
+
+    - name: "GDPR Compliance"
+      command: "npm test -- --testPathPattern=gdpr-compliance"
+      timeout_seconds: 120
+      required: true
+
+    - name: "Security Posture"
+      command: "npm test -- --testPathPattern=security-posture"
+      timeout_seconds: 180
+      required: true
+
+  performance:
+    - name: "Load Testing"
+      command: "npx tsx scripts/run-10x-load-test.ts --quick"
+      timeout_seconds: 600
+      required: true
+      performance_threshold: "grade_c_or_better"
+
+    - name: "Latency Validation"
+      command: "npm test -- --testPathPattern=latency-validation"
+      timeout_seconds: 180
+      required: true
+
+    - name: "Cache Performance"
+      command: "npm test -- --testPathPattern=cache-optimization"
+      timeout_seconds: 120
+      required: true
+
+  operations:
+    - name: "Rollback Procedures"
+      command: "npx tsx scripts/validate-hybrid-routing-rollback.ts"
+      timeout_seconds: 180
+      required: true
+
+    - name: "Monitoring Validation"
+      command: "npx tsx scripts/validate-monitoring-readiness.ts"
+      timeout_seconds: 120
+      required: true
+
+    - name: "Operations Training"
+      command: "npx tsx scripts/validate-operations-training.ts"
+      timeout_seconds: 60
+      required: true
+
+# Notification Configuration
+notifications:
+  channels:
+    email:
+      enabled: true
+      smtp_server: "smtp.matbakh.app"
+      from_address: "deployments@matbakh.app"
+
+    slack:
+      enabled: true
+      webhook_url: "${SLACK_DEPLOYMENT_WEBHOOK}"
+      channel: "#deployments"
+
+    sms:
+      enabled: true
+      provider: "aws_sns"
+      region: "eu-central-1"
+
+  # Notification templates
+  templates:
+    deployment_scheduled:
+      subject: "Production Deployment Scheduled: {{deployment_id}}"
+      body: |
+        A new production deployment has been scheduled:
+
+        Deployment ID: {{deployment_id}}
+        Scheduled Time: {{scheduled_time}}
+        Type: {{deployment_type}}
+        Requested By: {{requested_by}}
+        Estimated Duration: {{duration}} minutes
+
+        Please review and approve at: {{approval_url}}
+
+    deployment_approved:
+      subject: "Deployment Approved: {{deployment_id}}"
+      body: |
+        Deployment {{deployment_id}} has been approved by {{approver_name}}.
+
+        Approvals: {{approval_count}}/{{total_approvers}}
+        {{#if all_approved}}
+        ✅ All approvals received - deployment ready for execution
+        {{else}}
+        ⏳ Waiting for remaining approvals
+        {{/if}}
+
+    deployment_executing:
+      subject: "🚀 Production Deployment Executing: {{deployment_id}}"
+      body: |
+        Production deployment is now executing:
+
+        Deployment ID: {{deployment_id}}
+        Started At: {{start_time}}
+        Estimated Completion: {{estimated_completion}}
+
+        Monitor progress at: {{monitoring_url}}
+
+    deployment_completed:
+      subject: "✅ Production Deployment Completed: {{deployment_id}}"
+      body: |
+        Production deployment completed successfully:
+
+        Deployment ID: {{deployment_id}}
+        Completed At: {{completion_time}}
+        Duration: {{actual_duration}} minutes
+
+        Post-deployment monitoring: {{monitoring_url}}
+
+    deployment_failed:
+      subject: "❌ Production Deployment Failed: {{deployment_id}}"
+      body: |
+        Production deployment has failed:
+
+        Deployment ID: {{deployment_id}}
+        Failed At: {{failure_time}}
+        Error: {{error_message}}
+
+        {{#if rollback_initiated}}
+        🔄 Automatic rollback has been initiated
+        {{else}}
+        ⚠️ Manual intervention required
+        {{/if}}
+
+        Incident response: {{incident_url}}
+
+# Rollback Configuration
+rollback:
+  # Automatic rollback triggers
+  automatic_triggers:
+    - condition: "emergency_operation_latency > 10s for 5 minutes"
+      action: "level_1_rollback"
+      notification: "critical"
+
+    - condition: "system_error_rate > 5% for 10 minutes"
+      action: "level_2_rollback"
+      notification: "critical"
+
+    - condition: "security_compliance_failure"
+      action: "level_3_rollback"
+      notification: "critical"
+
+    - condition: "critical_infrastructure_failure"
+      action: "level_3_rollback"
+      notification: "critical"
+
+  # Rollback procedures
+  procedures:
+    level_1:
+      name: "Feature Flag Rollback"
+      description: "Disable feature flags to rollback configuration"
+      max_duration_minutes: 2
+      commands:
+        - "ENABLE_BEDROCK_SUPPORT_MODE=false"
+        - "ENABLE_INTELLIGENT_ROUTING=false"
+        - "ENABLE_DIRECT_BEDROCK_FALLBACK=false"
+      validation:
+        - "curl -f http://localhost:8080/health"
+
+    level_2:
+      name: "Traffic Routing Rollback"
+      description: "Route all traffic to MCP only"
+      max_duration_minutes: 5
+      commands:
+        - "FORCE_MCP_ONLY_MODE=true"
+        - "BYPASS_INTELLIGENT_ROUTING=true"
+      validation:
+        - "curl -f http://localhost:8080/health"
+        - "npm run test:smoke"
+
+    level_3:
+      name: "Full System Rollback"
+      description: "Deploy previous application version"
+      max_duration_minutes: 10
+      commands:
+        - "npm run rollback:production"
+        - "npm run health-check:production"
+      validation:
+        - "npm run test:smoke"
+        - "npm run test:integration"
+
+# Monitoring and Alerting
+monitoring:
+  # Key metrics to monitor during deployment
+  metrics:
+    - name: "Emergency Operation Latency"
+      threshold: "< 5 seconds P95"
+      alert_level: "critical"
+
+    - name: "Critical Operation Latency"
+      threshold: "< 10 seconds P95"
+      alert_level: "warning"
+
+    - name: "System Error Rate"
+      threshold: "< 2% of baseline"
+      alert_level: "warning"
+
+    - name: "Routing Efficiency"
+      threshold: "> 80%"
+      alert_level: "info"
+
+    - name: "Cache Hit Rate"
+      threshold: "> 80%"
+      alert_level: "info"
+
+  # Monitoring duration after deployment
+  post_deployment_monitoring_hours: 72
+
+  # Escalation procedures
+  escalation:
+    - level: 1
+      duration_minutes: 5
+      contacts: ["operations@matbakh.app"]
+
+    - level: 2
+      duration_minutes: 15
+      contacts: ["engineering@matbakh.app", "operations@matbakh.app"]
+
+    - level: 3
+      duration_minutes: 30
+      contacts:
+        ["cto@matbakh.app", "engineering@matbakh.app", "operations@matbakh.app"]
+
+# Deployment Types Configuration
+deployment_types:
+  hybrid_routing:
+    name: "Hybrid Routing Deployment"
+    description: "Deploy Bedrock Activation Hybrid Routing system"
+    estimated_duration_minutes: 240
+    risk_level: "medium"
+    requires_maintenance_window: true
+    rollback_complexity: "medium"
+
+  full_system:
+    name: "Full System Deployment"
+    description: "Complete system deployment with all components"
+    estimated_duration_minutes: 480
+    risk_level: "high"
+    requires_maintenance_window: true
+    rollback_complexity: "high"
+
+  rollback:
+    name: "Emergency Rollback"
+    description: "Emergency rollback to previous version"
+    estimated_duration_minutes: 30
+    risk_level: "low"
+    requires_maintenance_window: false
+    rollback_complexity: "low"
+
+# Audit and Compliance
+audit:
+  # Audit log retention
+  retention_days: 365
+
+  # Required audit fields
+  required_fields:
+    - deployment_id
+    - scheduled_time
+    - actual_start_time
+    - actual_end_time
+    - requested_by
+    - approved_by
+    - deployment_type
+    - status
+    - validation_results
+    - rollback_events
+
+  # Compliance requirements
+  compliance:
+    - standard: "SOC 2 Type II"
+      requirements: ["change_management", "approval_workflow", "audit_trail"]
+
+    - standard: "ISO 27001"
+      requirements:
+        ["security_validation", "risk_assessment", "incident_response"]
+
+    - standard: "GDPR"
+      requirements: ["data_protection", "privacy_impact", "breach_notification"]

@@ -1,0 +1,200 @@
+
+/*  ⚠️ KRITISCHE NAVIGATION-DATEI – NICHT OHNE GENEHMIGUNG ÄNDERN! ⚠️
+ *
+ *  Diese Datei steuert sämtliche Haupt-URLs, Mehrsprachigkeit und SEO-Routen.
+ *  Eine falsche Änderung bricht:
+ *    – Navigation der Benutzer
+ *    – /angebote  &  /packages  Canonicals
+ *    – Sitemap-Konsistenz
+ *
+ *  VOR JEDEM COMMIT:
+ *    1) Änderung mit Product-Owner abklären
+ *    2) validateNavigationIntegrity() lokal ausführen
+ *    3) Neues Sitemap-Diff prüfen
+ */
+
+// src/components/navigation/NavigationConfig.ts
+
+import { TFunction } from 'i18next';
+
+export type NAVIGATION_CHANGE_WARNING = {
+  '⚠️_WARNUNG': 'NavigationConfig NIEMALS ohne Genehmigung ändern!';
+  GRUND: 'Kann gesamte Navigation und SEO zerstören';
+  PROZESS: 'Absprache → Impact-Analyse → Review → Deploy';
+};
+
+if (process.env.NODE_ENV === 'development') {
+  console.warn('🚨 NavigationConfig geladen – Änderungen nur nach Approval!');
+}
+
+type NavItem = {
+  key: string;
+  labelKey: string; // i18n Key, z. B. "nav.services" oder "footer.imprint"
+  href: string;
+  showInNav: boolean;
+  showInFooter?: boolean;
+  protected?: boolean;
+  roles?: string[]; // z. B. ["admin", "partner"]
+  hrefs?: { de: string; en: string }; // For backwards compatibility
+};
+
+export const NAVIGATION_ITEMS: NavItem[] = [
+  { 
+    key: "home", 
+    labelKey: "nav.home", 
+    href: "/", 
+    showInNav: true,
+    hrefs: { de: "/", en: "/" }
+  },
+  { 
+    key: "services", 
+    labelKey: "nav.services", 
+    href: "/services", 
+    showInNav: true,
+    hrefs: { de: "/services", en: "/services" }
+  },
+  { 
+    key: "offers", 
+    labelKey: "nav.offers", 
+    href: "/angebote", 
+    showInNav: true,
+    hrefs: { de: "/angebote", en: "/packages" }
+  },
+  { 
+    key: "contact", 
+    labelKey: "nav.contact", 
+    href: "/contact", 
+    showInNav: true,
+    hrefs: { de: "/kontakt", en: "/contact" }
+  },
+  /* Footer-Links - ALLE auf footer Namespace umgestellt */
+  { 
+    key: "imprint", 
+    labelKey: "footer.imprint", 
+    href: "/impressum", 
+    showInNav: false,
+    showInFooter: true,
+    hrefs: { de: "/impressum", en: "/imprint" }
+  },
+  { 
+    key: "privacy", 
+    labelKey: "footer.privacy", 
+    href: "/datenschutz", 
+    showInNav: false,
+    showInFooter: true,
+    hrefs: { de: "/datenschutz", en: "/privacy" }
+  },
+  { 
+    key: "terms", 
+    labelKey: "footer.terms", 
+    href: "/agb", 
+    showInNav: false,
+    showInFooter: true,
+    hrefs: { de: "/agb", en: "/terms" }
+  },
+  { 
+    key: "usage", 
+    labelKey: "footer.usage", 
+    href: "/nutzung", 
+    showInNav: false,
+    showInFooter: true,
+    hrefs: { de: "/nutzung", en: "/usage" }
+  },
+  /* Protected Routes */
+  { 
+    key: "dashboard", 
+    labelKey: "nav.dashboard", 
+    href: "/dashboard", 
+    showInNav: true, // Jetzt in der Hauptnavigation sichtbar für angemeldete User
+    protected: true, 
+    roles: ["admin", "partner"],
+    hrefs: { de: "/dashboard", en: "/dashboard" }
+  },
+  { 
+    key: "partnerDashboard", 
+    labelKey: "nav.partnerDashboard", 
+    href: "/partner/dashboard", 
+    showInNav: false, 
+    protected: true, 
+    roles: ["partner"],
+    hrefs: { de: "/partner/dashboard", en: "/partner/dashboard" }
+  },
+  { 
+    key: "adminPanel", 
+    labelKey: "nav.adminPanel", 
+    href: "/admin", 
+    showInNav: true, // Sichtbar für Admins
+    protected: true, 
+    roles: ["admin"],
+    hrefs: { de: "/admin", en: "/admin" }
+  }
+];
+
+// Helper function to get navigation link for specific language
+export const getNavLink = (key: string, language: 'de' | 'en'): string => {
+  const item = NAVIGATION_ITEMS.find(nav => nav.key === key);
+  return item?.hrefs?.[language] || item?.href || '/';
+};
+
+// Helper function to get visible navigation items
+export const getVisibleNavItems = (isAdmin: boolean = false, language: 'de' | 'en' = 'de') => {
+  return NAVIGATION_ITEMS
+    .filter(item => {
+      if (!item.showInNav) return false;
+      if (item.protected && item.roles) {
+        return item.roles.includes('admin') && isAdmin;
+      }
+      return true;
+    })
+    .map(item => ({
+      ...item,
+      currentHref: item.hrefs?.[language] || item.href,
+      currentLabel: item.labelKey // This will be translated by the component
+    }));
+};
+
+// Helper function to get footer navigation items
+export const getFooterNavItems = (language: 'de' | 'en' = 'de') => {
+  return NAVIGATION_ITEMS
+    .filter(item => item.showInFooter)
+    .map(item => ({
+      ...item,
+      currentHref: item.hrefs?.[language] || item.href,
+      currentLabel: item.labelKey
+    }));
+};
+
+// Validation function for development
+export const validateNavigationConfig = (): boolean => {
+  if (process.env.NODE_ENV !== 'development') return true;
+  
+  const issues: string[] = [];
+  
+  NAVIGATION_ITEMS.forEach(item => {
+    if (!item.key) issues.push(`Missing key for item: ${JSON.stringify(item)}`);
+    if (!item.labelKey) issues.push(`Missing labelKey for item: ${item.key}`);
+    if (!item.href && !item.hrefs) issues.push(`Missing href/hrefs for item: ${item.key}`);
+    
+    if (item.hrefs) {
+      if (!item.hrefs.de) issues.push(`Missing German href for item: ${item.key}`);
+      if (!item.hrefs.en) issues.push(`Missing English href for item: ${item.key}`);
+    }
+  });
+  
+  if (issues.length > 0) {
+    console.warn('NavigationConfig validation issues:', issues);
+    return false;
+  }
+
+  // Import und führe erweiterte Validierung aus
+  if (typeof window === 'undefined') { // Nur serverseitig
+    try {
+      const { validateNavigationIntegrity } = require('@/lib/navigationValidator');
+      validateNavigationIntegrity(NAVIGATION_ITEMS);
+    } catch (error) {
+      console.warn('Navigation validator not available:', error);
+    }
+  }
+  
+  return true;
+};

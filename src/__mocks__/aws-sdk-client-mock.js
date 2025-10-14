@@ -1,0 +1,23 @@
+// Simplified mock for aws-sdk-client-mock
+const mockClient = () => {
+    const mockInstance = {
+        reset: jest.fn(),
+        on: jest.fn(),
+        commandCalls: jest.fn().mockReturnValue([]),
+    };
+
+    // Create a chainable mock for on() method
+    const createChainableMock = () => ({
+        resolves: jest.fn().mockReturnValue(mockInstance),
+        resolvesOnce: jest.fn().mockReturnValue(mockInstance),
+        rejects: jest.fn().mockReturnValue(mockInstance),
+        rejectsOnce: jest.fn().mockReturnValue(mockInstance),
+        callsFake: jest.fn().mockReturnValue(mockInstance),
+    });
+
+    mockInstance.on.mockReturnValue(createChainableMock());
+
+    return mockInstance;
+};
+
+module.exports = { mockClient };
