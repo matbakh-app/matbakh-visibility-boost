@@ -1,0 +1,176 @@
+Perfekt – das ist bereits ein sehr gutes Fundament.
+Hier ist die **aktualisierte und vollständig erweiterte Version** deiner _Deep Legacy De-Reference Cleanup – Runde 2_ Requirements, integriert mit allem, was wir in den letzten Phasen (DNS-Bereinigung, Twilio/Resend/Lovable-Entfernung, Bedrock-Policies, Safe-Deploy-Runbook, CI-Guards etc.) erarbeitet haben:
+
+---
+
+# 🧹 Deep Legacy De-Reference Cleanup – Runde 2 Specification
+
+## Introduction
+
+This specification defines the **second-round deep cleanup** of all remaining or hidden legacy service references and artifacts within **matbakh.app**.
+After the initial Supabase/Vercel cleanup, this phase ensures **100 % AWS-native compliance**, removal of **deprecated third-party integrations** (Supabase, Vercel, Twilio, Resend, Lovable), and establishment of **preventive guardrails** to ensure no legacy code can re-enter the system.
+
+This round also covers:
+
+- Deep file-system scans (deprecated folders, archived mocks, unreferenced configs)
+- DNS and infrastructure verification
+- Credential revocation + audit evidence
+- CI/CD and ESLint legacy-guard policies
+- Safe Deployment Policies for Kiro & Bedrock
+
+---
+
+## Requirement 1 – Complete Legacy Service Removal
+
+**User Story:** As a system administrator, I want every trace of legacy service code, config, or credentials permanently removed.
+
+**Acceptance Criteria**
+
+1. Source scan (`rg "supabase|vercel|twilio|resend|lovable" src/`) → **0 matches**
+2. `package.json` → no legacy dependencies
+3. `.env`, AWS SSM → no legacy variables or secrets
+4. CI/CD pipelines → pass legacy-guard without warnings
+5. DNS → no CNAME/A records to legacy domains
+
+---
+
+## Requirement 2 – Automated Detection & Remediation
+
+**User Story:** As a developer, I want automated tooling for consistent, auditable cleanup.
+
+**Acceptance Criteria**
+
+1. `scan.ts` creates `reports/detection.json` with path, type, confidence score
+2. `apply.ts --dry-run` simulates remediation without writing files
+3. Every change logged in `reports/apply.log` with timestamp and hash
+4. `verify.ts` confirms 0 legacy references; outputs `verify.json`
+5. Rollback (`restore.ts`) recovers previous state ≤ 30 min using Git tags
+
+---
+
+## Requirement 3 – CI/CD Legacy Guard & Prevention
+
+**User Story:** As a team, I want automated guards that prevent re-introduction of legacy code.
+
+**Acceptance Criteria**
+
+1. **ESLint rule:** `no-restricted-imports` blocks `supabase|vercel|twilio|resend|lovable`
+2. **Husky pre-commit hook:** `rg` scan fails if legacy pattern found
+3. **GitHub Action `legacy-guard.yml`:** runs on push / PR, blocks merge on matches
+4. **CI pipeline:** `npm run legacy:scan` + `npm run legacy:verify` must pass
+5. **Package Install Hook:** Postinstall script rejects disallowed packages
+
+---
+
+## Requirement 4 – Infrastructure & DNS Cleanup
+
+**User Story:** As a DevOps engineer, I want all external links to legacy providers removed.
+
+**Acceptance Criteria**
+
+1. Route 53 → CloudFront only, no legacy records
+2. HTTP headers → contain only AWS signatures (`Server: CloudFront`)
+3. Webhooks → none point to Twilio/Resend URLs
+4. Secrets → legacy API keys revoked + rotated (documented in audit)
+5. Deployments → executed via AWS CodePipeline / S3 / CloudFront only
+
+---
+
+## Requirement 5 – Documentation & Compliance Evidence
+
+**User Story:** As a compliance officer, I want full auditability.
+
+**Acceptance Criteria**
+
+1. `reports/detection.json` and `apply.log` committed to repo (audit branch)
+2. `reports/verify.json` lists 0 legacy items → signed by Kiro and Bedrock
+3. Generate **Certificate of Clean** PDF via `audit-writer.ts`
+4. GDPR appendix documents personal-data removal from legacy providers
+5. `rollback.md` contains complete restoration procedure
+
+---
+
+## Requirement 6 – Testing & Validation
+
+**User Story:** As a QA engineer, I want confidence that the system remains stable.
+
+**Acceptance Criteria**
+
+1. Code coverage ≥ existing threshold (≥ 85 %)
+2. Smoke tests for login, dashboard, VC results all green
+3. Cognito-only auth verified (login + Google/Facebook via Cognito IdP)
+4. RDS-only DB connections verified (no Supabase endpoints)
+5. Email tests use AWS SES or approved provider only
+
+---
+
+## Requirement 7 – Security & Access Control
+
+**User Story:** As a security engineer, I want a clean credential and network surface.
+
+**Acceptance Criteria**
+
+1. All legacy API keys revoked + documented in `secrets-rotation-proof.md`
+2. IAM policies enforce least privilege (RDS, SES, Cognito)
+3. All secrets moved to AWS Secrets Manager / SSM
+4. Outbound connections restricted by VPC Endpoint policies
+5. Trivy/Snyk scans show 0 legacy warnings
+
+---
+
+## Requirement 8 – Performance & Monitoring Validation
+
+**User Story:** As an SRE, I want to ensure performance and observability stay optimal.
+
+**Acceptance Criteria**
+
+1. Page load (P95) ≤ previous baseline
+2. Error rate ≤ pre-cleanup baseline
+3. Cognito Auth Success Rate ≥ 99.9 %
+4. RDS query latency ≤ pre-cleanup levels
+5. CloudWatch / X-Ray metrics show no new timeouts or failures
+
+---
+
+## Requirement 9 – Safe Deployment & Rollback Policy
+
+**User Story:** As a deployment engineer, I want a guaranteed non-disruptive transition.
+
+**Acceptance Criteria**
+
+1. **No S3 `--delete` before validation** (policy enforced by Kiro)
+2. **Placeholder Page** (`maintenance.html`) used during deploy
+3. Build artifact validated → `build-manifest.json` (sha256 + timestamp)
+4. CloudFront invalidated _after_ success confirmation
+5. Rollback = previous manifest restore (≤ 30 min target)
+
+---
+
+## Requirement 10 – Continuous Enforcement & Observability
+
+**User Story:** As a project lead, I want Kiro and Bedrock to continuously enforce clean state and report drift.
+
+**Acceptance Criteria**
+
+1. Nightly CI Job `legacy-audit` runs scan + verifies no drift
+2. Bedrock logs all modifications with `bedrock://audit/` prefix
+3. Kiro reports drift in `meta-monitor` dashboard
+4. Alert created if legacy reference count > 0
+5. Monthly compliance summary generated automatically
+
+---
+
+## Success Criteria Summary
+
+| Domain         | Target                          | Status Goal |
+| -------------- | ------------------------------- | ----------- |
+| Codebase       | 0 legacy references             | ✅          |
+| Packages       | 0 legacy dependencies           | ✅          |
+| Environment    | 0 legacy variables              | ✅          |
+| Infrastructure | AWS-only origins & headers      | ✅          |
+| Security       | IAM + Secrets Manager only      | ✅          |
+| Tests          | ≥ 85 % coverage, all green      | ✅          |
+| Deployment     | Safe, reversible, verified      | ✅          |
+| Compliance     | Evidence + Certificate of Clean | ✅          |
+
+---

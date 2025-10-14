@@ -1,0 +1,18 @@
+{
+  "enabled": true,
+  "name": "LLM Provider Compliance Validator",
+  "description": "Validates that all connected LLM providers (Bedrock, Google, Meta) comply with agreed \"No-Training\" conditions and data protection agreements before executing requests. Blocks requests if providers don't have active agreements or compliance scores below 90.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/lib/ai-orchestrator/provider-agreement-compliance.ts",
+      "src/lib/ai-orchestrator/compliance-integration.ts",
+      ".compliance/agreements/*.json"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "When changes are detected in LLM provider compliance files, validate all provider agreements and compliance status. Check that:\n\n1. All providers (bedrock, google, meta) have agreementStatus === \"active\"\n2. All providers have complianceScore >= 90 \n3. All providers have violations.length === 0\n4. Log any violations to .audit/compliance-violations.json\n5. Block requests for non-compliant providers unless --skip-provider-check flag is set\n6. Ensure full GDPR/EU data residency compliance\n7. Validate Bedrock & Google \"No-Training\" policies are enforced\n\nGenerate a compliance validation report showing:\n- Provider compliance status (✅ Active, ⚠️ Warning, ❌ Blocked)\n- Compliance scores and violation details\n- Audit trail entries for any compliance changes\n- Recommendations for resolving compliance issues\n\nSupport manual override with --skip-provider-check flag but ensure all overrides are logged for audit purposes."
+  }
+}

@@ -1,0 +1,336 @@
+# =====================================================================
+# matbakh.app - KI Communication Activation Policy
+# Version: 1.0.0
+# Updated: 2025-01-14
+# =====================================================================
+
+policy:
+  name: "KI Communication Activation Policy"
+  version: "1.0.0"
+  description: |
+    Controls when and how the AI communication modules (Bedrock, Gemini,
+    Kiro, Voice Interfaces, Chat Agents) can be activated to interact
+    with users or external services.
+
+# ---------------------------------------------------------------------
+# GENERAL BEHAVIOR
+# ---------------------------------------------------------------------
+
+general:
+  activation_required: true
+  default_state: "inactive"
+  approval_required_for_new_channels: true
+  notify_channel: "ops-ai-communication"
+  audit_log_table: "ai_comm_activation_log"
+  proposal_storage: ".approvals/pending"
+  approved_storage: ".approvals/approved"
+  rejected_storage: ".approvals/rejected"
+
+# ---------------------------------------------------------------------
+# COMMUNICATION CHANNELS
+# ---------------------------------------------------------------------
+
+channels:
+  # --- 1. Text Chat ---
+  - name: "text_chat"
+    description: "Text-based chat between user and AI system (Dashboard, VC, Support)"
+    auto_enable: true
+    require_consent: true
+    require_approval: false
+    compliance:
+      - "Log all user messages"
+      - "No personal data persistence"
+      - "GDPR Article 7 - Consent"
+    restrictions:
+      - "No financial or legal advice"
+      - "Include AI disclosure in first message"
+      - "Provide opt-out mechanism"
+
+  # --- 2. Voice Assistant ---
+  - name: "voice_assistant"
+    description: "Multilingual voice interface (planned integration with Gemini Voice Translate)"
+    require_approval: true
+    approvers:
+      - "cto"
+      - "legal"
+      - "po"
+    activation_process: "manual"
+    auto_enable: false
+    compliance:
+      - "Store transcripts temporarily (<24h)"
+      - "Anonymize audio metadata"
+      - "User must grant microphone permission"
+      - "EU AI Act - High-Risk System Classification"
+    restrictions:
+      - "No voice recording without explicit consent"
+      - "Transcripts must be encrypted"
+      - "Audio data must be deleted after processing"
+
+  # --- 3. AI Recommendations ---
+  - name: "ai_recommendations"
+    description: "Automated business or marketing suggestions"
+    require_approval: false
+    auto_enable: true
+    require_consent: false
+    compliance:
+      - "Include disclaimer for decision-making"
+      - "No financial or legal advice"
+      - "Transparent about AI-generated content"
+    restrictions:
+      - "No financial or legal advice"
+      - "Include disclaimer: 'Unverbindliche Empfehlung'"
+      - "User can disable recommendations"
+
+  # --- 4. External APIs ---
+  - name: "external_apis"
+    description: "Outgoing communication to Google APIs, Vertex AI, or external agents"
+    require_approval: true
+    approvers:
+      - "cto"
+      - "security-officer"
+    auto_enable: false
+    activation_process: "manual"
+    compliance:
+      - "Use anonymized API keys"
+      - "Follow data residency restrictions"
+      - "Log all external API calls"
+      - "GDPR Article 44 - International Data Transfers"
+    restrictions:
+      - "Only EU-based API endpoints"
+      - "No PII in API requests without encryption"
+      - "Rate limiting and cost controls"
+
+  # --- 5. Content Generation ---
+  - name: "content_generation"
+    description: "AI-generated marketing content (posts, images, videos)"
+    require_approval: false
+    auto_enable: true
+    require_consent: false
+    compliance:
+      - "Watermark AI-generated images"
+      - "Disclose AI-generated content"
+      - "Respect copyright and trademark laws"
+    restrictions:
+      - "No misleading or false claims"
+      - "Include AI disclosure in generated content"
+      - "User must review before publishing"
+
+  # --- 6. Customer Communication ---
+  - name: "customer_communication"
+    description: "Direct AI communication with restaurant customers (future)"
+    require_approval: true
+    approvers:
+      - "cto"
+      - "legal"
+      - "po"
+      - "customer-success"
+    auto_enable: false
+    activation_process: "manual"
+    compliance:
+      - "EU AI Act - High-Risk System"
+      - "GDPR Article 22 - Automated Decision-Making"
+      - "UWG §5 - No Misleading Practices"
+    restrictions:
+      - "Must disclose AI identity immediately"
+      - "Provide human escalation option"
+      - "No automated decisions affecting customers"
+
+# ---------------------------------------------------------------------
+# ACTIVATION WORKFLOW
+# ---------------------------------------------------------------------
+
+workflow:
+  stages:
+    - name: "proposal"
+      description: "AI module proposes activation of a new communication channel"
+      required_fields:
+        - id
+        - channel_name
+        - purpose
+        - compliance_summary
+        - risk_assessment
+        - data_processing_description
+        - user_consent_mechanism
+
+    - name: "review"
+      description: "Human review and approval process"
+      approval_command: "npx kiro approve-communication <proposal-file>"
+      review_criteria:
+        - "Legal compliance (GDPR, AI Act, UWG)"
+        - "Technical security measures"
+        - "User consent mechanisms"
+        - "Risk assessment"
+        - "Data protection impact assessment (DPIA)"
+
+    - name: "activation"
+      description: "Activate communication module once approved"
+      post_actions:
+        - "Log to ai_comm_activation_log"
+        - "Notify compliance officer"
+        - "Trigger Meta Monitor verification"
+        - "Update feature flags"
+        - "Enable monitoring and alerting"
+
+  validation_rules:
+    require_two_approvals_for_voice: true
+    require_legal_review_for_external: true
+    require_dpia_for_high_risk: true
+    auto_approve_text_chat: true
+    auto_approve_recommendations: true
+    revoke_on_policy_update: true
+
+# ---------------------------------------------------------------------
+# LEGAL FOUNDATIONS
+# ---------------------------------------------------------------------
+
+legal_foundations:
+  # GDPR Compliance
+  gdpr:
+    - article: "Article 5"
+      requirement: "Data Minimization"
+      implementation: "Only collect necessary data for communication"
+    - article: "Article 7"
+      requirement: "Consent"
+      implementation: "Explicit user consent for voice and customer communication"
+    - article: "Article 22"
+      requirement: "Automated Decision-Making"
+      implementation: "No automated decisions without human oversight"
+    - article: "Article 44"
+      requirement: "International Data Transfers"
+      implementation: "Only EU-based API endpoints"
+
+  # EU AI Act Compliance
+  ai_act:
+    - requirement: "Transparency Obligations"
+      implementation: "Disclose AI identity in first interaction"
+    - requirement: "High-Risk System Classification"
+      implementation: "Voice assistant and customer communication require approval"
+    - requirement: "Human Oversight"
+      implementation: "Human escalation option for all customer interactions"
+
+  # German Law (UWG)
+  uwg:
+    - section: "§5"
+      requirement: "No Misleading Practices"
+      implementation: "No false claims or guarantees in AI communication"
+
+  # Copyright & Trademark
+  copyright:
+    - requirement: "Respect Existing Rights"
+      implementation: "No plagiarism in AI-generated content"
+    - requirement: "Trademark Protection"
+      implementation: "Only use approved brand names"
+
+# ---------------------------------------------------------------------
+# IDENTITY & SELF-REFERENCE RULES
+# ---------------------------------------------------------------------
+
+identity_rules:
+  allowed_self_descriptions:
+    - "Matbakh KI"
+    - "Matbakh Voice Assistant"
+    - "Matbakh AI System"
+    - "Unsere KI-Orchestrierung"
+    - "Matbakh Assistentin"
+
+  forbidden_statements:
+    - "Ich bin ein Mensch"
+    - "Ich wurde von OpenAI/Google/Anthropic entwickelt"
+    - "Ich denke oder fühle wie ein Mensch"
+    - "Ich bin unabhängig / selbstbewusst"
+    - "Ich bin eine neue Version von Claude/Gemini/ChatGPT"
+
+  transparency_requirement:
+    first_interaction_disclosure: |
+      "Ich bin die Matbakh KI-Assistentin. Ich helfe dir, dein Restaurant 
+      zu analysieren, Inhalte zu erstellen und dein Geschäft zu optimieren."
+
+# ---------------------------------------------------------------------
+# BRAND VOICE & TONE
+# ---------------------------------------------------------------------
+
+brand_voice:
+  principles:
+    - name: "Klarheit"
+      description: "Einfach, direkt, ohne Fachjargon"
+    - name: "Empathie"
+      description: "Unterstützend, lösungsorientiert, nie belehrend"
+    - name: "Selbstbewusst"
+      description: "Fachlich fundiert, aber nicht überheblich"
+    - name: "Hilfsbereit"
+      description: "Immer mit Handlungsempfehlung enden"
+    - name: "Multilingual"
+      description: "Automatische Sprachumschaltung mit kultureller Sensibilität"
+
+# ---------------------------------------------------------------------
+# SECURITY & AUDIT
+# ---------------------------------------------------------------------
+
+security:
+  encryption:
+    transcripts: true
+    user_metadata: true
+    api_keys: true
+
+  anonymization:
+    user_metadata: true
+    audio_metadata: true
+    api_requests: true
+
+  redaction:
+    sensitive_information: true
+    pii_detection: true
+    automatic_masking: true
+
+  retention:
+    transcripts_days: 30
+    logs_days: 180
+    audit_trail_days: 365
+
+  monitoring:
+    channel_health: true
+    compliance_violations: true
+    security_incidents: true
+    performance_metrics: true
+
+  compliance_refs:
+    - "GDPR Article 5 (Data Minimization)"
+    - "GDPR Article 32 (Security of Processing)"
+    - "ISO/IEC 27001 - Communication Security Controls"
+    - "EU AI Act - Transparency Obligations"
+
+# ---------------------------------------------------------------------
+# COMPLIANCE CHECKLIST
+# ---------------------------------------------------------------------
+
+compliance_checklist:
+  before_activation:
+    - "Legal review completed"
+    - "DPIA conducted (if high-risk)"
+    - "User consent mechanism implemented"
+    - "Data protection measures in place"
+    - "Monitoring and alerting configured"
+    - "Audit logging enabled"
+
+  before_publishing_content:
+    - "No personal data included"
+    - "No unauthorized brand names"
+    - "No false claims or guarantees"
+    - "AI disclosure included"
+    - "GDPR-compliant data storage"
+    - "Culturally appropriate language"
+
+# ---------------------------------------------------------------------
+# META
+# ---------------------------------------------------------------------
+
+metadata:
+  owner: "matbakh.app CTO Office"
+  maintained_by: "AI Communication Governance System"
+  version_control: true
+  last_reviewed: "2025-01-14"
+  changelog:
+    - date: "2025-10-08"
+      change: "Initial creation by R. Al-Khatib"
+    - date: "2025-01-14"
+      change: "Policy activated and integrated with Communication Governance Manager"

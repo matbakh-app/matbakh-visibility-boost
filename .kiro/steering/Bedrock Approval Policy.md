@@ -1,0 +1,175 @@
+# =====================================================================
+
+# matbakh.app - Bedrock Approval Policy
+
+# Version: 1.0.0
+
+# Updated: 2025-10-08
+
+# ---------------------------------------------------------------------
+
+# Purpose:
+
+# Defines governance and approval workflow for all Bedrock-initiated
+
+# actions related to architecture, code, and infrastructure changes.
+
+# ---------------------------------------------------------------------
+
+# Placement:
+
+# .kiro/policies/bedrock-approval-policy.yaml
+
+# =====================================================================
+
+policy:
+name: "Bedrock Approval Policy"
+description: >
+This policy governs all actions proposed or executed by the Bedrock
+Support Manager within matbakh.app, including code generation,
+infrastructure orchestration, and configuration updates.
+It ensures human oversight for any architectural or code-level changes.
+
+# ---------------------------------------------------------------------
+
+# GENERAL BEHAVIOR
+
+# ---------------------------------------------------------------------
+
+general:
+approval_required: true
+auto_execute_allowed: false
+proposal_storage: ".approvals/pending"
+approved_storage: ".approvals/approved"
+rejected_storage: ".approvals/rejected"
+audit_log_table: "infra_audit_log"
+notify_channel: "ops-bedrock-governance"
+enforce_compliance_check: true
+require_signed_approvals: true
+
+# ---------------------------------------------------------------------
+
+# ACTION CLASSIFICATION
+
+# ---------------------------------------------------------------------
+
+actions:
+
+# --- 1. Architectural changes ---
+
+- category: "architecture"
+  require_approval: true
+  approvers: ["cto", "lead-engineer"]
+  examples:
+  - "Modify service layer structure"
+  - "Change routing topology (direct ↔ mcp)"
+  - "Alter database schema or migration plan"
+    notes: >
+    Architectural modifications always require explicit approval.
+    Bedrock must submit a detailed proposal with rationale and impact analysis.
+
+# --- 2. Infrastructure modifications ---
+
+- category: "infrastructure"
+  require_approval: true
+  approvers: ["cto", "devops-lead"]
+  examples:
+  - "Create or delete AWS resources"
+  - "Modify IAM roles or security groups"
+  - "Change VPC, subnet, or region configuration"
+    conditions:
+  - "Always require approval in production"
+  - "Allow auto-provisioning in sandbox environments only"
+    notes: >
+    Bedrock may prepare CloudFormation or Terraform blueprints,
+    but must not deploy without an approved signature.
+
+# --- 3. Code changes ---
+
+- category: "code"
+  require_approval: true
+  approvers: ["cto", "tech-lead"]
+  examples:
+  - "Modify TypeScript logic"
+  - "Refactor core orchestration functions"
+  - "Update hooks or validation systems"
+    notes: >
+    All code modifications require human review before commit.
+    Bedrock must create a proposal diff stored under .approvals/pending/
+    with a structured changelog and rationale.
+
+# --- 4. Configuration & Documentation ---
+
+- category: "documentation"
+  require_approval: false
+  approvers: ["po", "doc-manager"]
+  auto_execute_allowed: true
+  examples:
+  - "Auto-sync README and task documentation"
+  - "Generate completion reports and changelogs"
+    notes: >
+    Documentation updates may run automatically under controlled conditions.
+
+# ---------------------------------------------------------------------
+
+# APPROVAL WORKFLOW
+
+# ---------------------------------------------------------------------
+
+workflow:
+stages: - name: "proposal"
+description: "Bedrock submits structured proposal with rationale, scope, and impact."
+required_fields: - id - type - rationale - affected_components - risk_level - rollback_plan - reviewer - name: "review"
+description: "Designated approvers review proposal and provide explicit sign-off."
+approval_command: "npx kiro approve <proposal-file>" - name: "execution"
+description: "Bedrock executes the approved action, logs results, and triggers audit trail."
+post_actions: - "Update infra_audit_log" - "Notify governance channel" - "Trigger compliance validation"
+
+validation_rules:
+require_two_approvals: true
+max_risk_without_cto: "low"
+auto_reject_if_missing_fields: true
+allow_auto_approval_for_docs: true
+
+# ---------------------------------------------------------------------
+
+# NOTIFICATION & AUDIT
+
+# ---------------------------------------------------------------------
+
+notifications:
+on_proposal: "Notify via Slack #ops-bedrock-governance"
+on_approval: "Log to audit trail + notify reviewers"
+on_rejection: "Record rejection reason and timestamp"
+on_execution: "Trigger Meta Monitor and Compliance Validator"
+
+# ---------------------------------------------------------------------
+
+# SECURITY CONTROLS
+
+# ---------------------------------------------------------------------
+
+security:
+encryption: "AES-256"
+signature_verification: true
+signature_required_roles: ["cto", "lead-engineer", "devops-lead"]
+data_retention_days: 180
+enforce_data_residency: "eu-central-1"
+compliance_refs: - "GDPR Article 32 (Integrity and Confidentiality)" - "ISO/IEC 27001:2013 - A.12.1.2 Change Management"
+
+# ---------------------------------------------------------------------
+
+# META
+
+# ---------------------------------------------------------------------
+
+metadata:
+owner: "matbakh.app CTO Office"
+maintained_by: "Kiro Governance Hooks"
+last_reviewed: "2025-10-08"
+version_control: true
+changelog: - "2025-10-08: Initial policy draft created (R. Al-Khatib)" - "Future: integrate with Bedrock action proposal workflow"
+
+<!------------------------------------------------------------------------------------
+   Add Rules to this file or a short description and have Kiro refine them for you:
+------------------------------------------------------------------------------------->
