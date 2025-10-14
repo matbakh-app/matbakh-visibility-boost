@@ -1,0 +1,338 @@
+# =====================================================================
+# matbakh.app - System File Protection Policy
+# Version: 1.0.0
+# Updated: 2025-10-14
+# ---------------------------------------------------------------------
+# Purpose:
+# Defines strict protection and approval requirements for system-critical
+# files and directories to prevent accidental deletion or corruption.
+# ---------------------------------------------------------------------
+# Placement:
+# .kiro/policies/system-file-protection-policy.yaml
+# =====================================================================
+
+policy:
+  name: "System File Protection Policy"
+  description: >
+    Comprehensive protection policy for system-critical files and directories
+    within matbakh.app. Prevents unauthorized deletion, modification, or
+    corruption of essential system components.
+
+  version: "1.0.0"
+  effective_date: "2025-10-14"
+  review_cycle: "quarterly"
+
+# ---------------------------------------------------------------------
+# PROTECTION LEVELS
+# ---------------------------------------------------------------------
+
+protection_levels:
+  - level: "CRITICAL"
+    description: "Files essential for system operation"
+    approval_required: true
+    backup_required: true
+    auto_restore: true
+    approvers: ["cto", "system-admin", "lead-engineer"]
+
+  - level: "IMPORTANT"
+    description: "Files important for system functionality"
+    approval_required: true
+    backup_required: true
+    auto_restore: false
+    approvers: ["tech-lead", "system-admin"]
+
+  - level: "STANDARD"
+    description: "Regular files with basic protection"
+    approval_required: false
+    backup_required: true
+    auto_restore: false
+    approvers: ["any-developer"]
+
+# ---------------------------------------------------------------------
+# PROTECTED PATHS CLASSIFICATION
+# ---------------------------------------------------------------------
+
+protected_paths:
+  # CRITICAL - System Core
+  - path: ".kiro/specs"
+    level: "CRITICAL"
+    description: "Kiro specifications and task definitions"
+    backup_frequency: "on_change"
+    restore_priority: 1
+
+  - path: ".kiro/policies"
+    level: "CRITICAL"
+    description: "System governance and approval policies"
+    backup_frequency: "on_change"
+    restore_priority: 1
+
+  - path: ".kiro/steering"
+    level: "CRITICAL"
+    description: "System steering and guidance documents"
+    backup_frequency: "on_change"
+    restore_priority: 1
+
+  - path: ".kiro/deployment"
+    level: "CRITICAL"
+    description: "Deployment configurations and calendars"
+    backup_frequency: "on_change"
+    restore_priority: 2
+
+  - path: ".kiro/features"
+    level: "CRITICAL"
+    description: "Feature flags and system configurations"
+    backup_frequency: "on_change"
+    restore_priority: 2
+
+  - path: ".kiro/hooks"
+    level: "CRITICAL"
+    description: "Automation hooks and system monitors"
+    backup_frequency: "on_change"
+    restore_priority: 2
+
+  # IMPORTANT - Configuration Files
+  - path: "package.json"
+    level: "IMPORTANT"
+    description: "Project dependencies and scripts"
+    backup_frequency: "daily"
+    restore_priority: 3
+
+  - path: "tsconfig.json"
+    level: "IMPORTANT"
+    description: "TypeScript configuration"
+    backup_frequency: "daily"
+    restore_priority: 3
+
+  - path: "vite.config.ts"
+    level: "IMPORTANT"
+    description: "Build system configuration"
+    backup_frequency: "daily"
+    restore_priority: 3
+
+  - path: "eslint.config.js"
+    level: "IMPORTANT"
+    description: "Code quality configuration"
+    backup_frequency: "daily"
+    restore_priority: 3
+
+  # IMPORTANT - Core Source Code
+  - path: "src/lib/ai-orchestrator"
+    level: "IMPORTANT"
+    description: "AI orchestration system core"
+    backup_frequency: "daily"
+    restore_priority: 4
+
+  - path: "scripts/cleanup-2"
+    level: "IMPORTANT"
+    description: "System cleanup orchestration"
+    backup_frequency: "daily"
+    restore_priority: 4
+
+# ---------------------------------------------------------------------
+# OPERATIONS REQUIRING APPROVAL
+# ---------------------------------------------------------------------
+
+restricted_operations:
+  - operation: "delete"
+    paths: ["CRITICAL", "IMPORTANT"]
+    approval_required: true
+    backup_before: true
+
+  - operation: "move"
+    paths: ["CRITICAL"]
+    approval_required: true
+    backup_before: true
+
+  - operation: "rename"
+    paths: ["CRITICAL"]
+    approval_required: true
+    backup_before: true
+
+  - operation: "modify_structure"
+    paths: ["CRITICAL"]
+    approval_required: true
+    backup_before: true
+
+# ---------------------------------------------------------------------
+# APPROVAL WORKFLOW
+# ---------------------------------------------------------------------
+
+approval_workflow:
+  stages:
+    - name: "request"
+      description: "Submit protection override request"
+      required_fields:
+        - operation_type
+        - target_paths
+        - justification
+        - impact_assessment
+        - rollback_plan
+
+    - name: "review"
+      description: "Multi-level approval review"
+      timeout: "24h"
+      escalation: "auto_reject"
+
+    - name: "execution"
+      description: "Execute approved operation with monitoring"
+      monitoring: true
+      audit_logging: true
+
+    - name: "verification"
+      description: "Post-operation integrity verification"
+      auto_validate: true
+      rollback_on_failure: true
+
+# ---------------------------------------------------------------------
+# MONITORING & ALERTS
+# ---------------------------------------------------------------------
+
+monitoring:
+  file_integrity_check:
+    frequency: "hourly"
+    checksum_validation: true
+    size_monitoring: true
+
+  access_monitoring:
+    log_all_access: true
+    alert_on_unauthorized: true
+    track_modifications: true
+
+  backup_validation:
+    verify_backups: "daily"
+    test_restore: "weekly"
+    retention_check: true
+
+alerts:
+  critical_file_missing:
+    severity: "CRITICAL"
+    notification: ["ops-team", "cto", "system-admin"]
+    auto_action: "restore_from_backup"
+
+  unauthorized_modification:
+    severity: "HIGH"
+    notification: ["security-team", "system-admin"]
+    auto_action: "create_incident"
+
+  backup_failure:
+    severity: "MEDIUM"
+    notification: ["ops-team"]
+    auto_action: "retry_backup"
+
+# ---------------------------------------------------------------------
+# AUTO-RECOVERY PROCEDURES
+# ---------------------------------------------------------------------
+
+auto_recovery:
+  enabled: true
+  max_attempts: 3
+  recovery_timeout: "30m"
+
+  procedures:
+    - trigger: "critical_file_missing"
+      action: "restore_from_latest_backup"
+      verify: true
+
+    - trigger: "corruption_detected"
+      action: "restore_from_verified_backup"
+      verify: true
+
+    - trigger: "unauthorized_deletion"
+      action: "restore_and_alert"
+      verify: true
+      escalate: true
+
+# ---------------------------------------------------------------------
+# BACKUP MANAGEMENT
+# ---------------------------------------------------------------------
+
+backup_policy:
+  retention:
+    critical_files: "90_days"
+    important_files: "30_days"
+    standard_files: "7_days"
+
+  storage:
+    primary: ".kiro-protection/backups"
+    secondary: "git_repository"
+    offsite: "s3_bucket" # Optional
+
+  verification:
+    integrity_check: "daily"
+    restore_test: "weekly"
+    full_validation: "monthly"
+
+# ---------------------------------------------------------------------
+# COMPLIANCE & AUDIT
+# ---------------------------------------------------------------------
+
+compliance:
+  audit_logging:
+    enabled: true
+    retention: "1_year"
+    encryption: true
+
+  change_tracking:
+    git_integration: true
+    approval_records: true
+    rollback_history: true
+
+  reporting:
+    monthly_report: true
+    incident_tracking: true
+    compliance_metrics: true
+
+# ---------------------------------------------------------------------
+# EMERGENCY PROCEDURES
+# ---------------------------------------------------------------------
+
+emergency_procedures:
+  system_corruption:
+    immediate_action: "isolate_system"
+    recovery_action: "restore_from_backup"
+    notification: "all_stakeholders"
+
+  mass_deletion:
+    immediate_action: "stop_operations"
+    recovery_action: "full_system_restore"
+    investigation: "mandatory"
+
+  security_breach:
+    immediate_action: "lockdown_system"
+    recovery_action: "secure_restore"
+    forensics: "required"
+
+# ---------------------------------------------------------------------
+# IMPLEMENTATION COMMANDS
+# ---------------------------------------------------------------------
+
+implementation:
+  setup_protection:
+    command: "npx tsx scripts/kiro-system-protection.ts --full-protection"
+
+  validate_system:
+    command: "npx tsx scripts/kiro-system-protection.ts --validate"
+
+  create_backup:
+    command: "npx tsx scripts/kiro-system-protection.ts --backup"
+
+  restore_system:
+    command: "npx tsx scripts/kiro-system-protection.ts --restore"
+
+  generate_report:
+    command: "npx tsx scripts/kiro-system-protection.ts --report"
+
+# ---------------------------------------------------------------------
+# METADATA
+# ---------------------------------------------------------------------
+
+metadata:
+  owner: "matbakh.app System Administration"
+  maintained_by: "Kiro System Protection"
+  last_reviewed: "2025-10-14"
+  next_review: "2026-01-14"
+  version_control: true
+
+  changelog:
+    - "2025-10-14: Initial system protection policy created"
+    - "Future: Integration with automated monitoring systems"

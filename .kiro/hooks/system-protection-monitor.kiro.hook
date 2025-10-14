@@ -1,0 +1,64 @@
+# Kiro System Protection Monitor Hook
+# Automatically monitors and protects critical system files
+
+name: "System Protection Monitor"
+description: "Monitors critical system files and prevents accidental deletion"
+version: "1.0.0"
+enabled: true
+
+# Trigger conditions
+triggers:
+  - on_file_change: ".kiro/**/*"
+  - on_git_operation: ["commit", "reset", "checkout"]
+  - schedule: "0 */6 * * *"  # Every 6 hours
+
+# Protection actions
+actions:
+  - name: "validate_system_integrity"
+    command: "npx tsx scripts/kiro-system-protection.ts --validate"
+    on_failure: "alert"
+    
+  - name: "create_backup"
+    command: "npx tsx scripts/kiro-system-protection.ts --backup"
+    condition: "file_changes_detected"
+    
+  - name: "commit_protection"
+    command: "npx tsx scripts/kiro-system-protection.ts --commit"
+    condition: "critical_files_modified"
+
+# Alert configuration
+alerts:
+  - type: "critical_file_missing"
+    message: "🚨 CRITICAL: System file missing - {file_path}"
+    action: "auto_restore"
+    
+  - type: "protection_failure"
+    message: "⚠️ System protection failed - manual intervention required"
+    escalate: true
+
+# Auto-recovery settings
+auto_recovery:
+  enabled: true
+  max_attempts: 3
+  restore_from_backup: true
+  notify_on_recovery: true
+
+# Monitoring scope
+protected_paths:
+  - ".kiro/specs/**/*"
+  - ".kiro/policies/**/*"
+  - ".kiro/steering/**/*"
+  - ".kiro/deployment/**/*"
+  - ".kiro/features/**/*"
+  - ".kiro/hooks/**/*"
+  - "package.json"
+  - "tsconfig.json"
+  - "vite.config.ts"
+  - "eslint.config.js"
+
+# Exclusions
+exclude_patterns:
+  - "**/*.log"
+  - "**/*.tmp"
+  - "**/node_modules/**"
+  - "**/.git/**"
