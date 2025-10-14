@@ -1,8 +1,87 @@
-Das ist ein sehr guter und reifer Schritt – du willst jetzt in eine **produktive Git-Trennung mit täglichem Backup-Safety-Net** übergehen.
-Hier ist der Plan, den ich dir vorschlage – konkret, sicher und ohne Overhead:
+🧠 Ziel 1
 
----
+Alle Report-Dateien (z. B. docs/test-fixes-*.md, docs/system-restoration-report.md, docs/kiro-system-protection-report.md, usw.)
 
+werden automatisch den zugehörigen Specs im Ordner .kiro/specs/ zugeordnet.
+
+Jede Spec bekommt im Footer oder unter „📑 Reports“ eine sauber formatierte Liste aller relevanten Reports.
+
+🔧 Voraussetzungen
+
+Reports liegen in docs/
+
+Specs liegen in .kiro/specs/
+
+Dateinamen oder Inhalte enthalten Task-Referenzen wie Task 6, Task 4.2, Performance, Hybrid, etc. (Bedrock erkennt diese über semantische Suche)
+
+Kiro/Bedrock dürfen Dateien ändern
+
+🧩 Bedrock-Befehl für Kiro
+
+Du kannst ihn so an Kiro übergeben:
+
+npx bedrock run orchestrator --task "Sort and integrate reports into specs" --prompt "
+Scan the repository for all Markdown or report files inside 'docs/' that match patterns:
+  - *report*.md
+  - *test*.md
+  - *fixes*.md
+  - *validation*.md
+  - *status*.md
+  - *completion*.md
+
+For each report, identify its related task or spec by title or keywords 
+(e.g. 'Task 3.1', 'Performance', 'Latency', 'Bedrock Support Manager', 'Hybrid Routing', 'Green Core Validation', etc.)
+
+Then:
+1. Copy or move the report summary (first 20 lines or first main sections) into the matching file under '.kiro/specs/'.
+2. Append it under a Markdown header:
+   ---
+   ## 📑 Related Reports
+   - [Report Title](relative/path/to/docs/report.md)
+   ---
+3. If a spec has multiple related reports, list them chronologically (oldest → newest).
+4. Generate a log 'docs/report-integration-summary.md' that lists:
+   - Which reports were matched to which specs
+   - Which reports remained unmatched
+   - Timestamp and file counts.
+
+Ensure file structure and formatting remain intact. Do not delete original reports.
+" 
+
+🔒 Ergebnis
+
+Nach erfolgreicher Ausführung:
+
+Jede .kiro/specs/*.md enthält am Ende einen Abschnitt:
+
+## 📑 Related Reports
+- [Test Fixes Completion Report – 2025-10-07](../docs/test-fixes-completion-report-2025-10-07.md)
+- [System Restoration Report](../docs/system-restoration-report.md)
+- [Kiro System Protection Report](../docs/kiro-system-protection-report.md)
+
+
+Neuer Index-Report:
+
+docs/report-integration-summary.md
+
+
+mit:
+
+✅ 12 Reports matched to 7 Specs
+❌ 3 Unmatched Reports
+
+Optional (empfohlen)
+
+Damit Kiro das regelmäßig automatisch macht (z. B. täglich oder bei neuen Reports):
+
+npx tsx scripts/kiro-hook-watcher.ts --monitor reports
+
+
+→ prüft Änderungen in docs/ und führt den obigen Bedrock-Befehl automatisch aus.
+
+
+
+Ziel 2
 ## 🧱 Zielarchitektur
 
 | Ebene                          | Zweck                                                                                        |
