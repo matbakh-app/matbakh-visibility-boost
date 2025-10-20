@@ -7,14 +7,16 @@
 Diese Plattform für Restaurant-Management ist enterprise-ready mit vollständiger CTO-Governance für Legal-Compliance und Audit-Sicherheit.
 
 ### 🎯 Legal-Governance System
-- **Alle Rechtstexte** zentral in `public/locales/{lang}/legal.json`  
+
+- **Alle Rechtstexte** zentral in `public/locales/{lang}/legal.json`
 - **Automatisierte Konsistenz-Checks** mit `npm run check-legal`
 - **CTO-geschützte Bereiche** mit strikter Review-Pflicht
 - **Audit-Dokumentation** in `docs/CRITICAL_FILES.md`
 
-### 🛡️ Entwickler-Onboarding 
+### 🛡️ Entwickler-Onboarding
+
 1. **PFLICHT**: `docs/CRITICAL_FILES.md` vollständig lesen
-2. **PFLICHT**: Legal-Governance-Workflow verstehen  
+2. **PFLICHT**: Legal-Governance-Workflow verstehen
 3. **PFLICHT**: PR-Templates für Legal-Änderungen beachten
 4. **TEST**: `npm run check-legal` erfolgreich ausführen
 
@@ -68,17 +70,18 @@ This project is built with:
 
 **WARNUNG**: Die folgenden Dateien steuern die gesamte Website-Navigation und dürfen **NIEMALS** ohne explizite Genehmigung geändert werden:
 
-| Datei | Zweck |
-|-------|-------|
+| Datei                                           | Zweck                             |
+| ----------------------------------------------- | --------------------------------- |
 | `src/components/navigation/NavigationConfig.ts` | Einzelne Quelle aller Haupt-Links |
-| `public/locales/*/nav.json` | Beschriftungen für Navigation |
-| `src/App.tsx` | Route → Component Mapping |
-| `public/sitemap.xml` | SEO-Relevante URL-Liste |
+| `public/locales/*/nav.json`                     | Beschriftungen für Navigation     |
+| `src/App.tsx`                                   | Route → Component Mapping         |
+| `public/sitemap.xml`                            | SEO-Relevante URL-Liste           |
 
 **Änderungs-Prozess** (immer einhalten):
-1. Issue erstellen / Product-Owner zustimmen lassen  
-2. `npm run check:nav` lokal – darf **keine** Fehler bringen  
-3. Code-Review (mind. 1 Maintainer)  
+
+1. Issue erstellen / Product-Owner zustimmen lassen
+2. `npm run check:nav` lokal – darf **keine** Fehler bringen
+3. Code-Review (mind. 1 Maintainer)
 4. Merge & Deploy
 
 📖 **Detaillierte Informationen**: [docs/CRITICAL_FILES.md](docs/CRITICAL_FILES.md)
@@ -104,19 +107,65 @@ To connect a domain, navigate to Project > Settings > Domains and click Connect 
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
 
+## 🔗 Facebook Webhook Integration
+
+**Status**: ✅ **Migrated to AWS Lambda** (v2.4.0-stabilized)
+
+### Architecture
+
+- **Handler**: `src/api/facebookWebhookHandler.ts` (AWS Lambda compatible)
+- **Security**: HMAC signature validation with SHA-1/SHA-256 support
+- **Events**: Page updates, messaging, ratings, lead generation
+- **Logging**: Structured CloudWatch logging
+
+### Quick Setup
+
+1. **Deploy to AWS Lambda**: See [deployment guide](docs/deployment/facebook-webhook-deployment-guide.md)
+2. **Configure Facebook App**: Update webhook URL to Lambda endpoint
+3. **Set Environment Variables**:
+   ```bash
+   FB_APP_SECRET=your_facebook_app_secret
+   FB_VERIFY_TOKEN=your_webhook_verify_token
+   FB_APP_ID=your_facebook_app_id
+   ```
+
+### Documentation
+
+- 📖 [Migration Guide](docs/facebook-webhook-migration-guide.md) - Complete migration from Supabase
+- 🔧 [Technical Implementation](docs/technical/facebook-webhook-implementation.md) - Code details
+- 🚀 [Deployment Guide](docs/deployment/facebook-webhook-deployment-guide.md) - AWS deployment
+- 📊 [Stabilization Report](docs/repository-stabilization-report.md) - Migration process
+
+### Testing
+
+```bash
+# Test webhook verification
+curl "https://your-lambda-url.amazonaws.com?hub.mode=subscribe&hub.verify_token=your_token&hub.challenge=test"
+
+# Test event processing (with valid signature)
+curl -X POST "https://your-lambda-url.amazonaws.com" \
+  -H "Content-Type: application/json" \
+  -H "x-hub-signature-256: sha256=your_signature" \
+  -d '{"object":"page","entry":[{"id":"page_id","changes":[]}]}'
+```
+
 ## 🔐 Secrets Management
 
 **SECRETS MODE (permanent)**: Never commit secrets to repo. Use AWS Secrets Manager.
 
 ### Available Secrets:
+
 - `gcp/kiro-sa` → Google Service Account JSON
-- `supabase/service_role` → Supabase Service Role Key
+- `facebook/webhook-secrets` → Facebook App Secret & Verify Token
+- `supabase/service_role` → Supabase Service Role Key (deprecated)
 
 ### For Frontend Development:
+
 - No secrets required for frontend-only development
 - All API calls use public endpoints or user authentication
 
 ### For CI/Deploy:
+
 Secrets are fetched at runtime and set as environment variables:
 
 ```yaml
@@ -127,13 +176,16 @@ Secrets are fetched at runtime and set as environment variables:
     role-to-assume: arn:aws:iam::055062860590:role/gh-actions-web-deploy
     aws-region: eu-central-1
 
-- name: Fetch Supabase Service Role
+- name: Fetch Facebook Secrets
   run: |
-    echo "SUPABASE_SERVICE_ROLE_KEY=$(aws secretsmanager get-secret-value \
-      --secret-id supabase/service_role --query SecretString --output text)" >> $GITHUB_ENV
+    SECRETS=$(aws secretsmanager get-secret-value \
+      --secret-id facebook/webhook-secrets --query SecretString --output text)
+    echo "FB_APP_SECRET=$(echo $SECRETS | jq -r .FB_APP_SECRET)" >> $GITHUB_ENV
+    echo "FB_VERIFY_TOKEN=$(echo $SECRETS | jq -r .FB_VERIFY_TOKEN)" >> $GITHUB_ENV
 ```
 
 ### Local Development:
+
 Create `scripts/env-from-aws.sh` (git-ignored):
 
 ```bash
@@ -141,8 +193,11 @@ Create `scripts/env-from-aws.sh` (git-ignored):
 export AWS_PROFILE=matbakh-dev
 export AWS_REGION=eu-central-1
 
-export SUPABASE_SERVICE_ROLE_KEY="$(aws secretsmanager get-secret-value \
-  --secret-id supabase/service_role --query SecretString --output text)"
+# Fetch Facebook secrets
+FACEBOOK_SECRETS=$(aws secretsmanager get-secret-value \
+  --secret-id facebook/webhook-secrets --query SecretString --output text)
+export FB_APP_SECRET=$(echo $FACEBOOK_SECRETS | jq -r .FB_APP_SECRET)
+export FB_VERIFY_TOKEN=$(echo $FACEBOOK_SECRETS | jq -r .FB_VERIFY_TOKEN)
 
 echo "Env gesetzt. Starte jetzt: npm run dev"
 ```
@@ -154,6 +209,7 @@ echo "Env gesetzt. Starte jetzt: npm run dev"
 **Problem**: DOI-E-Mail kommt nicht an? Hier die Copy-Paste-Befehle für schnelle Diagnose:
 
 ### 1. API Test
+
 ```bash
 API="https://guf7ho7bze.execute-api.eu-central-1.amazonaws.com/prod"
 curl -s -X POST "$API/vc/start" \
@@ -162,6 +218,7 @@ curl -s -X POST "$API/vc/start" \
 ```
 
 ### 2. Lambda Logs
+
 ```bash
 # Correct log group for production
 aws logs tail /aws/lambda/MatbakhVcStack-VcStartFnC5BAD875-Lukpaun5TO53 --region eu-central-1 --follow --since 10m
@@ -171,6 +228,7 @@ aws logs tail /aws/lambda/MatbakhVcStack-VcStartFnC5BAD875-Lukpaun5TO53 --region
 ```
 
 ### 3. SES Status
+
 ```bash
 # Account status
 aws sesv2 get-account --region eu-central-1
@@ -183,6 +241,7 @@ aws sesv2 get-suppressed-destination --email-address YOUR_EMAIL --region eu-cent
 ```
 
 ### 4. Direct SES Test
+
 ```bash
 aws sesv2 send-email --region eu-central-1 \
   --from-email-address "mail@matbakh.app" \
