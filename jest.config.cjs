@@ -1,22 +1,16 @@
 module.exports = {
     preset: 'ts-jest/presets/default-esm',
     testEnvironment: 'jsdom',
-    moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
-    extensionsToTreatAsEsm: ['.ts', '.tsx'],
-    globals: {
-        'ts-jest': {
-            useESM: true
-        }
-    },
     transform: {
         '^.+\\.(ts|tsx)$': ['ts-jest', {
             useESM: true
         }]
     },
-    roots: ['<rootDir>/src'],
+    extensionsToTreatAsEsm: ['.ts', '.tsx'],
     moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/src/$1'
     },
+    roots: ['<rootDir>/src'],
     testMatch: [
         '<rootDir>/src/**/__tests__/**/*.(ts|tsx|js)',
         '<rootDir>/src/**/?(*.)(test|spec).(ts|tsx|js)'
@@ -26,5 +20,9 @@ module.exports = {
         '!src/**/*.d.ts',
     ],
     setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
-    testTimeout: 10000
+    testTimeout: 10000,
+    moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
+    transformIgnorePatterns: [
+        'node_modules/(?!(.*\\.mjs$))'
+    ]
 };
