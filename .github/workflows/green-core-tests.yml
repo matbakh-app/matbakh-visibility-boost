@@ -1,0 +1,40 @@
+name: Green Core Tests (CI-Blocking)
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  green-core-tests:
+    runs-on: ubuntu-latest
+    name: Green Core Tests
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Green Core Tests
+        run: npm run test:ci
+
+      - name: Validate package.json
+        run: node -e "JSON.parse(require('fs').readFileSync('package.json','utf8')); console.log('✅ JSON valid')"
+
+      - name: Check TypeScript compilation
+        run: npx tsc --noEmit
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Build project
+        run: npm run build
