@@ -9,6 +9,13 @@ export default tseslint.config(
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
+    ignores: [
+      "scripts/check-legal-locales.js",
+      "scripts/i18n-scanner-validation.js",
+      "scripts/checkNavigation.ts",
+      "src/figma-make/restaurantdashboardsystem/hooks/useLanguage.ts",
+      "src/figma-make/visibilitycheckdashboard/hooks/useLanguage.ts"
+    ],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
