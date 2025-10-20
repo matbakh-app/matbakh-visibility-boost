@@ -1,0 +1,94 @@
+# ===================================================================
+# Kiro Migration Task – Facebook Webhook (Supabase ➜ AWS Lambda)
+# -------------------------------------------------------------------
+# Ziel:
+#   - Alte Supabase Edge Function entfernen
+#   - AWS-kompatiblen Lambda-Handler bereitstellen
+#   - Environment-Variablen anpassen
+#   - Legacy-Code archivieren (nicht löschen)
+#   - Bedrock/Meta-Kompatibilität sicherstellen
+# ===================================================================
+
+task: "Migrate Supabase Facebook Webhook to AWS Lambda"
+description: >
+  Ersetzt die alte Supabase Edge Function `supabase/functions/facebook-webhook/index.ts`
+  durch eine AWS-kompatible Lambda-Version unter `src/api/facebookWebhookHandler.ts`.
+  Behält Meta/Facebook Event-Integration bei, entfernt aber alle Supabase-Abhängigkeiten.
+
+scope:
+  include:
+    - supabase/functions/facebook-webhook/index.ts
+  output:
+    - src/api/facebookWebhookHandler.ts
+
+actions:
+  - comment: "📦 1. Legacy Supabase Webhook archivieren"
+  - run: |
+      mkdir -p archive/supabase-facebook-webhook-legacy
+      if [ -f supabase/functions/facebook-webhook/index.ts ]; then
+        mv supabase/functions/facebook-webhook/index.ts archive/supabase-facebook-webhook-legacy/
+      fi
+
+  - comment: "🧠 2. Erstelle neue AWS Lambda-kompatible Version"
+  - write_file:
+      path: src/api/facebookWebhookHandler.ts
+      content: |
+        import { APIGatewayProxyHandler } from "aws-lambda";
+
+        export const handler: APIGatewayProxyHandler = async (event) => {
+          try {
+            if (event.httpMethod === "GET") {
+              const params = event.queryStringParameters || {};
+              if (
+                params["hub.mode"] === "subscribe" &&
+                params["hub.verify_token"] === process.env.FB_VERIFY_TOKEN
+              ) {
+                return {
+                  statusCode: 200,
+                  body: params["hub.challenge"] || "",
+                };
+              }
+              return { statusCode: 403, body: "Forbidden" };
+            }
+
+            if (event.httpMethod === "POST") {
+              const body = JSON.parse(event.body || "{}");
+              console.log("📡 Facebook webhook event", body);
+              // Optional: Weiterleitung an Bedrock Orchestrator
+              return { statusCode: 200, body: "OK" };
+            }
+
+            return { statusCode: 405, body: "Method Not Allowed" };
+          } catch (error) {
+            console.error("Webhook error:", error);
+            return { statusCode: 500, body: "Internal Server Error" };
+          }
+        };
+
+  - comment: "🔐 3. Environment Variables aktualisieren"
+  - append_to_file:
+      path: .env.development
+      content: |
+        # --- Meta / Facebook App ---
+        FB_APP_ID=
+        FB_APP_SECRET=
+        FB_VERIFY_TOKEN=
+        # Entfernte Supabase Keys
+        # SUPABASE_ANON_KEY (deprecated)
+        # SUPABASE_SERVICE_ROLE_KEY (deprecated)
+
+  - comment: "🧹 4. Entferne Supabase-Referenzen aus Projekt"
+  - find_replace:
+      from: "@supabase"
+      to: ""
+  - find_replace:
+      from: "supabase.functions.facebook-webhook"
+      to: "src/api/facebookWebhookHandler"
+
+  - comment: "✅ 5. Abschlussmeldung"
+  - echo: "🎉 Facebook Webhook erfolgreich migriert auf AWS Lambda-Struktur"
+
+guards:
+  - check_exists: "src/api"
+  - check_permissions: "write"
+  - require_env: ["FB_APP_ID", "FB_APP_SECRET", "FB_VERIFY_TOKEN"]
