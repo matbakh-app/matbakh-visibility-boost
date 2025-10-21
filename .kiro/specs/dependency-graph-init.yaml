@@ -1,0 +1,144 @@
+# =====================================================================
+# Kiro Specification: Dependency Graph Initialization & Audit Automation
+# File: .kiro/specs/dependency-graph-init.yaml
+# Version: v1.0.0
+# Author: CTO & PO (Rabieb Al-Khatib)
+# Date: 2025-10-20
+# =====================================================================
+
+meta:
+  project: matbakh.app
+  environment: production
+  executor: kiro-daemon
+  mode: autonomous
+  version: v1.0.0
+  approval:
+    type: auto
+    authority: cto
+    confirmation_required: false
+
+objectives:
+  - name: Initialize and enforce full Dependency Graph automation
+    description: >
+      Automatically analyze, monitor, and secure all npm dependencies 
+      of matbakh.app using GitHub’s Dependency Graph, Dependabot, and
+      the Kiro Hook framework with CI/CD enforcement.
+
+tasks:
+  - id: setup-dependency-graph
+    description: Initialize and export GitHub Dependency Graph
+    steps:
+      - extract package.json and package-lock.json
+      - generate hierarchical dependency tree
+      - export graph to docs/security/dependency-graph.json
+      - publish snapshot to CloudWatch dashboard (Green Core)
+
+  - id: enable-dependabot
+    description: Enable GitHub Dependabot alerts and schedule weekly checks
+    file: .github/dependabot.yml
+    content: |
+      version: 2
+      updates:
+        - package-ecosystem: "npm"
+          directory: "/"
+          schedule:
+            interval: "weekly"
+          open-pull-requests-limit: 10
+
+  - id: run-audit
+    description: Execute npm audit and export results
+    commands:
+      - npm audit --json > docs/security/dependency-audit-report.json
+    postprocess:
+      - flag vulnerabilities with severity >=7 as BLOCK
+      - generate summary docs/security/dependency-audit-report.md
+      - notify via Kiro Meta Monitor if BLOCK detected
+
+  - id: create-hook
+    description: Create Kiro Hook for dependency validation
+    files:
+      - path: .kiro/hooks/validate-dependency-health/policy.yaml
+        content: |
+          name: validate-dependency-health
+          trigger: pre-merge
+          severity: critical
+          conditions:
+            - audit_report == "PASS"
+            - no_license_conflicts == true
+          actions:
+            - block_merge_on_fail: true
+            - log_to: docs/security/dependency-audit-report.json
+            - alert_channel: dependency_alert
+      - path: .kiro/hooks/validate-dependency-health/hook.ts
+        content: |
+          import { execSync } from "child_process";
+          import fs from "fs";
+          const audit = JSON.parse(execSync("npm audit --json").toString());
+          const critical = audit.vulnerabilities
+            ? Object.values(audit.vulnerabilities).filter((v:any) => v.severity === "critical")
+            : [];
+          if (critical.length > 0) {
+            console.error("🚨 Critical dependency issues detected");
+            process.exit(1);
+          }
+          console.log("✅ Dependencies validated and secure");
+      - path: .kiro/hooks/validate-dependency-health/README.md
+        content: |
+          # validate-dependency-health Hook
+          Automatically checks project dependencies for CVEs, version drift,
+          and license conflicts. Blocks merges if critical vulnerabilities exist.
+
+  - id: integrate-ci
+    description: Add validation step to Green Core CI
+    file: .github/workflows/green-core-tests.yml
+    patch: |
+      - name: Dependency Health Validation
+        run: npm run validate:dependencies
+
+  - id: reporting
+    description: Export reports and integrate with compliance dashboard
+    output:
+      - docs/security/dependency-audit-report.json
+      - docs/security/dependency-audit-report.md
+    destinations:
+      - s3://matbakhvcstack-webbucket12880f5b-svct6cxfbip5/compliance/dependency-audit/
+      - bedrock-dashboard: compliance/dependency-health
+
+  - id: monitoring
+    description: Set up continuous monitoring and weekly auto-report
+    integrations:
+      - kiro-meta-monitor
+      - slack:webhook:dependency_alert
+    schedule:
+      frequency: weekly
+      day: Monday
+      time: "09:00"
+    actions:
+      - generate weekly summary
+      - send alerts for CVE >=7
+      - auto-open ticket in docs/security/incidents/
+
+failsafe:
+  if_github_access_denied:
+    fallback:
+      - npm audit --omit=dev > docs/security/dependency-fallback.csv
+      - activate_hook: enforce-slo-gate
+      - notify: cto
+
+deliverables:
+  - .github/dependabot.yml
+  - .kiro/hooks/validate-dependency-health/*
+  - docs/security/dependency-graph.json
+  - docs/security/dependency-audit-report.json
+  - docs/security/dependency-audit-report.md
+
+completion:
+  success_criteria:
+    - All vulnerabilities below severity 7.0
+    - No license conflicts
+    - Hook returns "PASS"
+    - CI pipeline merges only on green
+  post_actions:
+    - upload reports to S3
+    - log summary in Green Core Dashboard
+    - mark task as VERIFIED in Kiro audit log
