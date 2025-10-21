@@ -1,10 +1,10 @@
 
 #!/usr/bin/env ts-node
 
-import { validateNavigationIntegrity, validateTranslationKeys } from '../src/lib/navigationValidator';
-import { NAVIGATION_ITEMS } from '../src/components/navigation/NavigationConfig';
 import * as fs from 'fs';
 import * as path from 'path';
+import { NAVIGATION_ITEMS } from '../src/components/navigation/NavigationConfig';
+import { validateNavigationIntegrity, validateTranslationKeys } from '../src/lib/navigationValidator';
 
 console.log('🔍 Validating navigation integrity...');
 
